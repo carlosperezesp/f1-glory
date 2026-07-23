@@ -55,6 +55,7 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
   background:linear-gradient(90deg,var(--accent),var(--accent2) 55%,transparent)}
 .card h3{font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px;text-align:center;font-style:normal}
 .helmet-wrap{display:flex;justify-content:center;margin:6px 0 16px}
+#helmetNum{font-family:"Arial Narrow","Impact","Haettenschweiler","Oswald",sans-serif;font-weight:800;font-style:italic;font-size:30px;fill:#fff;letter-spacing:1px;paint-order:stroke;stroke:rgba(0,0,0,.18);stroke-width:.6}
 .field label{display:block;font-size:11px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin:12px 0 5px}
 .field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:12px 14px;font-size:16px;outline:none;transition:border-color .15s, box-shadow .15s}
 .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(225,6,0,.12)}
@@ -351,22 +352,32 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
   <div class="id-grid">
     <div class="card">
       <h3>Identidad</h3>
-      <div class="helmet-wrap"><svg id="helmetSvg" width="150" height="130" viewBox="0 0 150 130">
+      <div class="helmet-wrap"><svg id="helmetSvg" width="156" height="140" viewBox="0 0 156 140">
         <defs>
           <linearGradient id="helmetRed" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#ff4d1c"/><stop offset="1" stop-color="#c00500"/>
+            <stop offset="0" stop-color="#ff5a2c"/><stop offset="1" stop-color="#c8000a"/>
           </linearGradient>
           <linearGradient id="helmetBase" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#f4f4f8"/><stop offset="1" stop-color="#d5d6de"/>
+            <stop offset="0" stop-color="#fbfbfd"/><stop offset="1" stop-color="#d3d4dc"/>
+          </linearGradient>
+          <linearGradient id="helmetVisor" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2c2c3a"/><stop offset="1" stop-color="#0d0d15"/>
           </linearGradient>
         </defs>
-        <path d="M20 78 C20 38 48 14 80 14 C112 14 134 40 134 72 L134 92 C134 100 128 104 120 104 L34 104 C24 104 20 96 20 88 Z" fill="url(#helmetBase)"/>
-        <path d="M92 44 L128 44 C132 52 134 62 134 72 L134 78 L92 78 C86 78 82 72 82 66 L82 56 C82 48 86 44 92 44 Z" fill="#26262e"/>
-        <path d="M20 78 C20 38 48 14 80 14 C90 14 99 16 107 21 L60 104 L34 104 C24 104 20 96 20 88 Z" fill="url(#helmetRed)" opacity=".95"/>
-        <text id="helmetNum" x="46" y="78" font-size="34" font-weight="800" fill="#fff" text-anchor="middle" font-family="Arial">10</text>
+        <!-- carcasa -->
+        <path d="M28 96 C28 50 52 24 78 24 C104 24 128 50 128 96 L128 104 C128 114 120 122 110 122 L46 122 C36 122 28 114 28 104 Z" fill="url(#helmetBase)"/>
+        <!-- librea superior -->
+        <path d="M28 92 C30 52 52 24 78 24 C104 24 126 52 128 92 Z" fill="url(#helmetRed)"/>
+        <path d="M28 92 C29 78 32 65 37 56 L119 56 C124 65 127 78 128 92 Z" fill="#ffffff" opacity=".13"/>
+        <!-- visera -->
+        <path d="M42 70 C42 63 47 59 54 59 L102 59 C109 59 114 63 114 70 L114 86 C114 92 109 96 102 96 L54 96 C47 96 42 92 42 86 Z" fill="url(#helmetVisor)"/>
+        <path d="M50 65 L96 65 C99 65 100 67 97 69 L56 78 C52 79 50 75 50 70 Z" fill="#5a5b72" opacity=".65"/>
+        <!-- mentonera -->
+        <rect x="56" y="108" width="44" height="9" rx="4.5" fill="#bdbec8"/>
+        <text id="helmetNum" x="78" y="48" text-anchor="middle"></text>
       </svg></div>
       <div class="field"><label>Apellido</label><input id="inName" maxlength="14" placeholder="Apellido" oninput="idChanged()"></div>
-      <div class="field"><label>Dorsal (1-99)</label><input id="inNum" maxlength="2" value="10" inputmode="numeric" oninput="idChanged()"></div>
+      <div class="field"><label>Dorsal (1-99)</label><input id="inNum" maxlength="2" placeholder="Nº" inputmode="numeric" oninput="idChanged()"></div>
     </div>
     <div class="card">
       <h3>Nacionalidad</h3>
@@ -479,7 +490,6 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
       <div class="verdict" id="endVerdict"></div>
       <div class="end-actions">
         <button class="btn sm" onclick="location.reload()">Nueva carrera</button>
-        <button class="btn sm line" onclick="printCareer()">🖨️ Guardar carrera</button>
         <button class="btn sm line" onclick="viewCareer()">👁️ Ver carrera</button>
       </div>
     </div>
@@ -631,7 +641,7 @@ function backToIntro(){ $("identity").style.display="none"; $("intro").style.dis
 function idChanged(){
   let n = $("inNum").value.replace(/\D/g,"");
   $("inNum").value = n;
-  $("helmetNum").textContent = n||"–";
+  $("helmetNum").textContent = n;
   validateIdentity();
 }
 function renderCountries(){
@@ -1682,7 +1692,8 @@ function endCareer(){
   else if(S.titles.f1===1){legacy="CAMPEÓN DEL MUNDO";verdict="Tocaste el cielo una vez, y nadie podrá borrarlo jamás. Un campeón del mundo, para siempre.";}
   else if(S.titles.constr>0){legacy="CAMPEÓN DE CONSTRUCTORES";verdict="El título de pilotos se te escapó, pero llevaste a tu equipo a la gloria. En la fábrica saben que ese trofeo también es tuyo.";}
   else if(S.subcamp>0){legacy="ETERNO ASPIRANTE";verdict="Como Stirling Moss: te faltó el título, pero no la grandeza. El paddock siempre te respetó.";}
-  else if(S.wins>0){legacy="GANADOR DE GRANDES PREMIOS";verdict="Subiste a lo más alto del podio y escuchaste tu himno. Muy pocos en la historia pueden decir lo mismo.";}
+  else if(S.wins>1){legacy="GANADOR DE GRANDES PREMIOS";verdict=`Ganaste ${S.wins} carreras y escuchaste tu himno desde lo más alto del podio. Muy pocos en la historia pueden decir lo mismo.`;}
+  else if(S.wins===1){legacy="GANADOR DE UN GRAN PREMIO";verdict="Ganaste una carrera: te subiste a lo más alto del podio y escuchaste tu himno. Ese día es tuyo para siempre y nadie te lo quita.";}
   else if(S.f1Seasons>0){legacy="PILOTO DE FÓRMULA 1";verdict="Llegaste donde solo llegan 20 personas en el planeta. Eso ya te hace extraordinario.";}
   else {legacy="PROMESA DEL AUTOMOVILISMO";verdict="La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.";}
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=" Y sí: lo de APXGP fue tan de película como suena. 🎬";
