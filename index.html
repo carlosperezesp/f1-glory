@@ -320,11 +320,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .cmcell.p3{background:linear-gradient(135deg,#f4c396,#d78d4b);color:#4a2800}
 .cmcell.top{background:#dcf5e3;color:#15803d}
 .cmcell.rest{background:#e7e7ec;color:#7a7a86}
-.cmovr{font-size:10.5px;color:#6a6a76;font-weight:800;flex-shrink:0;margin-left:2px;background:#edeef2;padding:1px 6px;border-radius:5px}
+.cmpeakbadge{font-style:normal;font-size:11px;font-weight:900;letter-spacing:.3px;color:#fff;background:linear-gradient(135deg,#8b5cf6,#6d28d9);padding:2px 9px;border-radius:6px;vertical-align:2px;margin-left:4px}
 /* modo denso para carreras muy largas: celdas y espacios mínimos */
 .careermap.dense .cmstint{padding:4px 2px;gap:4px}
 .careermap.dense .cmcell{min-width:24px;height:22px;padding:0 4px;font-size:11px}
-.careermap.dense .cmovr{font-size:9.5px;padding:1px 5px}
 .cmjun{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
 .hall{margin:0 0 22px;text-align:left}
 .hall h4{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:8px;font-style:normal}
@@ -1622,14 +1621,15 @@ function renderCareerMap(){
   // celdas más pequeñas cuando la carrera es larga, para que quepa en una pantalla
   const totalYears=f1s.length;
   el.classList.toggle("dense", totalYears>16);
-  let html='<h4>🏁 Tu carrera año a año</h4>';
+  const careerPeak=Math.max(...f1s.map(s=>s.ovr));
+  let html=`<h4>🏁 Tu carrera año a año <span class="cmpeakbadge">Mejor OVR ${careerPeak}</span></h4>`;
   stints.forEach(st=>{
     const rows=st.rows, y0=rows[0].year, y1=rows[rows.length-1].year, n=rows.length;
     const isTest=st.cat==="TEST";
     const titles=rows.filter(r=>r.pos===1).length;
     const best=isTest?null:Math.min(...rows.map(r=>r.pos));
-    const ovr0=rows[0].ovr, ovr1=rows[rows.length-1].ovr;
     const yrs = y0===y1?`'${String(y0).slice(2)}`:`'${String(y0).slice(2)}–${String(y1).slice(2)}`;
+    // cada año = tu POSICIÓN final, coloreada por resultado (lo que cuenta)
     const cells=rows.map(r=>{
       const raced=isTest&&r.subBest;
       const cls=isTest?(raced?posClass(r.subBest):"rest"):posClass(r.pos);
@@ -1638,11 +1638,11 @@ function renderCareerMap(){
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
     const chip = titles?`<span class="cmtit">🏆×${titles}</span>`
-      : (best&&best<=3&&!isTest?`<span class="cmtit b">P${best}</span>`:"");
+      : (best&&best<=3&&!isTest?`<span class="cmtit b">mejor ${best}º</span>`:"");
     html+=`<div class="cmstint">
       <span class="cmmeta"><span class="team-dot cmdot" style="${badgeStyle(st.team)}">${st.team.abbr||""}</span>
         <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
-      ${cells}<span class="cmovr">OVR ${ovr0}${ovr1!==ovr0?"→"+ovr1:""}</span>${chip}</div>`;
+      ${cells}${chip}</div>`;
   });
   const jun=S.seasons.filter(s=>["KART","F3","F2"].includes(s.cat));
   if(jun.length){
