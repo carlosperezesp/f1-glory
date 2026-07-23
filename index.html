@@ -3,7 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>F1 Glory</title>
+<title>F1 Glory — Construye tu carrera en la Fórmula 1</title>
+<meta name="description" content="Empieza en el karting y escribe tu leyenda: fichajes, títulos, rivalidades y decisiones que definen una carrera. ¿Hasta dónde llegarás?">
+<meta name="theme-color" content="#c8000a">
+<!-- Open Graph / redes sociales -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="F1 Glory">
+<meta property="og:title" content="F1 Glory — Construye tu carrera en la Fórmula 1">
+<meta property="og:description" content="Del karting a la gloria. Fichajes, títulos, escándalos y decisiones que definen tu legado. ¿Hasta dónde llegarás?">
+<meta property="og:image" content="https://f1-glory.vercel.app/cover-og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta property="og:url" content="https://f1-glory.vercel.app/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="F1 Glory — Construye tu carrera en la Fórmula 1">
+<meta name="twitter:description" content="Del karting a la gloria. ¿Hasta dónde llegarás?">
+<meta name="twitter:image" content="https://f1-glory.vercel.app/cover-og.jpg">
 <style>
 :root{
   --bg:#f5f5f9; --panel:#ffffff; --panel2:#f2f2f7; --line:#e6e6ee;
@@ -54,8 +69,9 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,var(--accent),var(--accent2) 55%,transparent)}
 .card h3{font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px;text-align:center;font-style:normal}
-.helmet-wrap{display:flex;justify-content:center;margin:6px 0 16px}
-#helmetNum{font-family:"Arial Narrow","Impact","Haettenschweiler","Oswald",sans-serif;font-weight:800;font-style:italic;font-size:30px;fill:#fff;letter-spacing:1px;paint-order:stroke;stroke:rgba(0,0,0,.18);stroke-width:.6}
+.numplate{width:92px;height:92px;margin:2px auto 18px;border-radius:20px;background:linear-gradient(135deg,#ffffff,#ececf4);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.07)}
+.numplate span{font-family:"Arial Narrow","Impact","Haettenschweiler","Oswald",sans-serif;font-weight:800;font-style:italic;font-size:46px;line-height:1;color:#16161e;letter-spacing:1px}
+.numplate span:empty::before{content:"N\00BA";opacity:.28;font-size:34px}
 .field label{display:block;font-size:11px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin:12px 0 5px}
 .field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:12px 14px;font-size:16px;outline:none;transition:border-color .15s, box-shadow .15s}
 .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(225,6,0,.12)}
@@ -82,8 +98,8 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
   .career-grid{display:flex;flex-direction:column;gap:16px;align-items:stretch}
   .career-grid>div{display:contents}
   #driverCard{order:1}
-  #f1state{order:2}
-  #decisionBox{order:3}
+  #decisionBox{order:2}
+  #f1state{order:3}
   .timeline{order:4}
 }
 
@@ -348,34 +364,11 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 <!-- ========== IDENTITY ========== -->
 <section id="identity">
   <h2>Define tu identidad</h2>
-  <p class="lead">Tu casco, tu bandera y tu forma de pilotar. El resto lo decide la pista.</p>
+  <p class="lead">Tu dorsal, tu bandera y tu forma de pilotar. El resto lo decide la pista.</p>
   <div class="id-grid">
     <div class="card">
       <h3>Identidad</h3>
-      <div class="helmet-wrap"><svg id="helmetSvg" width="156" height="140" viewBox="0 0 156 140">
-        <defs>
-          <linearGradient id="helmetRed" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#ff5a2c"/><stop offset="1" stop-color="#c8000a"/>
-          </linearGradient>
-          <linearGradient id="helmetBase" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#fbfbfd"/><stop offset="1" stop-color="#d3d4dc"/>
-          </linearGradient>
-          <linearGradient id="helmetVisor" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#2c2c3a"/><stop offset="1" stop-color="#0d0d15"/>
-          </linearGradient>
-        </defs>
-        <!-- carcasa -->
-        <path d="M28 96 C28 50 52 24 78 24 C104 24 128 50 128 96 L128 104 C128 114 120 122 110 122 L46 122 C36 122 28 114 28 104 Z" fill="url(#helmetBase)"/>
-        <!-- librea superior -->
-        <path d="M28 92 C30 52 52 24 78 24 C104 24 126 52 128 92 Z" fill="url(#helmetRed)"/>
-        <path d="M28 92 C29 78 32 65 37 56 L119 56 C124 65 127 78 128 92 Z" fill="#ffffff" opacity=".13"/>
-        <!-- visera -->
-        <path d="M42 70 C42 63 47 59 54 59 L102 59 C109 59 114 63 114 70 L114 86 C114 92 109 96 102 96 L54 96 C47 96 42 92 42 86 Z" fill="url(#helmetVisor)"/>
-        <path d="M50 65 L96 65 C99 65 100 67 97 69 L56 78 C52 79 50 75 50 70 Z" fill="#5a5b72" opacity=".65"/>
-        <!-- mentonera -->
-        <rect x="56" y="108" width="44" height="9" rx="4.5" fill="#bdbec8"/>
-        <text id="helmetNum" x="78" y="48" text-anchor="middle"></text>
-      </svg></div>
+      <div class="numplate"><span id="helmetNum"></span></div>
       <div class="field"><label>Apellido</label><input id="inName" maxlength="14" placeholder="Apellido" oninput="idChanged()"></div>
       <div class="field"><label>Dorsal (1-99)</label><input id="inNum" maxlength="2" placeholder="Nº" inputmode="numeric" oninput="idChanged()"></div>
     </div>
@@ -1069,6 +1062,70 @@ const DILEMAS=[
  {id:"embajador",stage:"vet",t:"La oferta cómoda",d:"Tu marca te ofrece retirarte YA y ser embajador mundial: dinero, viajes y cero riesgo.",opts:[
    {l:"Aceptar y colgar el casco",r:()=>{VAL(1.3);S.retired=true;setTimeout(endCareer,800);return "Eliges irte en tus términos, con una sonrisa. +30% fama";}},
    {l:"Seguir corriendo",r:()=>ch(.7)?(OVR(1),"El fuego sigue vivo. +1 OVR"):(OVR(-1),"Empiezas a preguntarte si valió la pena. -1 OVR")}]},
+ // ---- dilemas dramáticos ----
+ {id:"crashgate",stage:"f1",t:"La orden imposible",d:"El muro te insinúa «tener un problema» en una curva concreta: un coche de seguridad en ese instante le daría la victoria a tu equipo. Nadie lo sabría… en teoría.",opts:[
+   {l:"Provocar el accidente",r:()=>roll(
+     [4,()=>(CAR(1),"El plan sale redondo y el equipo te debe una. +1 coche")],
+     [3,()=>(VAL(.8),"Corren rumores por el paddock. Tu nombre queda manchado. Fama -20%")],
+     [3,()=>(VAL(.6),OVR(-1),"Estalla el escándalo: investigación, portadas y vergüenza. Fama -40%, -1 OVR")])},
+   {l:"Negarte en redondo",r:()=>roll(
+     [5,()=>(VAL(1.1),"Plantas cara y el paddock respeta tu integridad. +fama")],
+     [3,()=>"El jefe se traga su idea. Todo sigue igual."],
+     [2,()=>(CAR(-1),"El equipo te lo hace pagar en desarrollo. -1 coche")])}]},
+ {id:"safetycar",stage:"f1",t:"La decisión del muro de control",d:"Última vuelta, coche de seguridad. Dirección de carrera toma una decisión confusa que TE beneficia de forma dudosa: podrías ganar así. Tu rival estalla por la radio.",opts:[
+   {l:"Aprovecharla y ganar",r:()=>roll(
+     [4,()=>(VAL(1.15),"Ganas. Injusto para muchos, pero la victoria cuenta. +fama")],
+     [3,()=>(VAL(.95),"Ganas entre polémica y medio mundo te señala. Fama -5%")],
+     [3,()=>"Revisan la carrera durante semanas sin cambiar nada. Sin cambios."])},
+   {l:"Ceder la posición",r:()=>roll(
+     [4,()=>(VAL(1.25),"Gesto histórico de deportividad: cariño eterno del público. +25% fama")],
+     [3,()=>(OVR(1),"Duele, pero te crece por dentro. +1 OVR")],
+     [3,()=>"Nadie te lo agradece. Regalaste una victoria. Sin cambios."])}]},
+ {id:"titlecrash",stage:"vet",t:"El duelo por el título",d:"Última carrera del año, os jugáis el Mundial tú y tu rival. Se acerca por fuera y tienes la puerta para cerrarle de forma temeraria.",opts:[
+   {l:"Cerrarle sin piedad",r:()=>roll(
+     [4,()=>(VAL(1.15),OVR(1),"Le echas y sales impune: temido y respetado. +fama, +1 OVR")],
+     [3,()=>(VAL(.75),"Chocáis los dos: fama de tramposo y un año amargo. Fama -25%")],
+     [3,()=>(VAL(.6),"La FIA te sanciona por maniobra deliberada. Fama -40%")])},
+   {l:"Correr limpio",r:()=>roll(
+     [4,()=>(VAL(1.2),"Tu deportividad se hace leyenda. +20% fama")],
+     [3,()=>(OVR(1),"Tu temple bajo presión te hace mejor. +1 OVR")],
+     [3,()=>"Que gane el mejor. Sin cambios."])}]},
+ {id:"frenazo",stage:"f1",t:"Sangre caliente",d:"Un rival te ha hecho una jugarreta y vais pegados tras el coche de seguridad. Podrías 'equivocarte' y darle un toque para mandarle un mensaje.",opts:[
+   {l:"Darle un toque",r:()=>roll(
+     [4,()=>(VAL(.92),"Golpe polémico en directo: sanción y bronca mediática. Fama -8%")],
+     [3,()=>"Solo un roce, queda en nada. Sin cambios."],
+     [3,()=>(VAL(.85),CAR(-.5),"Te pasas: penalización dura y el equipo furioso. Fama -15%, -0.5 coche")])},
+   {l:"Tragarte la rabia",r:()=>roll(
+     [4,()=>(OVR(1),"Canalizas la furia en velocidad pura. +1 OVR")],
+     [4,()=>"Respiras hondo y a lo tuyo. Sin cambios."],
+     [2,()=>(VAL(1.05),"El paddock nota tu madurez. +fama")])}]},
+ {id:"aparcado",stage:"f1",t:"La pole a cualquier precio",d:"En clasificación vas primero, pero un rival mejora en su última vuelta. Podrías 'perder el coche' en una curva justo para sacar bandera amarilla y congelar tu pole.",opts:[
+   {l:"«Perder» el coche",r:()=>roll(
+     [3,()=>"Cuela: pole salvada y nadie protesta. Sin cambios."],
+     [4,()=>(VAL(.9),"Los comisarios lo ven claro: te borran la pole. Fama -10%")],
+     [3,()=>(VAL(.8),"Escándalo: sales último y con fama de tramposo. Fama -20%")])},
+   {l:"Aceptar la vuelta del rival",r:()=>roll(
+     [5,()=>"Te gana la pole limpiamente. Mañana será otro día. Sin cambios."],
+     [3,()=>(OVR(1),"Estudias su vuelta perfecta y aprendes. +1 OVR")],
+     [2,()=>(VAL(1.05),"Tu deportividad gusta. +fama")])}]},
+ {id:"zonagris",stage:"f1",t:"El invento de la zona gris",d:"Tus ingenieros traen un sistema brillante que roza el límite del reglamento. Los rivales protestarían… si lo descubren.",opts:[
+   {l:"Montarlo y correr",r:()=>roll(
+     [4,()=>(CAR(2),"Legal por los pelos y letal: dais un golpe en la mesa. +2 coche")],
+     [3,()=>(CAR(1),VAL(.95),"Legal, pero te llaman ventajista. +1 coche, -fama")],
+     [3,()=>(CAR(-1.5),"La FIA lo prohíbe a mitad de año: sin nada. -1.5 coche")])},
+   {l:"Jugar sobre seguro",r:()=>roll(
+     [4,()=>"Desarrollo conservador, cero sustos. Sin cambios."],
+     [3,()=>(CAR(.5),"Paso pequeño pero sólido. +0.5 coche")],
+     [3,()=>(VAL(1.05),"Tu imagen de piloto limpio suma. +fama")])}]},
+ {id:"companeros",stage:"f1",t:"Guerra a muerte con tu compañero",d:"Tu compañero y tú peleáis por todo y ya os habéis tocado en pista. El equipo amenaza con separaros con órdenes si volvéis a chocar.",opts:[
+   {l:"No ceder ni un milímetro",r:()=>roll(
+     [4,()=>(OVR(1),"Le ganas la partida psicológica. Eres el gallo del gallinero. +1 OVR")],
+     [3,()=>(CAR(-1),"Otro toque: el equipo os castiga a los dos. -1 coche")],
+     [3,()=>(S.role="1","El equipo se cansa de él y te nombra líder.")])},
+   {l:"Rebajar la tensión",r:()=>roll(
+     [4,()=>(VAL(1.1),CAR(.5),"El equipo rema unido de nuevo. +fama, +0.5 coche")],
+     [3,()=>"Frágil paz técnica. Sin cambios."],
+     [3,()=>(S.role="2","Cedes terreno y él aprovecha para ser el Nº1.")])}]},
 ];
 
 function pickDilemma(){
@@ -1413,7 +1470,7 @@ function simF1(row,st){
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
     if(pos===2){S.subcamp++; row.events.push("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.");}
   }
-  if(constrPos===1){S.titles.constr++; row.events.push("🏎️ ¡Campeonato de Constructores con "+myTeam+"!");}
+  if(constrPos===1){S.titles.constr++; row.events.push("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores (título del equipo, no tuyo).");}
   // EFECTO PILOTO: un piloto de élite empuja el proyecto hacia arriba año tras año.
   // Así un crack puede RESUCITAR a un equipo en declive si se queda y trabaja.
   const pull = Math.max(0,(S.ovr-85))*0.17 + (sel.style==="tecnico"?0.5:0);
@@ -1597,7 +1654,7 @@ function renderTimeline(){
     div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
     const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?"Probador F1":r.cat;
-    const constr=r.constrPos?` · Constructores: ${r.constrPos===1?"🏆 1º":r.constrPos+"º"}`:"";
+    const constr=r.constrPos?` · 🏭 Constructores (equipo): ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} GP sustituto · ${r.pts} pts`:"FP1 + simulador"):`${r.pts} pts`;
     const posLab=r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):(raced&&r.subBest?(r.subBest===1?"🏆":r.subBest+"º"):"—");
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
