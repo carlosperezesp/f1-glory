@@ -667,13 +667,15 @@ function startCareer(){
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
     titles:{kart:0, f3:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
-    f1perf:{}, f1target:{}, f1char:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0,
+    f1perf:{}, f1target:{}, f1char:{}, kartPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0,
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
   };
   EXPANSION.forEach(e=>e.added=false);
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
+  // nivel de las academias de karting: aleatorio cada partida → estrellas variables
+  KART_TEAMS.forEach(t=>{ S.kartPerf[t.name]=Math.max(46,Math.min(54, t.perf+irnd(-4,3))); });
   // sembrar la parrilla real de 2026
   Object.entries(GRID2026).forEach(([team,list])=>{
     S.seats[team]=list.map(([name,age,skill,ceil,titles,flag])=>{
@@ -850,7 +852,7 @@ function renderRecap(){
 function offerAcademies(){
   setDecision("Oferta de academia","Tres equipos de karting te quieren en su proyecto juvenil. Elige dónde empieza tu historia.");
   $("decRecap").style.display="none";
-  renderOffers(KART_TEAMS.map(t=>({team:{...t,cat:"KART"}, note:t.sub})));
+  renderOffers(KART_TEAMS.map(t=>({team:{...t,cat:"KART",perf:S.kartPerf[t.name]}, note:t.sub})));
 }
 
 function setDecision(title,sub,pulsing,outcome){
@@ -1524,7 +1526,7 @@ function nextOffers(){
     if(S.age<18){
       title="Un año más de karting";
       sub="Todavía eres muy joven para los monoplazas. Sigue puliendo tu talento.";
-      KART_TEAMS.forEach(t=>o.push({team:{...t,cat:"KART"}}));
+      KART_TEAMS.forEach(t=>o.push({team:{...t,cat:"KART",perf:S.kartPerf[t.name]}}));
     } else {
       title="Salto a los monoplazas";
       sub="Tu etapa de karting termina. Los equipos de Fórmula 3 presentan sus proyectos.";
@@ -1704,8 +1706,7 @@ function renderCareerMap(){
       const tip=isTest?(r.subRaces?`${r.year} · ${r.subRaces} GP sustituto · OVR ${r.ovr}`:`${r.year} · probador · OVR ${r.ovr}`):`${r.year} · OVR ${r.ovr}`;
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
-    const chip = titles?`<span class="cmtit">🏆×${titles}</span>`
-      : (best&&best<=3&&!isTest?`<span class="cmtit b">mejor ${best}º</span>`:"");
+    const chip = titles?`<span class="cmtit">🏆×${titles}</span>`:"";
     html+=`<div class="cmstint">
       <span class="cmmeta"><span class="team-dot cmdot" style="${badgeStyle(st.team)}">${st.team.abbr||""}</span>
         <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
@@ -1714,7 +1715,7 @@ function renderCareerMap(){
   const jun=S.seasons.filter(s=>["KART","F3","F2"].includes(s.cat));
   if(jun.length){
     const path=[...new Set(jun.map(s=>s.cat==="KART"?"Karting":s.cat))];
-    html+=`<div class="cmjun">Antes: ${path.join(" → ")} · ${jun.length} temporadas · cada celda = posición final + OVR</div>`;
+    html+=`<div class="cmjun">Antes: ${path.join(" → ")} · ${jun.length} temporadas · cada casilla = tu posición final ese año</div>`;
   }
   el.innerHTML=html;
 }
