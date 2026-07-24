@@ -125,9 +125,9 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .agev .lbl{font-size:10px;letter-spacing:1px;color:var(--muted)}
 .agev .v{font-size:19px;font-weight:800;background:linear-gradient(92deg,#15151e,#55555f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .team-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 -2px 4px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.25);border:2px solid #fff}
-img.tlogo{object-fit:cover;background:#fff;padding:0;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.22);vertical-align:middle}
-img.tlogo.mb{width:20px;height:20px;border:1.5px solid #fff}
-#teamDot.haslogo{background-size:cover;background-position:center}
+img.tlogo{object-fit:cover;background:transparent;padding:0;text-shadow:none;border:none;box-shadow:none;vertical-align:middle}
+img.tlogo.mb{width:20px;height:20px;border:none}
+#teamDot.haslogo{background-size:cover;background-position:center;border:none !important;box-shadow:none}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
 .stat{background:var(--panel2);border-radius:12px;padding:8px 4px}
 .stat .k{font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:center}
@@ -739,7 +739,7 @@ function refreshCard(){
     const roleTxt = S.cat==="TEST"?" (probador)": S.cat==="F1"&&S.role?` (Nº${S.role})`:"";
     $("teamName").textContent = S.team.name + roleTxt;
     const d=$("teamDot");
-    if(TEAM_LOGOS[S.team.name]){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${TEAM_LOGOS[S.team.name]}) center/cover;border:2px solid #fff`; d.textContent=""; }
+    if(TEAM_LOGOS[S.team.name]){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${TEAM_LOGOS[S.team.name]}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, #ffffff 55%)`;
   } else {
