@@ -119,7 +119,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .driver-meta .tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
 .tag{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700}
 .tag.red{background:linear-gradient(135deg,rgba(225,6,0,.12),rgba(255,122,0,.10));border-color:rgba(225,6,0,.3);color:#b30500}
-.driver-meta .team{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#teamLine{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:800;min-width:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+#teamLine .tname{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#teamLine .trole{flex-shrink:0;font-size:11px;font-weight:800;letter-spacing:.3px;padding:2px 9px;border-radius:999px;background:#eef2f8;color:#3a4658;border:1px solid #dbe3ee}
+#teamLine .trole:empty{display:none}
 .agev{text-align:right;flex-shrink:0}
 .agev .a{font-size:27px;font-weight:900}
 .agev .lbl{font-size:10px;letter-spacing:1px;color:var(--muted)}
@@ -427,13 +430,13 @@ img.tlogo.mb{width:20px;height:20px;border:none}
               <span class="tag red" id="tagNum">#10</span>
               <span class="tag" id="tagStyle"></span>
             </div>
-            <div class="team" id="teamLine"><span class="team-dot" id="teamDot"></span><span id="teamName">Sin asiento</span></div>
           </div>
           <div class="agev">
             <div class="lbl">EDAD</div><div class="a" id="ageV">16</div>
             <div class="lbl">FAMA</div><div class="v" id="valV">Desconocido</div>
           </div>
         </div>
+        <div class="team" id="teamLine"><span class="team-dot" id="teamDot"></span><span class="tname" id="teamName">Sin asiento</span><span class="trole" id="teamRole"></span></div>
         <div class="stats-row">
           <div class="stat"><div class="k">GP</div><div class="v" id="stGP">0</div></div>
           <div class="stat"><div class="k">Victorias</div><div class="v w" id="stW">0</div></div>
@@ -719,7 +722,10 @@ function startCareer(){
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
   };
-  EXPANSION.forEach(e=>{ e.added=false; e.year=irnd(e.range[0],e.range[1]); }); // año de entrada aleatorio por partida
+  // parrilla: base 2026 = 11 equipos. Entra SOLO UN equipo de expansión por partida (aleatorio:
+  // unas veces Hyundai, otras Lotus) → la parrilla nunca pasa de 12. Año de entrada también aleatorio.
+  const activeExp = irnd(0, EXPANSION.length-1);
+  EXPANSION.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); });
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // nivel de las academias de karting: aleatorio cada partida → estrellas variables
   // nivel de cada equipo junior: aleatorio por partida → estrellas variables en KART/F4/F3/F2
@@ -751,14 +757,15 @@ function refreshCard(){
   $("stGP").textContent=S.gp; $("stW").textContent=S.wins;
   $("stP").textContent=S.podiums; $("stPP").textContent=S.poles;
   if(S.team){
-    const roleTxt = S.cat==="TEST"?" (probador)": S.cat==="F1"&&S.role?` (Nº${S.role})`:"";
-    $("teamName").textContent = S.team.name + roleTxt;
+    const roleTxt = S.cat==="TEST"?"PROBADOR": S.cat==="F1"&&S.role?`Nº${S.role}`:"";
+    $("teamName").textContent = S.team.name;
+    $("teamRole").textContent = roleTxt;
     const d=$("teamDot");
     if(TEAM_LOGOS[S.team.name]){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${TEAM_LOGOS[S.team.name]}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, #ffffff 55%)`;
   } else {
-    $("teamName").textContent="Agente libre"; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
+    $("teamName").textContent="Agente libre"; $("teamRole").textContent=""; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
     $("driverCard").style.background="#fff";
   }
   const tc=$("trophyCase");
@@ -1637,25 +1644,62 @@ function simF1(row,st){
 /* ---------- eventos menores ---------- */
 function maybeEvent(row,st){
   if(Math.random()>.45) return;
-  let pool=[];
+  const pool=[];
   const inF1=S.cat==="F1";
-  if(sel.style==="tecnico") pool.push({t:"🌧️ Masterclass bajo la lluvia — el paddock habla de ti.",fx:()=>{OVR(1);}});
-  if(sel.style==="agresivo") pool.push({t:"💥 Toque polémico defendiendo posición. Los comisarios te vigilan.",fx:()=>{}});
+  const pick=a=>a[irnd(0,a.length-1)];
+  const rival = ()=>{ const m=(S.seats[S.team.name]||[]).find(d=>d!=="PLAYER"); return m?surname(m.name):"tu compañero"; };
+  const gp = ()=>pick(["Mónaco","Silverstone","Spa","Monza","Suzuka","Interlagos","Singapur","Las Vegas","Austin","Yeda","Bakú","Zandvoort","Hungaroring","Barcelona","Imola","Montreal","Abu Dabi","Melbourne"]);
+
+  // estilo del piloto
+  if(sel.style==="tecnico") pool.push(
+    {id:"tec-lluvia",t:`🌧️ Masterclass bajo la lluvia en ${gp()} — el paddock habla de ti.`,fx:()=>OVR(1)},
+    {id:"tec-setup",t:"🧠 Clavas el reglaje que nadie encontró: el coche vuela en clasificación.",fx:()=>OVR(.7)},
+    {id:"tec-datos",t:`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,fx:()=>VAL(.8)}
+  );
+  if(sel.style==="agresivo") pool.push(
+    {id:"agr-toque",t:"💥 Toque polémico defendiendo posición. Los comisarios te vigilan.",fx:()=>{}},
+    {id:"agr-pass",t:`🔥 Adelantamiento imposible por fuera en ${gp()} que corta la respiración.`,fx:()=>VAL(1.1)},
+    {id:"agr-quali",t:"🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.",fx:()=>VAL(.9)}
+  );
+  if(sel.style==="consistente") pool.push(
+    {id:"con-nofail",t:`🎯 ${irnd(9,14)} carreras seguidas sin un solo error: el paddock alucina.`,fx:()=>OVR(.7)},
+    {id:"con-frio",t:`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,fx:()=>VAL(.8)}
+  );
+
   if(inF1) pool.push(
-    {t:"🔧 Lideras el desarrollo del coche: mejoras para el año próximo.",fx:()=>{CAR(1.8);}},
-    {t:"🤝 Guerra fría con tu compañero de equipo.",fx:()=>{}},
-    {t:"📰 La prensa te vincula con un asiento top para el próximo año.",fx:()=>{}},
-    {t:"🏁 Remontada épica desde P14 que entra en los documentales.",fx:()=>{VAL(1.1);}}
+    {id:"f1-dev",t:"🔧 Lideras el desarrollo del coche: mejoras para el año próximo.",fx:()=>CAR(1.8)},
+    {id:"f1-guerra",t:`🤝 Guerra fría con ${rival()} dentro del box.`,fx:()=>{}},
+    {id:"f1-rumor",t:"📰 La prensa te vincula con un asiento top para el próximo año.",fx:()=>{}},
+    {id:"f1-remonta",t:`🏁 Remontada desde P${irnd(11,19)} en ${gp()} que entra en los documentales.`,fx:()=>VAL(1.1)},
+    {id:"f1-vrapida",t:`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,fx:()=>VAL(.7)},
+    {id:"f1-viral",t:"🎙️ Tu entrevista post-carrera se vuelve viral en redes.",fx:()=>VAL(1)},
+    {id:"f1-estrat",t:`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,fx:()=>VAL(.8)},
+    {id:"f1-neumaticos",t:"🛞 Gestionas unos neumáticos imposibles hasta la bandera a cuadros.",fx:()=>OVR(.6)},
+    {id:"f1-elogio",t:`💬 Un excampeón te señala como el mejor en pista este fin de semana.`,fx:()=>VAL(1)},
+    {id:"f1-portada",t:"📸 Portada de la prensa deportiva tras un domingo redondo.",fx:()=>VAL(1)},
+    {id:"f1-curva1",t:`🏎️ Tu adelantamiento por fuera en la curva 1 de ${gp()} da la vuelta al mundo.`,fx:()=>VAL(1)},
+    {id:"f1-fiab",t:`🔌 Un fallo de fiabilidad te deja sin puntos en un ${gp()} que dominabas.`,fx:()=>{}},
+    {id:"f1-sancion",t:`🚧 Una sanción de ${pick([5,10])}s discutible te baja del podio en ${gp()}.`,fx:()=>{}},
+    {id:"f1-radio",t:"🗣️ Tu bronca por radio con el muro se convierte en meme.",fx:()=>{}}
   );
   else if(S.cat!=="TEST") pool.push(
-    {t:"⭐ Un programa junior de F1 se fija en ti.",fx:()=>{OVR(1);}},
-    {t:"🛠️ Inviernos enteros en el simulador: progreso silencioso.",fx:()=>{OVR(1);}}
+    {id:"jr-programa",t:"⭐ Un programa junior de F1 se fija en ti.",fx:()=>OVR(1)},
+    {id:"jr-sim",t:"🛠️ Inviernos enteros en el simulador: progreso silencioso.",fx:()=>OVR(1)},
+    {id:"jr-domina",t:`🏆 Dominas el fin de semana de ${gp()} de principio a fin.`,fx:()=>OVR(.8)},
+    {id:"jr-test",t:"📈 Un test con un equipo superior sale mejor de lo esperado.",fx:()=>OVR(.8)},
+    {id:"jr-pequeno",t:"🧰 Tu equipo modesto le saca petróleo al coche: te haces notar.",fx:()=>OVR(.6)},
+    {id:"jr-mentor",t:"🎓 Un veterano del paddock te toma como pupilo.",fx:()=>OVR(.8)},
+    {id:"jr-clip",t:`📱 Un clip tuyo remontando en ${gp()} se hace viral.`,fx:()=>VAL(.6)}
   );
-  pool.push({t:"🩺 Molestias físicas a mitad de temporada.",fx:()=>{}});
-  pool=pool.filter(e=>(S.usedEvents[e.t]||0)<2);
-  if(!pool.length) return;
-  const e=pool[irnd(0,pool.length-1)];
-  S.usedEvents[e.t]=(S.usedEvents[e.t]||0)+1;
+  pool.push(
+    {id:"any-fisico",t:"🩺 Molestias físicas a mitad de temporada.",fx:()=>{}},
+    {id:"any-gripe",t:`😷 Pasas la carrera de ${gp()} con gripe: aguantas como puedes.`,fx:()=>{}}
+  );
+
+  const usable=pool.filter(e=>(S.usedEvents[e.id]||0)<2);
+  if(!usable.length) return;
+  const e=pick(usable);
+  S.usedEvents[e.id]=(S.usedEvents[e.id]||0)+1;
   e.fx();
   row.events.push(e.t);
 }
