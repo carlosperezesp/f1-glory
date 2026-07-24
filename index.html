@@ -1452,7 +1452,6 @@ function simJunior(row,st){
     if(!out){
       const q=myBase+gauss()*(st.varza*.9)+(sel.style==="agresivo"?2:0);
       if(scores.filter(s=>s>q).length===0) poles++;
-      S.gp++;
     }
     if(!dnf){
       if(pos===1)wins++;
@@ -1461,7 +1460,7 @@ function simJunior(row,st){
     }
     scores.forEach((s,i)=>{const p=1+scores.filter(z=>z>s).length - (s>mine||dnf?0:1); if(p<=10) seasonScores[i].pts+=[25,18,15,12,10,8,6,4,2,1][p-1]||0;});
   }
-  S.wins+=wins;S.podiums+=pods;S.poles+=poles;
+  // los totales de la tarjeta son SOLO F1: karting/F3/F2 no suman aquí (se ven por temporada en la trayectoria)
   const beaten=seasonScores.filter(x=>x.pts>pts).length;
   const pos=1+beaten;
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
