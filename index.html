@@ -288,11 +288,16 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .end-hero .legacy{font-size:17px;font-weight:800;letter-spacing:.5px;background:linear-gradient(92deg,#ffce3a,#ffb800,#ffe066);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:4px}
 .end-hero .years{color:rgba(255,255,255,.65);font-size:13px;padding-bottom:8px}
 .end-body{padding:0 34px}
-.end-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
-@media(max-width:520px){.end-stats{grid-template-columns:repeat(2,1fr)}}
-.end-stats div{background:var(--panel2);border-radius:14px;padding:12px 6px}
-.end-stats .v{font-size:21px;font-weight:900}
-.end-stats .k{font-size:9.5px;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.end-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.end-stats div{background:var(--panel2);border-radius:12px;padding:9px 6px}
+.end-stats .v{font-size:20px;font-weight:900;line-height:1.1}
+.end-stats .k{font-size:9px;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;margin-top:1px}
+@media(max-width:520px){
+  .end-stats{grid-template-columns:repeat(2,1fr);gap:6px}
+  .end-stats div{padding:7px 4px;border-radius:9px;min-width:0}
+  .end-stats .v{font-size:18px}
+  .end-stats .k{font-size:8.5px;letter-spacing:.2px}
+}
 .end-card .shelf{font-size:26px;letter-spacing:5px;margin-bottom:6px;line-height:1.5}
 .end-card .verdict{color:#4a4a55;font-size:14.5px;line-height:1.55;margin:14px 0 20px}
 .end-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
