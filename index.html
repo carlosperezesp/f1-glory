@@ -1918,10 +1918,15 @@ function nextOffers(){
     if(!S.apxShown && S.age>=34 && ch(.35)){
       S.apxShown=true;
       S.f1perf.APXGP=rnd(73,80); S.f1target.APXGP=S.f1perf.APXGP; S.f1char.APXGP=CHARS[irnd(0,2)];
-      // sembramos APXGP como una escudería normal: S. Hayes es tu compañero (se muestra en la oferta)
+      // sembramos APXGP como una escudería normal. Tu compañero es uno de los dos protagonistas
+      // de la película (aleatorio por partida): Sonny Hayes 🇺🇸 (Brad Pitt) o Joshua Pearce 🇬🇧; tú
+      // ocupas el asiento del otro.
       if(!S.seats.APXGP){
-        const hayes={name:"S. Hayes 🎬", skill:Math.round(rnd(83,88)), ceil:90, titles:0, age:48, flag:"🇺🇸"};
-        S.dpool.push(hayes); S.seats.APXGP=[hayes, mkRookie()];
+        const stars=[{name:"S. Hayes 🎬",flag:"🇺🇸",age:50}, {name:"J. Pearce 🎬",flag:"🇬🇧",age:23}];
+        const m=irnd(0,1);
+        const mate ={...stars[m],   skill:Math.round(rnd(84,89)), ceil:90, titles:0};
+        const other={...stars[1-m], skill:Math.round(rnd(78,81)), ceil:88, titles:0};
+        S.dpool.push(mate, other); S.seats.APXGP=[mate, other];
       }
       o.push({team:APXGP,note:"«Una última oportunidad» 🎬",role:"1"});
       sub+=" Y hay una llamada inesperada: un proyecto loco con olor a película.";
