@@ -260,10 +260,9 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 
 /* panel estado de la F1 */
 .f1state{margin-bottom:14px;padding:16px 20px}
-.f1state .cols{display:grid;grid-template-columns:1.1fr 1fr 1.1fr;gap:14px}
+.f1state .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:700px){
-  .f1state .cols{grid-template-columns:1fr 1fr;gap:12px 14px}
-  .f1state .cols>div:last-child{grid-column:1/-1}
+  .f1state .cols{gap:12px 14px}
 }
 .f1state h5{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;font-style:normal}
 .f1state .srow{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:4px 6px;border-radius:7px;gap:6px;animation:fsRow .7s both}
@@ -457,7 +456,6 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
         <div class="cols">
           <div><h5>👑 Mundial de pilotos <span id="fsYear"></span></h5><div id="fsDrivers"></div></div>
           <div><h5>🏭 Constructores</h5><div id="fsTeams"></div></div>
-          <div><h5>🏛️ Palmarés histórico</h5><div id="fsHall"></div></div>
         </div>
       </div>
       <div class="timeline">
@@ -853,7 +851,7 @@ function renderRecap(){
   else if(s.pos===1){ posTxt="🏆 Campeón"; posCol="linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000"; }
   else if(s.pos<=3){ posTxt=s.pos+"º"; posCol="#dcf5e3;color:#15803d"; }
   else { posTxt=s.pos+"º"; posCol="#ececf1;color:#5a5a66"; }
-  const stat = s.cat==="TEST" ? "FP1 + simulador" : `🏆 ${s.wins} · 🥉 ${s.pods} · ${s.pts} pts`;
+  const stat = s.cat==="TEST" ? (s.subRaces?`🏁 ${s.subRaces} GP sustituto · mejor ${s.subBest===1?"1º":s.subBest+"º"}`:"FP1 + simulador") : `🏆 ${s.wins} · 🥉 ${s.pods} · ${s.pts} pts`;
   const constr = s.constrPos ? ` · 🏭 Constructores ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
   const badge = teamBadge(s.team.name);
   el.style.display="block";
@@ -1343,8 +1341,6 @@ function renderF1State(){
   if(S.lastTop3.myConstr!=null && S.lastTop3.myConstr>3 && S.team)
     cHtml+=`<div class="srow me${mvCls(S.lastTop3.myConstrMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myConstr}º</b> ${teamBadge(S.team.name)} ${S.team.name}${tArrow(S.team.name)}</span>${mvB(S.lastTop3.myConstrMv)}</div>`;
   $("fsTeams").innerHTML=cHtml;
-  $("fsHall").innerHTML=hallRows().slice(0,5).map((r,i)=>
-    `<div class="srow${r.me?" me":""}" ${dly(i)}><span class="nm">${i+1}. ${flg(r.flag)} ${r.n}</span><span class="xt">🏆×${r.t}</span></div>`).join("");
 }
 
 function simTest(row,st){
@@ -1679,8 +1675,11 @@ function renderTimeline(){
     const raced=r.cat==="TEST"&&r.subRaces;
     const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?"Probador F1":r.cat;
     const constr=r.constrPos?` · 🏭 Constructores (equipo): ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
-    const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} GP sustituto · ${r.pts} pts`:"FP1 + simulador"):`${r.pts} pts`;
-    const posLab=r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):(raced&&r.subBest?(r.subBest===1?"🏆":r.subBest+"º"):"—");
+    const subBestTxt=raced&&r.subBest?` · mejor ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
+    const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} GP sustituto${subBestTxt} · ${r.pts} pts`:"FP1 + simulador"):`${r.pts} pts`;
+    // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle)
+    const posLab=r.cat==="TEST"?"—":(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
+    const posCls=r.cat==="TEST"?"rest":posClass(r.pos);
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="Temporada ${r.year}">${r.age}</span>
@@ -1689,7 +1688,7 @@ function renderTimeline(){
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
       <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="TEST"&&!raced?"—":r.wins}</span>
       <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="TEST"&&!raced?"—":r.pods}</span>
-      <span class="pos ${posClass(raced?r.subBest:r.pos)}">${posLab}</span>
+      <span class="pos ${posCls}">${posLab}</span>
       ${top3}
       ${r.events.length?`<span class="ev">${r.events.join(" · ")}</span>`:""}`;
     b.appendChild(div);
