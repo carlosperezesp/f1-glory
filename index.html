@@ -1862,11 +1862,22 @@ function endCareer(){
     rows.slice(0,5).map((r,i)=>`<div class="hrow${r.me?" me":""}"><span class="rk">${i+1}.</span><span class="nm">${flg(r.flag)} ${r.n}</span><span class="tt">🏆×${r.t}</span></div>`).join("")+
     (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${sel.name} (TÚ)</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=S.titles.f1*120+S.titles.constr*30+S.wins*3+S.podiums+S.poles+S.subcamp*15;
+  // ¿dominaste tu era? comparar tus títulos con el mejor rival GANADOS durante tu carrera
+  const startT={}; Object.values(GRID2026).forEach(list=>list.forEach(d=>{ startT[d[0]]=d[4]||0; }));
+  let bestRival=0, rivalName="";
+  S.dpool.forEach(d=>{ if(d.name!=="TÚ"){ const ig=d.titles-(startT[d.name]||0); if(ig>bestRival){bestRival=ig;rivalName=surname(d.name);} } });
+  const T=S.titles.f1;
+  let era="";
+  if(T>=1){
+    if(T>bestRival) era=" Y nadie de tu generación ganó más mundiales que tú: dominaste tu era.";
+    else if(T===bestRival && rivalName) era=` Compartiste el trono con ${rivalName} (${T}-${bestRival}): una rivalidad que quedará en la historia.`;
+    else if(rivalName) era=` Aun así, ${rivalName} reinó tu época con ${bestRival} mundiales — no dominaste, pero le hiciste sudar cada título.`;
+  }
   let legacy,verdict;
-  if(S.titles.f1>=6){legacy="LEYENDA ETERNA";verdict="Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú.";}
-  else if(S.titles.f1>=4){legacy="MULTICAMPEÓN DEL MUNDO";verdict=`Dominaste tu época con ${S.titles.f1} coronas mundiales. Los documentales sobre tu carrera ya están en producción.`;}
-  else if(S.titles.f1>=2){legacy=(S.titles.f1===2?"DOBLE":"TRIPLE")+" CAMPEÓN DEL MUNDO";verdict=`${S.titles.f1===2?"Dos":"Tres"} veces en lo más alto del mundo. Quizá no dominaste una era entera —hubo rivales tan grandes como tú—, pero volver a la cima más de una vez está al alcance de muy pocos.`;}
-  else if(S.titles.f1===1){legacy="CAMPEÓN DEL MUNDO";verdict="Tocaste el cielo una vez, y nadie podrá borrarlo jamás. Un campeón del mundo, para siempre.";}
+  if(T>=6){legacy="LEYENDA ETERNA";verdict="Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú."+era;}
+  else if(T>=4){legacy="MULTICAMPEÓN DEL MUNDO";verdict=`${T} coronas mundiales. Los documentales sobre tu carrera ya están en producción.`+era;}
+  else if(T>=2){legacy=(T===2?"DOBLE":"TRIPLE")+" CAMPEÓN DEL MUNDO";verdict=`${T===2?"Dos":"Tres"} veces en lo más alto del mundo — algo al alcance de muy pocos.`+era;}
+  else if(T===1){legacy="CAMPEÓN DEL MUNDO";verdict="Tocaste el cielo una vez, y nadie podrá borrarlo jamás. Un campeón del mundo, para siempre."+era;}
   else if(S.titles.constr>0){legacy="CAMPEÓN DE CONSTRUCTORES";verdict="El título de pilotos se te escapó, pero llevaste a tu equipo a la gloria. En la fábrica saben que ese trofeo también es tuyo.";}
   else if(S.subcamp>0){legacy="ETERNO ASPIRANTE";verdict="Como Stirling Moss: te faltó el título, pero no la grandeza. El paddock siempre te respetó.";}
   else if(S.wins>1){legacy="GANADOR DE GRANDES PREMIOS";verdict=`Ganaste ${S.wins} carreras y escuchaste tu himno desde lo más alto del podio. Muy pocos en la historia pueden decir lo mismo.`;}
