@@ -181,9 +181,6 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .offer.retire:hover{border-color:var(--accent)}
 .offer.dilemma{border-color:#d9c46a;background:linear-gradient(135deg,#fffdf4,#fff)}
 .offer.dilemma:hover{border-color:#c9a227}
-.offer.apx{border-color:#c9a227;background:linear-gradient(135deg,#15151e,#2a2a35);color:#fff}
-.offer.apx .sub{color:#c8c8d2}
-.offer.apx:hover{border-color:#ffce3a}
 
 /* timeline */
 .timeline{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
@@ -540,7 +537,7 @@ const F1_TEAMS = [
   {name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:66},
 ];
 F1_TEAMS.forEach(t=>t.cat="F1");
-const APXGP = {name:"APXGP", abbr:"APX", color:"#101014", color2:"#c9a227", cat:"F1"};
+const APXGP = {name:"APXGP", abbr:"APX", color:"#D4A62A", color2:"#15151c", cat:"F1"};
 
 // parrilla 2026 con pilotos reales: [nombre, edad, nivel, techo, títulos]
 // [nombre, edad, nivel, techo, títulos, bandera]
@@ -900,7 +897,7 @@ function scrollToDecision(){
 function renderOffers(offers, withRetire){
   const box=$("offerList"); box.innerHTML="";
   offers.forEach(o=>{
-    const b=document.createElement("button"); b.className="offer"+(o.team.name==="APXGP"?" apx":"");
+    const b=document.createElement("button"); b.className="offer";
     b.style.borderLeft="5px solid "+o.team.color;
     const isF1seat = o.team.cat==="F1"||o.team.cat==="TEST";
     const perf = isF1seat ? (S.f1perf[o.team.name]??75) : o.team.perf;
