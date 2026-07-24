@@ -1157,8 +1157,47 @@ const DILEMAS=[
      [3,()=>(S.role="2","Cedes terreno y él aprovecha para ser el Nº1.")])}]},
 ];
 
+/* ¿atascado? dos años seguidos a media-baja tabla */
+function isStruggling(){
+  const f1=S.seasons.filter(s=>s.cat==="F1");
+  if(f1.length<2) return false;
+  return f1.slice(-2).every(s=>s.pos>=9);
+}
+/* cambiar de estilo de pilotaje a mitad de carrera: puede salir bien o mal */
+function reinventTo(newStyle){
+  const setTag=()=>{ sel.style=newStyle; $("tagStyle").textContent=STYLES[newStyle].label; };
+  return roll(
+    [4,()=>{ setTag(); OVR(2); return "🦋 Renaces: dominas el estilo "+STYLES[newStyle].label+" y recuperas la chispa. +2 OVR"; }],
+    [3,()=>{ setTag(); return "Cambias de piel a "+STYLES[newStyle].label+". El tiempo dirá si acertaste."; }],
+    [3,()=>{ setTag(); OVR(-2); return "El cambio te descoloca al principio: pierdes tus automatismos. -2 OVR, pero ahora eres "+STYLES[newStyle].label; }]
+  );
+}
+/* dilema de reinvención: ofrece el estilo que mejor encaja con los mejores coches de ahora */
+function reinventionDilemma(){
+  const top=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).slice(0,4);
+  const votes={agresivo:0,tecnico:0,consistente:0};
+  top.forEach(t=>{ const c=S.f1char[t.name]; if(c) votes[c]++; });
+  const bestFit=["agresivo","tecnico","consistente"].filter(s=>s!==sel.style).sort((a,b)=>votes[b]-votes[a])[0];
+  return {
+    id:"reinvencion", stage:"vet", t:"Es hora de reinventarse",
+    d:"Los años pesan y los resultados no llegan. Un cambio radical en tu forma de pilotar puede darte una segunda vida… o apagar lo que te queda. Los mejores coches de ahora premian el estilo "+STYLES[bestFit].label+".",
+    opts:[
+      {l:"Reinventarte: "+STYLES[bestFit].label, r:()=>reinventTo(bestFit)},
+      {l:"Seguir fiel a tu estilo", r:()=>roll(
+        [5,()=>"Eres quien eres. A muerte con tu estilo hasta el final."],
+        [3,()=>(OVR(1),"Doblas la apuesta por lo que sabes hacer. +1 OVR")],
+        [2,()=>"Terco como una mula. Que sea lo que tenga que ser."])}
+    ]
+  };
+}
+
 function pickDilemma(){
-  if(S.dilemmaCount>=5 || S.age<18) return null;
+  if(S.age<18) return null;
+  // reinvención: 28-36, atascado en equipos malos, no en todas las partidas, una vez por carrera
+  if(S.cat==="F1" && S.age>=28 && S.age<=36 && !S.usedDilemmas.reinvencion && (S.age-S.lastDilemmaAge>=1) && isStruggling() && ch(.5)){
+    return reinventionDilemma();
+  }
+  if(S.dilemmaCount>=5) return null;
   if(S.age-S.lastDilemmaAge<2) return null;
   if(!ch(.30)) return null;
   const pool=DILEMAS.filter(d=>{
