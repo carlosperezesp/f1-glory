@@ -317,7 +317,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 @keyframes shine{0%{left:-70%}60%{left:135%}100%{left:135%}}
 @keyframes goldshift{0%{background-position:0% 0}100%{background-position:200% 0}}
 /* casilla "Puntos de leyenda": color según la magnitud del legado */
-.legend-score{margin-top:10px;border-radius:14px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.legend-score{margin-top:10px;margin-bottom:16px;border-radius:14px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;overflow:hidden;border:1px solid var(--line)}
 .legend-score .ls-k{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;opacity:.9}
 .legend-score .ls-tier{font-size:15px;font-weight:900;margin-top:1px}
 .legend-score .ls-v{font-size:36px;font-weight:900;line-height:1;letter-spacing:-1px}
@@ -1918,6 +1918,11 @@ function nextOffers(){
     if(!S.apxShown && S.age>=34 && ch(.35)){
       S.apxShown=true;
       S.f1perf.APXGP=rnd(73,80); S.f1target.APXGP=S.f1perf.APXGP; S.f1char.APXGP=CHARS[irnd(0,2)];
+      // sembramos APXGP como una escudería normal: S. Hayes es tu compañero (se muestra en la oferta)
+      if(!S.seats.APXGP){
+        const hayes={name:"S. Hayes 🎬", skill:Math.round(rnd(83,88)), ceil:90, titles:0, age:48, flag:"🇺🇸"};
+        S.dpool.push(hayes); S.seats.APXGP=[hayes, mkRookie()];
+      }
       o.push({team:APXGP,note:"«Una última oportunidad» 🎬",role:"1"});
       sub+=" Y hay una llamada inesperada: un proyecto loco con olor a película.";
     }
