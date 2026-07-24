@@ -1646,7 +1646,7 @@ function simF1(row,st){
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
     if(pos===2){S.subcamp++; row.events.push("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.");}
   }
-  if(constrPos===1){S.titles.constr++; row.events.push("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores (título del equipo, no tuyo).");}
+  if(constrPos===1){S.titles.constr++; row.events.push("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.");}
   // EFECTO PILOTO: un piloto de élite empuja el proyecto hacia arriba año tras año.
   // Así un crack puede RESUCITAR a un equipo en declive si se queda y trabaja.
   const pull = Math.max(0,(S.ovr-85))*0.17 + (sel.style==="tecnico"?0.5:0);
