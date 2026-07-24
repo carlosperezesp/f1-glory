@@ -302,6 +302,19 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .end-stats div{background:var(--panel2);border-radius:12px;padding:9px 6px}
 .end-stats .v{font-size:20px;font-weight:900;line-height:1.1}
 .end-stats .k{font-size:9px;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;margin-top:1px}
+/* celda dorada: si ganaste algún título; shiny: si ganaste muchos */
+.end-stats div.gold{background:linear-gradient(160deg,#fff8e1,#fbe6bd);border:1px solid #efd482}
+.end-stats div.gold .v{color:#b8860b}
+.end-stats div.gold .k{color:#9a7b1a}
+.end-stats div.shiny{position:relative;overflow:hidden;border-color:#e4be3f;
+  box-shadow:0 0 0 1px #e4be3f,0 6px 18px rgba(212,175,55,.42)}
+.end-stats div.shiny .v{background:linear-gradient(92deg,#9a6a06,#f7d774,#9a6a06);background-size:200% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:goldshift 3s linear infinite}
+.end-stats div.shiny::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.9),transparent);transform:skewX(-18deg);
+  animation:shine 2.8s ease-in-out infinite}
+@keyframes shine{0%{left:-70%}60%{left:135%}100%{left:135%}}
+@keyframes goldshift{0%{background-position:0% 0}100%{background-position:200% 0}}
 @media(max-width:520px){
   .end-stats{grid-template-columns:repeat(2,1fr);gap:6px}
   .end-stats div{padding:7px 4px;border-radius:9px;min-width:0}
@@ -1954,6 +1967,9 @@ function endCareer(){
   $("eGP").textContent=S.gp; $("eW").textContent=S.wins; $("eP").textContent=S.podiums;
   $("ePP").textContent=S.poles; $("eT").textContent=S.titles.f1; $("eC").textContent=S.titles.constr;
   $("eSub").textContent=S.subcamp; $("ePts").textContent=S.ptsF1;
+  // dorado si ganaste algún título; shiny (brillo animado) si ganaste muchos (3+)
+  const goldCell=(el,n)=>{ const c=el.parentElement; c.classList.toggle("gold",n>=1); c.classList.toggle("shiny",n>=3); };
+  goldCell($("eT"),S.titles.f1); goldCell($("eC"),S.titles.constr);
   $("endYears").textContent=`Carrera: 2026 – ${2026+(S.age-16)} · Retirado a los ${S.age} años`;
   const shelf=[];
   for(let i=0;i<S.titles.f1;i++)shelf.push("🏆");
