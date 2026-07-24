@@ -299,7 +299,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .end-hero .years{color:rgba(255,255,255,.65);font-size:13px;padding-bottom:8px}
 .end-body{padding:0 34px}
 .end-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.end-stats div{background:var(--panel2);border-radius:12px;padding:9px 6px}
+.end-stats > div{background:var(--panel2);border-radius:12px;padding:9px 6px}
 .end-stats .v{font-size:20px;font-weight:900;line-height:1.1}
 .end-stats .k{font-size:9px;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;margin-top:1px}
 /* celda dorada: si ganaste algún título; shiny: si ganaste muchos */
@@ -318,7 +318,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 @keyframes goldshift{0%{background-position:0% 0}100%{background-position:200% 0}}
 @media(max-width:520px){
   .end-stats{grid-template-columns:repeat(2,1fr);gap:6px}
-  .end-stats div{padding:7px 4px;border-radius:9px;min-width:0}
+  .end-stats > div{padding:7px 4px;border-radius:9px;min-width:0}
   .end-stats .v{font-size:18px}
   .end-stats .k{font-size:8.5px;letter-spacing:.2px}
 }
@@ -1625,6 +1625,9 @@ function simF1(row,st){
   const standings=[...grid].sort((a,b)=>b.pts-a.pts);
   const pos=1+standings.findIndex(d=>d.isP);
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
+  // al debutar en F1, fotografiamos los títulos de los rivales: así "tu era" se mide
+  // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
+  if(S.f1Seasons===0){ S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; }); }
   S.f1Seasons++;
   const teamPts={};
   grid.forEach(d=>{ teamPts[d.team]=(teamPts[d.team]||0)+d.pts; });
@@ -1995,10 +1998,11 @@ function endCareer(){
     rows.slice(0,5).map((r,i)=>`<div class="hrow${r.me?" me":""}"><span class="rk">${i+1}.</span><span class="nm">${flg(r.flag)} ${r.n}</span><span class="tt">🏆×${r.t}</span></div>`).join("")+
     (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${sel.name} (TÚ)</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=S.titles.f1*120+S.titles.constr*30+S.wins*3+S.podiums+S.poles+S.subcamp*15;
-  // ¿dominaste tu era? comparar tus títulos con el mejor rival GANADOS durante tu carrera
-  const startT={}; Object.values(GRID2026).forEach(list=>list.forEach(d=>{ startT[d[0]]=d[4]||0; }));
+  // ¿dominaste tu era? comparar tus títulos con el mejor rival, contando solo los mundiales
+  // que ganó DESDE tu debut en F1 (tu época en la élite), no los que ya tenía antes
+  const eraT = S.eraStartT || {};
   let bestRival=0, rivalName="";
-  S.dpool.forEach(d=>{ if(d.name!=="TÚ"){ const ig=d.titles-(startT[d.name]||0); if(ig>bestRival){bestRival=ig;rivalName=surname(d.name);} } });
+  S.dpool.forEach(d=>{ if(d.name!=="TÚ"){ const ig=d.titles-(eraT[d.name]||0); if(ig>bestRival){bestRival=ig;rivalName=surname(d.name);} } });
   const T=S.titles.f1;
   let era="";
   if(T>=1){
