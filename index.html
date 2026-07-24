@@ -2017,11 +2017,6 @@ function renderCareerMap(){
         <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
       <span class="cmcells">${cells}</span></div>`;
   });
-  const jun=S.seasons.filter(s=>["KART","F4","F3","F2"].includes(s.cat));
-  if(jun.length){
-    const path=[...new Set(jun.map(s=>s.cat==="KART"?"Karting":s.cat))];
-    html+=`<div class="cmjun">Antes: ${path.join(" → ")} · ${jun.length} temporadas · cada casilla = tu posición final ese año</div>`;
-  }
   el.innerHTML=html;
 }
 
