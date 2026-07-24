@@ -174,6 +174,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .otrend.down{color:#c62a2a;background:#fbe6e6}
 .otrend.down2{color:#a80f0f;background:#f8d7d7}
 .carline{display:block;margin-top:5px;font-size:11.5px;color:var(--muted)}
+.jprofile{display:inline-block;margin-top:6px;font-size:11.5px;color:#3a4150;background:#eef4ff;border:1px solid #d8e4fb;padding:3px 9px;border-radius:7px;line-height:1.35}
 .fit{font-weight:800;padding:1px 6px;border-radius:5px}
 .fit.good{color:#0a7d32;background:#d7f5e0}
 .fit.bad{color:#c62a2a;background:#fbe6e6}
@@ -900,10 +901,27 @@ function renderRecap(){
     <div class="recap-b"><span class="rp" style="background:${posCol}">${posTxt}</span> ${stat}${constr}</div>`;
 }
 
+// perfiles de proyecto junior: tradeoff entre gloria/resultados ahora y desarrollo (OVR) para la F1
+const JR_PROFILES=[
+  {label:"🏆 Proyecto ganador", dev:-0.7, desc:"Buen coche: peleas por títulos, pero te desarrollas menos"},
+  {label:"⚖️ Equilibrado",      dev:0.25, desc:"Resultados y formación a partes iguales"},
+  {label:"🎓 Programa de desarrollo", dev:1.2, desc:"Coche flojo, pero te forman a fondo: llegarás mucho más fuerte"},
+];
+// genera 3 ofertas junior con perfil según su coche (mejor coche = ganador; peor = desarrollo)
+function juniorOffers(teams, cat){
+  const pk=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
+  const perfOf = t => cat==="KART" ? S.kartPerf[t.name] : t.perf;
+  const three = pk(teams,3).map(t=>({t, perf:perfOf(t)})).sort((a,b)=>b.perf-a.perf);
+  return three.map((x,i)=>{
+    const p = JR_PROFILES[i] || JR_PROFILES[1];
+    return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:p.label, note:p.desc};
+  });
+}
+
 function offerAcademies(){
-  setDecision("Oferta de academia","Tres equipos de karting te quieren en su proyecto juvenil. Elige dónde empieza tu historia.");
+  setDecision("Oferta de academia","Tres academias de karting te quieren. No solo importa el coche: elige qué proyecto te forma mejor.");
   $("decRecap").style.display="none";
-  renderOffers(KART_TEAMS.map(t=>({team:{...t,cat:"KART",perf:S.kartPerf[t.name]}, note:t.sub})));
+  renderOffers(juniorOffers(KART_TEAMS,"KART"));
 }
 
 function setDecision(title,sub,pulsing,outcome){
@@ -938,7 +956,7 @@ function renderOffers(offers, withRetire){
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">PILOTO Nº${o.role}</span>`;
     if(o.team.cat==="TEST") roleChip=`<span class="role rt">PROBADOR</span>`;
     const mate = o.team.cat==="F1"&&S.seats[o.team.name] ? " · Compañero: "+teammateOf(o.team.name).name : "";
-    let trendLine="", carLine="";
+    let trendLine="", carLine="", profileLine="";
     if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">TENDENCIA: ${ti.a} ${ti.t}</span>`; }
     if(o.team.cat==="F1"){
       const c=S.f1char[o.team.name];
@@ -946,9 +964,11 @@ function renderOffers(offers, withRetire){
       const fit = aff>0.8?`<span class="fit good">✓ encaja con tu pilotaje</span>`:aff<-0.5?`<span class="fit bad">✗ choca con tu estilo</span>`:`<span class="fit neu">neutral</span>`;
       carLine=`<span class="carline">Coche ${CHAR_LABEL[c]||""} · ${fit}</span>`;
     }
+    if(o.profile) profileLine=`<span class="jprofile"><b>${o.profile}</b> · ${o.note}</span>`;
+    const subNote = (o.note && !o.profile) ? " · "+o.note : "";
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
-      <span class="sub" style="display:block">${catLbl} · Temporada ${yearNow()}${mate}${o.note?" · "+o.note:""}</span>${trendLine}${carLine}</span>
+      <span class="sub" style="display:block">${catLbl} · Temporada ${yearNow()}${mate}${subNote}</span>${trendLine}${carLine}${profileLine}</span>
       <span class="perfwrap"><span class="perf">${stars}</span></span>`;
     b.onclick=()=>signContract(o);
     box.appendChild(b);
@@ -1306,6 +1326,7 @@ function simSeason(){
   else if(S.age<=34) g=rnd(-2.6,-.7);
   else g=rnd(-5,-2.2);
   g += st.growth*.5;
+  if(S.cat!=="F1" && S.team && S.team.dev) g += S.team.dev; // perfil del proyecto junior: +formación / -verde
   if(result.pos!=null && result.pos<=3 && S.age<=31) g+=.5;
   if(S.cat==="TEST") g*=.7;
   if(g>0) g*=Math.max(.13,(95-S.ovr)/22); // el techo se vuelve casi vertical hacia el 92
@@ -1632,23 +1653,30 @@ function nextOffers(){
     if(S.age<18){
       title="Un año más de karting";
       sub="Todavía eres muy joven para los monoplazas. Sigue puliendo tu talento.";
-      KART_TEAMS.forEach(t=>o.push({team:{...t,cat:"KART",perf:S.kartPerf[t.name]}}));
+      juniorOffers(KART_TEAMS,"KART").forEach(x=>o.push(x));
     } else {
       title="Salto a los monoplazas";
-      sub="Tu etapa de karting termina. Los equipos de Fórmula 3 presentan sus proyectos.";
-      pick(F3_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"F3"}}));
+      sub="Tu etapa de karting termina. La Fórmula 3 presenta sus proyectos: ¿coche ganador o programa de desarrollo?";
+      juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
     }
   }
   else if(S.cat==="F3"){
-    if(S.ovr>=66||S.titles.f3>0){
+    if(S.ovr>=71){
+      // chico maravilla: la F1 te ficha SIN pasar por la F2… pero llegarás verde
+      title="🌟 ¡La Fórmula 1 llama sin pasar por la F2!";
+      sub="Tu progresión es de otro planeta. Un equipo de F1 te ficha directo — o puedes esperar un año en F2 y llegar más completo. Tú decides.";
+      const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]);
+      pick(sorted.slice(2,9),2).forEach(t=>o.push({team:t, role:roleFor(t.name), note:"Salto directo, llegas verde"}));
+      juniorOffers(F2_TEAMS,"F2").slice(0,1).forEach(x=>{ x.note="Esperar y llegar más fuerte"; o.push(x); });
+    } else if(S.ovr>=66||S.titles.f3>0){
       title="Llaman de la Fórmula 2";
       sub="La antesala de la F1. Un buen año aquí y los jefes de equipo sabrán tu nombre.";
-      pick(F2_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"F2"}}));
+      juniorOffers(F2_TEAMS,"F2").forEach(x=>o.push(x));
     } else if(S.age>=24){ washedOut(); return; }
     else {
       title="Otro año en F3";
-      sub="Aún no es suficiente. Necesitas resultados para subir.";
-      pick(F3_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"F3"}}));
+      sub="Aún no es suficiente. Necesitas crecer para subir.";
+      juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
     }
   }
   else if(S.cat==="F2"){
@@ -1664,8 +1692,8 @@ function nextOffers(){
     } else if(S.age>=26){ washedOut(); return; }
     else {
       title="Otro año en F2";
-      sub="Los asientos de F1 no llegan todavía. Sigue sumando.";
-      pick(F2_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"F2"}}));
+      sub="Los asientos de F1 no llegan todavía. ¿Coche ganador o seguir desarrollándote?";
+      juniorOffers(F2_TEAMS,"F2").forEach(x=>o.push(x));
     }
   }
   else if(S.cat==="TEST"){
