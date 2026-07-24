@@ -517,21 +517,26 @@ const KART_TEAMS = [
   {name:"Academia Tony Kart", color:"#2a9d3a", color2:"#136223", perf:52, sub:"La cantera de los campeones europeos"},
   {name:"Birel ART Junior", color:"#cc2222", color2:"#5e0f0f", perf:50, sub:"Programa técnico y metódico"},
   {name:"CRG Racing Team", color:"#d4820a", color2:"#7a4a06", perf:48, sub:"Garra y kilómetros: la escuela dura"},
+  {name:"Ricky Flynn Motorsport", color:"#1560bd", color2:"#0a2f5e", perf:51, sub:"La fábrica de campeones británicos"},
+  {name:"Kart Republic", color:"#111318", color2:"#c0392b", perf:49, sub:"El proyecto de Gary Catt: pura velocidad"},
 ];
 const F4_TEAMS = [
   {name:"Prema F4", color:"#dd0022", color2:"#6b0011", perf:58},{name:"Van Amersfoort F4", color:"#e30613", color2:"#7a0309", perf:55},
   {name:"US Racing F4", color:"#1a3a6b", color2:"#0d1f3a", perf:53},{name:"R-ace GP F4", color:"#2a2a35", color2:"#101018", perf:51},
   {name:"AS Motorsport F4", color:"#e6a01e", color2:"#8a5f0f", perf:49},
+  {name:"PHM Racing F4", color:"#7a1fa2", color2:"#3d0f52", perf:50},{name:"Jenzer Motorsport F4", color:"#e11", color2:"#7a0909", perf:47},
 ];
 const F3_TEAMS = [
   {name:"Prema F3", color:"#dd0022", color2:"#6b0011", perf:66},{name:"ART Grand Prix F3", color:"#888888", color2:"#444444", perf:63},
   {name:"Trident F3", color:"#1166cc", color2:"#083a75", perf:60},{name:"Hitech F3", color:"#aaaabb", color2:"#666677", perf:58},
   {name:"Campos F3", color:"#e6c31e", color2:"#8a740f", perf:56},
+  {name:"MP Motorsport F3", color:"#e05a00", color2:"#7a3100", perf:61},{name:"Rodin Motorsport F3", color:"#111318", color2:"#c9a227", perf:57},
 ];
 const F2_TEAMS = [
   {name:"Prema F2", color:"#dd0022", color2:"#6b0011", perf:76},{name:"ART Grand Prix F2", color:"#888888", color2:"#444444", perf:74},
   {name:"DAMS F2", color:"#0088cc", color2:"#004a70", perf:72},{name:"Carlin F2", color:"#1144aa", color2:"#0a2560", perf:70},
   {name:"MP Motorsport F2", color:"#e05a00", color2:"#7a3100", perf:68},
+  {name:"Invicta Racing F2", color:"#0e7a5f", color2:"#063d2f", perf:73},{name:"Campos Racing F2", color:"#e6c31e", color2:"#8a740f", perf:69},
 ];
 const F1_TEAMS = [
   {name:"McLaren", abbr:"MCL", color:"#FF8000", color2:"#47474F", perf:92},
@@ -544,6 +549,7 @@ const F1_TEAMS = [
   {name:"Alpine", abbr:"ALP", color:"#0093CC", color2:"#FD4BC7", perf:70},
   {name:"Audi", abbr:"AUD", color:"#7c7f83", color2:"#BB0A30", perf:68},
   {name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:66},
+  {name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63},
 ];
 F1_TEAMS.forEach(t=>t.cat="F1");
 const APXGP = {name:"APXGP", abbr:"APX", color:"#D4A62A", color2:"#15151c", cat:"F1"};
@@ -561,6 +567,7 @@ const GRID2026 = {
   "Alpine":[["P. Gasly",30,82,85,0,"🇫🇷"],["F. Colapinto",22,79,85,0,"🇦🇷"]],
   "Audi":[["N. Hülkenberg",38,80,83,0,"🇩🇪"],["G. Bortoleto",21,81,89,0,"🇧🇷"]],
   "Haas":[["E. Ocon",29,80,83,0,"🇫🇷"],["O. Bearman",20,81,90,0,"🇬🇧"]],
+  "Cadillac":[["S. Pérez",36,81,83,0,"🇲🇽"],["V. Bottas",36,80,82,0,"🇫🇮"]],
 };
 // leyendas retiradas (para el palmarés histórico): [nombre, títulos, bandera]
 const LEGENDS = [["M. Schumacher",7,"🇩🇪"],["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["S. Vettel",4,"🇩🇪"],
@@ -577,12 +584,13 @@ const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
   ["Lefèvre","🇫🇷"],["Fischer","🇩🇪"],["Andersen","🇩🇰"],["Salazar","🇲🇽"],["Sørensen","🇩🇰"],["Nakamura","🇯🇵"],
   ["Oliveira","🇧🇷"],["Vidal","🇪🇸"],["Brandt","🇩🇪"],["Escobar","🇨🇴"],["Larsen","🇩🇰"],["Romano","🇮🇹"],["Vega","🇪🇸"]];
-// escuderías que se incorporan a mitad de carrera (parrilla en expansión)
+// escuderías que se incorporan a mitad de carrera (parrilla en expansión).
+// El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
 const EXPANSION = [
-  {year:2029, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:66, cat:"F1"},
-    drivers:[["S. Pérez",39,80,82,0,"🇲🇽"],["C. Herta",29,78,85,0,"🇺🇸"]]},
-  {year:2038, team:{name:"Hyundai", abbr:"HYU", color:"#002C5F", color2:"#00AAD2", perf:65, cat:"F1"},
-    drivers:null}, // llega con talento joven del mercado
+  {range:[2032,2040], team:{name:"Hyundai", abbr:"HYU", color:"#002C5F", color2:"#00AAD2", perf:65, cat:"F1"},
+    drivers:null}, // el gigante coreano entra con talento joven del mercado
+  {range:[2030,2039], team:{name:"Lotus", abbr:"LOT", color:"#00543d", color2:"#c9a227", perf:64, cat:"F1"},
+    drivers:null}, // renace el mito británico verde y oro
 ];
 // vínculos equipo A → equipo B: el filial nunca supera a la marca madre
 const JUNIOR_OF = {"Racing Bulls":"Red Bull"};
@@ -711,7 +719,7 @@ function startCareer(){
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
   };
-  EXPANSION.forEach(e=>e.added=false);
+  EXPANSION.forEach(e=>{ e.added=false; e.year=irnd(e.range[0],e.range[1]); }); // año de entrada aleatorio por partida
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // nivel de las academias de karting: aleatorio cada partida → estrellas variables
   // nivel de cada equipo junior: aleatorio por partida → estrellas variables en KART/F4/F3/F2
