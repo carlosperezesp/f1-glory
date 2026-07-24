@@ -748,7 +748,8 @@ function mkRookie(){
   let name, flag;
   if(S.rookies.length){ [name,flag]=S.rookies.splice(irnd(0,S.rookies.length-1),1)[0]; }
   else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)]; name=GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
-  const d={name, age:irnd(18,21), skill:rnd(74,81), ceil:rnd(84,96), titles:0, flag};
+  // campo fuerte y variado (varios llegan a muy bueno / crack), como en la parrilla real
+  const d={name, age:irnd(18,21), skill:rnd(74,81), ceil:Math.round(rnd(84,96)), titles:0, flag};
   S.dpool.push(d);
   return d;
 }
@@ -765,7 +766,12 @@ function npcSeason(){
       else g=rnd(-2.4,-.7);
       d.skill=Math.max(68,Math.min(d.ceil,d.skill+g));
       d.age++;
-      const pRet = d.age>=45?.6 : d.age>=41?.35 : d.age>=38?.18 : (d.skill<72&&d.age>=32?.4:.02);
+      // retirada con lógica de edad: los mayores cuelgan el casco; los jóvenes solo pierden
+      // el asiento si de verdad no cuajan (no se "retiran" a los 22)
+      const pRet = d.age>=44?.6 : d.age>=40?.34 : d.age>=37?.17
+        : (d.age>=33 && d.skill<75)?.30
+        : (d.age>=28 && d.skill<71)?.07
+        : .008;
       if(ch(pRet)){ slots[i]=mkRookie(); }
     });
   });
@@ -780,7 +786,9 @@ function npcSeason(){
       const lower=S.seats[order[j]]; if(!lower) continue;
       lower.forEach((d,k)=>{ if(d!=="PLAYER"&&(!best||d.skill>best.skill)){best=d;bTeam=order[j];bIdx=k;} });
     }
-    if(best && best.skill>weak.skill+3 && ch(.4)){
+    // los pilotos NO siempre aciertan el cambio de coche (como en la realidad): fichaje raro
+    // y solo con una diferencia clara → el mejor no acaba siempre en el mejor coche
+    if(best && best.skill>weak.skill+4 && ch(.2)){
       top[wIdx]=best; S.seats[bTeam][bIdx]=weak;
     }
   }
@@ -1294,10 +1302,10 @@ function evolveF1(){
   F1_TEAMS.forEach(t=>{
     // los proyectos cambian de rumbo pocas veces → eras que duran varios años.
     // el nuevo objetivo se fija respecto al nivel actual, creando arcos sostenidos.
-    if(Math.random()<.12) S.f1target[t.name]=Math.max(61,Math.min(95, S.f1perf[t.name]+rnd(-15,15)));
+    if(Math.random()<.17) S.f1target[t.name]=Math.max(61,Math.min(95, S.f1perf[t.name]+rnd(-17,17)));
     const cur=S.f1perf[t.name], tgt=S.f1target[t.name];
-    // deriva lenta (0.26) y poco ruido (±1) → tendencia limpia y legible
-    S.f1perf[t.name]=Math.max(60,Math.min(96, cur+(tgt-cur)*.26+rnd(-1,1)));
+    // deriva (0.28) y poco ruido (±1) → la parrilla se reordena y ningún coche domina eternamente
+    S.f1perf[t.name]=Math.max(60,Math.min(96, cur+(tgt-cur)*.28+rnd(-1,1)));
     // el carácter del coche puede cambiar ~1-2 veces por partida, sobre todo tras tocar fondo
     const rebuilding = S.f1perf[t.name] < 69;
     if(S.f1char[t.name] && ch(rebuilding ? .11 : .035)) S.f1char[t.name]=CHARS[irnd(0,2)];
@@ -1333,7 +1341,7 @@ function bgF1Season(row){
   const rows=[];
   F1_TEAMS.forEach(t=>{
     (S.seats[t.name]||[]).forEach(d=>{
-      if(d!=="PLAYER") rows.push({d,team:t.name,score:d.skill*.5+S.f1perf[t.name]*.5+gauss()*2.2});
+      if(d!=="PLAYER") rows.push({d,team:t.name,score:d.skill*.48+S.f1perf[t.name]*.52+gauss()*3.4});
     });
   });
   rows.sort((a,b)=>b.score-a.score);
@@ -1478,16 +1486,18 @@ function simF1(row,st){
   if(perf[myTeam]==null){ perf[myTeam]=rnd(73,80); }
   // parrilla real: los pilotos con nombre en sus asientos + tú
   const grid=[];
+  // "form": cada piloto tiene un año mejor o peor (evita que el mejor gane SIEMPRE → reparte títulos)
+  const seasonForm=()=>gauss()*3;
   F1_TEAMS.forEach(t=>{
     (S.seats[t.name]||[]).forEach(d=>{
-      if(d!=="PLAYER") grid.push({team:t.name, name:d.name, dref:d, skill:d.skill, pts:0, isP:false});
+      if(d!=="PLAYER") grid.push({team:t.name, name:d.name, dref:d, skill:d.skill, pts:0, isP:false, form:seasonForm()});
     });
   });
   if(!F1_TEAMS.some(t=>t.name===myTeam)){
     const mate=teammateOf(myTeam);
-    grid.push({team:myTeam, name:mate.name, dref:null, skill:mate.skill, pts:0, isP:false});
+    grid.push({team:myTeam, name:mate.name, dref:null, skill:mate.skill, pts:0, isP:false, form:seasonForm()});
   }
-  const me={team:myTeam, name:"TÚ", dref:null, skill:S.ovr, pts:0, isP:true};
+  const me={team:myTeam, name:"TÚ", dref:null, skill:S.ovr, pts:0, isP:true, form:seasonForm()};
   grid.push(me);
   const roleBonus = S.role==="1"? .8 : -.8;
   const affinity = carAffinity(myTeam); // encaje coche↔estilo (varía por partida)
@@ -1499,7 +1509,7 @@ function simF1(row,st){
     const chaos=Math.random()<.10;
     const noiseMul=chaos?1.7:1;
     const scores=grid.map(d=>{
-      let s=d.skill*.5+(perf[d.team]??75)*.5+gauss()*(d.isP?st.varza:4.5)*noiseMul;
+      let s=d.skill*.48+(perf[d.team]??75)*.52+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
       if(d.isP) s+=roleBonus+affinity+(sel.style==="agresivo"?1.4:0); // agresivo: ritmo de carrera puro (y arriesgado)
       if(wet && d.isP) s+=st.wet*6;
       return {d,s,dnf:(d.isP&&out)||Math.random()<((d.isP?st.dnf:.07)*(chaos?1.6:1))};
