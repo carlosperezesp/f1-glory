@@ -359,9 +359,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 }
 .careermap{margin:4px 0 18px;text-align:left}
 .careermap h4{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:10px;font-style:normal;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:5px 7px}
-.cmstint{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:6px 2px;border-bottom:1px solid var(--line)}
+.cmstint{display:flex;align-items:flex-start;gap:6px;padding:6px 2px;border-bottom:1px solid var(--line)}
 .cmstint:last-child{border-bottom:none}
-.cmmeta{display:flex;align-items:center;gap:6px;min-width:116px;flex-shrink:0}
+.cmmeta{display:flex;align-items:center;gap:6px;min-width:116px;min-height:24px;flex-shrink:0}
+/* las casillas de posición viven en su propia columna: al partirse a la línea siguiente
+   quedan alineadas justo bajo la primera casilla (no bajo el logo del equipo) */
+.cmcells{display:flex;flex-wrap:wrap;gap:5px;flex:1;min-width:0}
 .cmname{font-weight:800;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:118px}
 .cmyears{font-size:10.5px;color:var(--muted);font-weight:700;flex-shrink:0}
 .cmtit{font-size:10.5px;font-weight:800;background:linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000;padding:1px 6px;border-radius:5px;flex-shrink:0}
@@ -1989,7 +1992,10 @@ function renderCareerMap(){
   });
   // celdas más pequeñas cuando la carrera es larga, para que quepa en una pantalla
   const totalYears=f1s.length;
-  el.classList.toggle("dense", totalYears>16);
+  // modo denso (casillas más pequeñas) cuando hay muchos años o un tramo largo en un equipo,
+  // para que las casillas alineadas en su columna quepan en menos líneas
+  const longestStint=Math.max(...stints.map(s=>s.rows.length));
+  el.classList.toggle("dense", totalYears>12 || longestStint>=9);
   const careerPeak=Math.max(...f1s.map(s=>s.ovr));
   let html=`<h4>🏁 Tu carrera año a año <span class="cmpeakbadge">Mejor OVR ${careerPeak}</span></h4>`;
   stints.forEach(st=>{
@@ -2009,7 +2015,7 @@ function renderCareerMap(){
     html+=`<div class="cmstint">
       <span class="cmmeta">${badge(st.team,"cmdot")}
         <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
-      ${cells}</div>`;
+      <span class="cmcells">${cells}</span></div>`;
   });
   const jun=S.seasons.filter(s=>["KART","F4","F3","F2"].includes(s.cat));
   if(jun.length){
