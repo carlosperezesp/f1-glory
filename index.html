@@ -369,7 +369,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 <section id="intro">
   <div class="flag">🏁</div>
   <h1>Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
-  <p>Empieza en el karting, sube por F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
+  <p>Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
   <button class="btn" onclick="showIdentity()">Iniciar carrera</button>
 </section>
 
@@ -517,6 +517,11 @@ const KART_TEAMS = [
   {name:"Academia Tony Kart", color:"#2a9d3a", color2:"#136223", perf:52, sub:"La cantera de los campeones europeos"},
   {name:"Birel ART Junior", color:"#cc2222", color2:"#5e0f0f", perf:50, sub:"Programa técnico y metódico"},
   {name:"CRG Racing Team", color:"#d4820a", color2:"#7a4a06", perf:48, sub:"Garra y kilómetros: la escuela dura"},
+];
+const F4_TEAMS = [
+  {name:"Prema F4", color:"#dd0022", color2:"#6b0011", perf:58},{name:"Van Amersfoort F4", color:"#e30613", color2:"#7a0309", perf:55},
+  {name:"US Racing F4", color:"#1a3a6b", color2:"#0d1f3a", perf:53},{name:"R-ace GP F4", color:"#2a2a35", color2:"#101018", perf:51},
+  {name:"AS Motorsport F4", color:"#e6a01e", color2:"#8a5f0f", perf:49},
 ];
 const F3_TEAMS = [
   {name:"Prema F3", color:"#dd0022", color2:"#6b0011", perf:66},{name:"ART Grand Prix F3", color:"#888888", color2:"#444444", perf:63},
@@ -699,9 +704,9 @@ function startCareer(){
   S = {
     age:16, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1,
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
-    titles:{kart:0, f3:0, f2:0, f1:0, constr:0}, subcamp:0,
+    titles:{kart:0, f4:0, f3:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
-    f1perf:{}, f1target:{}, f1char:{}, kartPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0,
+    f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0,
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
@@ -709,7 +714,8 @@ function startCareer(){
   EXPANSION.forEach(e=>e.added=false);
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // nivel de las academias de karting: aleatorio cada partida → estrellas variables
-  KART_TEAMS.forEach(t=>{ S.kartPerf[t.name]=Math.max(46,Math.min(54, t.perf+irnd(-4,3))); });
+  // nivel de cada equipo junior: aleatorio por partida → estrellas variables en KART/F4/F3/F2
+  [KART_TEAMS,F4_TEAMS,F3_TEAMS,F2_TEAMS].forEach(pool=>pool.forEach(t=>{ S.jrPerf[t.name]=t.perf+irnd(-4,4); }));
   // sembrar la parrilla real de 2026. El TECHO de cada piloto se sortea por partida (horquilla
   // ~base-8 .. base+3): así el "elegido" cambia cada vez — a veces Antonelli, a veces Verstappen
   // supera a las leyendas, a veces un regen la lía. Nadie tiene 95 garantizado de fábrica.
@@ -910,7 +916,7 @@ const JR_PROFILES=[
 // genera 3 ofertas junior con perfil según su coche (mejor coche = ganador; peor = desarrollo)
 function juniorOffers(teams, cat){
   const pk=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
-  const perfOf = t => cat==="KART" ? S.kartPerf[t.name] : t.perf;
+  const perfOf = t => S.jrPerf[t.name]!=null ? S.jrPerf[t.name] : t.perf;
   const three = pk(teams,3).map(t=>({t, perf:perfOf(t)})).sort((a,b)=>b.perf-a.perf);
   return three.map((x,i)=>{
     const p = JR_PROFILES[i] || JR_PROFILES[1];
@@ -947,7 +953,7 @@ function renderOffers(offers, withRetire){
     b.style.border="2px solid "+o.team.color; b.style.borderLeftWidth="6px";
     const isF1seat = o.team.cat==="F1"||o.team.cat==="TEST";
     const perf = isF1seat ? (S.f1perf[o.team.name]??75) : o.team.perf;
-    const RANGE={KART:[46,54],F3:[54,68],F2:[66,78],F1:[60,96],TEST:[60,96]};
+    const RANGE={KART:[46,54],F4:[50,62],F3:[54,68],F2:[66,78],F1:[60,96],TEST:[60,96]};
     const [mn,mx]=RANGE[o.team.cat];
     const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-mn)/(mx-mn))));
     const stars="★".repeat(n5)+"☆".repeat(5-n5);
@@ -1291,6 +1297,7 @@ function renderDilemma(dl){
 /* ---------- simulación de temporada ---------- */
 function fieldFor(cat){
   if(cat==="KART") return {races:12, size:20, mean:46, spread:7, teamW:.25};
+  if(cat==="F4")   return {races:14, size:24, mean:52, spread:6.5, teamW:.3};
   if(cat==="F3")   return {races:10, size:22, mean:57, spread:6, teamW:.35};
   if(cat==="F2")   return {races:14, size:22, mean:66, spread:6, teamW:.4};
   return null;
@@ -1327,6 +1334,8 @@ function simSeason(){
   else g=rnd(-5,-2.2);
   g += st.growth*.5;
   if(S.cat!=="F1" && S.team && S.team.dev) g += S.team.dev; // perfil del proyecto junior: +formación / -verde
+  // declive según estilo: el agresivo se apaga antes; el consistente envejece como el buen vino (Alonso)
+  if(S.age>=30) g += (sel.style==="consistente"? .6 : sel.style==="agresivo"? -.6 : 0);
   if(result.pos!=null && result.pos<=3 && S.age<=31) g+=.5;
   if(S.cat==="TEST") g*=.7;
   if(g>0) g*=Math.max(.13,(95-S.ovr)/22); // el techo se vuelve casi vertical hacia el 92
@@ -1518,6 +1527,7 @@ function simJunior(row,st){
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
   if(pos===1){
     if(S.cat==="KART"){S.titles.kart++; row.events.push("🏅 ¡Campeón del mundo de karting!");}
+    if(S.cat==="F4"){S.titles.f4++; row.events.push("🏅 ¡Campeón de Fórmula 4!");}
     if(S.cat==="F3"){S.titles.f3++; row.events.push("🥈 ¡Campeón de Fórmula 3!");}
     if(S.cat==="F2"){S.titles.f2++; row.events.push("🥇 ¡Campeón de Fórmula 2!");}
   }
@@ -1650,14 +1660,32 @@ function nextOffers(){
   const pick=(arr,n)=>{const c=[...arr];const out=[];while(out.length<n&&c.length){out.push(c.splice(irnd(0,c.length-1),1)[0]);}return out;};
 
   if(S.cat==="KART"){
-    if(S.age<18){
+    if(S.age<17){
       title="Un año más de karting";
-      sub="Todavía eres muy joven para los monoplazas. Sigue puliendo tu talento.";
+      sub="Aún eres muy joven para los monoplazas. Sigue puliendo tu talento en los karts.";
       juniorOffers(KART_TEAMS,"KART").forEach(x=>o.push(x));
     } else {
-      title="Salto a los monoplazas";
-      sub="Tu etapa de karting termina. La Fórmula 3 presenta sus proyectos: ¿coche ganador o programa de desarrollo?";
+      title="Primer coche: la Fórmula 4";
+      sub="Dejas los karts. La F4 es tu primer monoplaza: ¿proyecto ganador o programa de desarrollo?";
+      juniorOffers(F4_TEAMS,"F4").forEach(x=>o.push(x));
+    }
+  }
+  else if(S.cat==="F4"){
+    if(S.ovr>=66){
+      // superpromesa (estilo Antonelli): te saltas la F3
+      title="🌟 ¡Tan bueno que te saltas la F3!";
+      sub="Arrasas en F4. Un equipo de F2 te ficha directo, saltándote la F3 — o puedes hacer la F3 y llegar más rodado. Tú decides.";
+      juniorOffers(F2_TEAMS,"F2").slice(0,2).forEach(x=>{ x.note="Salto directo, te saltas la F3"; o.push(x); });
+      juniorOffers(F3_TEAMS,"F3").slice(0,1).forEach(x=>{ x.note="Hacer F3, más rodaje"; o.push(x); });
+    } else if(S.ovr>=56||S.titles.f4>0){
+      title="Subes a la Fórmula 3";
+      sub="Buen año en F4. La F3 te abre las puertas: ¿ganador o desarrollo?";
       juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
+    } else if(S.age>=21){ washedOut(); return; }
+    else {
+      title="Otro año en Fórmula 4";
+      sub="Todavía verde. Necesitas crecer antes de dar el salto a la F3.";
+      juniorOffers(F4_TEAMS,"F4").forEach(x=>o.push(x));
     }
   }
   else if(S.cat==="F3"){
@@ -1859,7 +1887,7 @@ function renderCareerMap(){
         <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
       ${cells}</div>`;
   });
-  const jun=S.seasons.filter(s=>["KART","F3","F2"].includes(s.cat));
+  const jun=S.seasons.filter(s=>["KART","F4","F3","F2"].includes(s.cat));
   if(jun.length){
     const path=[...new Set(jun.map(s=>s.cat==="KART"?"Karting":s.cat))];
     html+=`<div class="cmjun">Antes: ${path.join(" → ")} · ${jun.length} temporadas · cada casilla = tu posición final ese año</div>`;
