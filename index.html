@@ -928,7 +928,7 @@ function renderOffers(offers, withRetire){
   const box=$("offerList"); box.innerHTML="";
   offers.forEach(o=>{
     const b=document.createElement("button"); b.className="offer";
-    b.style.borderLeft="5px solid "+o.team.color;
+    b.style.border="2px solid "+o.team.color; b.style.borderLeftWidth="6px";
     const isF1seat = o.team.cat==="F1"||o.team.cat==="TEST";
     const perf = isF1seat ? (S.f1perf[o.team.name]??75) : o.team.perf;
     const RANGE={KART:[46,54],F3:[54,68],F2:[66,78],F1:[60,96],TEST:[60,96]};
@@ -1424,11 +1424,12 @@ function renderF1State(){
   if(S.lastTop3.myPos!=null && S.lastTop3.myPos>3)
     dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} TÚ</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
   $("fsDrivers").innerHTML=dHtml;
-  const tArrow=n=>{const ti=trendInfo(n);return `<span class="fs-trend ${ti.c}" title="${ti.t}">${ti.a}</span>`;};
   const cmv=S.lastTop3.cmv||[];
-  let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${S.cat==="F1"&&S.team&&x===S.team.name?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}${tArrow(x)}</span>${mvB(cmv[i])}</div>`).join("");
+  // en la clasificación mostramos solo el movimiento de posición (▲/▼ vs el año pasado);
+  // la tendencia del PROYECTO (coche al alza/declive) va en las ofertas, no aquí (confundía)
+  let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${S.cat==="F1"&&S.team&&x===S.team.name?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}</span>${mvB(cmv[i])}</div>`).join("");
   if(S.lastTop3.myConstr!=null && S.lastTop3.myConstr>3 && S.team)
-    cHtml+=`<div class="srow me${mvCls(S.lastTop3.myConstrMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myConstr}º</b> ${teamBadge(S.team.name)} ${S.team.name}${tArrow(S.team.name)}</span>${mvB(S.lastTop3.myConstrMv)}</div>`;
+    cHtml+=`<div class="srow me${mvCls(S.lastTop3.myConstrMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myConstr}º</b> ${teamBadge(S.team.name)} ${S.team.name}</span>${mvB(S.lastTop3.myConstrMv)}</div>`;
   $("fsTeams").innerHTML=cHtml;
 }
 
