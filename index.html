@@ -533,7 +533,7 @@ const F1_TEAMS = [
   {name:"Red Bull", abbr:"RBR", color:"#3671C6", color2:"#E30118", perf:87},
   {name:"Mercedes", abbr:"MER", color:"#00A19B", color2:"#0f0f14", perf:86},
   {name:"Aston Martin", abbr:"AMR", color:"#229971", color2:"#CEDC00", perf:79},
-  {name:"Racing Bulls", abbr:"RB", color:"#6692FF", color2:"#1C2A4F", perf:74},
+  {name:"Racing Bulls", abbr:"RB", color:"#6692FF", color2:"#1C2A4F", perf:70},
   {name:"Williams", abbr:"WIL", color:"#1868DB", color2:"#00A3E0", perf:73},
   {name:"Alpine", abbr:"ALP", color:"#0093CC", color2:"#FD4BC7", perf:70},
   {name:"Audi", abbr:"AUD", color:"#7c7f83", color2:"#BB0A30", perf:68},
@@ -582,9 +582,9 @@ const EXPANSION = [
 const JUNIOR_OF = {"Racing Bulls":"Red Bull"};
 
 const STYLES = {
-  agresivo:{label:"🔥 Agresivo", varza:9, dnf:.11, growth:0, wet:0},
-  tecnico:{label:"🧠 Técnico", varza:6, dnf:.07, growth:.6, wet:.5},
-  consistente:{label:"📈 Consistente", varza:4, dnf:.04, growth:.3, wet:0},
+  agresivo:{label:"🔥 Agresivo", varza:5.5, dnf:.07, growth:.25, wet:0},
+  tecnico:{label:"🧠 Técnico", varza:4.5, dnf:.06, growth:.3, wet:.5},
+  consistente:{label:"📈 Consistente", varza:3.2, dnf:.03, growth:.27, wet:0},
 };
 // carácter del coche de cada equipo (aleatorio por partida). Si encaja con tu
 // pilotaje rindes más; si choca, menos. [carácter del coche][tu estilo] = bonus
@@ -1253,11 +1253,11 @@ function evolveF1(){
     // deriva lenta (0.26) y poco ruido (±1) → tendencia limpia y legible
     S.f1perf[t.name]=Math.max(60,Math.min(96, cur+(tgt-cur)*.26+rnd(-1,1)));
   });
-  // el equipo filial nunca rinde por encima de su marca madre (Racing Bulls ≤ Red Bull)
+  // equipo filial: claramente por debajo de la marca madre y con techo de midfield
   Object.entries(JUNIOR_OF).forEach(([junior,parent])=>{
     if(S.f1perf[junior]!=null && S.f1perf[parent]!=null){
-      S.f1perf[junior]=Math.min(S.f1perf[junior], S.f1perf[parent]-2);
-      S.f1target[junior]=Math.min(S.f1target[junior], S.f1target[parent]-2);
+      S.f1perf[junior]=Math.min(S.f1perf[junior], S.f1perf[parent]-6, 83);
+      S.f1target[junior]=Math.min(S.f1target[junior], S.f1target[parent]-6, 83);
     }
   });
 }
@@ -1448,8 +1448,8 @@ function simF1(row,st){
   for(let r=0;r<races;r++){
     const out = r<S.missRaces;
     const wet=Math.random()<.15;
-    const chaos=Math.random()<.12;
-    const noiseMul=chaos?2.4:1;
+    const chaos=Math.random()<.10;
+    const noiseMul=chaos?1.7:1;
     const scores=grid.map(d=>{
       let s=d.skill*.5+(perf[d.team]??75)*.5+gauss()*(d.isP?st.varza:4.5)*noiseMul;
       if(d.isP) s+=roleBonus+affinity;
@@ -1739,10 +1739,10 @@ function renderCareerMap(){
     const yrs = y0===y1?`'${String(y0).slice(2)}`:`'${String(y0).slice(2)}–${String(y1).slice(2)}`;
     // cada año = tu POSICIÓN final, coloreada por resultado (lo que cuenta)
     const cells=rows.map(r=>{
-      const raced=isTest&&r.subBest;
-      const cls=isTest?(raced?posClass(r.subBest):"rest"):posClass(r.pos);
-      const lab=isTest?(raced?(r.subBest===1?"🏆":r.subBest+"º"):"—"):(r.pos===1?"🏆":r.pos+"º");
-      const tip=isTest?(r.subRaces?`${r.year} · ${r.subRaces} GP sustituto · OVR ${r.ovr}`:`${r.year} · probador · OVR ${r.ovr}`):`${r.year} · OVR ${r.ovr}`;
+      // el probador no tiene posición de campeonato → casilla neutra "—"
+      const cls=isTest?"rest":posClass(r.pos);
+      const lab=isTest?"—":(r.pos===1?"🏆":r.pos+"º");
+      const tip=isTest?(r.subRaces?`${r.year} · probador · ${r.subRaces} GP sustituto (mejor ${r.subBest===1?"1º":r.subBest+"º"}) · OVR ${r.ovr}`:`${r.year} · probador · OVR ${r.ovr}`):`${r.year} · OVR ${r.ovr}`;
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
     const chip = titles?`<span class="cmtit">🏆×${titles}</span>`:"";
