@@ -11,14 +11,17 @@
 <meta property="og:site_name" content="F1 Glory">
 <meta property="og:title" content="F1 Glory — Construye tu carrera en la Fórmula 1">
 <meta property="og:description" content="Del karting a la gloria. Fichajes, títulos, escándalos y decisiones que definen tu legado. ¿Hasta dónde llegarás?">
-<meta property="og:image" content="https://f1-glory.vercel.app/cover-og.jpg">
+<meta property="og:image" content="https://f1-glory.vercel.app/f1-glory.jpg">
+<meta property="og:image:secure_url" content="https://f1-glory.vercel.app/f1-glory.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="675">
+<meta property="og:image:alt" content="F1 Glory">
 <meta property="og:url" content="https://f1-glory.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="F1 Glory — Construye tu carrera en la Fórmula 1">
 <meta name="twitter:description" content="Del karting a la gloria. ¿Hasta dónde llegarás?">
-<meta name="twitter:image" content="https://f1-glory.vercel.app/cover-og.jpg">
+<meta name="twitter:image" content="https://f1-glory.vercel.app/f1-glory.jpg">
 <style>
 :root{
   --bg:#f5f5f9; --panel:#ffffff; --panel2:#f2f2f7; --line:#e6e6ee;
@@ -98,9 +101,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
   .career-grid{display:flex;flex-direction:column;gap:16px;align-items:stretch}
   .career-grid>div{display:contents}
   #driverCard{order:1}
-  #decisionBox{order:2}
+  #decRecap{order:2}
   #f1state{order:3}
   .timeline{order:4}
+  #decisionBox{order:5}
 }
 
 .driver-head{display:flex;gap:16px;align-items:center;position:relative}
@@ -204,10 +208,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .tl-row .num.w{color:#c98f00}.tl-row .num.p{color:#16a34a}
 .pos{display:block;text-align:center;font-weight:800;font-size:12.5px;padding:5px 0;border-radius:9px}
 .pos.p1{background:linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000;box-shadow:0 3px 8px rgba(242,174,0,.4)}
-.pos.p2{background:linear-gradient(135deg,#eeeef3,#c9c9d6);color:#3a3a44}
+.pos.p2{background:linear-gradient(135deg,#fafbfe,#c4cad6);color:#3a4150;box-shadow:inset 0 0 0 1.5px #aab2c0}
 .pos.p3{background:linear-gradient(135deg,#f4c396,#d78d4b);color:#4a2800}
 .pos.top{background:linear-gradient(135deg,#dcf5e3,#b1e8c0);color:#15803d}
-.pos.rest{background:#ececf1;color:#8a8a94}
+.pos.rest{background:#d9e7fb;color:#2b6cb0}
 .tl-row .ev{grid-column:2/-1;font-size:12px;color:#5a5a66;padding:2px 0 4px}
 .tl-row .ev.top3{color:#3a3a48;background:var(--panel2);border-radius:8px;padding:5px 10px;margin:2px 0 4px}
 .tl-row .ovrcell{text-align:center;font-weight:800;border-radius:8px;padding:5px 0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 2px 6px rgba(21,21,30,.15)}
@@ -338,10 +342,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .cmdot{width:22px;height:22px;font-size:8px;flex-shrink:0}
 .cmcell{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:24px;padding:0 6px;border-radius:7px;font-weight:800;font-size:12.5px;flex-shrink:0}
 .cmcell.p1{background:linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000}
-.cmcell.p2{background:linear-gradient(135deg,#eeeef3,#c9c9d6);color:#3a3a44}
+.cmcell.p2{background:linear-gradient(135deg,#fafbfe,#c4cad6);color:#3a4150;box-shadow:inset 0 0 0 1.5px #aab2c0}
 .cmcell.p3{background:linear-gradient(135deg,#f4c396,#d78d4b);color:#4a2800}
 .cmcell.top{background:#dcf5e3;color:#15803d}
-.cmcell.rest{background:#e7e7ec;color:#7a7a86}
+.cmcell.rest{background:#d9e7fb;color:#2b6cb0}
 .cmpeakbadge{font-style:normal;font-size:11px;font-weight:900;letter-spacing:.3px;color:#fff;background:linear-gradient(135deg,#8b5cf6,#6d28d9);padding:2px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0}
 /* modo denso para carreras muy largas: celdas y espacios mínimos */
 .careermap.dense .cmstint{padding:4px 2px;gap:4px}
@@ -436,10 +440,11 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
         <div class="trophies" id="trophyCase"><div class="empty">🏆 Vitrina vacía</div></div>
       </div>
 
+      <div id="decRecap" style="display:none"></div>
+
       <div class="decision" id="decisionBox">
         <h3 id="decTitle">Ofertas</h3>
         <p id="decSub"></p>
-        <div id="decRecap" style="display:none"></div>
         <div class="offers" id="offerList"></div>
       </div>
     </div>
@@ -846,12 +851,11 @@ function renderRecap(){
   else if(s.pos<=3){ posTxt=s.pos+"º"; posCol="#dcf5e3;color:#15803d"; }
   else { posTxt=s.pos+"º"; posCol="#ececf1;color:#5a5a66"; }
   const stat = s.cat==="TEST" ? "FP1 + simulador" : `🏆 ${s.wins} · 🥉 ${s.pods} · ${s.pts} pts`;
-  const constr = s.constrPos ? ` · 🏭 ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
-  const champ = (S.lastTop3 && S.lastTop3.d[0]) ? ` &nbsp;·&nbsp; 👑 ${flg(S.lastTop3.d[0].me?sel.flag:S.lastTop3.d[0].flag)} ${S.lastTop3.d[0].n}` : "";
+  const constr = s.constrPos ? ` · 🏭 Constructores ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
   const badge = teamBadge(s.team.name);
   el.style.display="block";
   el.innerHTML = `<div class="recap-t">📋 Tu temporada ${s.year} · ${badge} ${s.team.name} · ${catLbl}</div>
-    <div class="recap-b"><span class="rp" style="background:${posCol}">${posTxt}</span> ${stat}${constr}${champ}</div>`;
+    <div class="recap-b"><span class="rp" style="background:${posCol}">${posTxt}</span> ${stat}${constr}</div>`;
 }
 
 function offerAcademies(){
@@ -865,6 +869,15 @@ function setDecision(title,sub,pulsing,outcome){
   h.textContent=title; p.textContent=sub;
   h.classList.toggle("pulsing",!!pulsing);
   p.classList.toggle("outcome",!!outcome);
+}
+// en móvil las ofertas viven abajo: al aparecer, las traemos a la vista (con algo de contexto arriba)
+function scrollToDecision(){
+  if(window.innerWidth>980) return;
+  const el=$("decisionBox"); if(!el) return;
+  requestAnimationFrame(()=>{
+    const y=el.getBoundingClientRect().top+window.scrollY-96;
+    window.scrollTo({top:y, behavior:"smooth"});
+  });
 }
 
 function renderOffers(offers, withRetire){
@@ -1170,6 +1183,7 @@ function renderDilemma(dl){
     };
     box.appendChild(b);
   });
+  scrollToDecision();
 }
 
 /* ---------- simulación de temporada ---------- */
@@ -1644,6 +1658,7 @@ function nextOffers(){
   setDecision(title,sub);
   renderRecap();
   renderOffers(o, S.cat==="F1"&&S.age>=31);
+  scrollToDecision();
 }
 
 function washedOut(){
@@ -1656,9 +1671,10 @@ function washedOut(){
 /* ---------- línea de tiempo ---------- */
 function renderTimeline(){
   const b=$("tlBody"); b.innerHTML="";
-  [...S.seasons].reverse().forEach((r,idx)=>{
+  // orden cronológico: 16 arriba, el año más reciente abajo (cae hacia abajo, estilo Copero)
+  S.seasons.forEach((r,idx)=>{
     const div=document.createElement("div");
-    div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
+    div.className="tl-row"+(r.pos===1?" champ":"")+(idx===S.seasons.length-1?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
     const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?"Probador F1":r.cat;
     const constr=r.constrPos?` · 🏭 Constructores (equipo): ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
