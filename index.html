@@ -316,6 +316,13 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   animation:shine 2.8s ease-in-out infinite}
 @keyframes shine{0%{left:-70%}60%{left:135%}100%{left:135%}}
 @keyframes goldshift{0%{background-position:0% 0}100%{background-position:200% 0}}
+/* casilla "Puntos de leyenda": color según la magnitud del legado */
+.legend-score{margin-top:10px;border-radius:14px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.legend-score .ls-k{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;opacity:.9}
+.legend-score .ls-tier{font-size:15px;font-weight:900;margin-top:1px}
+.legend-score .ls-v{font-size:36px;font-weight:900;line-height:1;letter-spacing:-1px}
+.legend-score.shiny::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.85),transparent);transform:skewX(-18deg);animation:shine 2.8s ease-in-out infinite}
 @media(max-width:520px){
   .end-stats{grid-template-columns:repeat(2,1fr);gap:6px}
   .end-stats > div{padding:7px 4px;border-radius:9px;min-width:0}
@@ -507,6 +514,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
         <div><div class="v" id="eSub">0</div><div class="k">Subcampeonatos</div></div>
         <div><div class="v" id="ePts">0</div><div class="k">Puntos F1</div></div>
       </div>
+      <div class="legend-score" id="legendScore"></div>
       <div class="shelf" id="endShelf"></div>
       <div class="hall" id="hallFame"></div>
       <div class="verdict" id="endVerdict"></div>
@@ -2052,7 +2060,21 @@ function endCareer(){
   else {legacy="PROMESA DEL AUTOMOVILISMO";verdict="La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.";}
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=" Y sí: lo de APXGP fue tan de película como suena. 🎬";
   $("endLegacy").textContent=legacy;
-  $("endVerdict").textContent=verdict+(score>0?` · Índice de legado: ${score}`:"");
+  $("endVerdict").textContent=verdict;
+  // casilla "Puntos de leyenda": color según la magnitud del legado (máx real ~1650, techo ~2000+)
+  const LEG_TIERS=[
+    {min:0,    name:"Aspirante",   bg:"linear-gradient(135deg,#eef1f6,#e2e7ef)", ink:"#5a6373"},
+    {min:120,  name:"Piloto de F1",bg:"linear-gradient(135deg,#e7effc,#d2e3fa)", ink:"#245a99"},
+    {min:320,  name:"Estrella",    bg:"linear-gradient(135deg,#e6f7ee,#c9edd7)", ink:"#177a3f"},
+    {min:650,  name:"Figura",      bg:"linear-gradient(135deg,#f0eafd,#e2d6fb)", ink:"#6d28d9"},
+    {min:1050, name:"Leyenda",     bg:"linear-gradient(135deg,#fdf0c8,#f6d97f)", ink:"#8a6706"},
+    {min:1600, name:"Inmortal",    bg:"linear-gradient(135deg,#ffdd82,#ffb52e)", ink:"#7a3b00", shiny:true},
+  ];
+  let legTier=LEG_TIERS[0]; LEG_TIERS.forEach(t=>{ if(score>=t.min) legTier=t; });
+  const ls=$("legendScore");
+  ls.className="legend-score"+(legTier.shiny?" shiny":"");
+  ls.style.background=legTier.bg; ls.style.borderColor="transparent"; ls.style.color=legTier.ink;
+  ls.innerHTML=`<div><div class="ls-k">🏅 Puntos de leyenda</div><div class="ls-tier">${legTier.name}</div></div><div class="ls-v">${score}</div>`;
   const [tier]=fameTier(fameScore());
   $("printHeader").innerHTML=`<h2>${sel.flag} ${sel.name} #${sel.num}</h2>
     <div class="pl">${legacy} · Fama: ${tier}</div>
