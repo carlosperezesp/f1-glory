@@ -752,14 +752,12 @@ function refreshCard(){
   for(let i=0;i<S.titles.constr;i++) shelf.push("🏎️");
   for(let i=0;i<S.titles.f2;i++) shelf.push("🥇");
   for(let i=0;i<S.titles.f3;i++) shelf.push("🥈");
-  for(let i=0;i<S.titles.kart;i++) shelf.push("🏅");
   if(shelf.length){
     const caps=[];
     if(S.titles.f1)caps.push(S.titles.f1+"× Mundial F1");
     if(S.titles.constr)caps.push(S.titles.constr+"× Constructores");
     if(S.titles.f2)caps.push(S.titles.f2+"× F2");
     if(S.titles.f3)caps.push(S.titles.f3+"× F3");
-    if(S.titles.kart)caps.push(S.titles.kart+"× Karting");
     tc.innerHTML=`<div class="shelf">${shelf.join("")}</div><div class="cap">${caps.join(" · ")}</div>`;
   } else tc.innerHTML=`<div class="empty">🏆 Vitrina vacía</div>`;
 }
@@ -1828,11 +1826,10 @@ function renderCareerMap(){
       const tip=isTest?(r.subRaces?`${r.year} · probador · ${r.subRaces} GP sustituto (mejor ${r.subBest===1?"1º":r.subBest+"º"}) · OVR ${r.ovr}`:`${r.year} · probador · OVR ${r.ovr}`):`${r.year} · OVR ${r.ovr}`;
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
-    const chip = titles?`<span class="cmtit">🏆×${titles}</span>`:"";
     html+=`<div class="cmstint">
       <span class="cmmeta">${badge(st.team,"cmdot")}
         <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
-      ${cells}${chip}</div>`;
+      ${cells}</div>`;
   });
   const jun=S.seasons.filter(s=>["KART","F3","F2"].includes(s.cat));
   if(jun.length){
@@ -1855,7 +1852,6 @@ function endCareer(){
   for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
   for(let i=0;i<S.titles.f2;i++)shelf.push("🥇");
   for(let i=0;i<S.titles.f3;i++)shelf.push("🥈");
-  for(let i=0;i<S.titles.kart;i++)shelf.push("🏅");
   $("endShelf").textContent=shelf.join("")||"—";
   renderCareerMap();
   // palmarés histórico actualizado: leyendas + pilotos de tu era + tú
@@ -1867,8 +1863,9 @@ function endCareer(){
     (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${sel.name} (TÚ)</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=S.titles.f1*120+S.titles.constr*30+S.wins*3+S.podiums+S.poles+S.subcamp*15;
   let legacy,verdict;
-  if(S.titles.f1>=5){legacy="LEYENDA ETERNA";verdict="Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú.";}
-  else if(S.titles.f1>=2){legacy="MULTICAMPEÓN DEL MUNDO";verdict="Dominaste tu era. Los documentales sobre tu carrera ya están en producción.";}
+  if(S.titles.f1>=6){legacy="LEYENDA ETERNA";verdict="Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú.";}
+  else if(S.titles.f1>=4){legacy="MULTICAMPEÓN DEL MUNDO";verdict=`Dominaste tu época con ${S.titles.f1} coronas mundiales. Los documentales sobre tu carrera ya están en producción.`;}
+  else if(S.titles.f1>=2){legacy=(S.titles.f1===2?"DOBLE":"TRIPLE")+" CAMPEÓN DEL MUNDO";verdict=`${S.titles.f1===2?"Dos":"Tres"} veces en lo más alto del mundo. Quizá no dominaste una era entera —hubo rivales tan grandes como tú—, pero volver a la cima más de una vez está al alcance de muy pocos.`;}
   else if(S.titles.f1===1){legacy="CAMPEÓN DEL MUNDO";verdict="Tocaste el cielo una vez, y nadie podrá borrarlo jamás. Un campeón del mundo, para siempre.";}
   else if(S.titles.constr>0){legacy="CAMPEÓN DE CONSTRUCTORES";verdict="El título de pilotos se te escapó, pero llevaste a tu equipo a la gloria. En la fábrica saben que ese trofeo también es tuyo.";}
   else if(S.subcamp>0){legacy="ETERNO ASPIRANTE";verdict="Como Stirling Moss: te faltó el título, pero no la grandeza. El paddock siempre te respetó.";}
