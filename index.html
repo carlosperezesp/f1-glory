@@ -103,8 +103,8 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
   #driverCard{order:1}
   #decRecap{order:2}
   #f1state{order:3}
-  .timeline{order:4}
-  #decisionBox{order:5}
+  #decisionBox{order:4}
+  .timeline{order:5}
 }
 
 .driver-head{display:flex;gap:16px;align-items:center;position:relative}
@@ -261,7 +261,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 /* panel estado de la F1 */
 .f1state{margin-bottom:14px;padding:16px 20px}
 .f1state .cols{display:grid;grid-template-columns:1.1fr 1fr 1.1fr;gap:14px}
-@media(max-width:700px){.f1state .cols{grid-template-columns:1fr}}
+@media(max-width:700px){
+  .f1state .cols{grid-template-columns:1fr 1fr;gap:12px 14px}
+  .f1state .cols>div:last-child{grid-column:1/-1}
+}
 .f1state h5{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;font-style:normal}
 .f1state .srow{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:4px 6px;border-radius:7px;gap:6px;animation:fsRow .7s both}
 .f1state .srow .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1183,7 +1186,6 @@ function renderDilemma(dl){
     };
     box.appendChild(b);
   });
-  scrollToDecision();
 }
 
 /* ---------- simulación de temporada ---------- */
@@ -1658,7 +1660,6 @@ function nextOffers(){
   setDecision(title,sub);
   renderRecap();
   renderOffers(o, S.cat==="F1"&&S.age>=31);
-  scrollToDecision();
 }
 
 function washedOut(){
@@ -1671,10 +1672,10 @@ function washedOut(){
 /* ---------- línea de tiempo ---------- */
 function renderTimeline(){
   const b=$("tlBody"); b.innerHTML="";
-  // orden cronológico: 16 arriba, el año más reciente abajo (cae hacia abajo, estilo Copero)
-  S.seasons.forEach((r,idx)=>{
+  // más reciente arriba, 16 años abajo (la trayectoria crece hacia arriba)
+  [...S.seasons].reverse().forEach((r,idx)=>{
     const div=document.createElement("div");
-    div.className="tl-row"+(r.pos===1?" champ":"")+(idx===S.seasons.length-1?" new":"");
+    div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
     const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?"Probador F1":r.cat;
     const constr=r.constrPos?` · 🏭 Constructores (equipo): ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
