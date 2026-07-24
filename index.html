@@ -125,6 +125,9 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .agev .lbl{font-size:10px;letter-spacing:1px;color:var(--muted)}
 .agev .v{font-size:19px;font-weight:800;background:linear-gradient(92deg,#15151e,#55555f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .team-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 -2px 4px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.25);border:2px solid #fff}
+img.tlogo{object-fit:cover;background:#fff;padding:0;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.22);vertical-align:middle}
+img.tlogo.mb{width:20px;height:20px;border:1.5px solid #fff}
+#teamDot.haslogo{background-size:cover;background-position:center}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
 .stat{background:var(--panel2);border-radius:12px;padding:8px 4px}
 .stat .k{font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:center}
@@ -627,6 +630,20 @@ function hex6(c){
 function badgeStyle(t){
   return `background:linear-gradient(135deg,${hex6(t.color)} 0 52%,${hex6(t.color2||"#15151e")} 52% 100%)`;
 }
+// logos circulares reales de las escuderías (para colegas)
+const TEAM_LOGOS = {
+  "McLaren":"mclaren.png","Ferrari":"ferrari.png","Red Bull":"redbull.png","Mercedes":"mercedes.png",
+  "Aston Martin":"aston.png","Racing Bulls":"racingbulls.png","Williams":"williamsok.png","Alpine":"alpine.png",
+  "Audi":"Audi.png","Haas":"haas.png","Cadillac":"cadillac.png","Hyundai":"hyundaiok.png","APXGP":"apx.png"
+};
+// insignia de equipo: logo si existe, si no la pastilla bicolor (equipos junior)
+function badge(team, extraCls){
+  const name = typeof team==="string" ? team : (team&&team.name);
+  const obj  = (team && typeof team==="object") ? team : (F1_TEAMS.find(x=>x.name===name)||(name==="APXGP"?APXGP:null));
+  const cls  = extraCls||"";
+  if(TEAM_LOGOS[name]) return `<img class="team-dot tlogo ${cls}" src="${TEAM_LOGOS[name]}" alt="${name}">`;
+  return `<span class="team-dot ${cls}" style="${obj?badgeStyle(obj):'background:#bbb'}">${(obj&&obj.abbr)||""}</span>`;
+}
 function ovrColor(o){
   if(o>=88) return "linear-gradient(135deg,#8b5cf6,#6d28d9)";
   if(o>=80) return "linear-gradient(135deg,#22c55e,#15803d)";
@@ -721,10 +738,12 @@ function refreshCard(){
   if(S.team){
     const roleTxt = S.cat==="TEST"?" (probador)": S.cat==="F1"&&S.role?` (Nº${S.role})`:"";
     $("teamName").textContent = S.team.name + roleTxt;
-    const d=$("teamDot"); d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||"";
+    const d=$("teamDot");
+    if(TEAM_LOGOS[S.team.name]){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${TEAM_LOGOS[S.team.name]}) center/cover;border:2px solid #fff`; d.textContent=""; }
+    else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, #ffffff 55%)`;
   } else {
-    $("teamName").textContent="Agente libre"; $("teamDot").style.cssText="background:#bbb";
+    $("teamName").textContent="Agente libre"; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
     $("driverCard").style.background="#fff";
   }
   const tc=$("trophyCase");
@@ -929,7 +948,7 @@ function renderOffers(offers, withRetire){
       const fit = aff>0.8?`<span class="fit good">✓ encaja con tu pilotaje</span>`:aff<-0.5?`<span class="fit bad">✗ choca con tu estilo</span>`:`<span class="fit neu">neutral</span>`;
       carLine=`<span class="carline">Coche ${CHAR_LABEL[c]||""} · ${fit}</span>`;
     }
-    b.innerHTML=`<span class="team-dot dot" style="${badgeStyle(o.team)}">${o.team.abbr||""}</span>
+    b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
       <span class="sub" style="display:block">${catLbl} · Temporada ${yearNow()}${mate}${o.note?" · "+o.note:""}</span>${trendLine}${carLine}</span>
       <span class="perfwrap"><span class="perf">${stars}</span></span>`;
@@ -1376,7 +1395,9 @@ function trackRanks(driverOrder, teamOrder){
 /* escudo mini de una escudería + bandera de un piloto */
 function teamBadge(name){
   const T=F1_TEAMS.find(t=>t.name===name)||(name==="APXGP"?APXGP:null);
-  return T?`<span class="mini-badge" style="${badgeStyle(T)}">${T.abbr}</span>`:"";
+  if(!T) return "";
+  if(TEAM_LOGOS[name]) return `<img class="tlogo mb" src="${TEAM_LOGOS[name]}" alt="${name}">`;
+  return `<span class="mini-badge" style="${badgeStyle(T)}">${T.abbr}</span>`;
 }
 const flg=f=>`<span class="fl">${f||"🏁"}</span>`;
 
@@ -1762,7 +1783,7 @@ function renderTimeline(){
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="Temporada ${r.year}">${r.age}</span>
-      <span class="club"><span class="team-dot" style="${badgeStyle(r.team)}">${r.team.abbr||""}</span>
+      <span class="club">${badge(r.team)}
         <span><span class="nm">${r.team.name}</span><br><span class="cat">${r.year} · ${catLbl} · ${ptsTxt}${constr}</span></span></span>
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
       <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="TEST"&&!raced?"—":r.wins}</span>
@@ -1808,7 +1829,7 @@ function renderCareerMap(){
     }).join("");
     const chip = titles?`<span class="cmtit">🏆×${titles}</span>`:"";
     html+=`<div class="cmstint">
-      <span class="cmmeta"><span class="team-dot cmdot" style="${badgeStyle(st.team)}">${st.team.abbr||""}</span>
+      <span class="cmmeta">${badge(st.team,"cmdot")}
         <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
       ${cells}${chip}</div>`;
   });
