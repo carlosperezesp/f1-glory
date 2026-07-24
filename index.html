@@ -877,6 +877,26 @@ function teammateOf(teamName){
   const d=slots.find(x=>x!=="PLAYER");
   return d||{name:"—",skill:75,titles:0,age:25,flag:"🏁"};
 }
+// ganas el pulso de poder: tu compañero, humillado, se larga al mejor rival (Alonso-McLaren 2007)
+// y tu equipo promociona a un joven, así te quedas como Nº1 real (no un Nº2 absurdo bajo el crack)
+function oustTeammate(row){
+  const teamName=S.team&&S.team.name; if(!teamName||!S.seats[teamName]) return;
+  const slots=S.seats[teamName];
+  const mi=slots.findIndex(x=>x!=="PLAYER"); if(mi<0) return;
+  const mate=slots[mi];
+  const dest=[...F1_TEAMS].filter(t=>t.name!==teamName && S.seats[t.name])
+    .sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))[0];
+  if(dest){
+    const dsl=S.seats[dest.name];
+    const wk = dsl[0]==="PLAYER"?1 : dsl[1]==="PLAYER"?0 : (dsl[0].skill<=dsl[1].skill?0:1);
+    if(dsl[wk]!=="PLAYER") dsl[wk]=mate;
+    row.events.push("💥 "+surname(mate.name)+", humillado tras perder el pulso, se marcha a "+dest.name+".");
+  } else {
+    row.events.push("💥 "+surname(mate.name)+", humillado, deja el equipo.");
+  }
+  slots[mi]=mkRookie();
+  S.role="1"; S.roleTeam=teamName; S.roleMate=teammateOf(teamName).name;
+}
 /* rol pegajoso: si sigues en el mismo equipo con el mismo compañero, NO cambia
    por ruido; solo se recalcula al fichar por otro equipo o si cambia el compañero */
 function roleFor(teamName){
@@ -1169,7 +1189,7 @@ const DILEMAS=[
      [3,()=>(OVR(1),"Frescura absoluta el domingo. +1 OVR")],
      [2,()=>(VAL(.95),"En redes te llaman soso. Fama -5%")])}]},
  {id:"jerarquia",stage:"f1",t:"Guerra por el Nº1",d:"Tu compañero exige al equipo ser el piloto Nº1. Los ingenieros esperan tu reacción.",opts:[
-   {l:"Plantarte: «el Nº1 soy yo»",r:()=>ch(.5)?(S.role="1","El equipo te respalda: estatus de líder asegurado."):(CAR(-1),"La guerra interna pasa factura al desarrollo. -1 coche")},
+   {l:"Plantarte: «el Nº1 soy yo»",r:()=>ch(.5)?(S.role="1",S.oustMate=true,"El equipo te respalda como Nº1. Tu compañero, humillado, no lo acepta y hará las maletas."):(CAR(-1),"La guerra interna pasa factura al desarrollo. -1 coche")},
    {l:"Ceder el estatus",r:()=>{S.role="2";return ch(.6)?(VAL(1.1),"Juegas en equipo y tu fama crece. +10% fama"):(OVR(-1),"Ver sus piezas nuevas cada carrera te quema. -1 OVR");}}]},
  {id:"novato",stage:"vet",t:"El novato prodigio",d:"Tu nuevo compañero tiene 19 años, es rapidísimo y quiere tu corona. El equipo os deja pelear.",opts:[
    {l:"Ser su mentor",r:()=>roll(
@@ -1353,9 +1373,14 @@ function simSeason(){
   if(S.cat==="F1" && S.team && S.seats[S.team.name]){
     const mate=teammateOf(S.team.name);
     S.roleMate=mate.name; S.roleTeam=S.team.name;
-    const gap=(S.ovr+S.titles.f1*2)-(mate.skill||75);
-    if(S.role==="2" && gap>4){ S.role="1"; row.events.push("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+"."); }
-    else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1."); }
+    if(S.oustMate){
+      // ganaste el pulso de poder: el compañero se larga (no te degradamos a Nº2 bajo él)
+      oustTeammate(row); S.oustMate=false;
+    } else {
+      const gap=(S.ovr+S.titles.f1*2)-(mate.skill||75);
+      if(S.role==="2" && gap>4){ S.role="1"; row.events.push("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+"."); }
+      else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1."); }
+    }
   }
   maybeEvent(row,st);
   evolveF1();
@@ -1734,6 +1759,8 @@ function nextOffers(){
   if(S.age>=42){ endCareer(); return; }
   const o=[];
   let title="Nuevas ofertas", sub="";
+  // posición final de la última temporada: los saltos de superpromesa exigen terminar ARRIBA de verdad
+  const lastPos = S.seasons.length ? (S.seasons.at(-1).pos ?? 99) : 99;
   const pick=(arr,n)=>{const c=[...arr];const out=[];while(out.length<n&&c.length){out.push(c.splice(irnd(0,c.length-1),1)[0]);}return out;};
 
   if(S.cat==="KART"){
@@ -1748,15 +1775,16 @@ function nextOffers(){
     }
   }
   else if(S.cat==="F4"){
-    if(S.ovr>=66){
-      // superpromesa (estilo Antonelli): te saltas la F3
+    if(S.ovr>=66 && lastPos<=3){
+      // superpromesa (estilo Antonelli): te saltas la F3 — solo si además terminaste en el podio
+      const dom = lastPos===1 ? "Arrasas en la F4 como campeón" : `Acabas ${lastPos}º en la F4, entre los mejores`;
       title="🌟 ¡Tan bueno que te saltas la F3!";
-      sub="Arrasas en F4. Un equipo de F2 te ficha directo, saltándote la F3 — o puedes hacer la F3 y llegar más rodado. Tú decides.";
+      sub=`${dom}. Un equipo de F2 te ficha directo, saltándote la F3 — o puedes hacer la F3 y llegar más rodado. Tú decides.`;
       juniorOffers(F2_TEAMS,"F2").slice(0,2).forEach(x=>{ x.note="Salto directo, te saltas la F3"; o.push(x); });
       juniorOffers(F3_TEAMS,"F3").slice(0,1).forEach(x=>{ x.note="Hacer F3, más rodaje"; o.push(x); });
     } else if(S.ovr>=56||S.titles.f4>0){
       title="Subes a la Fórmula 3";
-      sub="Buen año en F4. La F3 te abre las puertas: ¿ganador o desarrollo?";
+      sub=(lastPos<=5?"Buen año en F4. ":"Tu nivel ya pide más de lo que da la F4. ")+"La F3 te abre las puertas: ¿ganador o desarrollo?";
       juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
     } else if(S.age>=21){ washedOut(); return; }
     else {
@@ -1766,10 +1794,11 @@ function nextOffers(){
     }
   }
   else if(S.cat==="F3"){
-    if(S.ovr>=71){
-      // chico maravilla: la F1 te ficha SIN pasar por la F2… pero llegarás verde
+    if(S.ovr>=71 && lastPos<=3){
+      // chico maravilla: la F1 te ficha SIN pasar por la F2… pero solo si arrasaste (podio en F3)
+      const dom = lastPos===1 ? "Ganas la F3 y tu progresión es de otro planeta" : `Acabas ${lastPos}º en la F3 con una progresión de otro planeta`;
       title="🌟 ¡La Fórmula 1 llama sin pasar por la F2!";
-      sub="Tu progresión es de otro planeta. Un equipo de F1 te ficha directo — o puedes esperar un año en F2 y llegar más completo. Tú decides.";
+      sub=`${dom}. Un equipo de F1 te ficha directo — o puedes esperar un año en F2 y llegar más completo. Tú decides.`;
       const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]);
       pick(sorted.slice(2,9),2).forEach(t=>o.push({team:t, role:roleFor(t.name), note:"Salto directo, llegas verde"}));
       juniorOffers(F2_TEAMS,"F2").slice(0,1).forEach(x=>{ x.note="Esperar y llegar más fuerte"; o.push(x); });
