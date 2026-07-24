@@ -597,7 +597,15 @@ const CAR_AFFINITY={
 };
 function carAffinity(teamName){
   const c=S.f1char&&S.f1char[teamName]; if(!c) return 0;
-  return (CAR_AFFINITY[c]&&CAR_AFFINITY[c][sel.style])||0;
+  let base=(CAR_AFFINITY[c]&&CAR_AFFINITY[c][sel.style])||0;
+  // el equipo desarrolla el coche hacia su piloto: con los años el desajuste se suaviza,
+  // y si eres el Nº1 y sigues, el coche acaba favoreciéndote
+  if(S.team && teamName===S.team.name){
+    const yrs=S.yearsAtTeam||1;
+    if(base<0) base += Math.min(-base, (yrs-1)*0.4);      // hacia neutral cuanto más aguantas
+    if(S.role==="1" && yrs>=3) base += Math.min(1.5,(yrs-2)*0.4); // de líder, el coche se hace tuyo
+  }
+  return base;
 }
 
 /* ================= ESTADO ================= */
@@ -945,6 +953,8 @@ function signContract(o){
   }
   const sameSeat = prevCat==="F1" && o.team.cat==="F1" && prev && prev.name===o.team.name;
   S.team=o.team; S.cat=o.team.cat;
+  // años consecutivos en el mismo equipo (para que el coche se adapte a ti con el tiempo)
+  S.yearsAtTeam = o.team.cat==="F1" ? (sameSeat ? (S.yearsAtTeam||1)+1 : 1) : 0;
   if(o.team.cat==="F1"){
     occupySeat(o.team.name);
     const mateName=teammateOf(o.team.name).name;
@@ -1291,6 +1301,9 @@ function evolveF1(){
     const cur=S.f1perf[t.name], tgt=S.f1target[t.name];
     // deriva lenta (0.26) y poco ruido (±1) → tendencia limpia y legible
     S.f1perf[t.name]=Math.max(60,Math.min(96, cur+(tgt-cur)*.26+rnd(-1,1)));
+    // el carácter del coche puede cambiar ~1-2 veces por partida, sobre todo tras tocar fondo
+    const rebuilding = S.f1perf[t.name] < 69;
+    if(S.f1char[t.name] && ch(rebuilding ? .11 : .035)) S.f1char[t.name]=CHARS[irnd(0,2)];
   });
   // equipo filial: claramente por debajo de la marca madre y con techo de midfield
   Object.entries(JUNIOR_OF).forEach(([junior,parent])=>{
