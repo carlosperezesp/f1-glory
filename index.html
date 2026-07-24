@@ -582,7 +582,7 @@ const EXPANSION = [
 const JUNIOR_OF = {"Racing Bulls":"Red Bull"};
 
 const STYLES = {
-  agresivo:{label:"🔥 Agresivo", varza:5.5, dnf:.07, growth:.25, wet:0},
+  agresivo:{label:"🔥 Agresivo", varza:5.5, dnf:.06, growth:.25, wet:0},
   tecnico:{label:"🧠 Técnico", varza:4.5, dnf:.06, growth:.3, wet:.5},
   consistente:{label:"📈 Consistente", varza:3.2, dnf:.03, growth:.27, wet:0},
 };
@@ -1452,7 +1452,7 @@ function simF1(row,st){
     const noiseMul=chaos?1.7:1;
     const scores=grid.map(d=>{
       let s=d.skill*.5+(perf[d.team]??75)*.5+gauss()*(d.isP?st.varza:4.5)*noiseMul;
-      if(d.isP) s+=roleBonus+affinity;
+      if(d.isP) s+=roleBonus+affinity+(sel.style==="agresivo"?1.4:0); // agresivo: ritmo de carrera puro (y arriesgado)
       if(wet && d.isP) s+=st.wet*6;
       return {d,s,dnf:(d.isP&&out)||Math.random()<((d.isP?st.dnf:.07)*(chaos?1.6:1))};
     });
