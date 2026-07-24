@@ -692,10 +692,13 @@ function startCareer(){
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // nivel de las academias de karting: aleatorio cada partida → estrellas variables
   KART_TEAMS.forEach(t=>{ S.kartPerf[t.name]=Math.max(46,Math.min(54, t.perf+irnd(-4,3))); });
-  // sembrar la parrilla real de 2026
+  // sembrar la parrilla real de 2026. El TECHO de cada piloto se sortea por partida (horquilla
+  // ~base-8 .. base+3): así el "elegido" cambia cada vez — a veces Antonelli, a veces Verstappen
+  // supera a las leyendas, a veces un regen la lía. Nadie tiene 95 garantizado de fábrica.
   Object.entries(GRID2026).forEach(([team,list])=>{
     S.seats[team]=list.map(([name,age,skill,ceil,titles,flag])=>{
-      const d={name,age,skill,ceil,titles,flag};
+      const rolledCeil=Math.round(Math.max(skill+1, Math.min(97, ceil+gauss()*3.4)));
+      const d={name,age,skill,ceil:rolledCeil,titles,flag};
       S.dpool.push(d); return d;
     });
   });
