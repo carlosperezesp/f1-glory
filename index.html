@@ -394,55 +394,60 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .hall .hrow .rk{color:var(--muted);width:26px;font-weight:700}
 .hall .hrow .nm{flex:1}
 .hall .hrow .tt{font-weight:800;color:var(--gold)}
+#langToggle{position:fixed;top:12px;right:12px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
+  border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer}
+#langToggle:hover{background:#fff}
+@media print{#langToggle{display:none}}
 </style>
 </head>
 <body>
+<button id="langToggle" onclick="setLang(LANG==='en'?'es':'en')" title="Language / Idioma">EN</button>
 
 <!-- ========== INTRO ========== -->
 <section id="intro">
   <div class="flag">🏁</div>
-  <h1>Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
-  <p>Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
-  <button class="btn" onclick="showIdentity()">Iniciar carrera</button>
+  <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
+  <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
+  <button class="btn" onclick="showIdentity()" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
 </section>
 
 <!-- ========== IDENTITY ========== -->
 <section id="identity">
-  <h2>Define tu identidad</h2>
-  <p class="lead">Tu dorsal, tu bandera y tu forma de pilotar. El resto lo decide la pista.</p>
+  <h2 data-es="Define tu identidad" data-en="Define your identity">Define tu identidad</h2>
+  <p class="lead" data-es="Tu dorsal, tu bandera y tu forma de pilotar. El resto lo decide la pista." data-en="Your number, your flag and your driving style. The rest is decided on track.">Tu dorsal, tu bandera y tu forma de pilotar. El resto lo decide la pista.</p>
   <div class="id-grid">
     <div class="card">
-      <h3>Identidad</h3>
+      <h3 data-es="Identidad" data-en="Identity">Identidad</h3>
       <div class="numplate"><span id="helmetNum"></span></div>
-      <div class="field"><label>Apellido</label><input id="inName" maxlength="14" placeholder="Apellido" oninput="idChanged()"></div>
-      <div class="field"><label>Dorsal (1-99)</label><input id="inNum" maxlength="2" placeholder="Nº" inputmode="numeric" oninput="idChanged()"></div>
+      <div class="field"><label data-es="Apellido" data-en="Surname">Apellido</label><input id="inName" maxlength="14" placeholder="Apellido" data-esph="Apellido" data-enph="Surname" oninput="idChanged()"></div>
+      <div class="field"><label data-es="Dorsal (1-99)" data-en="Number (1-99)">Dorsal (1-99)</label><input id="inNum" maxlength="2" placeholder="Nº" data-esph="Nº" data-enph="No." inputmode="numeric" oninput="idChanged()"></div>
     </div>
     <div class="card">
-      <h3>Nacionalidad</h3>
-      <div class="field"><input id="inCountry" placeholder="Buscar país…" oninput="renderCountries()"></div>
+      <h3 data-es="Nacionalidad" data-en="Nationality">Nacionalidad</h3>
+      <div class="field"><input id="inCountry" placeholder="Buscar país…" data-esph="Buscar país…" data-enph="Search country…" oninput="renderCountries()"></div>
       <div class="country-list" id="countryList"></div>
     </div>
     <div class="card">
-      <h3>Estilo de pilotaje</h3>
+      <h3 data-es="Estilo de pilotaje" data-en="Driving style">Estilo de pilotaje</h3>
       <div class="style-cards">
         <button id="st-agresivo" onclick="pickStyle('agresivo')">
-          <div class="t">🔥 Agresivo</div>
-          <div class="d">Más poles y victorias épicas, pero mayor riesgo de abandono. Estilo Verstappen.</div>
+          <div class="t" data-es="🔥 Agresivo" data-en="🔥 Aggressive">🔥 Agresivo</div>
+          <div class="d" data-es="Más poles y victorias épicas, pero mayor riesgo de abandono. Estilo Verstappen." data-en="More poles and epic wins, but a higher risk of retiring. Verstappen style.">Más poles y victorias épicas, pero mayor riesgo de abandono. Estilo Verstappen.</div>
         </button>
         <button id="st-tecnico" onclick="pickStyle('tecnico')">
-          <div class="t">🧠 Técnico</div>
-          <div class="d">Brilla bajo la lluvia y desarrolla el coche. Progresa más rápido. Estilo Prost.</div>
+          <div class="t" data-es="🧠 Técnico" data-en="🧠 Technical">🧠 Técnico</div>
+          <div class="d" data-es="Brilla bajo la lluvia y desarrolla el coche. Progresa más rápido. Estilo Prost." data-en="Shines in the wet and develops the car. Progresses faster. Prost style.">Brilla bajo la lluvia y desarrolla el coche. Progresa más rápido. Estilo Prost.</div>
         </button>
         <button id="st-consistente" onclick="pickStyle('consistente')">
-          <div class="t">📈 Consistente</div>
-          <div class="d">Casi nunca abandona y suma puntos siempre. Los campeonatos se ganan así. Estilo Alonso.</div>
+          <div class="t" data-es="📈 Consistente" data-en="📈 Consistent">📈 Consistente</div>
+          <div class="d" data-es="Casi nunca abandona y suma puntos siempre. Los campeonatos se ganan así. Estilo Alonso." data-en="Almost never retires and always scores. This is how titles are won. Alonso style.">Casi nunca abandona y suma puntos siempre. Los campeonatos se ganan así. Estilo Alonso.</div>
         </button>
       </div>
     </div>
   </div>
   <div class="actions">
-    <button class="btn ghost" onclick="backToIntro()">Volver</button>
-    <button class="btn" id="btnConfirm" disabled onclick="startCareer()">Confirmar identidad</button>
+    <button class="btn ghost" onclick="backToIntro()" data-es="Volver" data-en="Back">Volver</button>
+    <button class="btn" id="btnConfirm" disabled onclick="startCareer()" data-es="Confirmar identidad" data-en="Confirm identity">Confirmar identidad</button>
   </div>
 </section>
 
@@ -462,18 +467,18 @@ img.tlogo.mb{width:20px;height:20px;border:none}
             </div>
           </div>
           <div class="agev">
-            <div class="lbl">EDAD</div><div class="a" id="ageV">16</div>
-            <div class="lbl">FAMA</div><div class="v" id="valV">Desconocido</div>
+            <div class="lbl" data-es="EDAD" data-en="AGE">EDAD</div><div class="a" id="ageV">16</div>
+            <div class="lbl" data-es="FAMA" data-en="FAME">FAMA</div><div class="v" id="valV">Desconocido</div>
           </div>
         </div>
         <div class="team" id="teamLine"><span class="team-dot" id="teamDot"></span><span class="tname" id="teamName">Sin asiento</span><span class="trole" id="teamRole"></span></div>
         <div class="stats-row">
           <div class="stat"><div class="k">GP</div><div class="v" id="stGP">0</div></div>
-          <div class="stat"><div class="k">Victorias</div><div class="v w" id="stW">0</div></div>
-          <div class="stat"><div class="k">Podios</div><div class="v p" id="stP">0</div></div>
+          <div class="stat"><div class="k" data-es="Victorias" data-en="Wins">Victorias</div><div class="v w" id="stW">0</div></div>
+          <div class="stat"><div class="k" data-es="Podios" data-en="Podiums">Podios</div><div class="v p" id="stP">0</div></div>
           <div class="stat"><div class="k">Poles</div><div class="v pp" id="stPP">0</div></div>
         </div>
-        <div class="trophies" id="trophyCase"><div class="empty">🏆 Vitrina vacía</div></div>
+        <div class="trophies" id="trophyCase"><div class="empty" data-es="🏆 Vitrina vacía" data-en="🏆 Empty trophy case">🏆 Vitrina vacía</div></div>
       </div>
 
       <div id="decRecap" style="display:none"></div>
@@ -501,7 +506,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 </section>
 
 <!-- ========== END ========== -->
-<button id="reopenBtn" onclick="reopenSummary()">↩︎ Volver al resumen</button>
+<button id="reopenBtn" onclick="reopenSummary()" data-es="↩︎ Volver al resumen" data-en="↩︎ Back to summary">↩︎ Volver al resumen</button>
 
 <div id="endModal">
   <div class="end-card">
@@ -514,14 +519,14 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     <div class="end-body">
       <div class="careermap" id="careerMap"></div>
       <div class="end-stats">
-        <div><div class="v" id="eGP">0</div><div class="k">Grandes Premios</div></div>
-        <div><div class="v" id="eW">0</div><div class="k">Victorias</div></div>
-        <div><div class="v" id="eP">0</div><div class="k">Podios</div></div>
+        <div><div class="v" id="eGP">0</div><div class="k" data-es="Grandes Premios" data-en="Grands Prix">Grandes Premios</div></div>
+        <div><div class="v" id="eW">0</div><div class="k" data-es="Victorias" data-en="Wins">Victorias</div></div>
+        <div><div class="v" id="eP">0</div><div class="k" data-es="Podios" data-en="Podiums">Podios</div></div>
         <div><div class="v" id="ePP">0</div><div class="k">Poles</div></div>
-        <div><div class="v" id="eT">0</div><div class="k">Mundiales F1</div></div>
-        <div><div class="v" id="eC">0</div><div class="k">Constructores</div></div>
-        <div><div class="v" id="eSub">0</div><div class="k">Subcampeonatos</div></div>
-        <div><div class="v" id="ePts">0</div><div class="k">Puntos F1</div></div>
+        <div><div class="v" id="eT">0</div><div class="k" data-es="Mundiales F1" data-en="F1 Titles">Mundiales F1</div></div>
+        <div><div class="v" id="eC">0</div><div class="k" data-es="Constructores" data-en="Constructors">Constructores</div></div>
+        <div><div class="v" id="eSub">0</div><div class="k" data-es="Subcampeonatos" data-en="Runner-ups">Subcampeonatos</div></div>
+        <div><div class="v" id="ePts">0</div><div class="k" data-es="Puntos F1" data-en="F1 Points">Puntos F1</div></div>
       </div>
       <div class="shelf" id="endShelf"></div>
       <div class="advbox" id="endAdv"></div>
@@ -529,14 +534,29 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <div class="verdict" id="endVerdict"></div>
       <div class="legend-score" id="legendScore"></div>
       <div class="end-actions">
-        <button class="btn sm" onclick="location.reload()">Nueva carrera</button>
-        <button class="btn sm line" onclick="viewCareer()">👁️ Ver carrera</button>
+        <button class="btn sm" onclick="location.reload()" data-es="Nueva carrera" data-en="New career">Nueva carrera</button>
+        <button class="btn sm line" onclick="viewCareer()" data-es="👁️ Ver carrera" data-en="👁️ View career">👁️ Ver carrera</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+/* ================= IDIOMA / LANGUAGE ================= */
+let LANG = (function(){ try{return localStorage.getItem("f1lang")||"es";}catch(e){return "es";} })();
+const L = (es,en)=> LANG==="en" ? en : es;
+function applyLang(){
+  document.querySelectorAll("[data-es]").forEach(el=>{ el.innerHTML = (LANG==="en"&&el.dataset.en!=null)? el.dataset.en : el.dataset.es; });
+  document.querySelectorAll("[data-esph]").forEach(el=>{ el.placeholder = (LANG==="en"&&el.dataset.enph!=null)? el.dataset.enph : el.dataset.esph; });
+  const tg=document.getElementById("langToggle"); if(tg) tg.textContent = LANG==="en"?"ES":"EN";
+  document.documentElement.lang = LANG;
+}
+function setLang(l){
+  LANG=l; try{localStorage.setItem("f1lang",l);}catch(e){}
+  applyLang();
+  // re-render de lo que esté en pantalla (si hay partida)
+  try{ if(typeof S!=="undefined" && S){ refreshCard(); renderF1State(); renderTimeline(); } }catch(e){}
+}
 /* ================= DATOS ================= */
 const COUNTRIES = [
   ["Alemania","🇩🇪"],["Angola","🇦🇴"],["Arabia Saudita","🇸🇦"],["Argelia","🇩🇿"],["Argentina","🇦🇷"],
@@ -2354,6 +2374,7 @@ function printCareer(){
   window.print();
   $("endModal").style.display="flex";
 }
+applyLang(); // aplicar el idioma guardado al cargar
 </script>
 </body>
 </html>
