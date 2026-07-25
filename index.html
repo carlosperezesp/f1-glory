@@ -752,7 +752,7 @@ function startCareer(){
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
     f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0,
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
-    seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, mySeatTeam:null,
+    seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
   };
   // parrilla: base 2026 = 11 equipos. Entra SOLO UN equipo de expansión por partida (aleatorio:
@@ -1284,6 +1284,45 @@ const DILEMAS=[
      [4,()=>(VAL(1.1),CAR(.5),"El equipo rema unido de nuevo. +fama, +0.5 coche")],
      [3,()=>"Frágil paz técnica. Sin cambios."],
      [3,()=>(S.role="2","Cedes terreno y él aprovecha para ser el Nº1.")])}]},
+ // ---- dilemas con condición ----
+ {id:"lluvia",stage:"f1",cond:()=>S.f1Seasons<=2,t:"La apuesta de la lluvia",
+  d:"Cielo de tormenta sobre el circuito y tú, jovencísimo, en tu salida. Puedes arriesgar con neumáticos lisos para robar posiciones… o salir prudente.",opts:[
+   {l:"Arriesgar con lisos 🌧️",r:()=>{
+     const st=sel.style, p= st==="agresivo"?.5 : st==="tecnico"?.62 : .45;
+     if(ch(p)){ OVR(st==="tecnico"?2:1); VAL(1.12);
+       return st==="agresivo" ? "¡Remontada temeraria de leyenda! El paddock alucina con tu descaro. +OVR, +fama"
+            : st==="tecnico"   ? "Bailas sobre el agua con precisión quirúrgica: una masterclass. +OVR, +fama"
+            : "Te sale por los pelos y sumas galones. +OVR, +fama"; }
+     VAL(st==="agresivo"?.84:.92);
+     return st==="agresivo" ? "Te estampas por temerario: coche a la grava y lluvia de críticas. −fama"
+          : "La lluvia no llega a tiempo y te comen los puestos. −fama"; }},
+   {l:"Salir prudente",r:()=>{VAL(1.02);return "Sumas seguro, sin épica ni sustos. Un finde correcto.";}}]},
+ {id:"reglamento",stage:"f1",cond:()=>S.role==="1" && S.team && S.f1perf[S.team.name]!=null && S.f1perf[S.team.name]<80 && S.age<=35,
+  t:"Apostar por el reglamento nuevo",
+  d:"Tu equipo, modesto, te plantea sacrificar esta temporada y volcarlo todo en el coche del año que viene, con el cambio de reglamento. Como Nº1, la decisión es tuya.",opts:[
+   {l:"Tirar el año: todo al coche del futuro 🎲",r:()=>{ const t=S.team.name;
+     if(ch(.55)){ S.f1target[t]=Math.min(94,(S.f1target[t]??S.f1perf[t])+rnd(7,12));
+       return "La apuesta sale REDONDA: el año que viene tendrás un cochazo para pelear arriba. 🚀"; }
+     S.f1target[t]=Math.max(60,(S.f1target[t]??S.f1perf[t])-rnd(3,6));
+     return "El concepto no funciona: el proyecto se hunde aún más. Año tirado para nada. 📉"; }},
+   {l:"Competir este año con lo que hay",r:()=>ch(.5)?(CAR(.6),"Exprimís el coche actual: algún puntito extra. +0.5 coche"):"Un año de transición sin sobresaltos."}]},
+ {id:"pupilo",stage:"f1",cond:()=>{ if(S.age<31||!S.team||!S.seats[S.team.name]) return false; const m=teammateOf(S.team.name); return m&&m.age!=null&&m.age<24; },
+  t:"El pupilo veloz",
+  d:()=>{ const m=teammateOf(S.team.name); return `${surname(m.name)}, tu joven compañero, te pide que le enseñes tus trucos. Es rapidísimo… y ayudarle podría crear a tu propio verdugo.`; },opts:[
+   {l:"Enseñarle todo lo que sabes",r:()=>{ const m=teammateOf(S.team.name); if(m&&m.skill) m.skill=Math.min(m.ceil||95,m.skill+2); VAL(1.1);
+     return `El paddock admira tu generosidad (+fama)… pero ${surname(m.name)} da un salto y aprieta por tu asiento.`; }},
+   {l:"Guardarte los trucos",r:()=>{VAL(.95);return "Mantienes tu ventaja, pero en el garaje te ven distante y calculador.";}}]},
+ {id:"contrato",stage:"f1",cond:()=>{ if(!S.team||!F1_TEAMS.some(t=>t.name===S.team.name)||S.ovr<85) return false; const b=bestPoachTeam(); return b && (S.f1perf[b]-S.f1perf[S.team.name])>=6; },
+  t:"Romper el contrato",
+  d:()=>{ const b=bestPoachTeam(); return `${b||"El mejor equipo de la parrilla"} te quiere YA, pero tienes contrato con ${S.team?S.team.name:"tu equipo"}. Marcharte quemará ese puente para siempre.`; },opts:[
+   {l:"Romper y fichar por el mejor 💔",r:()=>{ const b=bestPoachTeam(), old=S.team.name;
+     S.neverHire[old]=true; S.forceMove=true; S.poachTeam=b;
+     return `Rompes el contrato y te vas a por ${b||"el top"}. ${old} te cierra la puerta PARA SIEMPRE, pero tendrás un cochazo bajo el culo.`; }},
+   {l:"Cumplir tu palabra",r:()=>{VAL(1.08);return "Honras el contrato. El paddock respeta tu lealtad, aunque el coche de al lado corra más. +fama";}}]},
+ {id:"gesto",stage:"f1",cond:()=>S.seasons.length>0 && (S.seasons.at(-1).pos??20)<=3,t:"El gesto en el podio",
+  d:"Subes al podio y quieres usar tu momento de gloria para un mensaje que te importa. El equipo teme el lío con los patrocinadores.",opts:[
+   {l:"Alzar la voz 🏳️",r:()=>ch(.6)?(VAL(1.25),"Te conviertes en un icono más allá del deporte: la gente te admira. +fama"):(VAL(.9),"Hay reacción y bronca con el patrocinador: te llueven palos. −fama")},
+   {l:"Morderte la lengua",r:()=>{CAR(.5);return "El patrocinador respira aliviado y afloja el presupuesto. +0.5 coche";}}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -1320,6 +1359,13 @@ function reinventionDilemma(){
   };
 }
 
+// el mejor equipo de la parrilla que podría ficharte (para el dilema de romper contrato)
+function bestPoachTeam(){
+  if(!S.team) return null;
+  const c=F1_TEAMS.filter(t=>t.name!==S.team.name && !S.burned[t.name] && !S.neverHire[t.name] && S.f1perf[t.name]!=null)
+    .sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
+  return c.length?c[0].name:null;
+}
 function pickDilemma(){
   if(S.age<18) return null;
   // reinvención: 28-36, atascado en equipos malos, no en todas las partidas, una vez por carrera
@@ -1331,6 +1377,7 @@ function pickDilemma(){
   if(!ch(.30)) return null;
   const pool=DILEMAS.filter(d=>{
     if(S.usedDilemmas[d.id]) return false;
+    if(d.cond && !d.cond()) return false; // condición extra (año joven, Nº1 en equipo malo, edad del compañero…)
     if(d.stage==="jr") return S.cat!=="F1";
     if(d.stage==="f1") return S.cat==="F1";
     if(d.stage==="vet") return S.cat==="F1"&&S.age>=32;
@@ -1342,7 +1389,8 @@ function pickDilemma(){
 
 function renderDilemma(dl){
   S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age;
-  setDecision("⚡ "+dl.t, dl.d);
+  const desc = typeof dl.d==="function" ? dl.d() : dl.d;
+  setDecision("⚡ "+dl.t, desc);
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   dl.opts.forEach((opt,i)=>{
@@ -1890,11 +1938,15 @@ function nextOffers(){
     else if(rep>=80) cands=sorted.slice(1,7);
     else if(rep>=72) cands=sorted.slice(4,10);
     else cands=sorted.slice(7,10);
-    cands=cands.filter(t=>!S.burned[t.name]);
+    cands=cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name]);
     if(S.forceMove){
-      cands=cands.filter(t=>t.name!==S.team.name);
-      if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]);
-      pick(cands,3).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
+      cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
+      if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]);
+      // fichaje garantizado si vienes de romper contrato por un top (dilema "contrato")
+      const picks=[];
+      if(S.poachTeam){ const pt=F1_TEAMS.find(t=>t.name===S.poachTeam && !S.neverHire[t.name]); if(pt) picks.push(pt); S.poachTeam=null; }
+      pick(cands.filter(t=>!picks.some(p=>p.name===t.name)),3-picks.length).forEach(t=>picks.push(t));
+      picks.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title="Buscando equipo";
       sub=(sub||"")+"Tras la ruptura, necesitas un volante nuevo. Estas puertas siguen abiertas.";
       S.forceMove=false;
