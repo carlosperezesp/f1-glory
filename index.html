@@ -977,9 +977,9 @@ function renderRecap(){
 
 // perfiles de proyecto junior: tradeoff entre gloria/resultados ahora y desarrollo (OVR) para la F1
 const JR_PROFILES=[
-  {label:"🏆 Proyecto ganador", dev:-0.7, desc:"Buen coche: peleas por títulos, pero te desarrollas menos"},
-  {label:"⚖️ Equilibrado",      dev:0.25, desc:"Resultados y formación a partes iguales"},
-  {label:"🎓 Programa de desarrollo", dev:1.2, desc:"Coche flojo, pero te forman a fondo: llegarás mucho más fuerte"},
+  {label:"🏆 Proyecto ganador", dev:-0.3, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie"},
+  {label:"⚖️ Equilibrado",      dev:0.2,  desc:"Resultados y formación a partes iguales"},
+  {label:"🎓 Programa de desarrollo", dev:0.7, desc:"Coche flojo, pero te forman: llegas más fuerte aunque no ganes"},
 ];
 // genera 3 ofertas junior con perfil según su coche (mejor coche = ganador; peor = desarrollo)
 function juniorOffers(teams, cat){
@@ -1603,6 +1603,8 @@ function simJunior(row,st){
     if(S.cat==="F4"){S.titles.f4++; row.events.push("🏅 ¡Campeón de Fórmula 4!");}
     if(S.cat==="F3"){S.titles.f3++; row.events.push("🥈 ¡Campeón de Fórmula 3!");}
     if(S.cat==="F2"){S.titles.f2++; row.events.push("🥇 ¡Campeón de Fórmula 2!");}
+    // ganar forja: la experiencia de ser campeón te sube el nivel (recompensa al carril "ganador")
+    OVR(1.6); row.events.push("💪 Mentalidad de campeón: la experiencia de ganar te hace mejor piloto.");
   }
   return {pos};
 }
@@ -1874,7 +1876,9 @@ function nextOffers(){
       setTimeout(endCareer,1500);
       return;
     }
-    const rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0);
+    // reputación para las ofertas: nivel + palmarés + resultado reciente − edad + un poco de FAMA
+    // (un piloto mediático atrae a los equipos por los patrocinadores, pero solo un empujón acotado)
+    const rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180);
     if(rep<68&&S.age>=33){ endCareer(); return; }
     // el perdón llega, a veces, con los años
     Object.entries(S.burned).forEach(([tm,age])=>{
