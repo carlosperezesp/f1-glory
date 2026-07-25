@@ -539,22 +539,27 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 <script>
 /* ================= DATOS ================= */
 const COUNTRIES = [
-  ["España","🇪🇸"],["Reino Unido","🇬🇧"],["Alemania","🇩🇪"],["Francia","🇫🇷"],["Italia","🇮🇹"],
-  ["Países Bajos","🇳🇱"],["Bélgica","🇧🇪"],["Portugal","🇵🇹"],["Austria","🇦🇹"],["Suiza","🇨🇭"],
-  ["Finlandia","🇫🇮"],["Suecia","🇸🇪"],["Noruega","🇳🇴"],["Dinamarca","🇩🇰"],["Polonia","🇵🇱"],
-  ["Mónaco","🇲🇨"],["Irlanda","🇮🇪"],["Grecia","🇬🇷"],["Croacia","🇭🇷"],["Serbia","🇷🇸"],
-  ["Rusia","🇷🇺"],["Ucrania","🇺🇦"],["Chequia","🇨🇿"],["Eslovaquia","🇸🇰"],["Hungría","🇭🇺"],
-  ["Rumanía","🇷🇴"],["Bulgaria","🇧🇬"],["Estonia","🇪🇪"],["Letonia","🇱🇻"],["Lituania","🇱🇹"],
-  ["Islandia","🇮🇸"],["Eslovenia","🇸🇮"],["Bosnia","🇧🇦"],["Georgia","🇬🇪"],["Luxemburgo","🇱🇺"],
-  ["Estados Unidos","🇺🇸"],["Canadá","🇨🇦"],["México","🇲🇽"],["Argentina","🇦🇷"],["Brasil","🇧🇷"],
-  ["Colombia","🇨🇴"],["Chile","🇨🇱"],["Uruguay","🇺🇾"],["Perú","🇵🇪"],["Venezuela","🇻🇪"],
-  ["Ecuador","🇪🇨"],["Paraguay","🇵🇾"],["Bolivia","🇧🇴"],["Costa Rica","🇨🇷"],["Rep. Dominicana","🇩🇴"],
-  ["Australia","🇦🇺"],["Nueva Zelanda","🇳🇿"],["Japón","🇯🇵"],["China","🇨🇳"],["Corea del Sur","🇰🇷"],
-  ["Tailandia","🇹🇭"],["India","🇮🇳"],["Kazajistán","🇰🇿"],["Filipinas","🇵🇭"],["Indonesia","🇮🇩"],
-  ["Taiwán","🇹🇼"],["Uzbekistán","🇺🇿"],["Sudáfrica","🇿🇦"],["Marruecos","🇲🇦"],["Egipto","🇪🇬"],
-  ["Túnez","🇹🇳"],["Nigeria","🇳🇬"],["Arabia Saudita","🇸🇦"],["Emiratos Árabes","🇦🇪"],["Catar","🇶🇦"],
-  ["Turquía","🇹🇷"],["Israel","🇮🇱"]
-];
+  ["Alemania","🇩🇪"],["Angola","🇦🇴"],["Arabia Saudita","🇸🇦"],["Argelia","🇩🇿"],["Argentina","🇦🇷"],
+  ["Armenia","🇦🇲"],["Australia","🇦🇺"],["Austria","🇦🇹"],["Azerbaiyán","🇦🇿"],["Bélgica","🇧🇪"],
+  ["Bielorrusia","🇧🇾"],["Bolivia","🇧🇴"],["Bosnia","🇧🇦"],["Brasil","🇧🇷"],["Bulgaria","🇧🇬"],
+  ["Camerún","🇨🇲"],["Canadá","🇨🇦"],["Catar","🇶🇦"],["Chequia","🇨🇿"],["Chile","🇨🇱"],
+  ["China","🇨🇳"],["Chipre","🇨🇾"],["Colombia","🇨🇴"],["Corea del Sur","🇰🇷"],["Costa de Marfil","🇨🇮"],
+  ["Costa Rica","🇨🇷"],["Croacia","🇭🇷"],["Cuba","🇨🇺"],["Dinamarca","🇩🇰"],["Ecuador","🇪🇨"],
+  ["Egipto","🇪🇬"],["El Salvador","🇸🇻"],["Emiratos Árabes","🇦🇪"],["Eslovaquia","🇸🇰"],["Eslovenia","🇸🇮"],
+  ["España","🇪🇸"],["Estados Unidos","🇺🇸"],["Estonia","🇪🇪"],["Etiopía","🇪🇹"],["Filipinas","🇵🇭"],
+  ["Finlandia","🇫🇮"],["Francia","🇫🇷"],["Georgia","🇬🇪"],["Ghana","🇬🇭"],["Grecia","🇬🇷"],
+  ["Guatemala","🇬🇹"],["Honduras","🇭🇳"],["Hungría","🇭🇺"],["India","🇮🇳"],["Indonesia","🇮🇩"],
+  ["Irán","🇮🇷"],["Irlanda","🇮🇪"],["Islandia","🇮🇸"],["Israel","🇮🇱"],["Italia","🇮🇹"],
+  ["Jamaica","🇯🇲"],["Japón","🇯🇵"],["Kazajistán","🇰🇿"],["Kenia","🇰🇪"],["Kuwait","🇰🇼"],
+  ["Letonia","🇱🇻"],["Líbano","🇱🇧"],["Lituania","🇱🇹"],["Luxemburgo","🇱🇺"],["Malasia","🇲🇾"],
+  ["Malta","🇲🇹"],["Marruecos","🇲🇦"],["México","🇲🇽"],["Mónaco","🇲🇨"],["Montenegro","🇲🇪"],
+  ["Nigeria","🇳🇬"],["Noruega","🇳🇴"],["Nueva Zelanda","🇳🇿"],["Países Bajos","🇳🇱"],["Pakistán","🇵🇰"],
+  ["Panamá","🇵🇦"],["Paraguay","🇵🇾"],["Perú","🇵🇪"],["Polonia","🇵🇱"],["Portugal","🇵🇹"],
+  ["Reino Unido","🇬🇧"],["Rep. Dominicana","🇩🇴"],["Rumanía","🇷🇴"],["Rusia","🇷🇺"],["Senegal","🇸🇳"],
+  ["Serbia","🇷🇸"],["Singapur","🇸🇬"],["Sudáfrica","🇿🇦"],["Suecia","🇸🇪"],["Suiza","🇨🇭"],
+  ["Tailandia","🇹🇭"],["Taiwán","🇹🇼"],["Túnez","🇹🇳"],["Turquía","🇹🇷"],["Ucrania","🇺🇦"],
+  ["Uruguay","🇺🇾"],["Uzbekistán","🇺🇿"],["Venezuela","🇻🇪"],["Vietnam","🇻🇳"]
+].sort((a,b)=>a[0].localeCompare(b[0],"es"));
 
 const KART_TEAMS = [
   {name:"Academia Tony Kart", color:"#2a9d3a", color2:"#136223", perf:52, sub:"La cantera de los campeones europeos"},
@@ -1000,6 +1005,25 @@ const SERIES={
   supercars:{name:"Supercars AUS",  em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null,     decay:1.2, sub:"Turismos australianos. La joya: Bathurst."},
   dakar:    {name:"Dakar",          em:"🏜️", col:"#d98a1f", perf:76, varza:10,  marquee:"Dakar",        triple:null,     decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar."},
 };
+// afinidad LIGERA por nacionalidad: tu país tira un poco hacia ciertos equipos (aparecen algo más
+// en tus ofertas) y hacia ciertas competiciones de aventura (rindes algo mejor y te tientan más)
+const NAT_AFFINITY={
+  "Italia":{teams:["Ferrari"],series:[]},
+  "Reino Unido":{teams:["McLaren","Aston Martin","Williams"],series:[]},
+  "Alemania":{teams:["Mercedes","Audi"],series:["dtm"]},
+  "Austria":{teams:["Red Bull"],series:[]},
+  "Países Bajos":{teams:["Red Bull"],series:[]},
+  "Estados Unidos":{teams:["Haas","Cadillac"],series:["indy","nascar"]},
+  "Francia":{teams:["Alpine"],series:["lemans"]},
+  "España":{teams:["Aston Martin"],series:[]},
+  "Japón":{teams:["Racing Bulls"],series:["supercars"]},
+  "Australia":{teams:[],series:["supercars"]},
+  "México":{teams:["Cadillac"],series:["nascar"]},
+  "Brasil":{teams:[],series:["indy"]},
+  "Corea del Sur":{teams:["Hyundai"],series:[]},
+};
+function natAff(){ return NAT_AFFINITY[sel.country]||{teams:[],series:[]}; }
+function natLikesSeries(k){ return natAff().series.includes(k); }
 const JR_PROFILES=[
   {label:"🏆 Proyecto ganador", dev:-0.3, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie"},
   {label:"⚖️ Equilibrado",      dev:0.2,  desc:"Resultados y formación a partes iguales"},
@@ -1875,7 +1899,8 @@ function simAdventure(row){
   const sr=SERIES[S.advSeries]; if(!sr) return {pos:null};
   S.advYears++;
   const adapt = sel.style==="tecnico"?2 : sel.style==="agresivo"?-1 : 0; // los versátiles se adaptan mejor
-  const mine = S.ovr + adapt + gauss()*STYLES[sel.style].varza;
+  const natBonus = natLikesSeries(S.advSeries)?2.5:0; // tu país tira: un americano vuela en Indy/NASCAR
+  const mine = S.ovr + adapt + natBonus + gauss()*STYLES[sel.style].varza;
   const edge = mine - sr.perf;
   const winChance = Math.max(0.03, Math.min(0.55, 0.11 + edge*0.03));
   const marqueeWin = ch(winChance);
@@ -2088,6 +2113,11 @@ function nextOffers(){
       S.forceMove=false;
     } else {
       const others=pick(cands.filter(t=>t.name!==S.team.name),2);
+      // afinidad de nacionalidad: tu equipo "de casa" aparece un poco más (italiano→Ferrari, etc.)
+      const home=natAff().teams.map(n=>cands.find(t=>t.name===n)).find(Boolean);
+      if(home && home.name!==S.team.name && !others.some(t=>t.name===home.name) && ch(.45)){
+        if(others.length) others[others.length-1]=home; else others.push(home);
+      }
       // pipeline Racing Bulls → Red Bull: una joven promesa que rinde asciende al equipo madre
       if(S.team.name==="Racing Bulls" && S.age<=28){
         const lastPos=S.seasons.at(-1).pos;
@@ -2107,7 +2137,7 @@ function nextOffers(){
       // con probabilidad que sube con el "apetito aventurero". La mayoría de carreras nunca lo ven.
       if(S.age>=32 && S.f1Seasons>=3){
         const stuck = isStruggling() || (S.f1perf[S.team.name]??75)<77;
-        if(stuck && ch(0.28 + S.appetite*0.22))
+        if(stuck && ch(0.28 + S.appetite*0.22 + (natAff().series.length?0.12:0)))
           o.push({special:true, em:"🌎", name:"Buscar aventura fuera de la F1", sub:"Indy, Le Mans, NASCAR, DTM… una vida nueva", color:"#0ea5e9", onClick:()=>chooseAdventureSeries()});
       }
     }
