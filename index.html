@@ -1103,6 +1103,17 @@ const SERIES={
 function serName(k){ const s=SERIES[k]||{}; return L(s.name, s.nameEn||s.name); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
 function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee); }
+// Triple Corona: Mónaco + Indy 500 + Le Mans. Nombres de cada pata y estado.
+const CROWN_LEG={ monaco:["el GP de Mónaco","the Monaco GP"], indy:["las 500 Millas de Indianápolis","the Indy 500"], lemans:["las 24h de Le Mans","the Le Mans 24h"] };
+function crownDone(){ return ["monaco","indy","lemans"].filter(k=>S.tripleCrown&&S.tripleCrown[k]).length; }
+function crownMissingLeg(){ return ["monaco","indy","lemans"].find(k=>!(S.tripleCrown&&S.tripleCrown[k])); }
+// mensaje al ganar una pata (ya marcada en S.tripleCrown). `leg` = "monaco"|"indy"|"lemans", `winTxt` = frase base de la victoria.
+function crownMsgAfterWin(leg, winTxt){
+  const done=crownDone();
+  if(done===3) return `${winTxt} `+L("¡COMPLETAS la Triple Corona! Un club de uno: solo Graham Hill lo había logrado jamás.","You COMPLETE the Triple Crown! A club of one — only Graham Hill had ever done it.");
+  if(done===2){ const m=crownMissingLeg(); return `${winTxt} `+L(`A un paso de la Triple Corona: solo te falta conquistar ${CROWN_LEG[m][0]}.`,`One step from the Triple Crown: all that's left is to conquer ${CROWN_LEG[m][1]}.`); }
+  return winTxt; // done===1: no vendemos la Triple Corona como meta si aún estás lejos
+}
 // afinidad LIGERA por nacionalidad: tu país tira un poco hacia ciertos equipos (aparecen algo más
 // en tus ofertas) y hacia ciertas competiciones de aventura (rindes algo mejor y te tientan más)
 const NAT_AFFINITY={
@@ -1870,7 +1881,8 @@ function simF1(row,st){
   // ¿alguna de tus victorias fue en Mónaco? (cuenta para la 👑 Triple Corona). Más victorias → más probable
   if(wins>0 && !S.tripleCrown.monaco && ch(Math.min(.55, wins*0.13))){
     S.tripleCrown.monaco=true; S.monacoWins++;
-    row.events.push(L("👑 Ganas el GP de Mónaco: una joya para tu vitrina y un paso hacia la Triple Corona.","👑 You win the Monaco GP: a jewel for your cabinet and a step toward the Triple Crown."));
+    const base=L("👑 Ganas el GP de Mónaco, una de las grandes joyas del automovilismo.","👑 You win the Monaco GP, one of motorsport's crown jewels.");
+    row.events.push(crownMsgAfterWin("monaco", base));
   }
   const standings=[...grid].sort((a,b)=>b.pts-a.pts);
   const pos=1+standings.findIndex(d=>d.isP);
@@ -2004,9 +2016,10 @@ function simAdventure(row){
   let champPos = marqueeWin ? (ch(.55)?1:irnd(2,4))
     : Math.max(1, Math.min(18, Math.round(1 + Math.max(0,(sr.perf-mine))*0.7 + rnd(0,4))));
   const key=S.advSeries;
+  let newCrownLeg=false;
   if(marqueeWin){
     S.advWins[key]=(S.advWins[key]||0)+1;
-    if(sr.triple && !S.tripleCrown[sr.triple]) S.tripleCrown[sr.triple]=true;
+    if(sr.triple && !S.tripleCrown[sr.triple]){ S.tripleCrown[sr.triple]=true; newCrownLeg=true; }
     VAL(key==="dakar"?1.35:1.28);
   } else VAL(0.95); // sin gran resultado, tu foco mediático se enfría un poco
   if(champPos===1){ S.advTitles++; if(!marqueeWin) VAL(1.12); }
@@ -2016,6 +2029,11 @@ function simAdventure(row){
     : champPos<=3 ? L(`${champPos}º del campeonato (podio)`,`P${champPos} in the championship (podium)`)
     : L(`${champPos}º · ${serMarquee(key)}: te quedas sin premio`,`P${champPos} · ${serMarquee(key)}: no silverware`);
   row.events.push(`${sr.em} ${serName(key)} ${row.year}: ${res}`);
+  // ganar Indy/Le Mans avanza (o completa) la Triple Corona → aviso coherente con Mónaco
+  if(newCrownLeg){
+    const prog=crownMsgAfterWin(key, "").trim();
+    if(prog) row.events.push("👑 "+prog);
+  }
   row.advResult={series:key, champPos, win:marqueeWin};
   S.adventures.push({series:key, year:row.year, age:row.age, champPos, win:marqueeWin});
   return {pos:null};
