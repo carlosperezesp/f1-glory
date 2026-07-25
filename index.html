@@ -433,6 +433,13 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 [data-theme="dark"] .pos.rest,[data-theme="dark"] .cmcell.rest{background:#22344d;color:#8db4f5}
 /* trayectoria + paneles */
 [data-theme="dark"] .tl-row:hover{background:#22242d}
+[data-theme="dark"] .tl-row .ev{color:#aab0be}
+[data-theme="dark"] .tl-row .ev.top3{color:#d7dbe4;background:var(--panel2)}
+[data-theme="dark"] .tl-row.champ{background:linear-gradient(90deg,rgba(230,179,37,.18),transparent 62%)}
+[data-theme="dark"] .tl-row.champ:hover{background:linear-gradient(90deg,rgba(230,179,37,.26),transparent 62%)}
+[data-theme="dark"] .tl-empty{color:#6b7280}
+[data-theme="dark"] .cmstint{border-bottom-color:#2c313c}
+[data-theme="dark"] .tl-body::-webkit-scrollbar-thumb,[data-theme="dark"] .country-list::-webkit-scrollbar-thumb{background:#3a3f4a}
 [data-theme="dark"] .f1state .srow.me{background:linear-gradient(90deg,rgba(225,6,0,.24),transparent);color:#ff7a72}
 /* textos oscuros → claros */
 [data-theme="dark"] .advbox .advline,[data-theme="dark"] .end-card .verdict{color:#c4ccda}
@@ -2390,7 +2397,7 @@ function endCareer(){
   if(T>=1){
     if(T>bestRival) era=L(" Y nadie de tu generación ganó más mundiales que tú: dominaste tu era."," And nobody of your generation won more titles than you: you dominated your era.");
     else if(T===bestRival && rivalName) era=L(` Compartiste el trono con ${rivalName} (${T}-${bestRival}): una rivalidad que quedará en la historia.`,` You shared the throne with ${rivalName} (${T}-${bestRival}): a rivalry that will go down in history.`);
-    else if(rivalName) era=L(` Aun así, ${rivalName} reinó tu época con ${bestRival} mundiales — no dominaste, pero le hiciste sudar cada título.`,` Even so, ${rivalName} ruled your era with ${bestRival} titles — you didn't dominate, but you made him sweat for every one.`);
+    else if(rivalName) era=L(` Aun así, ${rivalName} reinó en tu época con ${bestRival} mundiales: no llegaste a dominar, pero le disputaste el trono hasta el final.`,` Even so, ${rivalName} ruled your era with ${bestRival} titles: you never quite dominated, but you fought them for the throne to the very end.`);
   }
   let legacy,verdict;
   if(T>=6){legacy=L("LEYENDA ETERNA","ETERNAL LEGEND");verdict=L("Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú.","Your name is spoken alongside Schumacher and Hamilton. The grandstands wear your number, and every kid in a kart dreams of being you.")+era;}
