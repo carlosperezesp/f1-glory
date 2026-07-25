@@ -1470,18 +1470,19 @@ function pickDilemma(){
 function renderDilemma(dl){
   S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age;
   const desc = typeof dl.d==="function" ? dl.d() : dl.d;
-  setDecision("⚡ "+dl.t, desc);
+  const ttl = typeof dl.t==="function" ? dl.t() : dl.t;
+  setDecision("⚡ "+ttl, desc);
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   dl.opts.forEach((opt,i)=>{
     const b=document.createElement("button"); b.className="offer dilemma";
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${i===0?"A":"B"}</span>
-      <span class="info"><span class="name">${opt.l}</span></span>`;
+      <span class="info"><span class="name">${typeof opt.l==="function"?opt.l():opt.l}</span></span>`;
     b.onclick=()=>{
       const txt=opt.r();
-      S.pendingEvents.push("⚡ "+dl.t+": "+txt);
+      S.pendingEvents.push("⚡ "+ttl+": "+txt);
       box.innerHTML="";
-      setDecision("⚡ "+dl.t, txt, false, true);
+      setDecision("⚡ "+ttl, txt, false, true);
       refreshCard();
       if(S.retired) return;
       setTimeout(startSeasonRun, 1100);
@@ -2293,21 +2294,21 @@ function endCareer(){
   if(S.adventures && S.adventures.length){
     const tc=S.tripleCrown.monaco && S.tripleCrown.indy && S.tripleCrown.lemans;
     const wins=[];
-    Object.entries(S.advWins||{}).forEach(([k,n])=>{ if(n>0){ const sr=SERIES[k]; wins.push(`${sr.em} ${sr.marquee} ×${n}`); } });
-    const mon = S.monacoWins? ` · 👑 GP Mónaco ×${S.monacoWins}`:"";
+    Object.entries(S.advWins||{}).forEach(([k,n])=>{ if(n>0){ const sr=SERIES[k]; wins.push(`${sr.em} ${serMarquee(k)} ×${n}`); } });
+    const mon = S.monacoWins? ` · 👑 ${L("GP Mónaco","Monaco GP")} ×${S.monacoWins}`:"";
     adv.style.display="block";
-    adv.innerHTML = `<div class="advtitle">🌎 Aventuras fuera de la F1</div>`
-      + (tc?`<div class="triplecrown">👑 TRIPLE CORONA · Mónaco + Indy 500 + Le Mans</div>`:"")
-      + `<div class="advline">${(wins.join(" · ")||"Sin victorias míticas")}${S.advTitles?` · 🥇 ${S.advTitles} título${S.advTitles>1?"s":""} de serie`:""}${mon}</div>`;
+    adv.innerHTML = `<div class="advtitle">${L("🌎 Aventuras fuera de la F1","🌎 Adventures outside F1")}</div>`
+      + (tc?`<div class="triplecrown">${L("👑 TRIPLE CORONA · Mónaco + Indy 500 + Le Mans","👑 TRIPLE CROWN · Monaco + Indy 500 + Le Mans")}</div>`:"")
+      + `<div class="advline">${(wins.join(" · ")||L("Sin victorias míticas","No marquee wins"))}${S.advTitles?` · 🥇 ${S.advTitles} ${L("título"+(S.advTitles>1?"s":"")+" de serie","series title"+(S.advTitles>1?"s":""))}`:""}${mon}</div>`;
   } else { adv.style.display="none"; adv.innerHTML=""; }
   renderCareerMap();
   // palmarés histórico actualizado: leyendas + pilotos de tu era + tú
   const rows=hallRows();
   const myRank=rows.findIndex(r=>r.me)+1;
   const hf=$("hallFame");
-  hf.innerHTML="<h4>🏛️ Palmarés histórico de la F1 · "+(2026+(S.age-16))+"</h4>"+
+  hf.innerHTML="<h4>"+L("🏛️ Palmarés histórico de la F1 · ","🏛️ All-time F1 title table · ")+(2026+(S.age-16))+"</h4>"+
     rows.slice(0,5).map((r,i)=>`<div class="hrow${r.me?" me":""}"><span class="rk">${i+1}.</span><span class="nm">${flg(r.flag)} ${r.n}</span><span class="tt">🏆×${r.t}</span></div>`).join("")+
-    (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${sel.name} (TÚ)</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
+    (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${sel.name} (${L("TÚ","YOU")})</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=S.titles.f1*120+S.titles.constr*30+S.wins*3+S.podiums+S.poles+S.subcamp*15;
   // ¿dominaste tu era? comparar tus títulos con el mejor rival, contando solo los mundiales
   // que ganó DESDE tu debut en F1 (tu época en la élite), no los que ya tenía antes
