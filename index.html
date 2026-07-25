@@ -493,13 +493,13 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     <div>
       <div class="card f1state" id="f1state" style="display:none">
         <div class="cols">
-          <div><h5>👑 Mundial de pilotos <span id="fsYear"></span></h5><div id="fsDrivers"></div></div>
-          <div><h5>🏭 Constructores</h5><div id="fsTeams"></div></div>
+          <div><h5><span data-es="👑 Mundial de pilotos" data-en="👑 Drivers' Championship">👑 Mundial de pilotos</span> <span id="fsYear"></span></h5><div id="fsDrivers"></div></div>
+          <div><h5 data-es="🏭 Constructores" data-en="🏭 Constructors">🏭 Constructores</h5><div id="fsTeams"></div></div>
         </div>
       </div>
       <div class="timeline">
-        <div class="tl-head"><span>Edad</span><span>Equipo</span><span>OVR</span><span>V</span><span>Pod</span><span>Camp.</span></div>
-        <div class="tl-body" id="tlBody"><div class="tl-empty">Tu historia empieza aquí…</div></div>
+        <div class="tl-head"><span data-es="Edad" data-en="Age">Edad</span><span data-es="Equipo" data-en="Team">Equipo</span><span>OVR</span><span data-es="V" data-en="W">V</span><span data-es="Pod" data-en="Pod">Pod</span><span data-es="Camp." data-en="Champ.">Camp.</span></div>
+        <div class="tl-body" id="tlBody"><div class="tl-empty" data-es="Tu historia empieza aquí…" data-en="Your story starts here…">Tu historia empieza aquí…</div></div>
       </div>
     </div>
   </div>
@@ -672,6 +672,9 @@ const STYLES = {
 // pilotaje rindes más; si choca, menos. [carácter del coche][tu estilo] = bonus
 const CHARS=["agresivo","tecnico","consistente"];
 const CHAR_LABEL={agresivo:"🔥 nervioso", tecnico:"🧠 técnico", consistente:"📈 noble"};
+const CHAR_LABEL_EN={agresivo:"🔥 twitchy", tecnico:"🧠 technical", consistente:"📈 forgiving"};
+function charLabel(c){ return (LANG==="en"?CHAR_LABEL_EN:CHAR_LABEL)[c]||""; }
+function styleLabel(k){ return k==="agresivo"?L("🔥 Agresivo","🔥 Aggressive"):k==="tecnico"?L("🧠 Técnico","🧠 Technical"):k==="consistente"?L("📈 Consistente","📈 Consistent"):""; }
 const CAR_AFFINITY={
   tecnico:    {tecnico:1.7, consistente:0.3, agresivo:-1.4},
   agresivo:   {agresivo:1.7, consistente:-1.4, tecnico:-0.6},
@@ -810,12 +813,13 @@ function startCareer(){
   $("identity").style.display="none"; $("career").style.display="block";
   $("tagNat").textContent = sel.flag+" "+sel.country.toUpperCase().slice(0,3);
   $("tagNum").textContent = "#"+sel.num;
-  $("tagStyle").textContent = STYLES[sel.style].label;
+  $("tagStyle").textContent = styleLabel(sel.style);
   refreshCard();
   offerAcademies();
 }
 
 function refreshCard(){
+  if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
   $("ovrNum").textContent = S.ovr;
   $("ovrBadge").style.background=ovrColor(S.ovr);
   $("ageV").textContent = S.age;
@@ -824,7 +828,7 @@ function refreshCard(){
   $("stGP").textContent=S.gp; $("stW").textContent=S.wins;
   $("stP").textContent=S.podiums; $("stPP").textContent=S.poles;
   if(S.team){
-    const roleTxt = S.cat==="TEST"?"PROBADOR": S.cat==="F1"&&S.role?`Nº${S.role}`:"";
+    const roleTxt = S.cat==="TEST"?L("PROBADOR","RESERVE"): S.cat==="F1"&&S.role?`Nº${S.role}`:"";
     $("teamName").textContent = S.team.name;
     $("teamRole").textContent = roleTxt;
     const d=$("teamDot");
@@ -832,7 +836,7 @@ function refreshCard(){
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, #ffffff 55%)`;
   } else {
-    $("teamName").textContent="Agente libre"; $("teamRole").textContent=""; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
+    $("teamName").textContent=L("Agente libre","Free agent"); $("teamRole").textContent=""; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
     $("driverCard").style.background="#fff";
   }
   const tc=$("trophyCase");
@@ -843,12 +847,12 @@ function refreshCard(){
   for(let i=0;i<S.titles.f3;i++) shelf.push("🥈");
   if(shelf.length){
     const caps=[];
-    if(S.titles.f1)caps.push(S.titles.f1+"× Mundial F1");
-    if(S.titles.constr)caps.push(S.titles.constr+"× Constructores");
+    if(S.titles.f1)caps.push(S.titles.f1+L("× Mundial F1","× F1 Title"));
+    if(S.titles.constr)caps.push(S.titles.constr+L("× Constructores","× Constructors"));
     if(S.titles.f2)caps.push(S.titles.f2+"× F2");
     if(S.titles.f3)caps.push(S.titles.f3+"× F3");
     tc.innerHTML=`<div class="shelf">${shelf.join("")}</div><div class="cap">${caps.join(" · ")}</div>`;
-  } else tc.innerHTML=`<div class="empty">🏆 Vitrina vacía</div>`;
+  } else tc.innerHTML=`<div class="empty">${L("🏆 Vitrina vacía","🏆 Empty trophy case")}</div>`;
 }
 
 /* ---------- gestión de asientos y mercado NPC ---------- */
@@ -962,13 +966,13 @@ function roleFor(teamName){
 /* tendencia del coche (hacia dónde apunta el proyecto): flecha + color */
 function trendInfo(teamName){
   const cur=S.f1perf[teamName], tgt=S.f1target[teamName];
-  if(cur==null||tgt==null) return {a:"→",c:"flat",t:"proyecto estable"};
+  if(cur==null||tgt==null) return {a:"→",c:"flat",t:L("proyecto estable","stable project")};
   const d=tgt-cur;
-  if(d>7)   return {a:"▲▲",c:"up2", t:"en plena ascensión"};
-  if(d>2.5) return {a:"▲", c:"up",  t:"al alza"};
-  if(d<-7)  return {a:"▼▼",c:"down2",t:"en caída libre"};
-  if(d<-2.5)return {a:"▼", c:"down", t:"en declive"};
-  return {a:"→",c:"flat",t:"proyecto estable"};
+  if(d>7)   return {a:"▲▲",c:"up2", t:L("en plena ascensión","surging")};
+  if(d>2.5) return {a:"▲", c:"up",  t:L("al alza","on the up")};
+  if(d<-7)  return {a:"▼▼",c:"down2",t:L("en caída libre","in free fall")};
+  if(d<-2.5)return {a:"▼", c:"down", t:L("en declive","declining")};
+  return {a:"→",c:"flat",t:L("proyecto estable","stable project")};
 }
 
 /* fama acumulada: victorias, podios, títulos… con Schumacher/Hamilton como techo */
@@ -983,14 +987,14 @@ function fameScore(){
   return Math.round(f*(S.fameMod||1));
 }
 function fameTier(f){
-  if(f>=1500) return ["INMORTAL","#7c3aed"];
-  if(f>=950)  return ["LEYENDA","#c026d3"];
-  if(f>=580)  return ["ICONO","#e10600"];
-  if(f>=330)  return ["FIGURA","#ea580c"];
-  if(f>=160)  return ["ESTRELLA","#d97706"];
-  if(f>=60)   return ["CONSAGRADO","#0891b2"];
-  if(f>=18)   return ["PROMESA","#16a34a"];
-  return ["DESCONOCIDO","#9a9aa4"];
+  if(f>=1500) return [L("INMORTAL","IMMORTAL"),"#7c3aed"];
+  if(f>=950)  return [L("LEYENDA","LEGEND"),"#c026d3"];
+  if(f>=580)  return [L("ICONO","ICON"),"#e10600"];
+  if(f>=330)  return [L("FIGURA","STAR NAME"),"#ea580c"];
+  if(f>=160)  return [L("ESTRELLA","STAR"),"#d97706"];
+  if(f>=60)   return [L("CONSAGRADO","ESTABLISHED"),"#0891b2"];
+  if(f>=18)   return [L("PROMESA","PROSPECT"),"#16a34a"];
+  return [L("DESCONOCIDO","UNKNOWN"),"#9a9aa4"];
 }
 
 /* ---------- ofertas ---------- */
@@ -999,17 +1003,17 @@ function renderRecap(){
   const el=$("decRecap"); if(!el) return;
   const s=S.seasons.at(-1);
   if(!s){ el.style.display="none"; el.innerHTML=""; return; }
-  const catLbl=s.cat==="KART"?"Karting":s.cat==="TEST"?"Probador":s.cat;
+  const catLbl=s.cat==="KART"?"Karting":s.cat==="TEST"?L("Probador","Reserve"):s.cat;
   let posTxt, posCol;
   if(s.pos==null){ posTxt="—"; posCol="#ececf1;color:#8a8a94"; }
-  else if(s.pos===1){ posTxt="🏆 Campeón"; posCol="linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000"; }
+  else if(s.pos===1){ posTxt=L("🏆 Campeón","🏆 Champion"); posCol="linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000"; }
   else if(s.pos<=3){ posTxt=s.pos+"º"; posCol="#dcf5e3;color:#15803d"; }
   else { posTxt=s.pos+"º"; posCol="#ececf1;color:#5a5a66"; }
-  const stat = s.cat==="TEST" ? (s.subRaces?`🏁 ${s.subRaces} GP sustituto · mejor ${s.subBest===1?"1º":s.subBest+"º"}`:"FP1 + simulador") : `🏆 ${s.wins} · 🥉 ${s.pods} · ${s.pts} pts`;
-  const constr = s.constrPos ? ` · 🏭 Constructores ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
+  const stat = s.cat==="TEST" ? (s.subRaces?`🏁 ${s.subRaces} ${L("GP sustituto · mejor","sub GPs · best")} ${s.subBest===1?"1º":s.subBest+"º"}`:L("FP1 + simulador","FP1 + simulator")) : `🏆 ${s.wins} · 🥉 ${s.pods} · ${s.pts} ${L("pts","pts")}`;
+  const constr = s.constrPos ? ` · 🏭 ${L("Constructores","Constructors")} ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
   const badge = teamBadge(s.team.name);
   el.style.display="block";
-  el.innerHTML = `<div class="recap-t">📋 Tu temporada ${s.year} · ${badge} ${s.team.name} · ${catLbl}</div>
+  el.innerHTML = `<div class="recap-t">${L("📋 Tu temporada","📋 Your season")} ${s.year} · ${badge} ${s.team.name} · ${catLbl}</div>
     <div class="recap-b"><span class="rp" style="background:${posCol}">${posTxt}</span> ${stat}${constr}</div>`;
 }
 
@@ -1018,13 +1022,16 @@ function renderRecap(){
 // marquee = carrera mítica que puedes GANAR (no garantizado); triple = cuenta para la Triple Corona;
 // decay = cuánto se oxida tu OVR de F1 por año fuera; fame = multiplicador de fama por buen año
 const SERIES={
-  indy:     {name:"IndyCar",        em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500",     triple:"indy",   decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas."},
-  lemans:   {name:"Resistencia (WEC)",em:"🕔", col:"#1d6a3c", perf:83, varza:5,   marquee:"Le Mans 24h",  triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans."},
-  nascar:   {name:"NASCAR",         em:"🏁", col:"#ffd200", perf:80, varza:8,   marquee:"Daytona 500",  triple:null,     decay:1.4, sub:"Stock cars. Otro mundo: puro contacto."},
-  dtm:      {name:"DTM",            em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM",    triple:null,     decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia."},
-  supercars:{name:"Supercars AUS",  em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null,     decay:1.2, sub:"Turismos australianos. La joya: Bathurst."},
-  dakar:    {name:"Dakar",          em:"🏜️", col:"#d98a1f", perf:76, varza:10,  marquee:"Dakar",        triple:null,     decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar."},
+  indy:     {name:"IndyCar", em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500", triple:"indy", decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas.", subEn:"Ovals and road courses. The jewel: the Indy 500."},
+  lemans:   {name:"Resistencia (WEC)", nameEn:"Endurance (WEC)", em:"🕔", col:"#1d6a3c", perf:83, varza:5, marquee:"Le Mans 24h", triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans.", subEn:"Sportscars. The jewel: the Le Mans 24h."},
+  nascar:   {name:"NASCAR", em:"🏁", col:"#ffd200", perf:80, varza:8, marquee:"Daytona 500", triple:null, decay:1.4, sub:"Stock cars. Otro mundo: puro contacto.", subEn:"Stock cars. Another world: pure contact."},
+  dtm:      {name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia.", subEn:"German GT3 touring cars, pure strategy."},
+  supercars:{name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
+  dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
 };
+function serName(k){ const s=SERIES[k]||{}; return L(s.name, s.nameEn||s.name); }
+function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
+function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee); }
 // afinidad LIGERA por nacionalidad: tu país tira un poco hacia ciertos equipos (aparecen algo más
 // en tus ofertas) y hacia ciertas competiciones de aventura (rindes algo mejor y te tientan más)
 const NAT_AFFINITY={
@@ -1043,9 +1050,9 @@ const NAT_AFFINITY={
 function natAff(){ return NAT_AFFINITY[sel.country]||{teams:[],series:[]}; }
 function natLikesSeries(k){ return natAff().series.includes(k); }
 const JR_PROFILES=[
-  {label:"🏆 Proyecto ganador", dev:-0.3, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie"},
-  {label:"⚖️ Equilibrado",      dev:0.2,  desc:"Resultados y formación a partes iguales"},
-  {label:"🎓 Programa de desarrollo", dev:0.7, desc:"Coche flojo, pero te forman: llegas más fuerte aunque no ganes"},
+  {label:"🏆 Proyecto ganador", labelEn:"🏆 Winning project", dev:-0.3, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie", descEn:"Good car: if you WIN titles you arrive with pedigree and experience. If not, you end up in no man's land"},
+  {label:"⚖️ Equilibrado", labelEn:"⚖️ Balanced", dev:0.2,  desc:"Resultados y formación a partes iguales", descEn:"Results and development in equal measure"},
+  {label:"🎓 Programa de desarrollo", labelEn:"🎓 Development programme", dev:0.7, desc:"Coche flojo, pero te forman: llegas más fuerte aunque no ganes", descEn:"Weak car, but they develop you: you arrive stronger even without winning"},
 ];
 // genera 3 ofertas junior con perfil según su coche (mejor coche = ganador; peor = desarrollo)
 function juniorOffers(teams, cat){
@@ -1054,7 +1061,7 @@ function juniorOffers(teams, cat){
   const three = pk(teams,3).map(t=>({t, perf:perfOf(t)})).sort((a,b)=>b.perf-a.perf);
   return three.map((x,i)=>{
     const p = JR_PROFILES[i] || JR_PROFILES[1];
-    return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:p.label, note:p.desc};
+    return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:L(p.label,p.labelEn), note:L(p.desc,p.descEn)};
   });
 }
 
@@ -1092,24 +1099,24 @@ function renderOffers(offers, withRetire){
     const [mn,mx]=RANGE[o.team.cat];
     const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-mn)/(mx-mn))));
     const stars="★".repeat(n5)+"☆".repeat(5-n5);
-    const catLbl = o.team.cat==="KART"?"Karting":o.team.cat==="TEST"?"Piloto probador F1":o.team.cat;
+    const catLbl = o.team.cat==="KART"?"Karting":o.team.cat==="TEST"?L("Piloto probador F1","F1 Reserve driver"):o.team.cat;
     let roleChip="";
-    if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">PILOTO Nº${o.role}</span>`;
-    if(o.team.cat==="TEST") roleChip=`<span class="role rt">PROBADOR</span>`;
-    const mate = o.team.cat==="F1"&&S.seats[o.team.name] ? " · Compañero: "+teammateOf(o.team.name).name : "";
+    if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.")}${o.role}</span>`;
+    if(o.team.cat==="TEST") roleChip=`<span class="role rt">${L("PROBADOR","RESERVE")}</span>`;
+    const mate = o.team.cat==="F1"&&S.seats[o.team.name] ? ` · ${L("Compañero","Teammate")}: `+teammateOf(o.team.name).name : "";
     let trendLine="", carLine="", profileLine="";
-    if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">TENDENCIA: ${ti.a} ${ti.t}</span>`; }
+    if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">${L("TENDENCIA","TREND")}: ${ti.a} ${ti.t}</span>`; }
     if(o.team.cat==="F1"){
       const c=S.f1char[o.team.name];
       const aff=(CAR_AFFINITY[c]&&CAR_AFFINITY[c][sel.style])||0;
-      const fit = aff>0.8?`<span class="fit good">✓ encaja con tu pilotaje</span>`:aff<-0.5?`<span class="fit bad">✗ choca con tu estilo</span>`:`<span class="fit neu">neutral</span>`;
-      carLine=`<span class="carline">Coche ${CHAR_LABEL[c]||""} · ${fit}</span>`;
+      const fit = aff>0.8?`<span class="fit good">${L("✓ encaja con tu pilotaje","✓ suits your driving")}</span>`:aff<-0.5?`<span class="fit bad">${L("✗ choca con tu estilo","✗ clashes with your style")}</span>`:`<span class="fit neu">${L("neutral","neutral")}</span>`;
+      carLine=`<span class="carline">${L("Coche","Car")} ${charLabel(c)} · ${fit}</span>`;
     }
     if(o.profile) profileLine=`<span class="jprofile"><b>${o.profile}</b> · ${o.note}</span>`;
     const subNote = (o.note && !o.profile) ? " · "+o.note : "";
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
-      <span class="sub" style="display:block">${catLbl} · Temporada ${yearNow()}${mate}${subNote}</span>${trendLine}${carLine}${profileLine}</span>
+      <span class="sub" style="display:block">${catLbl} · ${L("Temporada","Season")} ${yearNow()}${mate}${subNote}</span>${trendLine}${carLine}${profileLine}</span>
       <span class="perfwrap"><span class="perf">${stars}</span></span>`;
     b.onclick=()=>signContract(o);
     box.appendChild(b);
@@ -1117,7 +1124,7 @@ function renderOffers(offers, withRetire){
   if(withRetire){
     const b=document.createElement("button"); b.className="offer retire";
     b.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
-      <span class="info"><span class="name">Retirarse</span><span class="sub" style="display:block">Colgar el casco y asegurar tu legado</span></span>`;
+      <span class="info"><span class="name">${L("Retirarse","Retire")}</span><span class="sub" style="display:block">${L("Colgar el casco y asegurar tu legado","Hang up your helmet and secure your legacy")}</span></span>`;
     b.onclick=endCareer;
     box.appendChild(b);
   }
@@ -1651,7 +1658,7 @@ function renderF1State(){
   const mvCls=mv=> mv>0?" mv-up":mv<0?" mv-down":"";
   let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${x.me?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
   if(S.lastTop3.myPos!=null && S.lastTop3.myPos>3)
-    dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} TÚ</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
+    dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} ${L("TÚ","YOU")}</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
   $("fsDrivers").innerHTML=dHtml;
   const cmv=S.lastTop3.cmv||[];
   // en la clasificación mostramos solo el movimiento de posición (▲/▼ vs el año pasado);
@@ -2202,16 +2209,16 @@ function renderTimeline(){
     const div=document.createElement("div");
     div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
-    const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?"Probador F1":r.cat;
-    const constr=r.constrPos?` · 🏭 Constructores (equipo): ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
-    const subBestTxt=raced&&r.subBest?` · mejor ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
-    const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} GP sustituto${subBestTxt} · ${r.pts} pts`:"FP1 + simulador"):`${r.pts} pts`;
+    const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series)||L("Aventura","Adventure")):r.cat;
+    const constr=r.constrPos?` · 🏭 ${L("Constructores (equipo)","Constructors (team)")}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
+    const subBestTxt=raced&&r.subBest?` · ${L("mejor","best")} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
+    const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs")}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator")):r.cat==="ADV"?"":`${r.pts} pts`;
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle)
     const posLab=r.cat==="TEST"?"—":(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
     const posCls=r.cat==="TEST"?"rest":posClass(r.pos);
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
     div.innerHTML=`
-      <span class="age" title="Temporada ${r.year}">${r.age}</span>
+      <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
       <span class="club">${badge(r.team)}
         <span><span class="nm">${r.team.name}</span><br><span class="cat">${r.year} · ${catLbl} · ${ptsTxt}${constr}</span></span></span>
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
