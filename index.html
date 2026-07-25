@@ -299,6 +299,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .end-hero .years{color:rgba(255,255,255,.65);font-size:13px;padding-bottom:8px}
 .end-body{padding:0 34px}
 .end-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.advbox{margin:2px 0 14px;text-align:center}
+.advbox .advtitle{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:6px}
+.advbox .advline{font-size:13px;font-weight:700;color:#334}
+.advbox .triplecrown{display:inline-block;font-weight:900;font-size:13px;letter-spacing:.5px;color:#7a3b00;
+  background:linear-gradient(135deg,#ffdd82,#ffb52e);border:1px solid #e4be3f;border-radius:999px;padding:5px 14px;margin-bottom:7px;
+  box-shadow:0 4px 14px rgba(214,164,44,.45)}
 .end-stats > div{background:var(--panel2);border-radius:12px;padding:9px 6px}
 .end-stats .v{font-size:20px;font-weight:900;line-height:1.1}
 .end-stats .k{font-size:9px;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;margin-top:1px}
@@ -518,6 +524,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
         <div><div class="v" id="ePts">0</div><div class="k">Puntos F1</div></div>
       </div>
       <div class="shelf" id="endShelf"></div>
+      <div class="advbox" id="endAdv"></div>
       <div class="hall" id="hallFame"></div>
       <div class="verdict" id="endVerdict"></div>
       <div class="legend-score" id="legendScore"></div>
@@ -754,6 +761,8 @@ function startCareer(){
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
+    advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, monacoWins:0,
+    tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
   };
   // parrilla: base 2026 = 11 equipos. Entra SOLO UN equipo de expansión por partida (aleatorio:
   // unas veces Hyundai, otras Lotus) → la parrilla nunca pasa de 12. Año de entrada también aleatorio.
@@ -942,6 +951,10 @@ function fameScore(){
   let f = S.wins*3 + S.podiums + S.poles
     + S.titles.f1*100 + S.titles.constr*20 + S.subcamp*12 + S.f1Seasons*2
     + S.titles.f2*8 + S.titles.f3*4 + S.titles.kart*3;
+  // aventuras fuera de la F1: carreras míticas ganadas, títulos de serie y la Triple Corona dan fama
+  const advMarquee=Object.values(S.advWins||{}).reduce((a,b)=>a+b,0);
+  const tc=S.tripleCrown&&S.tripleCrown.monaco&&S.tripleCrown.indy&&S.tripleCrown.lemans;
+  f += advMarquee*18 + (S.advTitles||0)*10 + (tc?220:0);
   return Math.round(f*(S.fameMod||1));
 }
 function fameTier(f){
@@ -976,6 +989,17 @@ function renderRecap(){
 }
 
 // perfiles de proyecto junior: tradeoff entre gloria/resultados ahora y desarrollo (OVR) para la F1
+// competiciones fuera de la F1 (años sabáticos / aventuras). perf = nivel del rival medio en esa serie;
+// marquee = carrera mítica que puedes GANAR (no garantizado); triple = cuenta para la Triple Corona;
+// decay = cuánto se oxida tu OVR de F1 por año fuera; fame = multiplicador de fama por buen año
+const SERIES={
+  indy:     {name:"IndyCar",        em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500",     triple:"indy",   decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas."},
+  lemans:   {name:"Resistencia (WEC)",em:"🕔", col:"#1d6a3c", perf:83, varza:5,   marquee:"Le Mans 24h",  triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans."},
+  nascar:   {name:"NASCAR",         em:"🏁", col:"#ffd200", perf:80, varza:8,   marquee:"Daytona 500",  triple:null,     decay:1.4, sub:"Stock cars. Otro mundo: puro contacto."},
+  dtm:      {name:"DTM",            em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM",    triple:null,     decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia."},
+  supercars:{name:"Supercars AUS",  em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null,     decay:1.2, sub:"Turismos australianos. La joya: Bathurst."},
+  dakar:    {name:"Dakar",          em:"🏜️", col:"#d98a1f", perf:76, varza:10,  marquee:"Dakar",        triple:null,     decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar."},
+};
 const JR_PROFILES=[
   {label:"🏆 Proyecto ganador", dev:-0.3, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie"},
   {label:"⚖️ Equilibrado",      dev:0.2,  desc:"Resultados y formación a partes iguales"},
@@ -1017,6 +1041,7 @@ function scrollToDecision(){
 function renderOffers(offers, withRetire){
   const box=$("offerList"); box.innerHTML="";
   offers.forEach(o=>{
+    if(o.special){ box.appendChild(specialOfferBtn(o)); return; } // opción especial (aventura, volver, etc.)
     const b=document.createElement("button"); b.className="offer";
     b.style.border="2px solid "+o.team.color; b.style.borderLeftWidth="6px";
     const isF1seat = o.team.cat==="F1"||o.team.cat==="TEST";
@@ -1323,6 +1348,12 @@ const DILEMAS=[
   d:"Subes al podio y quieres usar tu momento de gloria para un mensaje que te importa. El equipo teme el lío con los patrocinadores.",opts:[
    {l:"Alzar la voz 🏳️",r:()=>ch(.6)?(VAL(1.25),"Te conviertes en un icono más allá del deporte: la gente te admira. +fama"):(VAL(.9),"Hay reacción y bronca con el patrocinador: te llueven palos. −fama")},
    {l:"Morderte la lengua",r:()=>{CAR(.5);return "El patrocinador respira aliviado y afloja el presupuesto. +0.5 coche";}}]},
+ {id:"dakarcameo",stage:"vet",cond:()=>S.age>=35 && !S.dakarDone && S.cat==="F1",t:"La llamada del Dakar",
+  d:"En enero, con la F1 parada, te tienta el rally más brutal del planeta: el Dakar. Tu equipo tuerce el gesto… pero ya eres un veterano con galones y te lo permiten.",opts:[
+   {l:"Lanzarte al desierto 🏜️",r:()=>{ S.dakarDone=true; S.appetite=Math.min(3,S.appetite+1);
+     if(ch(.5)){ VAL(1.22); return "Sobrevives a las dunas y terminas el Dakar: una hazaña que da la vuelta al mundo. +fama"; }
+     OVR(-1); S.missRaces=irnd(1,3); return "Un vuelco te deja tocado: llegas magullado a la pretemporada de F1. −OVR y te pierdes algún GP."; }},
+   {l:"No arriesgar tu asiento",r:()=>"Tu equipo respira aliviado. Sigues centrado en la Fórmula 1."}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -1427,6 +1458,7 @@ function simSeason(){
   let result;
   if(S.cat==="F1") result = simF1(row,st);
   else if(S.cat==="TEST"){ result = simTest(row,st); bgF1Season(row); }
+  else if(S.cat==="ADV"){ result = simAdventure(row); bgF1Season(row); }
   else { result = simJunior(row,st); bgF1Season(row); }
   // jerarquía: solo cambia por una brecha CLARA y sostenida con el mismo compañero
   if(S.cat==="F1" && S.team && S.seats[S.team.name]){
@@ -1441,25 +1473,31 @@ function simSeason(){
       else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1."); }
     }
   }
-  maybeEvent(row,st);
+  if(S.cat!=="ADV") maybeEvent(row,st);
   evolveF1();
   npcSeason();
   // crecimiento con rendimientos decrecientes: cuanto más alto, más cuesta.
   // el techo real ronda 88-93; solo un talento excepcional roza el 95.
   let g;
-  if(S.age<=19) g=rnd(2.5,5.5);
-  else if(S.age<=23) g=rnd(1.6,3.6);
-  else if(S.age<=27) g=rnd(.5,2);
-  else if(S.age<=31) g=rnd(-.4,1);
-  else if(S.age<=34) g=rnd(-2.6,-.7);
-  else g=rnd(-5,-2.2);
-  g += st.growth*.5;
-  if(S.cat!=="F1" && S.team && S.team.dev) g += S.team.dev; // perfil del proyecto junior: +formación / -verde
-  // declive según estilo: el agresivo se apaga antes; el consistente envejece como el buen vino (Alonso)
-  if(S.age>=30) g += (sel.style==="consistente"? .6 : sel.style==="agresivo"? -.6 : 0);
-  if(result.pos!=null && result.pos<=3 && S.age<=31) g+=.5;
-  if(S.cat==="TEST") g*=.7;
-  if(g>0) g*=Math.max(.13,(95-S.ovr)/22); // el techo se vuelve casi vertical hacia el 92
+  if(S.cat==="ADV"){
+    // fuera de la F1 pierdes punta: tu OVR se OXIDA (menos si eres técnico/versátil)
+    const sr=SERIES[S.advSeries];
+    g = -(sr?sr.decay:1) - (S.age>=34?0.6:0) + (sel.style==="tecnico"?0.3:0) + st.growth*.2;
+  } else {
+    if(S.age<=19) g=rnd(2.5,5.5);
+    else if(S.age<=23) g=rnd(1.6,3.6);
+    else if(S.age<=27) g=rnd(.5,2);
+    else if(S.age<=31) g=rnd(-.4,1);
+    else if(S.age<=34) g=rnd(-2.6,-.7);
+    else g=rnd(-5,-2.2);
+    g += st.growth*.5;
+    if(S.cat!=="F1" && S.team && S.team.dev) g += S.team.dev; // perfil del proyecto junior: +formación / -verde
+    // declive según estilo: el agresivo se apaga antes; el consistente envejece como el buen vino (Alonso)
+    if(S.age>=30) g += (sel.style==="consistente"? .6 : sel.style==="agresivo"? -.6 : 0);
+    if(result.pos!=null && result.pos<=3 && S.age<=31) g+=.5;
+    if(S.cat==="TEST") g*=.7;
+    if(g>0) g*=Math.max(.13,(95-S.ovr)/22); // el techo se vuelve casi vertical hacia el 92
+  }
   S.ovr = Math.max(40, Math.min(95, Math.round(S.ovr+g)));
   row.ovr=S.ovr;
   S.missRaces=0;
@@ -1708,6 +1746,11 @@ function simF1(row,st){
   }
   const pts=me.pts;
   S.wins+=wins;S.podiums+=pods;S.poles+=poles;S.ptsF1+=pts;
+  // ¿alguna de tus victorias fue en Mónaco? (cuenta para la 👑 Triple Corona). Más victorias → más probable
+  if(wins>0 && !S.tripleCrown.monaco && ch(Math.min(.55, wins*0.13))){
+    S.tripleCrown.monaco=true; S.monacoWins++;
+    row.events.push("👑 Ganas el GP de Mónaco: una joya para tu vitrina y un paso hacia la Triple Corona.");
+  }
   const standings=[...grid].sort((a,b)=>b.pts-a.pts);
   const pos=1+standings.findIndex(d=>d.isP);
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
@@ -1816,8 +1859,101 @@ function maybeEvent(row,st){
 }
 
 /* ---------- mercado del jugador ---------- */
+/* ================= AVENTURAS (años sabáticos fuera de la F1) ================= */
+function pickN(arr,n){ const c=[...arr],out=[]; while(out.length<n&&c.length) out.push(c.splice(irnd(0,c.length-1),1)[0]); return out; }
+function specialOfferBtn(o){
+  const b=document.createElement("button"); b.className="offer";
+  b.style.border="2px solid "+(o.color||"#888"); b.style.borderLeftWidth="6px";
+  b.innerHTML=`<span class="team-dot dot" style="background:${o.color||'#888'}">${o.em||"🌎"}</span>
+    <span class="info"><span class="name">${o.name}</span><span class="sub" style="display:block">${o.sub||""}</span></span>`;
+  b.onclick=o.onClick; return b;
+}
+function renderSpecialOptions(opts){ const box=$("offerList"); box.innerHTML=""; opts.forEach(o=>box.appendChild(specialOfferBtn(o))); }
+
+// simula un año en una competición de fuera. Ganar la carrera mítica NO está garantizado.
+function simAdventure(row){
+  const sr=SERIES[S.advSeries]; if(!sr) return {pos:null};
+  S.advYears++;
+  const adapt = sel.style==="tecnico"?2 : sel.style==="agresivo"?-1 : 0; // los versátiles se adaptan mejor
+  const mine = S.ovr + adapt + gauss()*STYLES[sel.style].varza;
+  const edge = mine - sr.perf;
+  const winChance = Math.max(0.03, Math.min(0.55, 0.11 + edge*0.03));
+  const marqueeWin = ch(winChance);
+  let champPos = marqueeWin ? (ch(.55)?1:irnd(2,4))
+    : Math.max(1, Math.min(18, Math.round(1 + Math.max(0,(sr.perf-mine))*0.7 + rnd(0,4))));
+  const key=S.advSeries;
+  if(marqueeWin){
+    S.advWins[key]=(S.advWins[key]||0)+1;
+    if(sr.triple && !S.tripleCrown[sr.triple]) S.tripleCrown[sr.triple]=true;
+    VAL(key==="dakar"?1.35:1.28);
+  } else VAL(0.95); // sin gran resultado, tu foco mediático se enfría un poco
+  if(champPos===1){ S.advTitles++; if(!marqueeWin) VAL(1.12); }
+  S.appetite=Math.min(3, S.appetite + (key==="lemans"||key==="dakar"?1.2:0.8));
+  const res = marqueeWin ? `🏆 ¡GANAS ${sr.marquee}!`
+    : champPos===1 ? `🥇 ¡Campeón de la ${sr.name}!`
+    : champPos<=3 ? `${champPos}º del campeonato (podio)`
+    : `${champPos}º · ${sr.marquee}: te quedas sin premio`;
+  row.events.push(`${sr.em} ${sr.name} ${row.year}: ${res}`);
+  row.advResult={series:key, champPos, win:marqueeWin};
+  S.adventures.push({series:key, year:row.year, age:row.age, champPos, win:marqueeWin});
+  return {pos:null};
+}
+// probabilidad de que la F1 te vuelva a llamar: fama + OVR − años fuera − edad
+function returnChance(){
+  const fameT=Math.min(6, fameScore()/180);
+  const c = 0.42 + (S.ovr-76)*0.04 + fameT*0.05 - S.advYears*0.06 - Math.max(0,S.age-36)*0.06;
+  return Math.max(0.08, Math.min(0.92, c));
+}
+function chooseAdventureSeries(){
+  setDecision("🌎 ¿Dónde te lanzas?","Elige tu aventura fuera de la Fórmula 1. Cada mundo es distinto… y ninguna victoria está garantizada.");
+  $("decRecap").style.display="none";
+  renderSpecialOptions(Object.entries(SERIES).map(([k,s])=>({special:true, em:s.em, name:s.name,
+    sub:s.sub+(s.triple?" · 👑 Triple Corona":""), color:s.col, onClick:()=>startAdventure(k)})));
+}
+function startAdventure(key){
+  S.advSeries=key; S.cat="ADV";
+  S.team={name:SERIES[key].name, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
+  S.role=null; S.roleTeam=null; S.roleMate=null;
+  startSeasonRun();
+}
+function advOffers(){
+  refreshCard(); renderF1State(); renderTimeline(); renderRecap();
+  const sr=SERIES[S.advSeries]; const back=returnChance();
+  setDecision(`${sr.em} Tu vida fuera de la F1`, `${sr.name} · fin de ${yearNow()-1}. ¿Y ahora qué?`);
+  const opts=[
+    {special:true, em:sr.em, name:`Seguir en ${sr.name}`, sub:"Otra temporada de aventura", color:sr.col, onClick:()=>startSeasonRun()},
+    {special:true, em:"🔙", name:"Intentar volver a la F1", sub: back>=.6?"Los equipos te tienen en el radar":back>=.3?"Habrá que convencer a alguien":"Difícil: llevas tiempo fuera y algo oxidado", color:"#e10600", onClick:()=>attemptReturn()},
+  ];
+  if(S.appetite>=1) opts.push({special:true, em:"🌎", name:"Probar otra competición", sub:"El gusanillo aventurero", color:"#6d28d9", onClick:()=>chooseAdventureSeries()});
+  opts.push({special:true, em:"🏁", name:"Retirarse", sub:"Colgar el casco como aventurero", color:"#71717c", onClick:endCareer});
+  renderSpecialOptions(opts);
+}
+function attemptReturn(){
+  if(ch(returnChance())){ returnF1Offers(); }
+  else {
+    renderRecap();
+    setDecision("La F1 no llama… todavía","Ningún equipo te ofrece asiento este año. Sigues tu aventura o cuelgas el casco.");
+    renderSpecialOptions([
+      {special:true, em:SERIES[S.advSeries].em, name:`Seguir en ${SERIES[S.advSeries].name}`, sub:"Otra temporada", color:SERIES[S.advSeries].col, onClick:()=>startSeasonRun()},
+      {special:true, em:"🏁", name:"Retirarse", sub:"Fin del viaje", color:"#71717c", onClick:endCareer}
+    ]);
+  }
+}
+function returnF1Offers(){
+  const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
+  const rep=S.ovr+Math.min(6,fameScore()/180);
+  let cands = rep>=86?sorted.slice(1,6) : rep>=78?sorted.slice(4,10) : sorted.slice(6,11);
+  cands=cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]);
+  if(!cands.length) cands=sorted.filter(t=>!S.neverHire[t.name]).slice(-4);
+  const o=[]; pickN(cands,Math.min(3,cands.length)).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
+  setDecision("🔙 ¡De vuelta en la Fórmula 1!","Un equipo apuesta por tu experiencia y tu tirón mediático. Elige tu regreso:");
+  $("decRecap").style.display="none";
+  renderOffers(o,false);
+}
+
 function nextOffers(){
   if(S.age>=42){ endCareer(); return; }
+  if(S.cat==="ADV"){ advOffers(); return; } // estás fuera de la F1: menú de aventura
   const o=[];
   let title="Nuevas ofertas", sub="";
   // posición final de la última temporada: los saltos de superpromesa exigen terminar ARRIBA de verdad
@@ -1967,6 +2103,13 @@ function nextOffers(){
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title="Mercado de fichajes "+(yearNow());
       sub=(sub||"")+"Silly season: los contratos están sobre la mesa.";
+      // 🌎 aventura fuera de la F1: RARO — solo si mayor y atascado (coche malo o mala racha),
+      // con probabilidad que sube con el "apetito aventurero". La mayoría de carreras nunca lo ven.
+      if(S.age>=32 && S.f1Seasons>=3){
+        const stuck = isStruggling() || (S.f1perf[S.team.name]??75)<77;
+        if(stuck && ch(0.28 + S.appetite*0.22))
+          o.push({special:true, em:"🌎", name:"Buscar aventura fuera de la F1", sub:"Indy, Le Mans, NASCAR, DTM… una vida nueva", color:"#0ea5e9", onClick:()=>chooseAdventureSeries()});
+      }
     }
     if(!o.length){
       setDecision("Sin ofertas","Demasiados puentes quemados. El paddock tiene memoria.");
@@ -2037,7 +2180,7 @@ function renderTimeline(){
 /* mapa de carrera: agrupa años de F1/probador por equipo → historia compartible */
 function renderCareerMap(){
   const el=$("careerMap"); if(!el) return;
-  const f1s=S.seasons.filter(s=>s.cat==="F1"||s.cat==="TEST");
+  const f1s=S.seasons.filter(s=>s.cat==="F1"||s.cat==="TEST"||s.cat==="ADV");
   if(!f1s.length){ el.style.display="none"; el.innerHTML=""; return; }
   el.style.display="block";
   const stints=[];
@@ -2056,13 +2199,16 @@ function renderCareerMap(){
   let html=`<h4>🏁 Tu carrera año a año <span class="cmpeakbadge">Mejor OVR ${careerPeak}</span></h4>`;
   stints.forEach(st=>{
     const rows=st.rows, y0=rows[0].year, y1=rows[rows.length-1].year, n=rows.length;
-    const isTest=st.cat==="TEST";
-    const titles=rows.filter(r=>r.pos===1).length;
-    const best=isTest?null:Math.min(...rows.map(r=>r.pos));
+    const isTest=st.cat==="TEST", isAdv=st.cat==="ADV";
     const yrs = y0===y1?`'${String(y0).slice(2)}`:`'${String(y0).slice(2)}–${String(y1).slice(2)}`;
-    // cada año = tu POSICIÓN final, coloreada por resultado (lo que cuenta)
+    // cada año = tu POSICIÓN final (F1), tu resultado en la serie (aventura) o "—" (probador)
     const cells=rows.map(r=>{
-      // el probador no tiene posición de campeonato → casilla neutra "—"
+      if(isAdv){
+        const ar=r.advResult||{}, sr=SERIES[ar.series]||{};
+        const cls = (ar.win||ar.champPos===1)?"p1" : ar.champPos<=3?"top" : "rest";
+        const lab = ar.win?"🏆" : (ar.champPos?ar.champPos+"º":"—");
+        return `<span class="cmcell ${cls}" title="${r.year} · ${sr.name||"aventura"}${ar.win?" · ¡"+sr.marquee+"!":""} · OVR ${r.ovr}">${lab}</span>`;
+      }
       const cls=isTest?"rest":posClass(r.pos);
       const lab=isTest?"—":(r.pos===1?"🏆":r.pos+"º");
       const tip=isTest?(r.subRaces?`${r.year} · probador · ${r.subRaces} GP sustituto (mejor ${r.subBest===1?"1º":r.subBest+"º"}) · OVR ${r.ovr}`:`${r.year} · probador · OVR ${r.ovr}`):`${r.year} · OVR ${r.ovr}`;
@@ -2090,9 +2236,19 @@ function endCareer(){
   const shelf=[];
   for(let i=0;i<S.titles.f1;i++)shelf.push("🏆");
   for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
-  for(let i=0;i<S.titles.f2;i++)shelf.push("🥇");
-  for(let i=0;i<S.titles.f3;i++)shelf.push("🥈");
   $("endShelf").textContent=shelf.join("")||"—";
+  // 🌎 sección de aventuras fuera de la F1 (solo si corriste alguna)
+  const adv=$("endAdv");
+  if(S.adventures && S.adventures.length){
+    const tc=S.tripleCrown.monaco && S.tripleCrown.indy && S.tripleCrown.lemans;
+    const wins=[];
+    Object.entries(S.advWins||{}).forEach(([k,n])=>{ if(n>0){ const sr=SERIES[k]; wins.push(`${sr.em} ${sr.marquee} ×${n}`); } });
+    const mon = S.monacoWins? ` · 👑 GP Mónaco ×${S.monacoWins}`:"";
+    adv.style.display="block";
+    adv.innerHTML = `<div class="advtitle">🌎 Aventuras fuera de la F1</div>`
+      + (tc?`<div class="triplecrown">👑 TRIPLE CORONA · Mónaco + Indy 500 + Le Mans</div>`:"")
+      + `<div class="advline">${(wins.join(" · ")||"Sin victorias míticas")}${S.advTitles?` · 🥇 ${S.advTitles} título${S.advTitles>1?"s":""} de serie`:""}${mon}</div>`;
+  } else { adv.style.display="none"; adv.innerHTML=""; }
   renderCareerMap();
   // palmarés histórico actualizado: leyendas + pilotos de tu era + tú
   const rows=hallRows();
