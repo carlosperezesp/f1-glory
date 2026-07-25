@@ -939,9 +939,9 @@ function oustTeammate(row){
     const dsl=S.seats[dest.name];
     const wk = dsl[0]==="PLAYER"?1 : dsl[1]==="PLAYER"?0 : (dsl[0].skill<=dsl[1].skill?0:1);
     if(dsl[wk]!=="PLAYER") dsl[wk]=mate;
-    row.events.push("💥 "+surname(mate.name)+", humillado tras perder el pulso, se marcha a "+dest.name+".");
+    row.events.push(L("💥 "+surname(mate.name)+", humillado tras perder el pulso, se marcha a "+dest.name+".","💥 "+surname(mate.name)+", humiliated after losing the power struggle, leaves for "+dest.name+"."));
   } else {
-    row.events.push("💥 "+surname(mate.name)+", humillado, deja el equipo.");
+    row.events.push(L("💥 "+surname(mate.name)+", humillado, deja el equipo.","💥 "+surname(mate.name)+", humiliated, leaves the team."));
   }
   slots[mi]=mkRookie();
   S.role="1"; S.roleTeam=teamName; S.roleMate=teammateOf(teamName).name;
@@ -1519,8 +1519,8 @@ function simSeason(){
       oustTeammate(row); S.oustMate=false;
     } else {
       const gap=(S.ovr+S.titles.f1*2)-(mate.skill||75);
-      if(S.role==="2" && gap>4){ S.role="1"; row.events.push("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+"."); }
-      else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1."); }
+      if(S.role==="2" && gap>4){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".")); }
+      else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push(L("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1.","⬇️ "+surname(mate.name)+" takes the No.1 driver status from you.")); }
     }
   }
   if(S.cat!=="ADV") maybeEvent(row,st);
@@ -1591,7 +1591,7 @@ function checkExpansion(row){
       const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d;
     });
     while(S.seats[e.team.name].length<2) S.seats[e.team.name].push(mkRookie());
-    row.events.push("🆕 "+e.team.name+" se estrena en la Fórmula 1 esta temporada.");
+    row.events.push(L("🆕 "+e.team.name+" se estrena en la Fórmula 1 esta temporada.","🆕 "+e.team.name+" makes its Formula 1 debut this season."));
   });
 }
 
@@ -1677,8 +1677,8 @@ function simTest(row,st){
   // ¿te toca disputar carreras este año? (lesión del titular, ascenso a media temporada, cesión…)
   if(ch(.45)){
     const races=irnd(2,9);
-    const reason=["🚑 El titular se lesiona y saltas al coche","📈 Debut a media temporada como sustituto",
-      "🔁 Te ceden unas carreras para foguearte","🎗️ Cubres al titular sancionado"][irnd(0,3)];
+    const reason=[L("🚑 El titular se lesiona y saltas al coche","🚑 The regular is injured and you jump in the car"),L("📈 Debut a media temporada como sustituto","📈 Mid-season debut as a stand-in"),
+      L("🔁 Te ceden unas carreras para foguearte","🔁 You're loaned a few races to get experience"),L("🎗️ Cubres al titular sancionado","🎗️ You cover for the suspended regular")][irnd(0,3)];
     let best=99, pts=0, wins=0, pods=0;
     for(let r=0;r<races;r++){
       const mine = S.ovr*.5 + teamPerf*.5 + gauss()*st.varza;
@@ -1690,16 +1690,16 @@ function simTest(row,st){
     }
     S.wins+=wins; S.podiums+=pods; S.ptsF1+=pts;
     row.wins=wins; row.pods=pods; row.pts=pts; row.subBest=best<99?best:null; row.subRaces=races;
-    const bestTxt = best<99?(best===1?"¡victoria! 🏆":"mejor "+best+"º"):"sin puntuar";
+    const bestTxt = best<99?(best===1?L("¡victoria! 🏆","win! 🏆"):L("mejor "+best+"º","best "+best+"th")):L("sin puntuar","no points");
     row.events.push(`${reason} (${races} GP): ${bestTxt}.`);
     // hacerlo bien te pone en el escaparate: sube tu OVR y abre asientos
-    if(best<=5){ OVR(1); S.testProved=2; row.events.push("⭐ Gran papel de sustituto: los equipos toman nota."); }
+    if(best<=5){ OVR(1); S.testProved=2; row.events.push(L("⭐ Gran papel de sustituto: los equipos toman nota.","⭐ A great stand-in showing: the teams take note.")); }
     else if(best<=10){ S.testProved=Math.max(S.testProved||0,1); }
   } else {
-    const flavor=["🔬 Miles de vueltas en el simulador puliendo tu técnica.",
-      "🛞 FP1 en "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimas del titular.",
-      "🧰 Te conviertes en la referencia técnica del garaje.",
-      "📋 Recorres el mundo con el equipo aprendiendo cada circuito."];
+    const flavor=[L("🔬 Miles de vueltas en el simulador puliendo tu técnica.","🔬 Thousands of laps in the simulator polishing your craft."),
+      L("🛞 FP1 en "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimas del titular.","🛞 FP1 at "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": 3 tenths off the regular."),
+      L("🧰 Te conviertes en la referencia técnica del garaje.","🧰 You become the technical reference in the garage."),
+      L("📋 Recorres el mundo con el equipo aprendiendo cada circuito.","📋 You travel the world with the team learning every circuit.")];
     row.events.push(flavor[irnd(0,flavor.length-1)]);
   }
   return {pos:null};
@@ -1735,12 +1735,12 @@ function simJunior(row,st){
   const pos=1+beaten;
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
   if(pos===1){
-    if(S.cat==="KART"){S.titles.kart++; row.events.push("🏅 ¡Campeón del mundo de karting!");}
-    if(S.cat==="F4"){S.titles.f4++; row.events.push("🏅 ¡Campeón de Fórmula 4!");}
-    if(S.cat==="F3"){S.titles.f3++; row.events.push("🥈 ¡Campeón de Fórmula 3!");}
-    if(S.cat==="F2"){S.titles.f2++; row.events.push("🥇 ¡Campeón de Fórmula 2!");}
+    if(S.cat==="KART"){S.titles.kart++; row.events.push(L("🏅 ¡Campeón del mundo de karting!","🏅 Karting world champion!"));}
+    if(S.cat==="F4"){S.titles.f4++; row.events.push(L("🏅 ¡Campeón de Fórmula 4!","🏅 Formula 4 champion!"));}
+    if(S.cat==="F3"){S.titles.f3++; row.events.push(L("🥈 ¡Campeón de Fórmula 3!","🥈 Formula 3 champion!"));}
+    if(S.cat==="F2"){S.titles.f2++; row.events.push(L("🥇 ¡Campeón de Fórmula 2!","🥇 Formula 2 champion!"));}
     // ganar forja: la experiencia de ser campeón te sube el nivel (recompensa al carril "ganador")
-    OVR(1.6); row.events.push("💪 Mentalidad de campeón: la experiencia de ganar te hace mejor piloto.");
+    OVR(1.6); row.events.push(L("💪 Mentalidad de campeón: la experiencia de ganar te hace mejor piloto.","💪 Champion's mindset: the experience of winning makes you a better driver."));
   }
   return {pos};
 }
@@ -1799,7 +1799,7 @@ function simF1(row,st){
   // ¿alguna de tus victorias fue en Mónaco? (cuenta para la 👑 Triple Corona). Más victorias → más probable
   if(wins>0 && !S.tripleCrown.monaco && ch(Math.min(.55, wins*0.13))){
     S.tripleCrown.monaco=true; S.monacoWins++;
-    row.events.push("👑 Ganas el GP de Mónaco: una joya para tu vitrina y un paso hacia la Triple Corona.");
+    row.events.push(L("👑 Ganas el GP de Mónaco: una joya para tu vitrina y un paso hacia la Triple Corona.","👑 You win the Monaco GP: a jewel for your cabinet and a step toward the Triple Crown."));
   }
   const standings=[...grid].sort((a,b)=>b.pts-a.pts);
   const pos=1+standings.findIndex(d=>d.isP);
@@ -1821,14 +1821,14 @@ function simF1(row,st){
     d:standings.slice(0,3).map((d,i)=>({n:d.isP?"TÚ":surname(d.name),team:d.team,flag:d.dref?d.dref.flag:undefined,me:d.isP,mv:mvD(d.isP?"__ME__":d.name,i+1)})),
     c:row.top3c, cmv:constrRank.slice(0,3).map((e,i)=>mvC(e[0],i+1)),
     myPos:pos, myConstr:constrPos, myPosMv:mvD("__ME__",pos), myConstrMv:mvC(myTeam,constrPos)};
-  if(row.apxWin) row.events.push("🎬 Victoria con APXGP: la remontada digna de Hollywood.");
-  if(pos===1){ S.titles.f1++; row.events.push("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!"); }
+  if(row.apxWin) row.events.push(L("🎬 Victoria con APXGP: la remontada digna de Hollywood.","🎬 A win with APXGP: a comeback worthy of Hollywood."));
+  if(pos===1){ S.titles.f1++; row.events.push(L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
   else {
     const champ=standings[0];
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
     if(pos===2){S.subcamp++; row.events.push("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.");}
   }
-  if(constrPos===1){S.titles.constr++; row.events.push("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.");}
+  if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship."));}
   // EFECTO PILOTO: un piloto de élite empuja el proyecto hacia arriba año tras año.
   // Así un crack puede RESUCITAR a un equipo en declive si se queda y trabaja.
   const pull = Math.max(0,(S.ovr-85))*0.17 + (sel.style==="tecnico"?0.5:0);
@@ -1851,53 +1851,53 @@ function maybeEvent(row,st){
   const pool=[];
   const inF1=S.cat==="F1";
   const pick=a=>a[irnd(0,a.length-1)];
-  const rival = ()=>{ const m=(S.seats[S.team.name]||[]).find(d=>d!=="PLAYER"); return m?surname(m.name):"tu compañero"; };
-  const gp = ()=>pick(["Mónaco","Silverstone","Spa","Monza","Suzuka","Interlagos","Singapur","Las Vegas","Austin","Yeda","Bakú","Zandvoort","Hungaroring","Barcelona","Imola","Montreal","Abu Dabi","Melbourne"]);
+  const rival = ()=>{ const m=(S.seats[S.team.name]||[]).find(d=>d!=="PLAYER"); return m?surname(m.name):L("tu compañero","your teammate"); };
+  const gp = ()=>pick(["Monaco","Silverstone","Spa","Monza","Suzuka","Interlagos","Singapur","Las Vegas","Austin","Jeddah","Baku","Zandvoort","Hungaroring","Barcelona","Imola","Montreal",L("Abu Dabi","Abu Dhabi"),"Melbourne"]);
 
   // estilo del piloto
   if(sel.style==="tecnico") pool.push(
-    {id:"tec-lluvia",t:`🌧️ Masterclass bajo la lluvia en ${gp()} — el paddock habla de ti.`,fx:()=>OVR(1)},
-    {id:"tec-setup",t:"🧠 Clavas el reglaje que nadie encontró: el coche vuela en clasificación.",fx:()=>OVR(.7)},
-    {id:"tec-datos",t:`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,fx:()=>VAL(.8)}
+    {id:"tec-lluvia",t:L(`🌧️ Masterclass bajo la lluvia en ${gp()} — el paddock habla de ti.`,`🌧️ Wet-weather masterclass at ${gp()} — the paddock is talking about you.`),fx:()=>OVR(1)},
+    {id:"tec-setup",t:L("🧠 Clavas el reglaje que nadie encontró: el coche vuela en clasificación.","🧠 You nail the setup nobody else found: the car flies in qualifying."),fx:()=>OVR(.7)},
+    {id:"tec-datos",t:L(`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,`🔬 Your data reading turns a shaky strategy into a masterstroke at ${gp()}.`),fx:()=>VAL(.8)}
   );
   if(sel.style==="agresivo") pool.push(
-    {id:"agr-toque",t:"💥 Toque polémico defendiendo posición. Los comisarios te vigilan.",fx:()=>{}},
-    {id:"agr-pass",t:`🔥 Adelantamiento imposible por fuera en ${gp()} que corta la respiración.`,fx:()=>VAL(1.1)},
-    {id:"agr-quali",t:"🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.",fx:()=>VAL(.9)}
+    {id:"agr-toque",t:L("💥 Toque polémico defendiendo posición. Los comisarios te vigilan.","💥 A controversial clash defending position. The stewards are watching you."),fx:()=>{}},
+    {id:"agr-pass",t:L(`🔥 Adelantamiento imposible por fuera en ${gp()} que corta la respiración.`,`🔥 An impossible around-the-outside pass at ${gp()} that takes your breath away.`),fx:()=>VAL(1.1)},
+    {id:"agr-quali",t:L("🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.","🅿️ A wild Q3 lap, inches from the wall: pole by thousandths."),fx:()=>VAL(.9)}
   );
   if(sel.style==="consistente") pool.push(
-    {id:"con-nofail",t:`🎯 ${irnd(9,14)} carreras seguidas sin un solo error: el paddock alucina.`,fx:()=>OVR(.7)},
-    {id:"con-frio",t:`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,fx:()=>VAL(.8)}
+    {id:"con-nofail",t:L(`🎯 ${irnd(9,14)} carreras seguidas sin un solo error: el paddock alucina.`,`🎯 ${irnd(9,14)} races in a row without a single mistake: the paddock is stunned.`),fx:()=>OVR(.7)},
+    {id:"con-frio",t:L(`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,`🧊 Ice-cold under pressure on the last lap at ${gp()}.`),fx:()=>VAL(.8)}
   );
 
   if(inF1) pool.push(
-    {id:"f1-dev",t:"🔧 Lideras el desarrollo del coche: mejoras para el año próximo.",fx:()=>CAR(1.8)},
-    {id:"f1-guerra",t:`🤝 Guerra fría con ${rival()} dentro del box.`,fx:()=>{}},
-    {id:"f1-rumor",t:"📰 La prensa te vincula con un asiento top para el próximo año.",fx:()=>{}},
-    {id:"f1-remonta",t:`🏁 Remontada desde P${irnd(11,19)} en ${gp()} que entra en los documentales.`,fx:()=>VAL(1.1)},
-    {id:"f1-vrapida",t:`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,fx:()=>VAL(.7)},
-    {id:"f1-viral",t:"🎙️ Tu entrevista post-carrera se vuelve viral en redes.",fx:()=>VAL(1)},
-    {id:"f1-estrat",t:`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,fx:()=>VAL(.8)},
-    {id:"f1-neumaticos",t:"🛞 Gestionas unos neumáticos imposibles hasta la bandera a cuadros.",fx:()=>OVR(.6)},
-    {id:"f1-elogio",t:`💬 Un excampeón te señala como el mejor en pista este fin de semana.`,fx:()=>VAL(1)},
-    {id:"f1-portada",t:"📸 Portada de la prensa deportiva tras un domingo redondo.",fx:()=>VAL(1)},
-    {id:"f1-curva1",t:`🏎️ Tu adelantamiento por fuera en la curva 1 de ${gp()} da la vuelta al mundo.`,fx:()=>VAL(1)},
-    {id:"f1-fiab",t:`🔌 Un fallo de fiabilidad te deja sin puntos en un ${gp()} que dominabas.`,fx:()=>{}},
-    {id:"f1-sancion",t:`🚧 Una sanción de ${pick([5,10])}s discutible te baja del podio en ${gp()}.`,fx:()=>{}},
-    {id:"f1-radio",t:"🗣️ Tu bronca por radio con el muro se convierte en meme.",fx:()=>{}}
+    {id:"f1-dev",t:L("🔧 Lideras el desarrollo del coche: mejoras para el año próximo.","🔧 You lead the car's development: upgrades for next year."),fx:()=>CAR(1.8)},
+    {id:"f1-guerra",t:L(`🤝 Guerra fría con ${rival()} dentro del box.`,`🤝 A cold war with ${rival()} inside the garage.`),fx:()=>{}},
+    {id:"f1-rumor",t:L("📰 La prensa te vincula con un asiento top para el próximo año.","📰 The press links you to a top seat for next year."),fx:()=>{}},
+    {id:"f1-remonta",t:L(`🏁 Remontada desde P${irnd(11,19)} en ${gp()} que entra en los documentales.`,`🏁 A charge from P${irnd(11,19)} at ${gp()} that belongs in the documentaries.`),fx:()=>VAL(1.1)},
+    {id:"f1-vrapida",t:L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: an extra point and highlight of the day.`),fx:()=>VAL(.7)},
+    {id:"f1-viral",t:L("🎙️ Tu entrevista post-carrera se vuelve viral en redes.","🎙️ Your post-race interview goes viral online."),fx:()=>VAL(1)},
+    {id:"f1-estrat",t:L(`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,`🧊 A one-stop strategy nobody saw coming: you steal ${irnd(2,4)} places at ${gp()}.`),fx:()=>VAL(.8)},
+    {id:"f1-neumaticos",t:L("🛞 Gestionas unos neumáticos imposibles hasta la bandera a cuadros.","🛞 You nurse impossible tyres all the way to the chequered flag."),fx:()=>OVR(.6)},
+    {id:"f1-elogio",t:L(`💬 Un excampeón te señala como el mejor en pista este fin de semana.`,`💬 A former champion names you the best on track this weekend.`),fx:()=>VAL(1)},
+    {id:"f1-portada",t:L("📸 Portada de la prensa deportiva tras un domingo redondo.","📸 Front page of the sports press after a perfect Sunday."),fx:()=>VAL(1)},
+    {id:"f1-curva1",t:L(`🏎️ Tu adelantamiento por fuera en la curva 1 de ${gp()} da la vuelta al mundo.`,`🏎️ Your around-the-outside move at turn 1 of ${gp()} goes around the world.`),fx:()=>VAL(1)},
+    {id:"f1-fiab",t:L(`🔌 Un fallo de fiabilidad te deja sin puntos en un ${gp()} que dominabas.`,`🔌 A reliability failure leaves you pointless at a ${gp()} you were dominating.`),fx:()=>{}},
+    {id:"f1-sancion",t:L(`🚧 Una sanción de ${pick([5,10])}s discutible te baja del podio en ${gp()}.`,`🚧 A questionable ${pick([5,10])}s penalty drops you off the podium at ${gp()}.`),fx:()=>{}},
+    {id:"f1-radio",t:L("🗣️ Tu bronca por radio con el muro se convierte en meme.","🗣️ Your radio rant at the pit wall becomes a meme."),fx:()=>{}}
   );
   else if(S.cat!=="TEST") pool.push(
-    {id:"jr-programa",t:"⭐ Un programa junior de F1 se fija en ti.",fx:()=>OVR(1)},
-    {id:"jr-sim",t:"🛠️ Inviernos enteros en el simulador: progreso silencioso.",fx:()=>OVR(1)},
-    {id:"jr-domina",t:`🏆 Dominas el fin de semana de ${gp()} de principio a fin.`,fx:()=>OVR(.8)},
-    {id:"jr-test",t:"📈 Un test con un equipo superior sale mejor de lo esperado.",fx:()=>OVR(.8)},
-    {id:"jr-pequeno",t:"🧰 Tu equipo modesto le saca petróleo al coche: te haces notar.",fx:()=>OVR(.6)},
-    {id:"jr-mentor",t:"🎓 Un veterano del paddock te toma como pupilo.",fx:()=>OVR(.8)},
-    {id:"jr-clip",t:`📱 Un clip tuyo remontando en ${gp()} se hace viral.`,fx:()=>VAL(.6)}
+    {id:"jr-programa",t:L("⭐ Un programa junior de F1 se fija en ti.","⭐ An F1 junior programme takes notice of you."),fx:()=>OVR(1)},
+    {id:"jr-sim",t:L("🛠️ Inviernos enteros en el simulador: progreso silencioso.","🛠️ Whole winters in the simulator: quiet progress."),fx:()=>OVR(1)},
+    {id:"jr-domina",t:L(`🏆 Dominas el fin de semana de ${gp()} de principio a fin.`,`🏆 You dominate the ${gp()} weekend from start to finish.`),fx:()=>OVR(.8)},
+    {id:"jr-test",t:L("📈 Un test con un equipo superior sale mejor de lo esperado.","📈 A test with a bigger team goes better than expected."),fx:()=>OVR(.8)},
+    {id:"jr-pequeno",t:L("🧰 Tu equipo modesto le saca petróleo al coche: te haces notar.","🧰 Your modest team squeezes everything from the car: you get noticed."),fx:()=>OVR(.6)},
+    {id:"jr-mentor",t:L("🎓 Un veterano del paddock te toma como pupilo.","🎓 A paddock veteran takes you under his wing."),fx:()=>OVR(.8)},
+    {id:"jr-clip",t:L(`📱 Un clip tuyo remontando en ${gp()} se hace viral.`,`📱 A clip of you charging through the field at ${gp()} goes viral.`),fx:()=>VAL(.6)}
   );
   pool.push(
-    {id:"any-fisico",t:"🩺 Molestias físicas a mitad de temporada.",fx:()=>{}},
-    {id:"any-gripe",t:`😷 Pasas la carrera de ${gp()} con gripe: aguantas como puedes.`,fx:()=>{}}
+    {id:"any-fisico",t:L("🩺 Molestias físicas a mitad de temporada.","🩺 Physical niggles mid-season."),fx:()=>{}},
+    {id:"any-gripe",t:L(`😷 Pasas la carrera de ${gp()} con gripe: aguantas como puedes.`,`😷 You race ${gp()} with the flu: you tough it out.`),fx:()=>{}}
   );
 
   const usable=pool.filter(e=>(S.usedEvents[e.id]||0)<2);
@@ -1968,9 +1968,17 @@ function startAdventure(key){
   startSeasonRun();
 }
 function advOffers(){
-  refreshCard(); renderF1State(); renderTimeline(); renderRecap();
+  refreshCard(); renderF1State(); renderTimeline();
+  $("decRecap").style.display="none";
   const sr=SERIES[S.advSeries]; const back=returnChance(); const nm=serName(S.advSeries);
-  setDecision(`${sr.em} `+L("Tu vida fuera de la F1","Your life outside F1"), `${nm} · `+L("fin de ","end of ")+`${yearNow()-1}. `+L("¿Y ahora qué?","What now?"));
+  // titular con el resultado del año, para que NO pase desapercibido (título, victoria mítica…)
+  const last=S.seasons.at(-1), ar=last&&last.advResult;
+  let resTxt="";
+  if(ar){ resTxt = ar.win ? L(`🏆 ¡Ganaste ${serMarquee(S.advSeries)}!`,`🏆 You won ${serMarquee(S.advSeries)}!`)
+        : ar.champPos===1 ? L(`🥇 ¡Campeón de ${nm}!`,`🥇 ${nm} champion!`)
+        : ar.champPos<=3 ? L(`🥉 ${ar.champPos}º del campeonato`,`🥉 P${ar.champPos} in the championship`)
+        : L(`${ar.champPos}º del campeonato`,`P${ar.champPos} in the championship`); }
+  setDecision(`${sr.em} `+(resTxt||L("Tu vida fuera de la F1","Your life outside F1")), `${nm} ${yearNow()-1} · `+L("¿Y ahora qué?","What now?"));
   const opts=[
     {special:true, em:sr.em, name:L("Seguir en ","Stay in ")+nm, sub:L("Otra temporada de aventura","Another adventure season"), color:sr.col, onClick:()=>startSeasonRun()},
     {special:true, em:"🔙", name:L("Intentar volver a la F1","Try to return to F1"), sub: back>=.6?L("Los equipos te tienen en el radar","Teams have you on their radar"):back>=.3?L("Habrá que convencer a alguien","You'll have to convince someone"):L("Difícil: llevas tiempo fuera y algo oxidado","Tough: you've been away a while and a bit rusty"), color:"#e10600", onClick:()=>attemptReturn()},
@@ -2210,20 +2218,22 @@ function renderTimeline(){
     const constr=r.constrPos?` · 🏭 ${L("Constructores (equipo)","Constructors (team)")}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best")} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs")}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator")):r.cat==="ADV"?"":`${r.pts} pts`;
-    // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle)
-    const posLab=r.cat==="TEST"?"—":(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
-    const posCls=r.cat==="TEST"?"rest":posClass(r.pos);
+    // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
+    // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
+    const advR=r.advResult;
+    const posLab=r.cat==="ADV"?(advR?(advR.win?"🏆":(advR.champPos===1?"🥇 1º":advR.champPos+"º")):"—"):r.cat==="TEST"?"—":(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
+    const posCls=r.cat==="ADV"?(advR&&(advR.win||advR.champPos===1)?"p1":advR&&advR.champPos<=3?"top":"rest"):r.cat==="TEST"?"rest":posClass(r.pos);
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
       <span class="club">${badge(r.team)}
-        <span><span class="nm">${r.team.name}</span><br><span class="cat">${r.year} · ${catLbl} · ${ptsTxt}${constr}</span></span></span>
+        <span><span class="nm">${r.team.name}</span><br><span class="cat">${r.year} · ${catLbl}${ptsTxt?" · "+ptsTxt:""}${constr}</span></span></span>
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
-      <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="TEST"&&!raced?"—":r.wins}</span>
-      <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="TEST"&&!raced?"—":r.pods}</span>
+      <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>
+      <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>
       <span class="pos ${posCls}">${posLab}</span>
       ${top3}
-      ${r.events.length?`<span class="ev">${r.events.join(" · ")}</span>`:""}`;
+      ${(r.events&&r.events.length)?`<span class="ev">${r.events.join(" · ")}</span>`:""}`;
     b.appendChild(div);
   });
 }
@@ -2248,7 +2258,7 @@ function renderCareerMap(){
   const longestStint=Math.max(...stints.map(s=>s.rows.length));
   el.classList.toggle("dense", totalYears>12 || longestStint>=9);
   const careerPeak=Math.max(...f1s.map(s=>s.ovr));
-  let html=`<h4>🏁 Tu carrera año a año <span class="cmpeakbadge">Mejor OVR ${careerPeak}</span></h4>`;
+  let html=`<h4>${L("🏁 Tu carrera año a año","🏁 Your career year by year")} <span class="cmpeakbadge">${L("Mejor OVR","Best OVR")} ${careerPeak}</span></h4>`;
   stints.forEach(st=>{
     const rows=st.rows, y0=rows[0].year, y1=rows[rows.length-1].year, n=rows.length;
     const isTest=st.cat==="TEST", isAdv=st.cat==="ADV";
@@ -2284,7 +2294,7 @@ function endCareer(){
   // dorado si ganaste algún título; shiny (brillo animado) si ganaste muchos (3+)
   const goldCell=(el,n)=>{ const c=el.parentElement; c.classList.toggle("gold",n>=1); c.classList.toggle("shiny",n>=3); };
   goldCell($("eT"),S.titles.f1); goldCell($("eC"),S.titles.constr);
-  $("endYears").textContent=`Carrera: 2026 – ${2026+(S.age-16)} · Retirado a los ${S.age} años`;
+  $("endYears").textContent=L(`Carrera: 2026 – ${2026+(S.age-16)} · Retirado a los ${S.age} años`,`Career: 2026 – ${2026+(S.age-16)} · Retired at ${S.age}`);
   const shelf=[];
   for(let i=0;i<S.titles.f1;i++)shelf.push("🏆");
   for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
@@ -2318,38 +2328,38 @@ function endCareer(){
   const T=S.titles.f1;
   let era="";
   if(T>=1){
-    if(T>bestRival) era=" Y nadie de tu generación ganó más mundiales que tú: dominaste tu era.";
-    else if(T===bestRival && rivalName) era=` Compartiste el trono con ${rivalName} (${T}-${bestRival}): una rivalidad que quedará en la historia.`;
-    else if(rivalName) era=` Aun así, ${rivalName} reinó tu época con ${bestRival} mundiales — no dominaste, pero le hiciste sudar cada título.`;
+    if(T>bestRival) era=L(" Y nadie de tu generación ganó más mundiales que tú: dominaste tu era."," And nobody of your generation won more titles than you: you dominated your era.");
+    else if(T===bestRival && rivalName) era=L(` Compartiste el trono con ${rivalName} (${T}-${bestRival}): una rivalidad que quedará en la historia.`,` You shared the throne with ${rivalName} (${T}-${bestRival}): a rivalry that will go down in history.`);
+    else if(rivalName) era=L(` Aun así, ${rivalName} reinó tu época con ${bestRival} mundiales — no dominaste, pero le hiciste sudar cada título.`,` Even so, ${rivalName} ruled your era with ${bestRival} titles — you didn't dominate, but you made him sweat for every one.`);
   }
   let legacy,verdict;
-  if(T>=6){legacy="LEYENDA ETERNA";verdict="Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú."+era;}
-  else if(T>=4){legacy="MULTICAMPEÓN DEL MUNDO";verdict=`${T} coronas mundiales. Los documentales sobre tu carrera ya están en producción.`+era;}
-  else if(T>=2){legacy=(T===2?"DOBLE":"TRIPLE")+" CAMPEÓN DEL MUNDO";verdict=`${T===2?"Dos":"Tres"} veces en lo más alto del mundo — algo al alcance de muy pocos.`+era;}
-  else if(T===1){legacy="CAMPEÓN DEL MUNDO";verdict="Tocaste el cielo una vez, y nadie podrá borrarlo jamás. Un campeón del mundo, para siempre."+era;}
-  else if(S.titles.constr>0){legacy="CAMPEÓN DE CONSTRUCTORES";verdict="El título de pilotos se te escapó, pero llevaste a tu equipo a la gloria. En la fábrica saben que ese trofeo también es tuyo.";}
-  else if(S.subcamp>0){legacy="ETERNO ASPIRANTE";verdict="Como Stirling Moss: te faltó el título, pero no la grandeza. El paddock siempre te respetó.";}
-  else if(S.wins>1){legacy="GANADOR DE GRANDES PREMIOS";verdict=`Ganaste ${S.wins} carreras y escuchaste tu himno desde lo más alto del podio. Muy pocos en la historia pueden decir lo mismo.`;}
-  else if(S.wins===1){legacy="GANADOR DE UN GRAN PREMIO";verdict="Ganaste una carrera: te subiste a lo más alto del podio y escuchaste tu himno. Ese día es tuyo para siempre y nadie te lo quita.";}
-  else if(S.f1Seasons>0){legacy="PILOTO DE FÓRMULA 1";verdict="Llegaste donde solo llegan 20 personas en el planeta. Eso ya te hace extraordinario.";}
-  else {legacy="PROMESA DEL AUTOMOVILISMO";verdict="La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.";}
-  if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=" Y sí: lo de APXGP fue tan de película como suena. 🎬";
+  if(T>=6){legacy=L("LEYENDA ETERNA","ETERNAL LEGEND");verdict=L("Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú.","Your name is spoken alongside Schumacher and Hamilton. The grandstands wear your number, and every kid in a kart dreams of being you.")+era;}
+  else if(T>=4){legacy=L("MULTICAMPEÓN DEL MUNDO","MULTIPLE WORLD CHAMPION");verdict=L(`${T} coronas mundiales. Los documentales sobre tu carrera ya están en producción.`,`${T} world crowns. The documentaries about your career are already in production.`)+era;}
+  else if(T>=2){legacy=(T===2?L("DOBLE","DOUBLE"):L("TRIPLE","TRIPLE"))+L(" CAMPEÓN DEL MUNDO"," WORLD CHAMPION");verdict=L(`${T===2?"Dos":"Tres"} veces en lo más alto del mundo — algo al alcance de muy pocos.`,`${T===2?"Twice":"Three times"} on top of the world — something within reach of very few.`)+era;}
+  else if(T===1){legacy=L("CAMPEÓN DEL MUNDO","WORLD CHAMPION");verdict=L("Tocaste el cielo una vez, y nadie podrá borrarlo jamás. Un campeón del mundo, para siempre.","You touched the sky once, and nobody can ever erase it. A world champion, forever.")+era;}
+  else if(S.titles.constr>0){legacy=L("CAMPEÓN DE CONSTRUCTORES","CONSTRUCTORS' CHAMPION");verdict=L("El título de pilotos se te escapó, pero llevaste a tu equipo a la gloria. En la fábrica saben que ese trofeo también es tuyo.","The drivers' title eluded you, but you led your team to glory. Back at the factory they know that trophy is yours too.");}
+  else if(S.subcamp>0){legacy=L("ETERNO ASPIRANTE","ETERNAL CONTENDER");verdict=L("Como Stirling Moss: te faltó el título, pero no la grandeza. El paddock siempre te respetó.","Like Stirling Moss: you lacked the title, but not the greatness. The paddock always respected you.");}
+  else if(S.wins>1){legacy=L("GANADOR DE GRANDES PREMIOS","GRAND PRIX WINNER");verdict=L(`Ganaste ${S.wins} carreras y escuchaste tu himno desde lo más alto del podio. Muy pocos en la historia pueden decir lo mismo.`,`You won ${S.wins} races and heard your anthem from the top of the podium. Very few in history can say the same.`);}
+  else if(S.wins===1){legacy=L("GANADOR DE UN GRAN PREMIO","GRAND PRIX WINNER");verdict=L("Ganaste una carrera: te subiste a lo más alto del podio y escuchaste tu himno. Ese día es tuyo para siempre y nadie te lo quita.","You won a race: you stood on the top step and heard your anthem. That day is yours forever and nobody can take it.");}
+  else if(S.f1Seasons>0){legacy=L("PILOTO DE FÓRMULA 1","FORMULA 1 DRIVER");verdict=L("Llegaste donde solo llegan 20 personas en el planeta. Eso ya te hace extraordinario.","You reached where only 20 people on the planet get to. That alone makes you extraordinary.");}
+  else {legacy=L("PROMESA DEL AUTOMOVILISMO","MOTORSPORT PROSPECT");verdict=L("La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.","F1 stayed out of reach, but the track was your home. Not every dream ends in Monaco, and they're worth it all the same.");}
+  if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=L(" Y sí: lo de APXGP fue tan de película como suena. 🎬"," And yes: the APXGP thing was as cinematic as it sounds. 🎬");
   $("endLegacy").textContent=legacy;
   $("endVerdict").textContent=verdict;
   // casilla "Puntos de leyenda": color según la magnitud del legado (máx real ~1650, techo ~2000+)
   const LEG_TIERS=[
-    {min:0,    name:"Aspirante",   bg:"linear-gradient(135deg,#eef1f6,#e2e7ef)", ink:"#5a6373"},
-    {min:120,  name:"Piloto de F1",bg:"linear-gradient(135deg,#e7effc,#d2e3fa)", ink:"#245a99"},
-    {min:320,  name:"Estrella",    bg:"linear-gradient(135deg,#e6f7ee,#c9edd7)", ink:"#177a3f"},
-    {min:650,  name:"Figura",      bg:"linear-gradient(135deg,#f0eafd,#e2d6fb)", ink:"#6d28d9"},
-    {min:1050, name:"Leyenda",     bg:"linear-gradient(135deg,#fdf0c8,#f6d97f)", ink:"#8a6706"},
-    {min:1600, name:"Inmortal",    bg:"linear-gradient(135deg,#ffdd82,#ffb52e)", ink:"#7a3b00", shiny:true},
+    {min:0,    name:L("Aspirante","Aspirant"),    bg:"linear-gradient(135deg,#eef1f6,#e2e7ef)", ink:"#5a6373"},
+    {min:120,  name:L("Piloto de F1","F1 Driver"),bg:"linear-gradient(135deg,#e7effc,#d2e3fa)", ink:"#245a99"},
+    {min:320,  name:L("Estrella","Star"),         bg:"linear-gradient(135deg,#e6f7ee,#c9edd7)", ink:"#177a3f"},
+    {min:650,  name:L("Figura","Big Name"),       bg:"linear-gradient(135deg,#f0eafd,#e2d6fb)", ink:"#6d28d9"},
+    {min:1050, name:L("Leyenda","Legend"),        bg:"linear-gradient(135deg,#fdf0c8,#f6d97f)", ink:"#8a6706"},
+    {min:1600, name:L("Inmortal","Immortal"),     bg:"linear-gradient(135deg,#ffdd82,#ffb52e)", ink:"#7a3b00", shiny:true},
   ];
   let legTier=LEG_TIERS[0]; LEG_TIERS.forEach(t=>{ if(score>=t.min) legTier=t; });
   const ls=$("legendScore");
   ls.className="legend-score"+(legTier.shiny?" shiny":"");
   ls.style.background=legTier.bg; ls.style.borderColor="transparent"; ls.style.color=legTier.ink;
-  ls.innerHTML=`<div><div class="ls-k">🏅 Puntos de leyenda</div><div class="ls-tier">${legTier.name}</div></div><div class="ls-v">${score}</div>`;
+  ls.innerHTML=`<div><div class="ls-k">${L("🏅 Puntos de leyenda","🏅 Legacy points")}</div><div class="ls-tier">${legTier.name}</div></div><div class="ls-v">${score}</div>`;
   const [tier]=fameTier(fameScore());
   $("printHeader").innerHTML=`<h2>${sel.flag} ${sel.name} #${sel.num}</h2>
     <div class="pl">${legacy} · Fama: ${tier}</div>
