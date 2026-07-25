@@ -397,10 +397,58 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 #langToggle{position:fixed;top:12px;right:12px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer}
 #langToggle:hover{background:#fff}
-@media print{#langToggle{display:none}}
+#themeToggle{position:fixed;top:12px;right:58px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
+  border-radius:999px;width:34px;height:34px;font-size:16px;line-height:1;box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}
+@media print{#langToggle,#themeToggle{display:none}}
+
+/* ================= MODO OSCURO ================= */
+:root[data-theme="dark"]{
+  --bg:#14151b; --panel:#1d1f28; --panel2:#262a34; --line:#333743;
+  --text:#eceef4; --muted:#9aa0ae; --gold:#e6b325;
+  --shadow:0 14px 36px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.4);
+}
+[data-theme="dark"] body{background:
+  radial-gradient(900px 500px at 85% -5%, rgba(225,6,0,.16), transparent 60%),
+  radial-gradient(700px 500px at -10% 100%, rgba(255,122,0,.11), transparent 55%),
+  linear-gradient(160deg,#181a22,#0e0f14)}
+[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle{background:rgba(30,32,40,.94);color:var(--text)}
+[data-theme="dark"] #langToggle:hover,[data-theme="dark"] #themeToggle:hover{background:#2a2e38}
+[data-theme="dark"] .numplate{background:linear-gradient(135deg,#262a34,#1a1c24)}
+/* ofertas y caja de decisión */
+[data-theme="dark"] .offer{background:linear-gradient(135deg,#232732,#1c1e27);border-color:#3a4152}
+[data-theme="dark"] .offer.retire{background:linear-gradient(135deg,#22242d,#1b1d25)}
+[data-theme="dark"] .offer.dilemma{background:linear-gradient(135deg,#2b2720,#211f1a);border-color:#7a6a2e}
+[data-theme="dark"] .decision p.outcome{background:linear-gradient(135deg,#2e2a1c,#26241a);border-color:#5a4e2a;color:#f0e6c8}
+/* pastillas (fondo claro → oscuro) */
+[data-theme="dark"] #teamLine .trole{background:#2a2e38;color:#c4ccda;border-color:#3a4152}
+[data-theme="dark"] .offer .role.r2{background:#2a2e38;color:#c4ccda}
+[data-theme="dark"] .offer .role.rt{background:#1e2f4d;color:#8db4f5}
+[data-theme="dark"] .trend.up,[data-theme="dark"] .otrend.up{background:rgba(18,146,63,.20);color:#4cd07f}
+[data-theme="dark"] .trend.flat,[data-theme="dark"] .otrend.flat{background:#2a2e38;color:#9aa0ae}
+[data-theme="dark"] .jprofile{background:#20293b;color:#b8c4dd;border-color:#33415e}
+[data-theme="dark"] .fit.neu{background:#2a2e38;color:#9aa0ae}
+[data-theme="dark"] .fit.good{background:rgba(10,125,50,.22);color:#5fd98a}
+[data-theme="dark"] .fit.bad{background:rgba(198,42,42,.22);color:#f19a9a}
+/* celdas de posición "resto" (azul claro → oscuro) */
+[data-theme="dark"] .pos.rest,[data-theme="dark"] .cmcell.rest{background:#22344d;color:#8db4f5}
+/* trayectoria + paneles */
+[data-theme="dark"] .tl-row:hover{background:#22242d}
+[data-theme="dark"] .f1state .srow.me{background:linear-gradient(90deg,rgba(225,6,0,.24),transparent);color:#ff7a72}
+/* textos oscuros → claros */
+[data-theme="dark"] .advbox .advline,[data-theme="dark"] .end-card .verdict{color:#c4ccda}
+/* pantalla de identidad: lista de países, matrícula y tarjetas de estilo */
+[data-theme="dark"] .numplate span{color:#eceef4}
+[data-theme="dark"] .country-list button{color:#c8cdd8}
+[data-theme="dark"] .country-list button:hover{border-color:#454b58}
+[data-theme="dark"] .country-list button.sel{background:linear-gradient(135deg,#e10600,#ff6a1a);color:#fff}
+[data-theme="dark"] .country-list::-webkit-scrollbar-thumb{background:#3a3f4a}
+[data-theme="dark"] .style-cards button{background:var(--panel2)}
+[data-theme="dark"] .style-cards button.sel{background:linear-gradient(135deg,#e10600,#ff6a1a);border-color:#e10600;color:#fff}
+[data-theme="dark"] .style-cards button .d{color:var(--muted)}
 </style>
 </head>
 <body>
+<button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
 <button id="langToggle" onclick="setLang(LANG==='en'?'es':'en')" title="Language / Idioma">EN</button>
 
 <!-- ========== INTRO ========== -->
@@ -556,6 +604,18 @@ function setLang(l){
   applyLang();
   // re-render de lo que esté en pantalla (si hay partida)
   try{ if(typeof S!=="undefined" && S){ refreshCard(); renderF1State(); renderTimeline(); } }catch(e){}
+}
+/* ================= TEMA CLARO/OSCURO ================= */
+let THEME = (function(){ try{return localStorage.getItem("f1theme")||"light";}catch(e){return "light";} })();
+function applyTheme(){
+  document.documentElement.setAttribute("data-theme", THEME==="dark"?"dark":"light");
+  const tg=document.getElementById("themeToggle"); if(tg) tg.textContent = THEME==="dark"?"☀️":"🌙";
+}
+function setTheme(t){
+  THEME=t; try{localStorage.setItem("f1theme",t);}catch(e){}
+  applyTheme();
+  // el fondo del panel/tarjeta se fija por JS con un degradé; re-renderizar para que tome el tema
+  try{ if(typeof S!=="undefined" && S){ refreshCard(); } }catch(e){}
 }
 /* ================= DATOS ================= */
 const COUNTRIES = [
@@ -834,10 +894,10 @@ function refreshCard(){
     const d=$("teamDot");
     if(TEAM_LOGOS[S.team.name]){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${TEAM_LOGOS[S.team.name]}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
-    $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, #ffffff 55%)`;
+    $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
   } else {
     $("teamName").textContent=L("Agente libre","Free agent"); $("teamRole").textContent=""; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
-    $("driverCard").style.background="#fff";
+    $("driverCard").style.background="var(--panel)";
   }
   const tc=$("trophyCase");
   const shelf=[];
@@ -2389,6 +2449,7 @@ function printCareer(){
   $("endModal").style.display="flex";
 }
 applyLang(); // aplicar el idioma guardado al cargar
+applyTheme(); // aplicar el tema guardado al cargar
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
