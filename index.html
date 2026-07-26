@@ -893,6 +893,7 @@ function startCareer(){
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
+    regReg:2046+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
   };
   // parrilla: base 2026 = 11 equipos. Entra SOLO UN equipo de expansión por partida (aleatorio:
   // unas veces Hyundai, otras Lotus) → la parrilla nunca pasa de 12. Año de entrada también aleatorio.
@@ -1067,6 +1068,7 @@ function roleFor(teamName){
 
 /* tendencia del coche (hacia dónde apunta el proyecto): flecha + color */
 function trendInfo(teamName){
+  if(S.regUnknown) return {a:"❓",c:"flat",t:L("INCÓGNITA","UNKNOWN")};
   const cur=S.f1perf[teamName], tgt=S.f1target[teamName];
   if(cur==null||tgt==null) return {a:"→",c:"flat",t:L("proyecto estable","stable project")};
   const d=tgt-cur;
@@ -1211,7 +1213,8 @@ function renderOffers(offers, withRetire){
     const RANGE={KART:[46,54],F4:[50,62],F3:[54,68],F2:[66,78],F1:[60,96],TEST:[60,96]};
     const [mn,mx]=RANGE[o.team.cat];
     const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-mn)/(mx-mn))));
-    const stars="★".repeat(n5)+"☆".repeat(5-n5);
+    // durante la revolución técnica nadie sabe el nivel real de cada coche → estrellas ocultas
+    const stars=(S.regUnknown && isF1seat) ? "❓" : ("★".repeat(n5)+"☆".repeat(5-n5));
     const catLbl = o.team.cat==="KART"?"Karting":o.team.cat==="TEST"?L("Piloto probador F1","F1 Reserve driver"):o.team.cat;
     let roleChip="";
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.")}${o.role}</span>`;
@@ -1245,6 +1248,7 @@ function renderOffers(offers, withRetire){
 
 /* ---------- firma y flujo de temporada ---------- */
 function signContract(o){
+  S.regUnknown=false;
   const prev=S.team, prevCat=S.cat;
   // traiciones: dejar un equipo de F1 deja cicatrices, seas héroe o lastre
   if(prevCat==="F1" && prev && o.team.name!==prev.name && F1_TEAMS.some(t=>t.name===prev.name)){
@@ -1516,6 +1520,57 @@ const DILEMAS=[
      if(ch(.5)){ VAL(1.22); return L("Sobrevives a las dunas y terminas el Dakar: una hazaña que da la vuelta al mundo. +fama","You survive the dunes and finish the Dakar: a feat that travels the world. +fame"); }
      OVR(-1); S.missRaces=irnd(1,3); return L("Un vuelco te deja tocado: llegas magullado a la pretemporada de F1. −OVR y te pierdes algún GP.","A rollover leaves you battered: you arrive bruised to F1 pre-season. −OVR and you miss a few GPs."); }},
    {l:()=>L("No arriesgar tu asiento","Don't risk your seat"),r:()=>L("Tu equipo respira aliviado. Sigues centrado en la Fórmula 1.","Your team breathes easy. You stay focused on Formula 1.")}]},
+ // 🎙️ radios de equipo
+ {id:"radiocaliente",stage:"f1",t:()=>L("La radio caliente","The hot mic"),
+  d:()=>L("El muro la ha liado con tu estrategia y adiós victoria. Tienes el pulgar sobre el botón de la radio y a media parrilla escuchando.","The pit wall botched your strategy and there goes the win. Your thumb hovers over the radio button, half the grid listening."),opts:[
+   {l:()=>L("Estallar en directo","Blow up on air"),r:()=>roll(
+     [4,()=>(VAL(1.25),L("Tu bronca se hace viral: clips por todas partes. Fama +25%","Your rant goes viral: clips everywhere. Fame +25%"))],
+     [3,()=>L("Suena mal, pero se entiende tu enfado. Sin cambios.","It sounds bad, but your anger is understood. No change.")],
+     [3,()=>(CAR(-1),L("El muro se lo toma fatal. Ambiente enrarecido. −1 coche","The pit wall takes it badly. Sour mood. −1 car"))])},
+   {l:()=>L("Tragar y ser profesional","Swallow it and stay pro"),r:()=>roll(
+     [5,()=>(CAR(1),L("El equipo lo agradece y aprieta por ti. +1 coche","The team appreciates it and pushes for you. +1 car"))],
+     [3,()=>L("Nadie nota tu enfado. Sin cambios.","Nobody notices your anger. No change.")],
+     [2,()=>(VAL(.9),L("Los fans te ven blando. Fama −10%","Fans find you soft. Fame −10%"))])}]},
+ {id:"multi21",stage:"f1",cond:()=>S.team&&S.seats[S.team.name],t:()=>L("«Multi-21»","«Multi-21»"),
+  d:()=>{const m=teammateOf(S.team.name);return L(`Vas 2º pegado a ${surname(m.name)}, tu compañero. Por la radio, en clave: «mantén posición». El equipo lo da por hecho.`,`You're 2nd, right behind your teammate ${surname(m.name)}. Over the radio, in code: «hold position». The team takes it for granted.`);},opts:[
+   {l:()=>L("Obedecer la orden","Obey the order"),r:()=>roll(
+     [5,()=>(CAR(1),L("Armonía total: eres el piloto de equipo perfecto. +1 coche","Total harmony: the perfect team player. +1 car"))],
+     [3,()=>L("Cumples, aunque por dentro te quema.","You comply, though it burns inside.")],
+     [2,()=>(VAL(.9),L("Los fans querían pelea. Quedas «obediente». Fama −10%","Fans wanted a fight. You look «obedient». Fame −10%"))])},
+   {l:()=>L("«No entendí el mensaje» y adelantar","«Didn't get the message» and pass"),r:()=>roll(
+     [4,()=>(VAL(1.2),L("Ganas la posición y el clip es legendario. Fama +20%","You take the place and the clip is legendary. Fame +20%"))],
+     [3,()=>(CAR(-1),L("Ganas la batalla, pero el box se parte. −1 coche","You win the battle, but the garage splits. −1 car"))],
+     [3,()=>(OVR(-1),L("El equipo te sanciona internamente. −1 OVR","The team disciplines you internally. −1 OVR"))])}]},
+ {id:"cuentas",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&(S.yearsAtTeam||1)>=3,t:()=>L("Cuentas pendientes","Unfinished business"),
+  d:()=>{const m=teammateOf(S.team.name);return L(`Llevas años picándote con ${surname(m.name)} en el mismo garaje. El equipo os deja claro: quien acabe por delante manda la próxima temporada. Se decide en la pista.`,`Years of needling ${surname(m.name)} in the same garage. The team is clear: whoever finishes ahead calls the shots next season. Settle it on track.`);},opts:[
+   {l:()=>L("Guerra abierta","All-out war"),r:()=>roll(
+     [4,()=>(OVR(1),S.role="1",L("Le pasas por encima toda la temporada. Nº1 indiscutible. +1 OVR","You dominate him all season. Undisputed No.1. +1 OVR"))],
+     [3,()=>L("Os matáis, pero acabáis empatados. La guerra sigue.","You go at it, but finish level. The war continues.")],
+     [3,()=>(OVR(-1),S.role="2",L("Él saca lo mejor de sí y te gana el pulso. −1 OVR","He raises his game and beats you. −1 OVR"))])},
+   {l:()=>L("Bajar el pistón, foco en el título","Ease off, focus on the title"),r:()=>roll(
+     [5,()=>(CAR(1),L("Sin desgaste interno, el equipo rinde mejor. +1 coche","No internal wear, the team performs better. +1 car"))],
+     [3,()=>L("Paz en el box, pero él se lleva los focos.","Peace in the garage, but he takes the spotlight.")],
+     [2,()=>(VAL(.9),L("Te acusan de conformista. Fama −10%","You're branded content with mediocrity. Fame −10%"))])}]},
+ // 💥 lesión bestia por apretar (ligada al estilo)
+ {id:"limite",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&S.cat==="F1",t:()=>L("Al filo del abismo","On the ragged edge"),
+  d:()=>L("Para arañar la última décima hay que llevar el coche a un punto que roza la locura. Tu instinto tira… el fisio y el muro contienen la respiración.","To find the last tenth you must take the car to a point bordering on madness. Your instinct pulls… the physio and the pit wall hold their breath."),opts:[
+   {l:()=>L("Apretar sin freno","Push with no limits"),r:()=>{
+     const aggr=sel.style==="agresivo";
+     return roll(
+       [aggr?5:3,()=>(OVR(1),VAL(1.1),L("Encuentras un límite que nadie más pisa. Vuelo absoluto. +1 OVR y +fama","You find a limit no one else dares. Flat-out brilliance. +1 OVR and +fame"))],
+       [aggr?4:3,()=>(S.missRaces=8,OVR(-1),L("Accidente fuerte: fractura y media temporada de baja. −1 OVR","A big crash: a fracture and half a season out. −1 OVR"))],
+       [aggr?4:2,()=>{ S.missRaces=24; OVR(-1);
+         if(S.role==="2" && ch(.6)){
+           if(S.age<=25){ S.forceMove=true; S.demoteReserve=true; return L("Lesión gravísima: un año en blanco. Siendo Nº2, el equipo no te espera; solo te quieren de probador.","A horrific injury: a full year lost. As a No.2, the team won't wait; only reserve interest remains."); }
+           S.forceMove=true; return L("Lesión gravísima: un año en blanco. Siendo Nº2, el equipo te sustituye y vuelves al mercado.","A horrific injury: a full year lost. As a No.2, the team replaces you and you're back on the market.");
+         }
+         return L("Lesión gravísima: pierdes el año entero, pero el equipo te espera. −1 OVR","A horrific injury: you lose the whole year, but the team waits for you. −1 OVR");
+       }])
+   }},
+   {l:()=>L("Gestionar y sumar","Manage and bank the points"),r:()=>roll(
+     [5,()=>L("Cabeza fría, cero riesgos. Traes el coche a casa. Sin cambios.","Cool head, zero risk. You bring the car home. No change.")],
+     [3,()=>(VAL(1.05),L("Tu madurez gusta en el muro. Ligero +fama","Your maturity pleases the pit wall. Slight +fame"))],
+     [2,()=>(OVR(-1),L("Demasiado conservador: pierdes comba con el resto. −1 OVR","Too conservative: you lose ground to the rest. −1 OVR"))])}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -1635,6 +1690,14 @@ function simSeason(){
       if(S.role==="2" && gap>4){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".")); }
       else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push(L("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1.","⬇️ "+surname(mate.name)+" takes the No.1 driver status from you.")); }
     }
+  }
+  // 🏁 revolución técnica: al terminar el año del reset, se destapa quién entendió el reglamento
+  if(S.regReveal && S.regReveal.year===row.year){
+    const R=S.regReveal, b=R.brawn;
+    row.events.push(L(`🏁 Se estrena el reglamento: ${b} arrasa y se convierte en el nuevo coche a batir.`,`🏁 The new rulebook debuts: ${b} dominates and becomes the car to beat.`));
+    if(R.rumorTrue) row.events.push(L(`🔮 ${R.rumor} acertó de pleno con el reglamento.`,`🔮 ${R.rumor} nailed the new rules completely.`));
+    else row.events.push(L(`🔮 ${R.rumor} se estrelló con el nuevo reglamento; el verdadero triunfador fue ${b}.`,`🔮 ${R.rumor} flopped with the new rules; the real winner was ${b}.`));
+    S.regReveal=null;
   }
   if(S.cat!=="ADV") maybeEvent(row,st);
   evolveF1();
@@ -2131,6 +2194,7 @@ function returnF1Offers(){
 }
 
 function nextOffers(){
+  S.regUnknown=false; // por defecto las tendencias se ven; la revolución técnica lo reactiva puntualmente
   if(S.age>=42){ endCareer(); return; }
   if(S.cat==="ADV"){ advOffers(); return; } // estás fuera de la F1: menú de aventura
   const o=[];
@@ -2220,7 +2284,7 @@ function nextOffers(){
       while(o.length<3){ const extra=(proved?sorted.slice(2,9):sorted).find(t=>!o.some(x=>x.team.name===t.name)); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
       if(S.age<=24) o.push({team:{...own,cat:"TEST"},note:L("Seguir de probador un año más","Stay as reserve one more year")});
       S.testProved=0;
-    } else if(S.age>=28){ washedOut(); return; }
+    } else if(S.age>=28){ if(S.f1Seasons>0){ endCareer(); } else { washedOut(); } return; }
     else {
       title=L("Otro año de probador","Another year as reserve");
       sub=L("El asiento titular se resiste. Sigues de reserva: FP1, simulador y alguna carrera si surge.","The race seat is elusive. You stay a reserve: FP1, simulator and the odd race if it comes up.");
@@ -2228,6 +2292,15 @@ function nextOffers(){
     }
   }
   else { // F1 titular
+    // tras una lesión gravísima siendo Nº2 joven: solo hay interés como probador
+    if(S.demoteReserve){
+      S.demoteReserve=false; S.forceMove=false;
+      setDecision(L("De vuelta al banquillo","Back to the bench"),L("La lesión te costó el asiento. Solo hay sitio para ti como probador… por ahora.","The injury cost you your seat. There's only room for you as a reserve… for now."));
+      pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
+      renderRecap(); renderOffers(o, true); return;
+    }
+    // 🏁 revolución técnica (efecto Brawn): una vez por partida, a partir de ~2046
+    if(!S.regDone && yearNow()>=S.regReg){ regResetOffers(); return; }
     const pOut = S.age>=40?.5 : S.age>=38?.3 : S.age>=36?.15 : 0;
     if(Math.random()<pOut){
       setDecision(L("El paddock pasa página","The paddock moves on"),L("Los equipos apuestan por juventud. Esta vez el teléfono no suena.","The teams are betting on youth. This time the phone doesn't ring."));
@@ -2283,6 +2356,12 @@ function nextOffers(){
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title=L("Mercado de fichajes ","Silly season ")+(yearNow());
       sub=(sub||"")+L("Silly season: los contratos están sobre la mesa.","Silly season: the contracts are on the table.");
+      // 🪑 veteranos: si la rep flaquea, un grande te ofrece cerrar como probador/mentor (retirada digna)
+      if(S.age>=36 && rep<80 && ch(.5)){
+        const grand=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name])[irnd(0,2)];
+        if(grand && !o.some(x=>x.team.name===grand.name && x.team.cat==="TEST"))
+          o.push({team:{...grand,cat:"TEST"}, note:L("Probador y mentor: cerrar con los grandes","Reserve & mentor: bow out with the big boys")});
+      }
       // 🌎 aventura fuera de la F1: RARO — solo si mayor y atascado (coche malo o mala racha),
       // con probabilidad que sube con el "apetito aventurero". La mayoría de carreras nunca lo ven.
       if(S.age>=32 && S.f1Seasons>=3){
@@ -2324,6 +2403,49 @@ function washedOut(){
   setDecision(L("Fin del camino","End of the road"),L("Las ofertas se agotaron antes de llegar a la F1. El automovilismo es cruel.","The offers dried up before you reached F1. Motorsport is cruel."));
   $("offerList").innerHTML="";
   setTimeout(endCareer,1200);
+}
+
+// 🏁 REVOLUCIÓN TÉCNICA (efecto Brawn 2009): una vez por partida, a partir de ~2046.
+// Se resetea el rendimiento de toda la parrilla en secreto; un equipo MALO da la sorpresa
+// ("el Brawn"). Un rumor señala a un equipo malo (acierta ~45%). Todas las ofertas salen
+// con TENDENCIA: INCÓGNITA (y estrellas ocultas). Al terminar el año se destapa quién acertó.
+function regResetOffers(){
+  S.regDone=true; S.regUnknown=true;
+  const pk=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
+  const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]); // peor→mejor (antes del reset)
+  const badTeams=order.slice(0,4);
+  // resetear la parrilla: nuevo pecking order aleatorio
+  F1_TEAMS.forEach(t=>{ const v=Math.round(rnd(66,86)); S.f1perf[t.name]=v; S.f1target[t.name]=v; });
+  // el "Brawn": un equipo malo que pega el pelotazo
+  const brawn=badTeams[irnd(0,badTeams.length-1)];
+  const bv=Math.round(rnd(90,94)); S.f1perf[brawn.name]=bv; S.f1target[brawn.name]=bv;
+  // uno o dos ex-grandes se hunden
+  order.slice(-2).forEach(t=>{ if(ch(.6)){ const v=Math.round(rnd(63,70)); S.f1perf[t.name]=v; S.f1target[t.name]=v; } });
+  // rumor: acierta ~45% (X = Brawn); si no, otro equipo malo se lleva el foco… y falla
+  const rumorTrue=ch(.45);
+  const otherBad=badTeams.filter(t=>t.name!==brawn.name);
+  const rumor=(rumorTrue||!otherBad.length)?brawn:otherBad[irnd(0,otherBad.length-1)];
+  // ¿X te quiere? más probable con buen OVR/fama. Si YA corres para X, la renovación lo cubre.
+  const cur=F1_TEAMS.find(t=>t.name===S.team.name);
+  const atRumor = !!(cur && cur.name===rumor.name);
+  const pull=0.35 + Math.max(0,(S.ovr-78))*0.03 + Math.min(.2, fameScore()/1500);
+  const xWants = atRumor ? true : ch(Math.min(.85,pull));
+  S.regReveal={brawn:brawn.name, rumor:rumor.name, rumorTrue, year:yearNow()};
+  // ofertas SIN pistas de nivel: renovación + 2 al azar + X si te quiere
+  const o=[];
+  if(cur && !S.burned[cur.name] && !S.neverHire[cur.name]) o.push({team:cur,note:L("Renovación","Renewal"),role:roleFor(cur.name)});
+  const poolOthers=F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name]);
+  pk(poolOthers,2).forEach(t=>o.push({team:t,role:roleFor(t.name)}));
+  if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name]) o.push({team:rumor,role:roleFor(rumor.name),note:L("🔮 El del rumor","🔮 The rumoured one")});
+  while(o.length<3){ const extra=F1_TEAMS.find(t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
+  const title=L("🏁 Revolución técnica","🏁 Technical revolution");
+  let sub=L(`El año que viene entra un reglamento radical y la parrilla se resetea. En el paddock se rumorea que ${rumor.name} ha entendido el nuevo coche antes que nadie… pero nadie lo sabrá hasta la primera carrera.`,`A radical new rulebook resets the grid next year. The paddock whispers that ${rumor.name} has cracked the new car… but nobody will know until race one.`);
+  sub += atRumor ? L(` Y da la casualidad de que ya corres para ${rumor.name}: ¿te quedas y lo apuestas todo?`,` And as it happens you already race for ${rumor.name}: do you stay and bet it all?`)
+                 : xWants ? L(` Y buenas noticias: ${rumor.name} te quiere en su proyecto.`,` And good news: ${rumor.name} wants you on board.`)
+                          : L(` Lamentablemente, ${rumor.name} no te quiere: tendrás que jugártela con otro.`,` Unfortunately, ${rumor.name} doesn't want you: you'll have to gamble on someone else.`);
+  setDecision(title,sub);
+  renderRecap();
+  renderOffers(o, S.age>=31);
 }
 
 /* ---------- línea de tiempo ---------- */
