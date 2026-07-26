@@ -614,7 +614,11 @@ function setLang(l){
   LANG=l; try{localStorage.setItem("f1lang",l);}catch(e){}
   applyLang();
   // re-render de lo que esté en pantalla (si hay partida)
-  try{ if(typeof S!=="undefined" && S){ refreshCard(); renderF1State(); renderTimeline(); } }catch(e){}
+  try{ if(typeof S!=="undefined" && S){
+    refreshCard(); renderF1State(); renderTimeline();
+    // si el resumen final está abierto, repintarlo en el nuevo idioma (endCareer es idempotente)
+    if(S.retired && $("endModal") && $("endModal").style.display==="flex") endCareer();
+  } }catch(e){}
 }
 /* ================= TEMA CLARO/OSCURO ================= */
 let THEME = (function(){ try{return localStorage.getItem("f1theme")||"light";}catch(e){return "light";} })();
@@ -651,6 +655,28 @@ const COUNTRIES = [
   ["Tailandia","🇹🇭"],["Taiwán","🇹🇼"],["Túnez","🇹🇳"],["Turquía","🇹🇷"],["Ucrania","🇺🇦"],
   ["Uruguay","🇺🇾"],["Uzbekistán","🇺🇿"],["Venezuela","🇻🇪"],["Vietnam","🇻🇳"]
 ].sort((a,b)=>a[0].localeCompare(b[0],"es"));
+
+// código de nacionalidad de 3 letras (estándar IOC/F1, igual en todos los idiomas),
+// derivado de la bandera → evita cortar el nombre español ("Bélgica"→"BÉL", "Reino Unido"→"REI")
+const NAT_CODE={
+  DE:"GER",AO:"ANG",SA:"KSA",DZ:"ALG",AR:"ARG",AM:"ARM",AU:"AUS",AT:"AUT",AZ:"AZE",BE:"BEL",
+  BY:"BLR",BO:"BOL",BA:"BIH",BR:"BRA",BG:"BUL",CM:"CMR",CA:"CAN",QA:"QAT",CZ:"CZE",CL:"CHI",
+  CN:"CHN",CY:"CYP",CO:"COL",KR:"KOR",CI:"CIV",CR:"CRC",HR:"CRO",CU:"CUB",DK:"DEN",EC:"ECU",
+  EG:"EGY",SV:"ESA",AE:"UAE",SK:"SVK",SI:"SLO",ES:"ESP",US:"USA",EE:"EST",ET:"ETH",PH:"PHI",
+  FI:"FIN",FR:"FRA",GE:"GEO",GH:"GHA",GR:"GRE",GT:"GUA",GQ:"GEQ",HN:"HON",HU:"HUN",IN:"IND",
+  ID:"INA",IR:"IRI",IE:"IRL",IS:"ISL",IL:"ISR",IT:"ITA",JM:"JAM",JP:"JPN",KZ:"KAZ",KE:"KEN",
+  KW:"KUW",LV:"LAT",LB:"LBN",LT:"LTU",LU:"LUX",MY:"MAS",MT:"MLT",MA:"MAR",MX:"MEX",MC:"MON",
+  ME:"MNE",NI:"NCA",NG:"NGR",NO:"NOR",NZ:"NZL",NL:"NED",PK:"PAK",PA:"PAN",PY:"PAR",PE:"PER",
+  PL:"POL",PT:"POR",PR:"PUR",GB:"GBR",DO:"DOM",RO:"ROU",RU:"RUS",SN:"SEN",RS:"SRB",SG:"SGP",
+  ZA:"RSA",SE:"SWE",CH:"SUI",TH:"THA",TW:"TPE",TN:"TUN",TR:"TUR",UA:"UKR",UY:"URU",UZ:"UZB",
+  VE:"VEN",VN:"VIE"
+};
+function isoFromFlag(flag){
+  if(!flag) return "";
+  return [...flag].map(c=>c.codePointAt(0)).filter(cp=>cp>=0x1F1E6&&cp<=0x1F1FF)
+    .map(cp=>String.fromCharCode(65+cp-0x1F1E6)).join("");
+}
+function natCode(flag){ const iso=isoFromFlag(flag); return NAT_CODE[iso]||iso||"—"; }
 
 const KART_TEAMS = [
   {name:"Academia Tony Kart", color:"#2a9d3a", color2:"#136223", perf:52, sub:"La cantera de los campeones europeos"},
@@ -882,7 +908,6 @@ function startCareer(){
     });
   });
   $("identity").style.display="none"; $("career").style.display="block";
-  $("tagNat").textContent = sel.flag+" "+sel.country.toUpperCase().slice(0,3);
   $("tagNum").textContent = "#"+sel.num;
   $("tagStyle").textContent = styleLabel(sel.style);
   refreshCard();
@@ -891,6 +916,7 @@ function startCareer(){
 
 function refreshCard(){
   if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
+  if(sel.flag) $("tagNat").textContent = sel.flag+" "+natCode(sel.flag);
   $("ovrNum").textContent = S.ovr;
   $("ovrBadge").style.background=ovrColor(S.ovr);
   $("ageV").textContent = S.age;
@@ -2358,16 +2384,16 @@ function renderCareerMap(){
         const ar=r.advResult||{}, sr=SERIES[ar.series]||{};
         const cls = (ar.win||ar.champPos===1)?"p1" : ar.champPos<=3?"top" : "rest";
         const lab = ar.win?"🏆" : (ar.champPos?ar.champPos+"º":"—");
-        return `<span class="cmcell ${cls}" title="${r.year} · ${sr.name||"aventura"}${ar.win?" · ¡"+sr.marquee+"!":""} · OVR ${r.ovr}">${lab}</span>`;
+        return `<span class="cmcell ${cls}" title="${r.year} · ${ar.series?serName(ar.series):L("aventura","adventure")}${ar.win?" · ¡"+serMarquee(ar.series)+"!":""} · OVR ${r.ovr}">${lab}</span>`;
       }
       const cls=isTest?"rest":posClass(r.pos);
       const lab=isTest?"—":(r.pos===1?"🏆":r.pos+"º");
-      const tip=isTest?(r.subRaces?`${r.year} · probador · ${r.subRaces} GP sustituto (mejor ${r.subBest===1?"1º":r.subBest+"º"}) · OVR ${r.ovr}`:`${r.year} · probador · OVR ${r.ovr}`):`${r.year} · OVR ${r.ovr}`;
+      const tip=isTest?(r.subRaces?L(`${r.year} · probador · ${r.subRaces} GP sustituto (mejor ${r.subBest===1?"1º":r.subBest+"º"}) · OVR ${r.ovr}`,`${r.year} · reserve · ${r.subRaces} sub GPs (best ${r.subBest===1?"1st":"P"+r.subBest}) · OVR ${r.ovr}`):L(`${r.year} · probador · OVR ${r.ovr}`,`${r.year} · reserve · OVR ${r.ovr}`)):`${r.year} · OVR ${r.ovr}`;
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
     html+=`<div class="cmstint">
       <span class="cmmeta">${badge(st.team,"cmdot")}
-        <span class="cmname">${st.team.name}${isTest?" ·prob":""}</span><span class="cmyears">${yrs}</span></span>
+        <span class="cmname">${st.team.name}${isTest?L(" ·prob"," ·res"):""}</span><span class="cmyears">${yrs}</span></span>
       <span class="cmcells">${cells}</span></div>`;
   });
   el.innerHTML=html;
