@@ -1770,7 +1770,7 @@ function renderF1State(){
   // insignia y clase de movimiento (sube/baja respecto al año pasado)
   const mvB=mv=> mv==null?"":mv>0?`<span class="mv up">▲${mv}</span>`:mv<0?`<span class="mv down">▼${-mv}</span>`:`<span class="mv eq">=</span>`;
   const mvCls=mv=> mv>0?" mv-up":mv<0?" mv-down":"";
-  let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${x.me?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
+  let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${x.me?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.me?L("TÚ","YOU"):x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
   if(S.lastTop3.myPos!=null && S.lastTop3.myPos>3)
     dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} ${L("TÚ","YOU")}</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
   $("fsDrivers").innerHTML=dHtml;
@@ -1928,7 +1928,7 @@ function simF1(row,st){
   const constrPos=1+constrRank.findIndex(e=>e[0]===myTeam);
   row.constrPos=constrPos;
   // top 3 de ambos campeonatos, visible en la línea de tiempo y el panel
-  row.top3d=standings.slice(0,3).map(d=>d.isP?"TÚ":surname(d.name));
+  row.top3d=standings.slice(0,3).map(d=>d.isP?L("TÚ","YOU"):surname(d.name));
   row.top3c=constrRank.slice(0,3).map(e=>e[0]);
   const {mvD,mvC}=trackRanks(standings.map(d=>d.isP?"__ME__":d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
