@@ -892,9 +892,12 @@ function validateIdentity(){
 }
 
 /* ================= NÚCLEO ================= */
+// Vercel Web Analytics — evento personalizado (solo strings/números/booleanos; seguro si va no está)
+function track(name, data){ try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){} }
 function startCareer(){
   sel.name = $("inName").value.trim().toUpperCase();
   sel.num = $("inNum").value;
+  track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG});
   S = {
     age:16, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1,
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
@@ -2174,6 +2177,7 @@ function simF1(row,st){
   // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
   if(S.f1Seasons===0){
     S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; });
+    track("reached_f1", {debut_age: S.age, pedigree: Math.round(juniorPedigree())});
     // hype de debut: llegar con palmarés junior te hace un rookie mediático (más fama)
     const ped=juniorPedigree();
     if(ped>=2){ VAL(1+Math.min(.25,ped*0.05)); row.events.push(L(`⭐ Debutas en la F1 como ${pedigreeLabel()}: el paddock espera mucho de ti.`,`⭐ You debut in F1 as ${pedigreeLabel()}: the paddock expects big things.`)); }
@@ -2348,6 +2352,7 @@ function chooseAdventureSeries(){
   renderSpecialOptions(opts);
 }
 function startAdventure(key){
+  track("adventure", {series: key, age: S.age});
   S.advSeries=key; S.cat="ADV";
   S.team={name:SERIES[key].name, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
   S.role=null; S.roleTeam=null; S.roleMate=null;
@@ -2763,6 +2768,9 @@ function renderCareerMap(){
 
 function endCareer(){
   S.retired=true;
+  const result = S.titles.f1>=2?"multi_champion" : S.titles.f1===1?"champion" : S.titles.constr>0?"constructors_champion"
+    : S.subcamp>0?"runner_up" : S.wins>0?"race_winner" : S.f1Seasons>0?"f1_driver" : "prospect";
+  track("career_ended", {result, f1_titles:S.titles.f1, constructors:S.titles.constr, f1_seasons:S.f1Seasons, wins:S.wins, retire_age:S.age});
   const m=$("endModal"); m.style.display="flex";
   $("endName").textContent=sel.flag+" "+sel.name+" #"+sel.num;
   $("eGP").textContent=S.gp; $("eW").textContent=S.wins; $("eP").textContent=S.podiums;
