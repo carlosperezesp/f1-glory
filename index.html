@@ -605,6 +605,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <div class="legend-score" id="legendScore"></div>
       <div class="end-actions">
         <button class="btn sm" onclick="location.reload()" data-es="Nueva carrera" data-en="New career">Nueva carrera</button>
+        <button class="btn sm line" onclick="shareCareer()" data-es="📸 Compartir" data-en="📸 Share">📸 Compartir</button>
         <button class="btn sm line" onclick="viewCareer()" data-es="👁️ Ver carrera" data-en="👁️ View career">👁️ Ver carrera</button>
       </div>
     </div>
@@ -2829,7 +2830,7 @@ function endCareer(){
   else if(S.f1Seasons>0){legacy=L("PILOTO DE FÓRMULA 1","FORMULA 1 DRIVER");verdict=L("Llegaste donde solo llegan 20 personas en el planeta. Eso ya te hace extraordinario.","You reached where only 20 people on the planet get to. That alone makes you extraordinary.");}
   else {legacy=L("PROMESA DEL AUTOMOVILISMO","MOTORSPORT PROSPECT");verdict=L("La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.","F1 stayed out of reach, but the track was your home. Not every dream ends in Monaco, and they're worth it all the same.");}
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=L(" Y sí: lo de APXGP fue tan de película como suena. 🎬"," And yes: the APXGP thing was as cinematic as it sounds. 🎬");
-  $("endLegacy").textContent=legacy;
+  $("endLegacy").textContent=legacy; S.legacyTxt=legacy;
   $("endVerdict").textContent=verdict;
   // casilla "Puntos de leyenda": color según la magnitud del legado (máx real ~1650, techo ~2000+)
   const LEG_TIERS=[
@@ -2866,6 +2867,73 @@ function viewCareer(){
 function reopenSummary(){
   $("endModal").style.display="flex";
   $("reopenBtn").style.display="none";
+}
+/* 📸 tarjeta compartible de la carrera: dibuja un PNG con Canvas 2D (sin librerías, CSP-safe) */
+function drawCareerCard(){
+  const W=1080, H=1200, c=document.createElement("canvas"); c.width=W; c.height=H;
+  const x=c.getContext("2d");
+  const rr=(px,py,w,h,r)=>{ x.beginPath(); x.moveTo(px+r,py); x.arcTo(px+w,py,px+w,py+h,r); x.arcTo(px+w,py+h,px,py+h,r); x.arcTo(px,py+h,px,py,r); x.arcTo(px,py,px+w,py,r); x.closePath(); };
+  const checker=(y,h)=>{ const s=h; for(let i=0;i*s<W;i++){ x.fillStyle=i%2?"#15151e":"#e6e6ee"; x.fillRect(i*s,y,s,h); } };
+  // texto centrado que reduce la fuente si no cabe en maxW
+  const fit=(text,y,maxW,size,color,weight)=>{ x.fillStyle=color; let f=size; do{ x.font=`${weight} ${f}px Arial, sans-serif`; }while(x.measureText(text).width>maxW && (f-=2)>15); x.textAlign="center"; x.fillText(text, W/2, y); };
+  // fondo
+  x.fillStyle="#16161e"; x.fillRect(0,0,W,H);
+  // banner superior con degradado F1
+  const bg=x.createLinearGradient(0,0,W,380); bg.addColorStop(0,"#15151e"); bg.addColorStop(.55,"#2b0a08"); bg.addColorStop(1,"#e10600");
+  x.fillStyle=bg; x.fillRect(0,0,W,380);
+  checker(380,14);
+  // nombre + dorsal + bandera / legado / años
+  fit(`${sel.flag} ${sel.name} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
+  fit(S.legacyTxt||"", 262, W-90, 46, "#ffce3a", "800");
+  fit(L(`Carrera 2026–${2026+(S.age-16)}`,`Career 2026–${2026+(S.age-16)}`), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
+  // celdas de estadísticas (2 filas × 4)
+  const cell=(cx,cy,w,h,val,lab,gold)=>{
+    rr(cx,cy,w,h,18); x.fillStyle=gold?"#f3c866":"#262a34"; x.fill();
+    x.fillStyle=gold?"#5a3f00":"#fff"; x.font="900 50px Arial, sans-serif"; x.textAlign="center";
+    x.fillText(String(val), cx+w/2, cy+62);
+    x.fillStyle=gold?"#7c5e0f":"#9aa0ae"; let lf=21; do{ x.font=`700 ${lf}px Arial, sans-serif`; }while(x.measureText(lab).width>w-14 && (lf-=1)>13);
+    x.fillText(lab, cx+w/2, cy+95);
+  };
+  const M=60, GAP=20, CW=(W-2*M-3*GAP)/4, CH=110;
+  const r1=[["GP",S.gp,0],[L("VICTORIAS","WINS"),S.wins,0],[L("PODIOS","PODIUMS"),S.podiums,0],["POLES",S.poles,0]];
+  const r2=[[L("🏆 MUNDIALES","🏆 TITLES"),S.titles.f1,S.titles.f1>0],[L("🏭 EQUIPOS","🏭 TEAMS"),S.titles.constr,S.titles.constr>0],[L("🥈 SUBCAMP.","🥈 2ND"),S.subcamp,0],[L("PUNTOS","POINTS"),S.ptsF1,0]];
+  r1.forEach((s,i)=>cell(M+i*(CW+GAP),440,CW,CH,s[1],s[0],s[2]));
+  r2.forEach((s,i)=>cell(M+i*(CW+GAP),575,CW,CH,s[1],s[0],s[2]));
+  // vitrina de trofeos
+  const shelf=[]; for(let i=0;i<S.titles.f1;i++)shelf.push("🏆"); for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
+  if(shelf.length){ x.fillStyle="#fff"; x.font="54px Arial, sans-serif"; x.textAlign="center"; x.fillText(shelf.slice(0,12).join(" "), W/2, 775); }
+  // trayectoria: equipos con los que fuiste campeón (o, si no hay títulos, tus escuderías de F1)
+  const seas=S.seasons||[];
+  const champTeams=[...new Set(seas.filter(s=>s.cat==="F1"&&(s.pos===1||s.constrPos===1)).map(s=>s.team&&s.team.name).filter(Boolean))];
+  const f1Teams=[...new Set(seas.filter(s=>s.cat==="F1").map(s=>s.team&&s.team.name).filter(Boolean))];
+  const traj = champTeams.length?champTeams:f1Teams;
+  if(traj.length){
+    fit(champTeams.length?L("CAMPEÓN CON","CHAMPION WITH"):L("TU TRAYECTORIA","YOUR JOURNEY"), 855, W-120, 22, "rgba(255,255,255,.5)", "700");
+    fit(traj.slice(0,4).join("   ·   "), 898, W-120, 34, "#fff", "800");
+  }
+  // pie: marca + link + gancho
+  checker(H-14,14);
+  x.textAlign="center";
+  x.fillStyle="#fff"; x.font="italic 900 52px Arial, sans-serif"; x.fillText("🏁 F1 GLORY", W/2, 995);
+  x.fillStyle="#ff5a1a"; x.font="800 34px Arial, sans-serif"; x.fillText("f1-glory.com", W/2, 1045);
+  x.fillStyle="rgba(255,255,255,.75)"; x.font="600 30px Arial, sans-serif";
+  x.fillText(L("¿Superas mi legado?","Can you beat my legacy?"), W/2, 1100);
+  return c;
+}
+function shareCareer(){
+  let c; try{ c=drawCareerCard(); }catch(e){ return; }
+  const done=()=>{};
+  c.toBlob(blob=>{
+    if(!blob) return;
+    const file=new File([blob],"f1-glory.png",{type:"image/png"});
+    const txt=L("Mi carrera en F1 Glory 🏁 ¿Superas mi legado? f1-glory.com","My F1 Glory career 🏁 Can you beat my legacy? f1-glory.com");
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:"F1 Glory", text:txt}).catch(done);
+    } else {
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="f1-glory.png"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    }
+  }, "image/png");
 }
 /* diálogo de impresión del navegador → PDF con toda la carrera */
 function printCareer(){
