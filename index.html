@@ -702,6 +702,13 @@ const F3_TEAMS = [
   {name:"Campos F3", color:"#e6c31e", color2:"#8a740f", perf:56},
   {name:"MP Motorsport F3", color:"#e05a00", color2:"#7a3100", perf:61},{name:"Rodin Motorsport F3", color:"#111318", color2:"#c9a227", perf:57},
 ];
+// Fórmula Regional (FRECA): alternativa a la F3 — campo algo más asequible, misma escalera (sube a F2)
+const FRECA_TEAMS = [
+  {name:"Prema FR", color:"#dd0022", color2:"#6b0011", perf:64},{name:"ART GP FR", color:"#888888", color2:"#444444", perf:61},
+  {name:"R-ace GP FR", color:"#2a2a35", color2:"#101018", perf:59},{name:"MP Motorsport FR", color:"#e05a00", color2:"#7a3100", perf:58},
+  {name:"Trident FR", color:"#1166cc", color2:"#083a75", perf:56},{name:"Van Amersfoort FR", color:"#e30613", color2:"#7a0309", perf:55},
+  {name:"Saintéloc FR", color:"#0e7a5f", color2:"#063d2f", perf:54},
+];
 const F2_TEAMS = [
   {name:"Prema F2", color:"#dd0022", color2:"#6b0011", perf:76},{name:"ART Grand Prix F2", color:"#888888", color2:"#444444", perf:74},
   {name:"DAMS F2", color:"#0088cc", color2:"#004a70", perf:72},{name:"Carlin F2", color:"#1144aa", color2:"#0a2560", perf:70},
@@ -885,7 +892,7 @@ function startCareer(){
   S = {
     age:16, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1,
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
-    titles:{kart:0, f4:0, f3:0, f2:0, f1:0, constr:0}, subcamp:0,
+    titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
     f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0,
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
@@ -902,7 +909,8 @@ function startCareer(){
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // nivel de las academias de karting: aleatorio cada partida → estrellas variables
   // nivel de cada equipo junior: aleatorio por partida → estrellas variables en KART/F4/F3/F2
-  [KART_TEAMS,F4_TEAMS,F3_TEAMS,F2_TEAMS].forEach(pool=>pool.forEach(t=>{ S.jrPerf[t.name]=t.perf+irnd(-4,4); }));
+  // Prema es el superequipo de la cantera (como en la realidad): ventaja SIEMPRE positiva → es fiablemente el mejor asiento
+  [KART_TEAMS,F4_TEAMS,F3_TEAMS,FRECA_TEAMS,F2_TEAMS].forEach(pool=>pool.forEach(t=>{ S.jrPerf[t.name]=t.perf+(/Prema/.test(t.name)?irnd(2,6):irnd(-4,4)); }));
   // sembrar la parrilla real de 2026. El TECHO de cada piloto se sortea por partida (horquilla
   // ~base-8 .. base+3): así el "elegido" cambia cada vez — a veces Antonelli, a veces Verstappen
   // supera a las leyendas, a veces un regen la lía. Nadie tiene 95 garantizado de fábrica.
@@ -1051,6 +1059,19 @@ function oustTeammate(row){
 }
 /* rol pegajoso: si sigues en el mismo equipo con el mismo compañero, NO cambia
    por ruido; solo se recalcula al fichar por otro equipo o si cambia el compañero */
+// pedigrí junior: cuánto pesa tu palmarés de cantera al ENTRAR en la F1 (no alarga la carrera,
+// cambia cómo entras: mejor primer asiento, hype al debutar y cuerda de los equipos tus 1ros años)
+function juniorPedigree(){
+  return (S.titles.f2||0)*3 + (S.titles.f3||0)*1.5 + (S.titles.fr||0)*1.0 + (S.titles.f4||0)*0.8 + (S.titles.kart||0)*0.4;
+}
+function pedigreeLabel(){
+  const p=[];
+  if(S.titles.f2)p.push(L(`${S.titles.f2>1?S.titles.f2+"× ":""}campeón de F2`,`${S.titles.f2>1?S.titles.f2+"× ":""}F2 champion`));
+  if(S.titles.f3)p.push(L(`${S.titles.f3>1?S.titles.f3+"× ":""}campeón de F3`,`${S.titles.f3>1?S.titles.f3+"× ":""}F3 champion`));
+  if(S.titles.fr)p.push(L(`campeón de Fórmula Regional`,`Formula Regional champion`));
+  if(S.titles.f4)p.push(L(`campeón de F4`,`F4 champion`));
+  return p.slice(0,2).join(L(" y "," and "));
+}
 function roleFor(teamName){
   const mate=teammateOf(teamName);
   const last=S.seasons.length?S.seasons.at(-1).pos:null;
@@ -1107,7 +1128,7 @@ function renderRecap(){
   const el=$("decRecap"); if(!el) return;
   const s=S.seasons.at(-1);
   if(!s){ el.style.display="none"; el.innerHTML=""; return; }
-  const catLbl=s.cat==="KART"?"Karting":s.cat==="TEST"?L("Probador","Reserve"):s.cat;
+  const catLbl=s.cat==="KART"?"Karting":s.cat==="TEST"?L("Probador","Reserve"):s.cat==="FR"?"FRECA":s.cat;
   let posTxt, posCol;
   if(s.pos==null){ posTxt="—"; posCol="#ececf1;color:#8a8a94"; }
   else if(s.pos===1){ posTxt=L("🏆 Campeón","🏆 Champion"); posCol="linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000"; }
@@ -1173,7 +1194,13 @@ const JR_PROFILES=[
 function juniorOffers(teams, cat){
   const pk=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
   const perfOf = t => S.jrPerf[t.name]!=null ? S.jrPerf[t.name] : t.perf;
-  const three = pk(teams,3).map(t=>({t, perf:perfOf(t)})).sort((a,b)=>b.perf-a.perf);
+  // Prema, el superequipo: solo te fichan si vienes rindiendo (top-4 el año anterior). Te lo ganas.
+  const prema = teams.find(t=>/Prema/.test(t.name));
+  const lastPos = S.seasons.length ? (S.seasons.at(-1).pos ?? 99) : 99;
+  const earnedPrema = prema && lastPos<=4;
+  const poolNoPrema = teams.filter(t=>t!==prema);
+  const base = earnedPrema ? [prema, ...pk(poolNoPrema,2)] : pk(poolNoPrema,3);
+  const three = base.map(t=>({t, perf:perfOf(t)})).sort((a,b)=>b.perf-a.perf);
   return three.map((x,i)=>{
     const p = JR_PROFILES[i] || JR_PROFILES[1];
     return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:L(p.label,p.labelEn), note:L(p.desc,p.descEn)};
@@ -1210,12 +1237,12 @@ function renderOffers(offers, withRetire){
     b.style.border="2px solid "+o.team.color; b.style.borderLeftWidth="6px";
     const isF1seat = o.team.cat==="F1"||o.team.cat==="TEST";
     const perf = isF1seat ? (S.f1perf[o.team.name]??75) : o.team.perf;
-    const RANGE={KART:[46,54],F4:[50,62],F3:[54,68],F2:[66,78],F1:[60,96],TEST:[60,96]};
+    const RANGE={KART:[46,54],F4:[50,62],F3:[54,68],FR:[52,66],F2:[66,78],F1:[60,96],TEST:[60,96]};
     const [mn,mx]=RANGE[o.team.cat];
     const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-mn)/(mx-mn))));
     // durante la revolución técnica nadie sabe el nivel real de cada coche → estrellas ocultas
     const stars=(S.regUnknown && isF1seat) ? "❓" : ("★".repeat(n5)+"☆".repeat(5-n5));
-    const catLbl = o.team.cat==="KART"?"Karting":o.team.cat==="TEST"?L("Piloto probador F1","F1 Reserve driver"):o.team.cat;
+    const catLbl = o.team.cat==="KART"?"Karting":o.team.cat==="TEST"?L("Piloto probador F1","F1 Reserve driver"):o.team.cat==="FR"?"FRECA":o.team.cat;
     let roleChip="";
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.")}${o.role}</span>`;
     if(o.team.cat==="TEST") roleChip=`<span class="role rt">${L("PROBADOR","RESERVE")}</span>`;
@@ -1662,8 +1689,9 @@ function renderDilemma(dl){
 /* ---------- simulación de temporada ---------- */
 function fieldFor(cat){
   if(cat==="KART") return {races:12, size:20, mean:46, spread:7, teamW:.25};
-  if(cat==="F4")   return {races:14, size:24, mean:52, spread:6.5, teamW:.3};
+  if(cat==="F4")   return {races:14, size:24, mean:54, spread:6.5, teamW:.3};
   if(cat==="F3")   return {races:10, size:22, mean:57, spread:6, teamW:.35};
+  if(cat==="FR")   return {races:14, size:24, mean:55, spread:6.5, teamW:.32}; // FRECA: campo algo más asequible que la F3
   if(cat==="F2")   return {races:14, size:22, mean:66, spread:6, teamW:.4};
   return null;
 }
@@ -1884,10 +1912,16 @@ function simTest(row,st){
 function simJunior(row,st){
   const f=fieldFor(S.cat);
   const teamB=(S.team.perf-f.mean)*f.teamW;
+  // experiencia en la categoría (rookie → año de título): en F4/F3/F2, el 1er año te adaptas
+  // (penalización) y a partir del 2º dominas (bonus). Como en la vida real: casi nadie gana de novato.
+  let yrsHere=0; for(let i=S.seasons.length-1;i>=0;i--){ if(S.seasons[i].cat===S.cat) yrsHere++; else break; }
+  const feeder = S.cat==="F4"||S.cat==="F3"||S.cat==="FR"||S.cat==="F2";
+  const expMod = feeder ? (yrsHere===0 ? -2.5 : Math.min(2, yrsHere)) : 0;
+  if(feeder && yrsHere===0) row.rookieYear=true;
   const rivals=[];
   for(let i=0;i<f.size-1;i++) rivals.push(f.mean+gauss()*f.spread+rnd(-2,6));
   let pts=0,wins=0,pods=0,poles=0;
-  const myBase=S.ovr+teamB;
+  const myBase=S.ovr+teamB+expMod;
   const seasonScores=rivals.map(r=>({s:r,pts:0}));
   for(let r=0;r<f.races;r++){
     const out = r<S.missRaces;
@@ -1914,10 +1948,13 @@ function simJunior(row,st){
     if(S.cat==="KART"){S.titles.kart++; row.events.push(L("🏅 ¡Campeón del mundo de karting!","🏅 Karting world champion!"));}
     if(S.cat==="F4"){S.titles.f4++; row.events.push(L("🏅 ¡Campeón de Fórmula 4!","🏅 Formula 4 champion!"));}
     if(S.cat==="F3"){S.titles.f3++; row.events.push(L("🥈 ¡Campeón de Fórmula 3!","🥈 Formula 3 champion!"));}
+    if(S.cat==="FR"){S.titles.fr++; row.events.push(L("🏅 ¡Campeón de Fórmula Regional!","🏅 Formula Regional champion!"));}
     if(S.cat==="F2"){S.titles.f2++; row.events.push(L("🥇 ¡Campeón de Fórmula 2!","🥇 Formula 2 champion!"));}
     // ganar forja: la experiencia de ser campeón te sube el nivel (recompensa al carril "ganador")
     OVR(1.6); row.events.push(L("💪 Mentalidad de campeón: la experiencia de ganar te hace mejor piloto.","💪 Champion's mindset: the experience of winning makes you a better driver."));
   }
+  // FRECA "pule" un poco más (más rodaje, campo más asequible): pequeño extra de desarrollo
+  if(S.cat==="FR") OVR(0.4);
   return {pos};
 }
 
@@ -1983,7 +2020,12 @@ function simF1(row,st){
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
   // al debutar en F1, fotografiamos los títulos de los rivales: así "tu era" se mide
   // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
-  if(S.f1Seasons===0){ S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; }); }
+  if(S.f1Seasons===0){
+    S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; });
+    // hype de debut: llegar con palmarés junior te hace un rookie mediático (más fama)
+    const ped=juniorPedigree();
+    if(ped>=2){ VAL(1+Math.min(.25,ped*0.05)); row.events.push(L(`⭐ Debutas en la F1 como ${pedigreeLabel()}: el paddock espera mucho de ti.`,`⭐ You debut in F1 as ${pedigreeLabel()}: the paddock expects big things.`)); }
+  }
   S.f1Seasons++;
   const teamPts={};
   grid.forEach(d=>{ teamPts[d.team]=(teamPts[d.team]||0)+d.pts; });
@@ -2202,6 +2244,10 @@ function nextOffers(){
   // posición final de la última temporada: los saltos de superpromesa exigen terminar ARRIBA de verdad
   const lastPos = S.seasons.length ? (S.seasons.at(-1).pos ?? 99) : 99;
   const pick=(arr,n)=>{const c=[...arr];const out=[];while(out.length<n&&c.length){out.push(c.splice(irnd(0,c.length-1),1)[0]);}return out;};
+  // años ya disputados en la categoría actual + si ya la ganaste (para la opción "quédate a por el título")
+  const yrsHere=(()=>{let n=0;for(let i=S.seasons.length-1;i>=0;i--){if(S.seasons[i].cat===S.cat)n++;else break;}return n;})();
+  const wonHere=(S.cat==="F4"&&S.titles.f4>0)||(S.cat==="F3"&&S.titles.f3>0)||(S.cat==="FR"&&S.titles.fr>0)||(S.cat==="F2"&&S.titles.f2>0);
+  const stayOffer=(poolPk,catPk)=>{ const t=juniorOffers(poolPk,catPk)[0]; t.note=L("Quédate un año más: ve a por el título","Stay one more year: go for the title"); return t; };
 
   if(S.cat==="KART"){
     if(S.age<17){
@@ -2222,9 +2268,12 @@ function nextOffers(){
       juniorOffers(F2_TEAMS,"F2").slice(0,2).forEach(x=>{ x.note=L("Salto directo, te saltas la F3","Direct jump, skipping F3"); o.push(x); });
       juniorOffers(F3_TEAMS,"F3").slice(0,1).forEach(x=>{ x.note=L("Hacer F3, más rodaje","Do F3, more mileage"); o.push(x); });
     } else if(S.ovr>=56||S.titles.f4>0){
-      title=L("Subes a la Fórmula 3","You move up to Formula 3");
-      sub=(lastPos<=5?L("Buen año en F4. ","Good year in F4. "):L("Tu nivel ya pide más de lo que da la F4. ","Your level already demands more than F4 offers. "))+L("La F3 te abre las puertas: ¿ganador o desarrollo?","F3 opens its doors: winning or development?");
-      juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
+      title=L("El tercer escalón: F3 o Fórmula Regional","The third rung: F3 or Formula Regional");
+      sub=(lastPos<=5?L("Buen año en F4. ","Good year in F4. "):L("Tu nivel ya pide más que la F4. ","You've outgrown F4. "))+L("Eliges cómo subir: la FIA F3 (más prestigio y nivel) o la Fórmula Regional (más rodaje, menos presión). Las dos suben a la F2.","You choose how to step up: FIA F3 (more prestige and level) or Formula Regional (more track time, less pressure). Both lead to F2.");
+      const stayOK4 = yrsHere<2 && !wonHere && S.age<=19;
+      juniorOffers(F3_TEAMS,"F3").slice(0, stayOK4?1:2).forEach(x=>o.push(x));
+      juniorOffers(FRECA_TEAMS,"FR").slice(0,1).forEach(x=>{ x.note=L("Fórmula Regional: desarrollo, menos presión","Formula Regional: development, less pressure"); o.push(x); });
+      if(stayOK4){ o.push(stayOffer(F4_TEAMS,"F4")); sub+=L(" O quédate un año más en F4 a por el título.","Or stay one more year in F4 to go for the title."); }
     } else if(S.age>=21){ washedOut(); return; }
     else {
       title=L("Otro año en Fórmula 4","Another year in Formula 4");
@@ -2243,7 +2292,9 @@ function nextOffers(){
     } else if(S.ovr>=66||S.titles.f3>0){
       title=L("Llaman de la Fórmula 2","Formula 2 comes calling");
       sub=L("La antesala de la F1. Un buen año aquí y los jefes de equipo sabrán tu nombre.","The antechamber to F1. A good year here and the team bosses will know your name.");
-      juniorOffers(F2_TEAMS,"F2").forEach(x=>o.push(x));
+      const stayOK3 = yrsHere<2 && !wonHere && S.age<=22;
+      juniorOffers(F2_TEAMS,"F2").slice(0, stayOK3?2:3).forEach(x=>o.push(x));
+      if(stayOK3){ o.push(stayOffer(F3_TEAMS,"F3")); sub+=L(" O quédate un año más en F3 a por el título.","Or stay one more year in F3 to go for the title."); }
     } else if(S.age>=24){ washedOut(); return; }
     else {
       title=L("Otro año en F3","Another year in F3");
@@ -2251,16 +2302,37 @@ function nextOffers(){
       juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
     }
   }
+  else if(S.cat==="FR"){ // Fórmula Regional: sube a F2 (sin salto directo a F1 — eso es exclusivo de la F3)
+    if(S.ovr>=66||S.titles.fr>0){
+      title=L("Llaman de la Fórmula 2","Formula 2 comes calling");
+      sub=L("La Regional te ha curtido. La F2 es la antesala de la F1.","Regional has seasoned you. F2 is the antechamber to F1.");
+      const stayOKfr = yrsHere<2 && !wonHere && S.age<=22;
+      juniorOffers(F2_TEAMS,"F2").slice(0, stayOKfr?2:3).forEach(x=>o.push(x));
+      if(stayOKfr){ o.push(stayOffer(FRECA_TEAMS,"FR")); sub+=L(" O quédate un año más en la Regional a por el título.","Or stay one more year in Regional to go for the title."); }
+    } else if(S.age>=24){ washedOut(); return; }
+    else {
+      title=L("Otro año en Fórmula Regional","Another year in Formula Regional");
+      sub=L("Aún no es suficiente. Necesitas crecer para subir.","Not enough yet. You need to grow to move up.");
+      juniorOffers(FRECA_TEAMS,"FR").forEach(x=>o.push(x));
+    }
+  }
   else if(S.cat==="F2"){
     const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]);
     if(S.titles.f2>0 && S.ovr>=76){
       title=L("🏎️ ¡Asiento titular en FÓRMULA 1!","🏎️ A race seat in FORMULA 1!");
       sub=L("Campeón de F2 y listo. Saltas directo a la parrilla, sin pasar por el banquillo.","F2 champion and ready. You jump straight to the grid, no reserve bench.");
-      pick(sorted.slice(0,6),3).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
+      // pedigrí: cuanto más ganaste en juniors, MEJORES equipos te abren la puerta (sorted = peor→mejor)
+      const ped=juniorPedigree();
+      const lo = ped>=5?4 : ped>=4?2 : 0;
+      const hi = ped>=5?11 : ped>=4?8 : 6;
+      if(ped>=4) sub+=L(` Tu palmarés (${pedigreeLabel()}) te abre las puertas de los mejores.`,` Your record (${pedigreeLabel()}) opens the doors of the best.`);
+      pick(sorted.slice(lo,hi),3).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
     } else if(S.ovr>=72){
       title=L("El banquillo de la F1","The F1 reserve bench");
       sub=L("Nadie te da un volante titular aún, pero los grandes te quieren de piloto probador: FP1, simulador y paciencia.","No race seat yet, but the big teams want you as a reserve: FP1, simulator and patience.");
-      pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
+      const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
+      pick(F1_TEAMS, stayOK2?2:3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
+      if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(" O quédate un año más en F2 a por el título.","Or stay one more year in F2 to go for the title."); }
     } else if(S.age>=26){ washedOut(); return; }
     else {
       title=L("Otro año en F2","Another year in F2");
@@ -2310,7 +2382,9 @@ function nextOffers(){
     }
     // reputación para las ofertas: nivel + palmarés + resultado reciente − edad + un poco de FAMA
     // (un piloto mediático atrae a los equipos por los patrocinadores, pero solo un empujón acotado)
-    const rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180);
+    // pedigrí: los equipos dan cuerda a un rookie hypeado sus primeros 3 años aunque tarde en rendir (luego mandan sus resultados de F1)
+    const pedRep = S.f1Seasons<=3 ? juniorPedigree()*1.5 : 0;
+    const rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180)+pedRep;
     if(rep<68&&S.age>=33){ endCareer(); return; }
     // el perdón llega, a veces, con los años
     Object.entries(S.burned).forEach(([tm,age])=>{
@@ -2456,7 +2530,7 @@ function renderTimeline(){
     const div=document.createElement("div");
     div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
-    const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series)||L("Aventura","Adventure")):r.cat;
+    const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="FR"?"FRECA":r.cat==="ADV"?(serName(r.advResult&&r.advResult.series)||L("Aventura","Adventure")):r.cat;
     const constr=r.constrPos?` · 🏭 ${L("Constructores (equipo)","Constructors (team)")}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best")} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs")}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator")):r.cat==="ADV"?"":`${r.pts} pts`;
