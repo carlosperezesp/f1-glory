@@ -473,6 +473,9 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
   <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
   <button class="btn" onclick="showIdentity()" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
+  <p class="news" style="max-width:540px;margin:20px auto 0;font-size:13px;line-height:1.55;color:var(--muted)"
+     data-es="✨ <b>Últimas novedades:</b> dilemas de piloto probador, lesiones que marcan tu carrera, rivalidades que acaban a golpes y nuevas competiciones (Fórmula E, Stock Car Brasil). Metemos mejoras nuevas cada poco — vuelve pronto. 🏗️"
+     data-en="✨ <b>What's new:</b> reserve-driver dilemmas, career-defining injuries, rivalries that come to blows and new series (Formula E, Brazilian Stock Car). We ship fresh improvements all the time — check back soon. 🏗️">✨ <b>Últimas novedades:</b> dilemas de piloto probador, lesiones que marcan tu carrera, rivalidades que acaban a golpes y nuevas competiciones (Fórmula E, Stock Car Brasil). Metemos mejoras nuevas cada poco — vuelve pronto. 🏗️</p>
 </section>
 
 <!-- ========== IDENTITY ========== -->
@@ -1183,7 +1186,7 @@ const SERIES={
   dtm:      {name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia.", subEn:"German GT3 touring cars, pure strategy."},
   supercars:{name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
   dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
-  formulae: {name:"Fórmula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
+  formulae: {name:"Fórmula E", nameEn:"Formula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
   brasil:   {name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
 };
 function serName(k){ const s=SERIES[k]||{}; return L(s.name, s.nameEn||s.name); }
@@ -1316,8 +1319,8 @@ function signContract(o){
     if(ch(good?.55:.35)){
       S.burned[prev.name]=S.age;
       S.pendingEvents.push(good
-        ? "🚪 En "+prev.name+" no perdonan tu marcha siendo su líder: puertas cerradas."
-        : "🚪 "+prev.name+" borra tu número tras años grises: no quieren verte más.");
+        ? L("🚪 En "+prev.name+" no perdonan tu marcha siendo su líder: puertas cerradas.","🚪 "+prev.name+" won't forgive their leader walking out: doors closed.")
+        : L("🚪 "+prev.name+" borra tu número tras años grises: no quieren verte más.","🚪 "+prev.name+" wipes your number after grey years: they don't want you around."));
     }
   }
   const sameSeat = prevCat==="F1" && o.team.cat==="F1" && prev && prev.name===o.team.name;
@@ -1714,10 +1717,11 @@ function isStruggling(){
 /* cambiar de estilo de pilotaje a mitad de carrera: puede salir bien o mal */
 function reinventTo(newStyle){
   const setTag=()=>{ sel.style=newStyle; $("tagStyle").textContent=STYLES[newStyle].label; };
+  const sl=styleLabel(newStyle);
   return roll(
-    [4,()=>{ setTag(); OVR(2); return "🦋 Renaces: dominas el estilo "+STYLES[newStyle].label+" y recuperas la chispa. +2 OVR"; }],
-    [3,()=>{ setTag(); return "Cambias de piel a "+STYLES[newStyle].label+". El tiempo dirá si acertaste."; }],
-    [3,()=>{ setTag(); OVR(-2); return "El cambio te descoloca al principio: pierdes tus automatismos. -2 OVR, pero ahora eres "+STYLES[newStyle].label; }]
+    [4,()=>{ setTag(); OVR(2); return L("🦋 Renaces: dominas el estilo "+sl+" y recuperas la chispa. +2 OVR","🦋 Reborn: you master the "+sl+" style and recover your spark. +2 OVR"); }],
+    [3,()=>{ setTag(); return L("Cambias de piel a "+sl+". El tiempo dirá si acertaste.","You shed your skin to "+sl+". Time will tell if you were right."); }],
+    [3,()=>{ setTag(); OVR(-2); return L("El cambio te descoloca al principio: pierdes tus automatismos. -2 OVR, pero ahora eres "+sl,"The change throws you at first: you lose your instincts. -2 OVR, but now you're "+sl); }]
   );
 }
 /* dilema de reinvención: ofrece el estilo que mejor encaja con los mejores coches de ahora */
@@ -1726,15 +1730,16 @@ function reinventionDilemma(){
   const votes={agresivo:0,tecnico:0,consistente:0};
   top.forEach(t=>{ const c=S.f1char[t.name]; if(c) votes[c]++; });
   const bestFit=["agresivo","tecnico","consistente"].filter(s=>s!==sel.style).sort((a,b)=>votes[b]-votes[a])[0];
+  const bf=styleLabel(bestFit);
   return {
-    id:"reinvencion", stage:"vet", t:"Es hora de reinventarse",
-    d:"Los años pesan y los resultados no llegan. Un cambio radical en tu forma de pilotar puede darte una segunda vida… o apagar lo que te queda. Los mejores coches de ahora premian el estilo "+STYLES[bestFit].label+".",
+    id:"reinvencion", stage:"vet", t:()=>L("Es hora de reinventarse","Time to reinvent yourself"),
+    d:()=>L("Los años pesan y los resultados no llegan. Un cambio radical en tu forma de pilotar puede darte una segunda vida… o apagar lo que te queda. Los mejores coches de ahora premian el estilo "+bf+".","The years weigh on you and results won't come. A radical change in how you drive could give you a second life… or snuff out what's left. Today's best cars reward the "+bf+" style."),
     opts:[
-      {l:"Reinventarte: "+STYLES[bestFit].label, r:()=>reinventTo(bestFit)},
-      {l:"Seguir fiel a tu estilo", r:()=>roll(
-        [5,()=>"Eres quien eres. A muerte con tu estilo hasta el final."],
-        [3,()=>(OVR(1),"Doblas la apuesta por lo que sabes hacer. +1 OVR")],
-        [2,()=>"Terco como una mula. Que sea lo que tenga que ser."])}
+      {l:()=>L("Reinventarte: "+bf,"Reinvent yourself: "+bf), r:()=>reinventTo(bestFit)},
+      {l:()=>L("Seguir fiel a tu estilo","Stay true to your style"), r:()=>roll(
+        [5,()=>L("Eres quien eres. A muerte con tu estilo hasta el final.","You are who you are. All in on your style to the end.")],
+        [3,()=>(OVR(1),L("Doblas la apuesta por lo que sabes hacer. +1 OVR","You double down on what you do best. +1 OVR"))],
+        [2,()=>L("Terco como una mula. Que sea lo que tenga que ser.","Stubborn as a mule. Whatever will be, will be.")])}
     ]
   };
 }
@@ -2169,7 +2174,7 @@ function simF1(row,st){
   else {
     const champ=standings[0];
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
-    if(pos===2){S.subcamp++; row.events.push("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.");}
+    if(pos===2){S.subcamp++; row.events.push(L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory."));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship."));}
   // EFECTO PILOTO: un piloto de élite empuja el proyecto hacia arriba año tras año.
@@ -2178,7 +2183,7 @@ function simF1(row,st){
   if(pull>0 && S.f1target[myTeam]!=null){
     const before=S.f1target[myTeam];
     S.f1target[myTeam]=Math.min(93, S.f1target[myTeam]+pull);
-    if(S.ovr>=90 && before<80 && ch(.3)) row.events.push("🔧 Tu talento reorienta el proyecto: el equipo apunta más alto.");
+    if(S.ovr>=90 && before<80 && ch(.3)) row.events.push(L("🔧 Tu talento reorienta el proyecto: el equipo apunta más alto.","🔧 Your talent reshapes the project: the team aims higher."));
   }
   // el campeón de constructores desarrolla con handicap (reglamento) al año siguiente;
   // si además ganas el título de pilotos, todos te apuntan → handicap extra (rompe dinastías)
