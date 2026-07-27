@@ -895,6 +895,7 @@ function startCareer(){
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
     f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
+    bigInjuryDone:false, feuds:[], _incRival:null,
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
@@ -1043,6 +1044,17 @@ function promoteFromReserve(){
   S.testProved=0; S.testYears=0;
   return true;
 }
+// incidentes de pista: elige un rival que NO sea tu compañero; guarda su nombre completo por si acaban a hostias
+function incidentRival(){
+  const pool=(S.dpool||[]).filter(d=>d && d.name && d.name!=="TÚ" && d.name!==S.roleMate);
+  const d=pool.length?pool[irnd(0,pool.length-1)]:null;
+  S._incRival = d?d.name:null;
+  return d?surname(d.name):L("un rival","a rival");
+}
+// si la cosa acaba en pelea: quedáis enemistados → su equipo no te fichará mientras él siga ahí
+function feudBurn(){ if(S._incRival){ S.feuds=S.feuds||[]; if(!S.feuds.includes(S._incRival)) S.feuds.push(S._incRival); } }
+function teamHasFeud(teamName){ return (S.feuds||[]).length>0 && (S.seats[teamName]||[]).some(d=>d&&d!=="PLAYER"&&S.feuds.includes(d.name)); }
+function feudFilter(cands){ const f=cands.filter(t=>!teamHasFeud(t.name)); return f.length?f:cands; } // fallback: nunca 0 ofertas
 // desenlace de "call-up": te quedas el asiento este año; si no se puede, al menos aceleras
 function reserveCallup(){
   if(promoteFromReserve()) return L("🏎️ El equipo te sienta en el coche el resto del año: ¡pasas a piloto de F1!","🏎️ The team puts you in the car for the rest of the year: you're an F1 driver!");
@@ -1671,6 +1683,26 @@ const DILEMAS=[
    {l:()=>L("Atacar en el caos","Attack in the chaos"),r:()=>roll(
      [3,()=>(OVR(-1),L("Te arriesgas y pinchas: fuera. −1 OVR","You gamble and puncture: out. −1 OVR"))],
      [2,()=>(VAL(1.12),L("O te sale la jugada y adelantas a cinco. +fama","Or it pays off and you pass five cars. +fame"))])}]},
+ // 🥊 incidentes de pista con un rival (NUNCA tu compañero). Si acaba en pelea → enemistados
+ {id:"toqueVictima",stage:"f1",cond:()=>S.cat==="F1"&&(S.dpool||[]).some(d=>d&&d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El toque","The tap"),
+  d:()=>{const r=incidentRival();return L(`En plena remontada, ${r} te da un toque y te manda a la grava: carrera al garete. Puedes ir a hablar con él tras la bandera.`,`Mid-charge, ${r} taps you into the gravel: your race is over. You can go and have words after the flag.`);},opts:[
+   {l:()=>L("Hablarlo con calma","Talk it out calmly"),r:()=>roll(
+     [4,()=>(VAL(1.05),L("Te escucha, se disculpa y hasta nace un respeto mutuo. Sin drama.","He listens, apologizes, and a mutual respect is born. No drama."))],
+     [3,()=>L("Frío pero civilizado. Sin cambios.","Cold but civil. No change.")],
+     [3,()=>(feudBurn(),VAL(.9),L("La cosa se calienta y acabáis a gritos: la FIA os sanciona a los dos. −fama. Con él, ni agua.","It boils over into a shouting match: the FIA sanctions you both. −fame. You two are done."))])},
+   {l:()=>L("Tragártelo, «así son las carreras»","Let it go, «racing incidents»"),r:()=>roll(
+     [4,()=>(VAL(1.08),L("Pasas página con clase: el paddock lo nota. +fama","You move on with class: the paddock notices. +fame"))],
+     [3,()=>L("Te lo guardas. Sin cambios.","You bottle it up. No change.")])}]},
+ {id:"toqueCulpable",stage:"f1",cond:()=>S.cat==="F1"&&(S.dpool||[]).some(d=>d&&d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El culpable","The culprit"),
+  d:()=>{const r=incidentRival();return L(`Un cierre tuyo manda a ${r} contra el muro: su carrera, acabada. ¿Vas a su box a disculparte?`,`A move of yours puts ${r} in the wall: his race is done. Do you go to his garage to apologize?`);},opts:[
+   {l:()=>L("Ir a disculparte","Go and apologize"),r:()=>roll(
+     [4,()=>(VAL(1.1),L("Aceptan tus disculpas: quedas como un caballero. +fama","He accepts your apology: you come off as a gentleman. +fame"))],
+     [3,()=>L("Te recibe frío pero lo deja estar. Sin cambios.","He's cold but lets it go. No change.")],
+     [3,()=>(feudBurn(),VAL(.9),L("Se te echa encima: empujones ante las cámaras, portadas y sanción. −fama. Con él, ni agua.","He comes at you: shoving on camera, headlines and a sanction. −fame. You two are done."))])},
+   {l:()=>L("«Así son las carreras»","«Racing incidents»"),r:()=>roll(
+     [3,()=>L("Firme: unos te llaman frío, otros te respetan. Sin cambios.","Firm: some call you cold, others respect you. No change.")],
+     [3,()=>(VAL(.93),L("La prensa te pinta de villano. −fama leve","The press paints you as the villain. slight −fame"))],
+     [2,()=>(VAL(1.06),L("Impones respeto por no achantarte. +fama leve","You command respect by standing your ground. slight +fame"))])}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -1770,11 +1802,29 @@ function fieldFor(cat){
   return null;
 }
 
+// lesión grave rara: como mucho UNA por carrera, ~3.5%/temporada de F1. Te deja el AÑO ENTERO fuera
+// (estilo Kubica) y tu asiento peligra si no tienes galones. Se decide antes de simar la temporada.
+function maybeInjury(row){
+  if(S.cat!=="F1" || S.missRaces>0 || S.bigInjuryDone) return;
+  if(!ch(0.011)) return;
+  S.bigInjuryDone=true; S.missRaces=24; OVR(-2);
+  row.events.push(ch(.5)
+    ? L("⛷️ Accidente grave FUERA del circuito en pretemporada: te pierdes TODA la temporada. −2 OVR.","⛷️ A serious off-track accident in pre-season: you miss the WHOLE season. −2 OVR.")
+    : L("💥 Accidentazo en carrera: lesión grave, TODA la temporada fuera. −2 OVR.","💥 A huge racing shunt: a serious injury, the WHOLE season out. −2 OVR."));
+  const establecido = S.role==="1" || S.titles.f1>0 || S.ovr>=86;
+  if(establecido){
+    row.events.push(L("El equipo te guarda el asiento: te esperan para tu vuelta.","The team keeps your seat: they'll wait for your return."));
+  } else {
+    S.forceMove=true;
+    row.events.push(L("⚠️ Sin galones, el equipo no te espera: pierdes el asiento y tocará pelear la vuelta.","⚠️ Without status, the team won't wait: you lose the seat and must fight your way back."));
+  }
+}
 function simSeason(){
   const st=STYLES[sel.style];
   let row = {age:S.age, year:yearNow(), team:S.team, cat:S.cat, events:[]};
   if(S.pendingEvents.length){ row.events.push(...S.pendingEvents); S.pendingEvents=[]; }
   checkExpansion(row);
+  maybeInjury(row); // lesión grave rara (1 año fuera, asiento en peligro) antes de simular la temporada
   let result;
   if(S.cat==="F1") result = simF1(row,st);
   else if(S.cat==="TEST"){ result = simTest(row,st); bgF1Season(row); }
@@ -2310,7 +2360,7 @@ function returnF1Offers(){
   const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
   const rep=S.ovr+Math.min(6,fameScore()/180);
   let cands = rep>=86?sorted.slice(1,6) : rep>=78?sorted.slice(4,10) : sorted.slice(6,11);
-  cands=cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]);
+  cands=feudFilter(cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]));
   if(!cands.length) cands=sorted.filter(t=>!S.neverHire[t.name]).slice(-4);
   const o=[]; pickN(cands,Math.min(3,cands.length)).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
   setDecision(L("🔙 ¡De vuelta en la Fórmula 1!","🔙 Back in Formula 1!"),L("Un equipo apuesta por tu experiencia y tu tirón mediático. Elige tu regreso:","A team bets on your experience and star power. Choose your comeback:"));
@@ -2479,7 +2529,7 @@ function nextOffers(){
     else if(rep>=80) cands=sorted.slice(1,7);
     else if(rep>=72) cands=sorted.slice(4,10);
     else cands=sorted.slice(7,10);
-    cands=cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name]);
+    cands=feudFilter(cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name]));
     if(S.forceMove){
       cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
       if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]);
