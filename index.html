@@ -894,7 +894,7 @@ function startCareer(){
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
-    f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0,
+    f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
@@ -1171,6 +1171,8 @@ const SERIES={
   dtm:      {name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia.", subEn:"German GT3 touring cars, pure strategy."},
   supercars:{name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
   dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
+  formulae: {name:"Fórmula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
+  brasil:   {name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
 };
 function serName(k){ const s=SERIES[k]||{}; return L(s.name, s.nameEn||s.name); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
@@ -1198,7 +1200,7 @@ const NAT_AFFINITY={
   "Japón":{teams:["Racing Bulls"],series:["supercars"]},
   "Australia":{teams:[],series:["supercars"]},
   "México":{teams:["Cadillac"],series:["nascar"]},
-  "Brasil":{teams:[],series:["indy"]},
+  "Brasil":{teams:[],series:["indy","brasil"]},
   "Corea del Sur":{teams:["Hyundai"],series:[]},
 };
 function natAff(){ return NAT_AFFINITY[sel.country]||{teams:[],series:[]}; }
@@ -1724,7 +1726,7 @@ function pickDilemma(){
   const pool=DILEMAS.filter(d=>{
     if(S.usedDilemmas[d.id]) return false;
     if(d.cond && !d.cond()) return false; // condición extra (año joven, Nº1 en equipo malo, edad del compañero…)
-    if(d.stage==="test") return S.cat==="TEST"; // dilemas de piloto probador/reserva
+    if(d.stage==="test") return S.cat==="TEST" && S.reserveDilOK; // reserva: no en todas las partidas
     if(d.stage==="jr") return S.cat!=="F1" && S.cat!=="TEST";
     if(d.stage==="f1") return S.cat==="F1";
     if(d.stage==="vet") return S.cat==="F1"&&S.age>=32;
@@ -2255,8 +2257,17 @@ function returnChance(){
 function chooseAdventureSeries(){
   setDecision(L("🌎 ¿Dónde te lanzas?","🌎 Where do you go?"),L("Elige tu aventura fuera de la Fórmula 1. Cada mundo es distinto… y ninguna victoria está garantizada.","Choose your adventure outside Formula 1. Each world is different… and no win is guaranteed."));
   $("decRecap").style.display="none";
-  renderSpecialOptions(Object.entries(SERIES).map(([k,s])=>({special:true, em:s.em, name:serName(k),
-    sub:serSub(k)+(s.triple?L(" · 👑 Triple Corona"," · 👑 Triple Crown"):""), color:s.col, onClick:()=>startAdventure(k)})));
+  // máximo 3 series (+ retirarse): semicableado por nacionalidad + azar (no todas de golpe)
+  const all=Object.keys(SERIES);
+  const chosen=[];
+  const fav=natAff().series.filter(k=>all.includes(k));
+  if(fav.length && ch(.75)) chosen.push(fav[irnd(0,fav.length-1)]); // tu país tira hacia una serie afín
+  const rest=all.filter(k=>!chosen.includes(k));
+  while(chosen.length<3 && rest.length) chosen.push(rest.splice(irnd(0,rest.length-1),1)[0]);
+  const opts=chosen.map(k=>{ const s=SERIES[k]; return {special:true, em:s.em, name:serName(k),
+    sub:serSub(k)+(s.triple?L(" · 👑 Triple Corona"," · 👑 Triple Crown"):""), color:s.col, onClick:()=>startAdventure(k)}; });
+  opts.push({special:true, em:"🏁", name:L("Retirarse","Retire"), sub:L("Colgar el casco","Hang up your helmet"), color:"#71717c", onClick:endCareer});
+  renderSpecialOptions(opts);
 }
 function startAdventure(key){
   S.advSeries=key; S.cat="ADV";
