@@ -1031,6 +1031,24 @@ function occupySeat(teamName){
   }
   S.mySeatTeam=teamName;
 }
+// call-up de reserva a mitad de temporada: pasas de probador a piloto de F1 ESE año (te subiste
+// a mitad de temporada → te pierdes las primeras carreras). Robusto: reutiliza occupySeat.
+function promoteFromReserve(){
+  const t=F1_TEAMS.find(x=>x.name===(S.team&&S.team.name));
+  if(!t) return false;
+  S.team=t; S.cat="F1";
+  occupySeat(t.name);
+  S.roleTeam=t.name; S.roleMate=teammateOf(t.name).name; S.role=roleFor(t.name);
+  S.missRaces=irnd(6,12); // te subiste con la temporada empezada
+  S.testProved=0; S.testYears=0;
+  return true;
+}
+// desenlace de "call-up": te quedas el asiento este año; si no se puede, al menos aceleras
+function reserveCallup(){
+  if(promoteFromReserve()) return L("🏎️ El equipo te sienta en el coche el resto del año: ¡pasas a piloto de F1!","🏎️ The team puts you in the car for the rest of the year: you're an F1 driver!");
+  S.testProved=2; VAL(1.1);
+  return L("El equipo alucina contigo: tienes un asiento titular a la vista.","The team is blown away: a race seat is in sight.");
+}
 function teammateOf(teamName){
   const slots=S.seats[teamName];
   if(!slots) return {name:"S. Hayes 🎬", skill:rnd(82,88), titles:0, age:50, flag:"🇺🇸"}; // APXGP
@@ -1598,6 +1616,59 @@ const DILEMAS=[
      [5,()=>L("Cabeza fría, cero riesgos. Traes el coche a casa. Sin cambios.","Cool head, zero risk. You bring the car home. No change.")],
      [3,()=>(VAL(1.05),L("Tu madurez gusta en el muro. Ligero +fama","Your maturity pleases the pit wall. Slight +fame"))],
      [2,()=>(OVR(-1),L("Demasiado conservador: pierdes comba con el resto. −1 OVR","Too conservative: you lose ground to the rest. −1 OVR"))])}]},
+ // 🪑 dilemas de PROBADOR JOVEN (cat TEST, <=32): si luce, call-up a mitad de año o aceleras tu llegada
+ {id:"resAgr1",stage:"test",cond:()=>sel.style==="agresivo"&&S.age<=32,t:()=>L("A tumba abierta","All or nothing"),
+  d:()=>L("Un titular se lesiona y te dan un GP de sustituto. Puedes salir a por todas y dejar una actuación que nadie olvide… o pasarte de frenada.","A regular is injured and you get a one-off sub race. Go all-out for a drive nobody forgets… or overcook it."),opts:[
+   {l:()=>L("A por todas","Send it"),r:()=>roll(
+     [4,()=>(VAL(1.15),reserveCallup())],
+     [3,()=>(S.testProved=2,L("Buen papel: dejas señales y aceleras tu llegada a la F1.","A strong showing: you leave a mark and speed up your F1 arrival."))],
+     [3,()=>(OVR(-1),VAL(.85),L("Te pasas de frenada: trompo y titulares por lo malo. −1 OVR y −fama","You overcook it: a spin and headlines for the wrong reasons. −1 OVR, −fame"))])},
+   {l:()=>L("Con cabeza","Keep your head"),r:()=>roll(
+     [5,()=>L("Carrera discreta y limpia. Sin cambios.","A quiet, clean race. No change.")],
+     [2,()=>(VAL(.92),L("Aburres: nadie se acuerda de ti. −fama leve","Forgettable: nobody remembers you. slight −fame"))])}]},
+ {id:"resAgr2",stage:"test",cond:()=>sel.style==="agresivo"&&S.age<=32,t:()=>L("La intuición","The gut call"),
+  d:()=>L("En tu GP de sustituto, el muro te da instrucciones claras de gestión. Pero ves una ventana que ellos no: hacer lo contrario podría ser la jugada del año.","In your sub race, the pit wall gives clear management orders. But you see a window they don't: doing the opposite could be the move of the year."),opts:[
+   {l:()=>L("Fiarte de tu instinto","Trust your gut"),r:()=>roll(
+     [4,()=>reserveCallup()],
+     [3,()=>(S.testProved=Math.max(S.testProved||0,1),L("Ni bien ni mal, pero demuestras carácter. Aceleras algo.","Neither great nor terrible, but you show character. A little closer."))],
+     [3,()=>(VAL(.88),L("Te equivocas y desobedeces al muro: el equipo se enfada. −fama","You get it wrong and defied the wall: the team is furious. −fame"))])},
+   {l:()=>L("Obedecer al muro","Follow the wall"),r:()=>roll(
+     [5,()=>L("Cumples el guion. Resultado correcto, cero ruido. Sin cambios.","You stick to the script. A tidy result, no noise. No change.")],
+     [2,()=>(S.testProved=Math.max(S.testProved||0,1),L("Valoran tu disciplina. Aceleras un poco.","They value your discipline. A little closer."))])}]},
+ {id:"resTec1",stage:"test",cond:()=>sel.style==="tecnico"&&S.age<=32,t:()=>L("El reglaje","The setup"),
+  d:()=>L("Como probador te dejan trastear el coche en los Libres. Puedes volcarte en encontrar un reglaje y un feedback que los titulares no ven.","As reserve they let you play with the car in practice. Pour yourself into a setup and feedback the race drivers are missing."),opts:[
+   {l:()=>L("Volcarte en el coche","Bury yourself in the car"),r:()=>roll(
+     [4,()=>(S.testProved=2,L("Encuentras décimas: los ingenieros te adoran y aceleras tu llegada.","You find tenths: the engineers adore you and your arrival speeds up."))],
+     [3,()=>(OVR(1),L("Aportas, sin fuegos artificiales. +1 OVR","You contribute, no fireworks. +1 OVR"))],
+     [3,()=>L("Te obcecas en una vía muerta: pierdes el finde. Sin cambios.","You chase a dead end: the weekend's lost. No change.")])},
+   {l:()=>L("Ir a lo tuyo","Do your own thing"),r:()=>L("Rodaje tranquilo. Sin cambios.","Quiet mileage. No change.")}]},
+ {id:"resTec2",stage:"test",cond:()=>sel.style==="tecnico"&&S.age<=32,t:()=>L("Te has estudiado el circuito","You've done your homework"),
+  d:()=>L("Se corre en un trazado nuevo y raro. Tú te lo has estudiado hasta el último piano en el simulador. En la reunión técnica puedes soltar tu análisis… o guardártelo.","The race is at a new, tricky track. You've studied it to the last kerb in the sim. In the tech briefing you can lay out your read… or keep it to yourself."),opts:[
+   {l:()=>L("Compartir tu análisis","Share your homework"),r:()=>roll(
+     [4,()=>(S.testProved=2,L("Tu lectura del circuito da en el clavo y el equipo brilla: te ganas su confianza y aceleras.","Your read on the track nails it and the team shines: you earn their trust and speed up."))],
+     [3,()=>(OVR(1),L("Útil, sin más. +1 OVR","Useful, nothing more. +1 OVR"))],
+     [2,()=>(VAL(.9),L("Un titular se apropia de tu idea y del mérito. −fama","A race driver takes your idea and the credit. −fame"))])},
+   {l:()=>L("Guardártelo","Keep it to yourself"),r:()=>roll(
+     [4,()=>L("Esperas tu momento. Sin cambios.","You bide your time. No change.")],
+     [2,()=>L("Lo descubren solos; tu ventaja se esfuma. Sin cambios.","They figure it out anyway; your edge evaporates. No change.")])}]},
+ {id:"resCon1",stage:"test",cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("El fiable","The safe pair of hands"),
+  d:()=>L("Te toca un GP de sustituto. No tienes coche para pelear delante, pero puedes traerlo impecable a los puntos y venderte como el piloto en el que todo equipo confía.","You get a sub race. No car to fight up front, but you can bring it home spotless in the points and sell yourself as the driver every team trusts."),opts:[
+   {l:()=>L("Puntos y cero errores","Points and zero mistakes"),r:()=>roll(
+     [4,()=>(S.testProved=2,L("Carrera de manual, ni un fallo: toman nota de tu fiabilidad y aceleras.","A textbook race, not one mistake: they note your reliability and you speed up."))],
+     [4,()=>(OVR(1),L("Sumas discreto, cumples. +1 OVR","A quiet points finish, job done. +1 OVR"))],
+     [2,()=>L("La estrategia te deja fuera de los puntos por poco. Sin cambios.","Strategy leaves you just outside the points. No change.")])},
+   {l:()=>L("Arriesgar por un titular","Gamble for a headline"),r:()=>roll(
+     [3,()=>(VAL(.92),L("Sales de tu zona y la lías un poco. −fama leve","You leave your comfort zone and it gets messy. slight −fame"))],
+     [3,()=>(VAL(1.12),L("Te sale un adelantamiento vistoso. +fama","You pull off a flashy overtake. +fame"))])}]},
+ {id:"resCon2",stage:"test",cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("Cabeza fría en el caos","Cool head in chaos"),
+  d:()=>L("Tu GP de sustituto se vuelve una locura: lluvia, coches de seguridad y rivales estampándose. Puedes mantener la calma mientras el resto se va al muro.","Your sub race turns to mayhem: rain, safety cars, rivals crashing everywhere. Keep your cool while the rest hit the wall."),opts:[
+   {l:()=>L("Mantener la cabeza fría","Keep your cool"),r:()=>roll(
+     [4,()=>reserveCallup()],
+     [3,()=>(OVR(1),L("Terminas donde debías. Sólido. +1 OVR","You finish where you should. Solid. +1 OVR"))],
+     [2,()=>L("Un rival te tira en un charco: sin premio pese a hacerlo bien.","A rival takes you out in a puddle: no reward despite driving well.")])},
+   {l:()=>L("Atacar en el caos","Attack in the chaos"),r:()=>roll(
+     [3,()=>(OVR(-1),L("Te arriesgas y pinchas: fuera. −1 OVR","You gamble and puncture: out. −1 OVR"))],
+     [2,()=>(VAL(1.12),L("O te sale la jugada y adelantas a cinco. +fama","Or it pays off and you pass five cars. +fame"))])}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -1653,7 +1724,8 @@ function pickDilemma(){
   const pool=DILEMAS.filter(d=>{
     if(S.usedDilemmas[d.id]) return false;
     if(d.cond && !d.cond()) return false; // condición extra (año joven, Nº1 en equipo malo, edad del compañero…)
-    if(d.stage==="jr") return S.cat!=="F1";
+    if(d.stage==="test") return S.cat==="TEST"; // dilemas de piloto probador/reserva
+    if(d.stage==="jr") return S.cat!=="F1" && S.cat!=="TEST";
     if(d.stage==="f1") return S.cat==="F1";
     if(d.stage==="vet") return S.cat==="F1"&&S.age>=32;
     return false;
