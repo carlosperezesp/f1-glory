@@ -1270,9 +1270,9 @@ const NAT_AFFINITY={
 function natAff(){ return NAT_AFFINITY[sel.country]||{teams:[],series:[]}; }
 function natLikesSeries(k){ return natAff().series.includes(k); }
 const JR_PROFILES=[
-  {label:"🏆 Proyecto ganador", labelEn:"🏆 Winning project", dev:-0.3, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie", descEn:"Good car: if you WIN titles you arrive with pedigree and experience. If not, you end up in no man's land"},
-  {label:"⚖️ Equilibrado", labelEn:"⚖️ Balanced", dev:0.2,  desc:"Resultados y formación a partes iguales", descEn:"Results and development in equal measure"},
-  {label:"🎓 Programa de desarrollo", labelEn:"🎓 Development programme", dev:0.7, desc:"Coche flojo, pero te forman: llegas más fuerte aunque no ganes", descEn:"Weak car, but they develop you: you arrive stronger even without winning"},
+  {label:"🏆 Proyecto ganador", labelEn:"🏆 Winning project", dev:-0.1, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie", descEn:"Good car: if you WIN titles you arrive with pedigree and experience. If not, you end up in no man's land"},
+  {label:"⚖️ Equilibrado", labelEn:"⚖️ Balanced", dev:0.1,  desc:"Resultados y formación a partes iguales", descEn:"Results and development in equal measure"},
+  {label:"🎓 Programa de desarrollo", labelEn:"🎓 Development programme", dev:0.35, desc:"Coche flojo, pero te forman: llegas más fuerte aunque no ganes", descEn:"Weak car, but they develop you: you arrive stronger even without winning"},
 ];
 // genera 3 ofertas junior con perfil según su coche (mejor coche = ganador; peor = desarrollo)
 function juniorOffers(teams, cat){
@@ -2258,6 +2258,10 @@ function simF1(row,st){
   grid.push(me);
   const roleBonus = S.role==="1"? .8 : -.8;
   const affinity = carAffinity(myTeam); // encaje coche↔estilo (varía por partida)
+  // 🔧 el coche se desarrolla en torno al FUTURO del equipo. GRADUAL: al envejecer y dejar de ser el proyecto,
+  // invierten menos en TU coche (tu compañero puede seguir yendo bien) → tu ventaja se erosiona y la dinastía se rompe sola.
+  const primeEnd = Math.max(33, (S.peakAge||30)+4); // picas tarde → declinas tarde
+  const carDeficit = Math.min(6.5, (S.role==="2"?0.9:0) + Math.max(0,S.age-primeEnd)*0.85*(S.role==="1"?0.55:1.1));
   let wins=0,pods=0,poles=0,raced=0;
   const races=24;
   for(let r=0;r<races;r++){
@@ -2269,13 +2273,13 @@ function simF1(row,st){
     const chaos=Math.random()<.10;
     const noiseMul=chaos?1.7:1;
     const scores=grid.map(d=>{
-      let s=d.skill*.48+(perf[d.team]??75)*.52+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
+      let s=d.skill*.48+((perf[d.team]??75)-(d.isP?carDeficit:0))*.52+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
       if(d.isP) s+=roleBonus+affinity+(sel.style==="agresivo"?1.4:0); // agresivo: ritmo de carrera puro (y arriesgado)
       if(wet && d.isP) s+=st.wet*6;
       return {d,s,dnf:(d.isP&&out)||Math.random()<((d.isP?st.dnf:.07)*(chaos?1.6:1))};
     });
     if(!out){
-      const qs=grid.map(d=>d.skill*.48+(perf[d.team]??75)*.52+gauss()*(d.isP?st.varza:4.5)+(d.isP?affinity+(sel.style==="agresivo"?2.5:0):0));
+      const qs=grid.map(d=>d.skill*.48+((perf[d.team]??75)-(d.isP?carDeficit:0))*.52+gauss()*(d.isP?st.varza:4.5)+(d.isP?affinity+(sel.style==="agresivo"?2.5:0):0));
       const myQ=qs[qs.length-1];
       if(qs.filter(q=>q>myQ).length===0){poles++;}
       S.gp++;
