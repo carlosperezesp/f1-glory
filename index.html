@@ -912,7 +912,7 @@ function startCareer(){
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
     f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
     bigInjuryDone:false, feuds:[], respects:[], _incRival:null, fiaTitleCount:0, fiaTitlePending:null, _fiaSc:null,
-    pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
+    pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, monacoWins:0,
@@ -1678,12 +1678,12 @@ const DILEMAS=[
      return roll(
        [aggr?5:3,()=>(OVR(1),VAL(1.1),L("Encuentras un límite que nadie más pisa. Vuelo absoluto. +1 OVR y +fama","You find a limit no one else dares. Flat-out brilliance. +1 OVR and +fame"))],
        [aggr?4:3,()=>(S.missRaces=8,OVR(-1),L("Accidente fuerte: fractura y media temporada de baja. −1 OVR","A big crash: a fracture and half a season out. −1 OVR"))],
-       [aggr?4:2,()=>{ S.missRaces=24; OVR(-1);
+       [aggr?4:2,()=>{ S.crashRace=irnd(2,10); OVR(-1);
          if(S.role==="2" && ch(.6)){
-           if(S.age<=25){ S.forceMove=true; S.demoteReserve=true; return L("Lesión gravísima: un año en blanco. Siendo Nº2, el equipo no te espera; solo te quieren de probador.","A horrific injury: a full year lost. As a No.2, the team won't wait; only reserve interest remains."); }
-           S.forceMove=true; return L("Lesión gravísima: un año en blanco. Siendo Nº2, el equipo te sustituye y vuelves al mercado.","A horrific injury: a full year lost. As a No.2, the team replaces you and you're back on the market.");
+           if(S.age<=25){ S.forceMove=true; S.demoteReserve=true; return L("Lesión gravísima: el accidente termina tu temporada de golpe. Siendo Nº2, el equipo no te espera; solo te quieren de probador.","A horrific injury: the crash ends your season on the spot. As a No.2, the team won't wait; only reserve interest remains."); }
+           S.forceMove=true; return L("Lesión gravísima: el accidente termina tu temporada de golpe. Siendo Nº2, el equipo te sustituye y vuelves al mercado.","A horrific injury: the crash ends your season on the spot. As a No.2, the team replaces you and you're back on the market.");
          }
-         return L("Lesión gravísima: pierdes el año entero, pero el equipo te espera. −1 OVR","A horrific injury: you lose the whole year, but the team waits for you. −1 OVR");
+         return L("Lesión gravísima: el accidente acaba tu temporada de golpe, pero el equipo te espera. −1 OVR","A horrific injury: the crash ends your season on the spot, but the team waits for you. −1 OVR");
        }])
    }},
    {l:()=>L("Gestionar y sumar","Manage and bank the points"),r:()=>roll(
@@ -1894,12 +1894,18 @@ function fieldFor(cat){
 // lesión grave rara: como mucho UNA por carrera, ~3.5%/temporada de F1. Te deja el AÑO ENTERO fuera
 // (estilo Kubica) y tu asiento peligra si no tienes galones. Se decide antes de simar la temporada.
 function maybeInjury(row){
-  if(S.cat!=="F1" || S.missRaces>0 || S.bigInjuryDone) return;
+  if(S.cat!=="F1" || S.missRaces>0 || S.crashRace!=null || S.dnpSeason || S.bigInjuryDone) return;
   if(!ch(0.011)) return;
-  S.bigInjuryDone=true; S.missRaces=24; OVR(-2);
-  row.events.push(ch(.5)
-    ? L("⛷️ Accidente grave FUERA del circuito en pretemporada: te pierdes TODA la temporada. −2 OVR.","⛷️ A serious off-track accident in pre-season: you miss the WHOLE season. −2 OVR.")
-    : L("💥 Accidentazo en carrera: lesión grave, TODA la temporada fuera. −2 OVR.","💥 A huge racing shunt: a serious injury, the WHOLE season out. −2 OVR."));
+  S.bigInjuryDone=true; OVR(-2);
+  if(ch(.5)){
+    // accidente FUERA de la pista (pretemporada, tipo Kubica 2011): no llegas a correr → no clasificado ("—")
+    S.dnpSeason=true;
+    row.events.push(L("⛷️ Accidente grave FUERA del circuito en pretemporada: te pierdes TODA la temporada sin correr una sola carrera. −2 OVR.","⛷️ A serious off-track accident in pre-season: you miss the WHOLE season without racing once. −2 OVR."));
+  } else {
+    // accidentazo EN carrera: corriste los GP previos (con sus puntos/victorias) y tu año se acaba en el golpe
+    S.crashRace=irnd(2,10);
+    row.events.push(L("💥 Accidentazo en carrera: tras disputar "+S.crashRace+" grandes premios, una lesión grave termina tu temporada de golpe. −2 OVR.","💥 A racing shunt: after "+S.crashRace+" grands prix, a serious injury ends your season on the spot. −2 OVR."));
+  }
   const establecido = S.role==="1" || S.titles.f1>0 || S.ovr>=86;
   if(establecido){
     row.events.push(L("El equipo te guarda el asiento: te esperan para tu vuelta.","The team keeps your seat: they'll wait for your return."));
@@ -1940,7 +1946,7 @@ function simSeason(){
     else row.events.push(L(`🔮 ${R.rumor} se estrelló con el nuevo reglamento; el verdadero triunfador fue ${b}.`,`🔮 ${R.rumor} flopped with the new rules; the real winner was ${b}.`));
     S.regReveal=null;
   }
-  if(S.cat!=="ADV") maybeEvent(row,st);
+  if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
   evolveF1();
   npcSeason();
   // pico de carrera: mejor OVR alcanzado y a qué edad (define cuándo empieza tu declive)
@@ -1974,7 +1980,7 @@ function simSeason(){
   }
   S.ovr = Math.max(40, Math.min(95, Math.round(S.ovr+g)));
   row.ovr=S.ovr;
-  S.missRaces=0;
+  S.missRaces=0; S.crashRace=null; S.dnpSeason=false;
   S.seasons.push(row);
   renderTimeline();
   renderF1State();
@@ -2199,10 +2205,13 @@ function simF1(row,st){
   grid.push(me);
   const roleBonus = S.role==="1"? .8 : -.8;
   const affinity = carAffinity(myTeam); // encaje coche↔estilo (varía por partida)
-  let wins=0,pods=0,poles=0;
+  let wins=0,pods=0,poles=0,raced=0;
   const races=24;
   for(let r=0;r<races;r++){
-    const out = r<S.missRaces;
+    // fuera si: lesión de año completo fuera de pista (dnpSeason), accidentazo que corta el año (out desde crashRace),
+    // o incorporación tardía / recuperación (out en las primeras missRaces)
+    const out = S.dnpSeason || (S.crashRace!=null ? r>=S.crashRace : r<S.missRaces);
+    if(!out) raced++;
     const wet=Math.random()<.15;
     const chaos=Math.random()<.10;
     const noiseMul=chaos?1.7:1;
@@ -2239,8 +2248,13 @@ function simF1(row,st){
   }
   const standings=[...grid].sort((a,b)=>b.pts-a.pts);
   let pos=1+standings.findIndex(d=>d.isP);
-  // 🏛️ un fallo de la FIA decidió el título este año (raro, máx 2/partida): fuerza 1º (campeón) o 2º (subcampeón)
-  if(S.fiaTitlePending){ pos = S.fiaTitlePending==="win"?1:2; S.fiaTitlePending=null; row.fiaTitle=true; }
+  if(raced===0){
+    // te perdiste TODA la temporada sin correr: no clasificado → "—" (no un 22º ficticio)
+    pos=null; row.dnp=true; S.fiaTitlePending=null;
+  } else if(S.fiaTitlePending){
+    // 🏛️ un fallo de la FIA decidió el título este año (raro, máx 2/partida): fuerza 1º (campeón) o 2º (subcampeón)
+    pos = S.fiaTitlePending==="win"?1:2; S.fiaTitlePending=null; row.fiaTitle=true;
+  }
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
   // al debutar en F1, fotografiamos los títulos de los rivales: así "tu era" se mide
   // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
@@ -2837,7 +2851,7 @@ function renderCareerMap(){
         return `<span class="cmcell ${cls}" title="${r.year} · ${ar.series?serName(ar.series):L("aventura","adventure")}${ar.win?" · ¡"+serMarquee(ar.series)+"!":""} · OVR ${r.ovr}">${lab}</span>`;
       }
       const cls=isTest?"rest":posClass(r.pos);
-      const lab=isTest?"—":(r.pos===1?"🏆":r.pos+"º");
+      const lab=isTest?"—":(r.pos==null?"—":r.pos===1?"🏆":r.pos+"º");
       const tip=isTest?(r.subRaces?L(`${r.year} · probador · ${r.subRaces} GP sustituto (mejor ${r.subBest===1?"1º":r.subBest+"º"}) · OVR ${r.ovr}`,`${r.year} · reserve · ${r.subRaces} sub GPs (best ${r.subBest===1?"1st":"P"+r.subBest}) · OVR ${r.ovr}`):L(`${r.year} · probador · OVR ${r.ovr}`,`${r.year} · reserve · OVR ${r.ovr}`)):`${r.year} · OVR ${r.ovr}`;
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
