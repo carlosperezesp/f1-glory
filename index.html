@@ -2238,16 +2238,16 @@ function maybeEvent(row,st){
   if(sel.style==="tecnico") pool.push(
     {id:"tec-lluvia",t:L(`🌧️ Masterclass bajo la lluvia en ${gp()} — el paddock habla de ti.`,`🌧️ Wet-weather masterclass at ${gp()} — the paddock is talking about you.`),fx:()=>OVR(1)},
     {id:"tec-setup",t:L("🧠 Clavas el reglaje que nadie encontró: el coche vuela en clasificación.","🧠 You nail the setup nobody else found: the car flies in qualifying."),fx:()=>OVR(.7)},
-    {id:"tec-datos",t:L(`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,`🔬 Your data reading turns a shaky strategy into a masterstroke at ${gp()}.`),fx:()=>VAL(.8)}
+    {id:"tec-datos",t:L(`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,`🔬 Your data reading turns a shaky strategy into a masterstroke at ${gp()}.`),fx:()=>VAL(1.08)}
   );
   if(sel.style==="agresivo") pool.push(
     {id:"agr-toque",t:L("💥 Toque polémico defendiendo posición. Los comisarios te vigilan.","💥 A controversial clash defending position. The stewards are watching you."),fx:()=>{}},
     {id:"agr-pass",t:L(`🔥 Adelantamiento imposible por fuera en ${gp()} que corta la respiración.`,`🔥 An impossible around-the-outside pass at ${gp()} that takes your breath away.`),fx:()=>VAL(1.1)},
-    {id:"agr-quali",t:L("🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.","🅿️ A wild Q3 lap, inches from the wall: pole by thousandths."),fx:()=>VAL(.9)}
+    {id:"agr-quali",t:L("🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.","🅿️ A wild Q3 lap, inches from the wall: pole by thousandths."),fx:()=>{S.poles++;VAL(1.05);}}
   );
   if(sel.style==="consistente") pool.push(
     {id:"con-nofail",t:L(`🎯 ${irnd(9,14)} carreras seguidas sin un solo error: el paddock alucina.`,`🎯 ${irnd(9,14)} races in a row without a single mistake: the paddock is stunned.`),fx:()=>OVR(.7)},
-    {id:"con-frio",t:L(`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,`🧊 Ice-cold under pressure on the last lap at ${gp()}.`),fx:()=>VAL(.8)}
+    {id:"con-frio",t:L(`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,`🧊 Ice-cold under pressure on the last lap at ${gp()}.`),fx:()=>VAL(1.08)}
   );
 
   if(inF1) pool.push(
@@ -2255,9 +2255,9 @@ function maybeEvent(row,st){
     {id:"f1-guerra",t:L(`🤝 Guerra fría con ${rival()} dentro del box.`,`🤝 A cold war with ${rival()} inside the garage.`),fx:()=>{}},
     {id:"f1-rumor",t:L("📰 La prensa te vincula con un asiento top para el próximo año.","📰 The press links you to a top seat for next year."),fx:()=>{}},
     {id:"f1-remonta",t:L(`🏁 Remontada desde P${irnd(11,19)} en ${gp()} que entra en los documentales.`,`🏁 A charge from P${irnd(11,19)} at ${gp()} that belongs in the documentaries.`),fx:()=>VAL(1.1)},
-    {id:"f1-vrapida",t:L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: an extra point and highlight of the day.`),fx:()=>VAL(.7)},
+    {id:"f1-vrapida",t:L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: an extra point and highlight of the day.`),fx:()=>{S.ptsF1++;VAL(1.05);}},
     {id:"f1-viral",t:L("🎙️ Tu entrevista post-carrera se vuelve viral en redes.","🎙️ Your post-race interview goes viral online."),fx:()=>VAL(1)},
-    {id:"f1-estrat",t:L(`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,`🧊 A one-stop strategy nobody saw coming: you steal ${irnd(2,4)} places at ${gp()}.`),fx:()=>VAL(.8)},
+    {id:"f1-estrat",t:L(`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,`🧊 A one-stop strategy nobody saw coming: you steal ${irnd(2,4)} places at ${gp()}.`),fx:()=>VAL(1.08)},
     {id:"f1-neumaticos",t:L("🛞 Gestionas unos neumáticos imposibles hasta la bandera a cuadros.","🛞 You nurse impossible tyres all the way to the chequered flag."),fx:()=>OVR(.6)},
     {id:"f1-elogio",t:L(`💬 Un excampeón te señala como el mejor en pista este fin de semana.`,`💬 A former champion names you the best on track this weekend.`),fx:()=>VAL(1)},
     {id:"f1-portada",t:L("📸 Portada de la prensa deportiva tras un domingo redondo.","📸 Front page of the sports press after a perfect Sunday."),fx:()=>VAL(1)},
