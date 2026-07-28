@@ -1217,7 +1217,7 @@ function renderRecap(){
   const constr = s.constrPos ? ` · 🏭 ${L("Constructores","Constructors")} ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
   const badge = teamBadge(s.team.name);
   el.style.display="block";
-  el.innerHTML = `<div class="recap-t">${L("📋 Tu temporada","📋 Your season")} ${s.year} · ${badge} ${s.team.name} · ${catLbl}</div>
+  el.innerHTML = `<div class="recap-t">${L("📋 Tu temporada","📋 Your season")} ${s.year} · ${badge} ${teamDisp(s.team)} · ${catLbl}</div>
     <div class="recap-b"><span class="rp" style="background:${posCol}">${posTxt}</span> ${stat}${constr}</div>`;
 }
 
@@ -1237,6 +1237,8 @@ const SERIES={
   superformula:{name:"Super Fórmula", nameEn:"Super Formula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1."},
 };
 function serName(k){ const s=SERIES[k]||{}; return L(s.name, s.nameEn||s.name); }
+// nombre de equipo según idioma: las aventuras (WEC/FE/Super Fórmula) tienen nombre EN distinto → resolver por su clave de serie
+function teamDisp(t){ return t && t.cat==="ADV" && t.series ? serName(t.series) : (t?t.name:""); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
 function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee); }
 // Triple Corona: Mónaco + Indy 500 + Le Mans. Nombres de cada pata y estado.
@@ -2534,7 +2536,7 @@ function chooseAdventureSeries(){
 function startAdventure(key){
   track("adventure", {series: key, age: S.age});
   S.advSeries=key; S.cat="ADV";
-  S.team={name:SERIES[key].name, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
+  S.team={name:SERIES[key].name, series:key, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
   S.role=null; S.roleTeam=null; S.roleMate=null;
   startSeasonRun();
 }
@@ -2911,7 +2913,7 @@ function renderTimeline(){
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
       <span class="club">${badge(r.team)}
-        <span><span class="nm">${r.team.name}</span><br><span class="cat">${r.year} · ${catLbl}${ptsTxt?" · "+ptsTxt:""}${constr}</span></span></span>
+        <span><span class="nm">${teamDisp(r.team)}</span><br><span class="cat">${r.year} · ${catLbl}${ptsTxt?" · "+ptsTxt:""}${constr}</span></span></span>
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
       <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>
       <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>
@@ -2962,7 +2964,7 @@ function renderCareerMap(){
     }).join("");
     html+=`<div class="cmstint">
       <span class="cmmeta">${badge(st.team,"cmdot")}
-        <span class="cmname">${st.team.name}${isTest?L(" ·prob"," ·res"):""}</span><span class="cmyears">${yrs}</span></span>
+        <span class="cmname">${teamDisp(st.team)}${isTest?L(" ·prob"," ·res"):""}</span><span class="cmyears">${yrs}</span></span>
       <span class="cmcells">${cells}</span></div>`;
   });
   el.innerHTML=html;
