@@ -2179,6 +2179,9 @@ function simF1(row,st){
   if(S.f1Seasons===0){
     S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; });
     track("reached_f1", {debut_age: S.age, pedigree: Math.round(juniorPedigree())});
+    // la revolución técnica (efecto Brawn): ~70% de carreras, RELATIVA a tu debut (mitad de carrera,
+    // con tiempo de aprovecharla) — antes caía en año absoluto tardío → salía siempre en tu última temporada
+    S.regReg = ch(.7) ? yearNow() + irnd(5,10) : 9999;
     // hype de debut: llegar con palmarés junior te hace un rookie mediático (más fama)
     const ped=juniorPedigree();
     if(ped>=2){ VAL(1+Math.min(.25,ped*0.05)); row.events.push(L(`⭐ Debutas en la F1 como ${pedigreeLabel()}: el paddock espera mucho de ti.`,`⭐ You debut in F1 as ${pedigreeLabel()}: the paddock expects big things.`)); }
@@ -2394,7 +2397,7 @@ function returnF1Offers(){
   const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
   const rep=S.ovr+Math.min(6,fameScore()/180);
   let cands = rep>=86?sorted.slice(1,6) : rep>=78?sorted.slice(4,10) : sorted.slice(6,11);
-  cands=feudFilter(cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]));
+  cands=feudFilter(cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]&&!(t.name==="Racing Bulls"&&S.age>=32)));
   if(!cands.length) cands=sorted.filter(t=>!S.neverHire[t.name]).slice(-4);
   const o=[]; pickN(cands,Math.min(3,cands.length)).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
   setDecision(L("🔙 ¡De vuelta en la Fórmula 1!","🔙 Back in Formula 1!"),L("Un equipo apuesta por tu experiencia y tu tirón mediático. Elige tu regreso:","A team bets on your experience and star power. Choose your comeback:"));
@@ -2563,10 +2566,10 @@ function nextOffers(){
     else if(rep>=80) cands=sorted.slice(1,7);
     else if(rep>=72) cands=sorted.slice(4,10);
     else cands=sorted.slice(7,10);
-    cands=feudFilter(cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name]));
+    cands=feudFilter(cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name] && !(t.name==="Racing Bulls"&&S.age>=32)));
     if(S.forceMove){
       cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
-      if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]);
+      if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]&&!(t.name==="Racing Bulls"&&S.age>=32));
       // fichaje garantizado si vienes de romper contrato por un top (dilema "contrato")
       const picks=[];
       if(S.poachTeam){ const pt=F1_TEAMS.find(t=>t.name===S.poachTeam && !S.neverHire[t.name]); if(pt) picks.push(pt); S.poachTeam=null; }
@@ -2593,7 +2596,7 @@ function nextOffers(){
         }
       }
       const cur=F1_TEAMS.find(t=>t.name===S.team.name)||S.team;
-      o.push({team:cur,note:L("Renovación","Contract renewal"),role:roleFor(cur.name)});
+      if(!(cur.name==="Racing Bulls"&&S.age>=32)) o.push({team:cur,note:L("Renovación","Contract renewal"),role:roleFor(cur.name)});
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title=L("Mercado de fichajes ","Silly season ")+(yearNow());
       sub=(sub||"")+L("Silly season: los contratos están sobre la mesa.","Silly season: the contracts are on the table.");
@@ -2654,7 +2657,8 @@ function regResetOffers(){
   S.regDone=true; S.regUnknown=true;
   const pk=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
   const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]); // peor→mejor (antes del reset)
-  const badTeams=order.slice(0,4);
+  const rbOk=t=>!(t.name==="Racing Bulls"&&S.age>=32); // Racing Bulls no ficha veteranos
+  const badTeams=order.filter(rbOk).slice(0,4);
   // resetear la parrilla: nuevo pecking order aleatorio
   F1_TEAMS.forEach(t=>{ const v=Math.round(rnd(66,86)); S.f1perf[t.name]=v; S.f1target[t.name]=v; });
   // el "Brawn": un equipo malo que pega el pelotazo
@@ -2674,11 +2678,11 @@ function regResetOffers(){
   S.regReveal={brawn:brawn.name, rumor:rumor.name, rumorTrue, year:yearNow()};
   // ofertas SIN pistas de nivel: renovación + 2 al azar + X si te quiere
   const o=[];
-  if(cur && !S.burned[cur.name] && !S.neverHire[cur.name]) o.push({team:cur,note:L("Renovación","Renewal"),role:roleFor(cur.name)});
-  const poolOthers=F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name]);
+  if(cur && !S.burned[cur.name] && !S.neverHire[cur.name] && !(cur.name==="Racing Bulls"&&S.age>=32)) o.push({team:cur,note:L("Renovación","Renewal"),role:roleFor(cur.name)});
+  const poolOthers=F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name] && rbOk(t));
   pk(poolOthers,2).forEach(t=>o.push({team:t,role:roleFor(t.name)}));
   if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name]) o.push({team:rumor,role:roleFor(rumor.name),note:L("🔮 El del rumor","🔮 The rumoured one")});
-  while(o.length<3){ const extra=F1_TEAMS.find(t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
+  while(o.length<3){ const extra=F1_TEAMS.find(t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]&&rbOk(t)); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
   const title=L("🏁 Revolución técnica","🏁 Technical revolution");
   let sub=L(`El año que viene entra un reglamento radical y la parrilla se resetea. En el paddock se rumorea que ${rumor.name} ha entendido el nuevo coche antes que nadie… pero nadie lo sabrá hasta la primera carrera.`,`A radical new rulebook resets the grid next year. The paddock whispers that ${rumor.name} has cracked the new car… but nobody will know until race one.`);
   sub += atRumor ? L(` Y da la casualidad de que ya corres para ${rumor.name}: ¿te quedas y lo apuestas todo?`,` And as it happens you already race for ${rumor.name}: do you stay and bet it all?`)
@@ -2868,29 +2872,41 @@ function reopenSummary(){
   $("endModal").style.display="flex";
   $("reopenBtn").style.display="none";
 }
+/* precarga de logos de equipo (para dibujarlos en la tarjeta; mismo origen → sin taint) */
+const TEAM_LOGO_IMGS={};
+function preloadLogos(){
+  return Promise.all(Object.entries(TEAM_LOGOS).map(([name,url])=>new Promise(res=>{
+    if(TEAM_LOGO_IMGS[name]&&TEAM_LOGO_IMGS[name].complete) return res();
+    const img=new Image(); img.onload=()=>{TEAM_LOGO_IMGS[name]=img;res();}; img.onerror=()=>res(); img.src=url;
+  })));
+}
 /* 📸 tarjeta compartible de la carrera: dibuja un PNG con Canvas 2D (sin librerías, CSP-safe) */
 function drawCareerCard(){
-  const W=1080, H=1200, c=document.createElement("canvas"); c.width=W; c.height=H;
+  const W=1080;
+  // años de campeón (piloto, pos 1) agrupados por equipo
+  const seas=S.seasons||[];
+  const champByTeam={}; seas.filter(s=>s.cat==="F1"&&s.pos===1).forEach(s=>{ const n=s.team&&s.team.name; if(n){ (champByTeam[n]=champByTeam[n]||[]).push(s.year); } });
+  const champList=Object.entries(champByTeam);
+  const f1Teams=[...new Set(seas.filter(s=>s.cat==="F1").map(s=>s.team&&s.team.name).filter(Boolean))];
+  const nRows=Math.min(4,champList.length);
+  const BLOCK_TOP=845, ROW_H=66;
+  const blockBottom = champList.length ? (BLOCK_TOP+52 + (nRows-1)*ROW_H + 30) : (f1Teams.length? BLOCK_TOP+75 : 800);
+  const H = blockBottom + 215;
+  const c=document.createElement("canvas"); c.width=W; c.height=H;
   const x=c.getContext("2d");
   const rr=(px,py,w,h,r)=>{ x.beginPath(); x.moveTo(px+r,py); x.arcTo(px+w,py,px+w,py+h,r); x.arcTo(px+w,py+h,px,py+h,r); x.arcTo(px,py+h,px,py,r); x.arcTo(px,py,px+w,py,r); x.closePath(); };
   const checker=(y,h)=>{ const s=h; for(let i=0;i*s<W;i++){ x.fillStyle=i%2?"#15151e":"#e6e6ee"; x.fillRect(i*s,y,s,h); } };
-  // texto centrado que reduce la fuente si no cabe en maxW
   const fit=(text,y,maxW,size,color,weight)=>{ x.fillStyle=color; let f=size; do{ x.font=`${weight} ${f}px Arial, sans-serif`; }while(x.measureText(text).width>maxW && (f-=2)>15); x.textAlign="center"; x.fillText(text, W/2, y); };
-  // fondo
+  x.textBaseline="alphabetic";
   x.fillStyle="#16161e"; x.fillRect(0,0,W,H);
-  // banner superior con degradado F1
   const bg=x.createLinearGradient(0,0,W,380); bg.addColorStop(0,"#15151e"); bg.addColorStop(.55,"#2b0a08"); bg.addColorStop(1,"#e10600");
-  x.fillStyle=bg; x.fillRect(0,0,W,380);
-  checker(380,14);
-  // nombre + dorsal + bandera / legado / años
+  x.fillStyle=bg; x.fillRect(0,0,W,380); checker(380,14);
   fit(`${sel.flag} ${sel.name} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
   fit(S.legacyTxt||"", 262, W-90, 46, "#ffce3a", "800");
   fit(L(`Carrera 2026–${2026+(S.age-16)}`,`Career 2026–${2026+(S.age-16)}`), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
-  // celdas de estadísticas (2 filas × 4)
   const cell=(cx,cy,w,h,val,lab,gold)=>{
     rr(cx,cy,w,h,18); x.fillStyle=gold?"#f3c866":"#262a34"; x.fill();
-    x.fillStyle=gold?"#5a3f00":"#fff"; x.font="900 50px Arial, sans-serif"; x.textAlign="center";
-    x.fillText(String(val), cx+w/2, cy+62);
+    x.fillStyle=gold?"#5a3f00":"#fff"; x.font="900 50px Arial, sans-serif"; x.textAlign="center"; x.fillText(String(val), cx+w/2, cy+62);
     x.fillStyle=gold?"#7c5e0f":"#9aa0ae"; let lf=21; do{ x.font=`700 ${lf}px Arial, sans-serif`; }while(x.measureText(lab).width>w-14 && (lf-=1)>13);
     x.fillText(lab, cx+w/2, cy+95);
   };
@@ -2899,28 +2915,39 @@ function drawCareerCard(){
   const r2=[[L("🏆 MUNDIALES","🏆 TITLES"),S.titles.f1,S.titles.f1>0],[L("🏭 EQUIPOS","🏭 TEAMS"),S.titles.constr,S.titles.constr>0],[L("🥈 SUBCAMP.","🥈 2ND"),S.subcamp,0],[L("PUNTOS","POINTS"),S.ptsF1,0]];
   r1.forEach((s,i)=>cell(M+i*(CW+GAP),440,CW,CH,s[1],s[0],s[2]));
   r2.forEach((s,i)=>cell(M+i*(CW+GAP),575,CW,CH,s[1],s[0],s[2]));
-  // vitrina de trofeos
   const shelf=[]; for(let i=0;i<S.titles.f1;i++)shelf.push("🏆"); for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
   if(shelf.length){ x.fillStyle="#fff"; x.font="54px Arial, sans-serif"; x.textAlign="center"; x.fillText(shelf.slice(0,12).join(" "), W/2, 775); }
-  // trayectoria: equipos con los que fuiste campeón (o, si no hay títulos, tus escuderías de F1)
-  const seas=S.seasons||[];
-  const champTeams=[...new Set(seas.filter(s=>s.cat==="F1"&&(s.pos===1||s.constrPos===1)).map(s=>s.team&&s.team.name).filter(Boolean))];
-  const f1Teams=[...new Set(seas.filter(s=>s.cat==="F1").map(s=>s.team&&s.team.name).filter(Boolean))];
-  const traj = champTeams.length?champTeams:f1Teams;
-  if(traj.length){
-    fit(champTeams.length?L("CAMPEÓN CON","CHAMPION WITH"):L("TU TRAYECTORIA","YOUR JOURNEY"), 855, W-120, 22, "rgba(255,255,255,.5)", "700");
-    fit(traj.slice(0,4).join("   ·   "), 898, W-120, 34, "#fff", "800");
+  // 🏆 CAMPEÓN CON: escudo + equipo + años (o TU TRAYECTORIA si no hay títulos de piloto)
+  if(champList.length){
+    x.fillStyle="rgba(255,255,255,.5)"; x.textAlign="center"; x.font="700 24px Arial, sans-serif"; x.fillText(L("CAMPEÓN CON","CHAMPION WITH"), W/2, BLOCK_TOP);
+    champList.slice(0,4).forEach(([name,years],i)=>{
+      const cy=BLOCK_TOP+52+i*ROW_H;
+      const yrs=[...new Set(years)].sort((a,b)=>a-b).slice(0,7).map(y=>"'"+String(y).slice(-2)).join(" ");
+      const LB=50, G=18;
+      x.font="800 32px Arial, sans-serif"; const nameW=x.measureText(name).width;
+      x.font="700 30px Arial, sans-serif"; const yTxt="   "+yrs; const yW=x.measureText(yTxt).width;
+      const sx=W/2-(LB+G+nameW+yW)/2, boxY=cy-38;
+      const img=TEAM_LOGO_IMGS[name];
+      if(img&&img.complete&&img.naturalWidth){ x.drawImage(img,sx,boxY,LB,LB); } // logo tal cual, sin recuadro
+      else { const t=F1_TEAMS.find(f=>f.name===name)||{}; rr(sx,boxY,LB,LB,12); x.fillStyle=t.color||"#666"; x.fill(); x.fillStyle="#fff"; x.font="800 18px Arial, sans-serif"; x.textAlign="center"; x.fillText((t.abbr||name.slice(0,3)).toUpperCase(),sx+LB/2,boxY+LB/2+6); }
+      x.textAlign="left";
+      x.fillStyle="#fff"; x.font="800 32px Arial, sans-serif"; x.fillText(name, sx+LB+G, cy);
+      x.fillStyle="#ffce3a"; x.font="700 30px Arial, sans-serif"; x.fillText(yTxt, sx+LB+G+nameW, cy);
+    });
+  } else if(f1Teams.length){
+    fit(L("TU TRAYECTORIA","YOUR JOURNEY"), BLOCK_TOP, W-120, 22, "rgba(255,255,255,.5)", "700");
+    fit(f1Teams.slice(0,4).join("   ·   "), BLOCK_TOP+45, W-120, 34, "#fff", "800");
   }
-  // pie: marca + link + gancho
-  checker(H-14,14);
-  x.textAlign="center";
-  x.fillStyle="#fff"; x.font="italic 900 52px Arial, sans-serif"; x.fillText("🏁 F1 GLORY", W/2, 995);
-  x.fillStyle="#ff5a1a"; x.font="800 34px Arial, sans-serif"; x.fillText("f1-glory.com", W/2, 1045);
-  x.fillStyle="rgba(255,255,255,.75)"; x.font="600 30px Arial, sans-serif";
-  x.fillText(L("¿Superas mi legado?","Can you beat my legacy?"), W/2, 1100);
+  checker(H-14,14); x.textAlign="center";
+  x.fillStyle="#fff"; x.font="italic 900 52px Arial, sans-serif"; x.fillText("🏁 F1 GLORY", W/2, H-150);
+  x.fillStyle="#ff5a1a"; x.font="800 34px Arial, sans-serif"; x.fillText("f1-glory.com", W/2, H-100);
+  x.fillStyle="rgba(255,255,255,.75)"; x.font="600 30px Arial, sans-serif"; x.fillText(L("¿Superas mi legado?","Can you beat my legacy?"), W/2, H-50);
   return c;
 }
 function shareCareer(){
+  preloadLogos().then(runShareCard).catch(runShareCard);
+}
+function runShareCard(){
   let c; try{ c=drawCareerCard(); }catch(e){ return; }
   const done=()=>{};
   c.toBlob(blob=>{
@@ -2928,7 +2955,7 @@ function shareCareer(){
     const file=new File([blob],"f1-glory.png",{type:"image/png"});
     const txt=L("Mi carrera en F1 Glory 🏁 ¿Superas mi legado? f1-glory.com","My F1 Glory career 🏁 Can you beat my legacy? f1-glory.com");
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      navigator.share({files:[file], title:"F1 Glory", text:txt}).catch(done);
+      navigator.share({files:[file], title:"F1 Glory", text:txt, url:"https://f1-glory.com"}).catch(done);
     } else {
       const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="f1-glory.png"; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
