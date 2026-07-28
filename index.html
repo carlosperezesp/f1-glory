@@ -1991,7 +1991,8 @@ function simSeason(){
       g = -(sr?sr.decay:1) - (S.age>=34?0.6:0) + (sel.style==="tecnico"?0.3:0) + st.growth*.2;
     }
   } else {
-    if(S.age<=19) g=rnd(2.5,5.5);
+    if(S.age<=15) g=rnd(.15,.95);       // 14-15: kart de crío, aprendes lo básico → casi no sube OVR (que empezar joven sea sabor, no poder)
+    else if(S.age<=19) g=rnd(2.5,5.5);   // 16-19: explosión de desarrollo (4 años iguales para todos, empieces con 14/15/16)
     else if(S.age<=23) g=rnd(1.6,3.6);
     else if(S.age<=26) g=rnd(.5,2);
     else {
