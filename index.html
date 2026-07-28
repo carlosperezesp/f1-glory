@@ -479,8 +479,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
   <button class="btn" onclick="showIdentity()" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
   <p class="news" style="max-width:540px;margin:20px auto 0;font-size:13px;line-height:1.55;color:var(--muted)"
-     data-es="✨ <b>Últimas novedades:</b> ¿atascado camino de la F1? Vete a Super Fórmula, IndyCar o Fórmula E y gánate el salto. Además: los polémicos fallos de la FIA (uno hasta puede decidirte el Mundial), lesiones que marcan tu carrera y rivalidades que acaban a golpes. Hacemos mejoras nuevas cada poco, vuelve pronto. 🏗️"
-     data-en="✨ <b>What's new:</b> stuck on the road to F1? Head to Super Formula, IndyCar or Formula E and earn your leap. Plus: the FIA's controversial rulings (one can even decide your title), career-defining injuries and rivalries that come to blows. We ship fresh improvements all the time, check back soon. 🏗️">✨ <b>Últimas novedades:</b> ¿atascado camino de la F1? Vete a Super Fórmula, IndyCar o Fórmula E y gánate el salto. Además: los polémicos fallos de la FIA (uno hasta puede decidirte el Mundial), lesiones que marcan tu carrera y rivalidades que acaban a golpes. Hacemos mejoras nuevas cada poco, vuelve pronto. 🏗️</p>
+     data-es="✨ <b>Últimas novedades:</b> ahora empiezas con 14, 15 o 16 años, así que no hay dos carreras iguales. ¿Atascado camino de la F1? Vete a Super Fórmula, IndyCar o Fórmula E y gánate el salto — y ojo, que alguna estrella real de esas categorías puede acabar cruzándose en tu parrilla. Además: los polémicos fallos de la FIA (uno hasta puede decidirte el Mundial) y lesiones que marcan tu carrera. Hacemos mejoras nuevas cada poco, vuelve pronto. 🏗️"
+     data-en="✨ <b>What's new:</b> you now start at 14, 15 or 16, so no two careers are alike. Stuck on the road to F1? Head to Super Formula, IndyCar or Formula E and earn your leap — and watch out, a real star from those series might just turn up on your grid. Plus: the FIA's controversial rulings (one can even decide your title) and career-defining injuries. We ship fresh improvements all the time, check back soon. 🏗️">✨ <b>Últimas novedades:</b> ahora empiezas con 14, 15 o 16 años, así que no hay dos carreras iguales. ¿Atascado camino de la F1? Vete a Super Fórmula, IndyCar o Fórmula E y gánate el salto — y ojo, que alguna estrella real de esas categorías puede acabar cruzándose en tu parrilla. Además: los polémicos fallos de la FIA (uno hasta puede decidirte el Mundial) y lesiones que marcan tu carrera. Hacemos mejoras nuevas cada poco, vuelve pronto. 🏗️</p>
   <p class="news" style="max-width:540px;margin:8px auto 0;font-size:13px;line-height:1.5;color:var(--muted)"
      data-es="¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧"
      data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
@@ -779,7 +779,8 @@ const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸
 // 🏆 estrellas reales de OTRAS categorías (IndyCar/WEC/FE) que pueden CRUZAR a la F1 a su EDAD REAL:
 // año de nacimiento → edad según el año de la partida, nivel de veterano (base) que decae con la edad.
 const CROSSOVERS = [
-  {name:"A. Palou", flag:"🇪🇸", born:1997, base:87, ceil:90, from:"la IndyCar", fromEn:"IndyCar"}, // campeonísimo (se irán añadiendo más)
+  // llegan de veteranos: buen nivel de compañero/veterano competitivo, NO favoritos al título (aunque con un cochazo, podría darse)
+  {name:"A. Palou", flag:"🇪🇸", born:1997, base:83, ceil:87}, // (se irán añadiendo más nombres reales)
 ];
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
@@ -1005,7 +1006,6 @@ function mkRookie(){
       const skill=Math.round(c.base - Math.max(0,age-32)*1.3); // el nivel de veterano decae con la edad
       const d={name:c.name, age, skill:Math.max(72,skill), ceil:c.ceil, titles:0, flag:c.flag, crossover:true};
       S.dpool.push(d);
-      S.pendingEvents.push(L(`🏆 Bombazo: ${surname(c.name)} cruza a la F1 con ${age} años tras brillar en ${c.from}.`,`🏆 Big news: ${surname(c.name)} crosses into F1 at ${age} after starring in ${c.fromEn}.`));
       return d;
     }
   }
