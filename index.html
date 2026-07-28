@@ -776,6 +776,11 @@ const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
   ["Lefèvre","🇫🇷"],["Fischer","🇩🇪"],["Andersen","🇩🇰"],["Salazar","🇲🇽"],["Sørensen","🇩🇰"],["Nakamura","🇯🇵"],
   ["Oliveira","🇧🇷"],["Vidal","🇪🇸"],["Brandt","🇩🇪"],["Escobar","🇨🇴"],["Larsen","🇩🇰"],["Romano","🇮🇹"],["Vega","🇪🇸"]];
+// 🏆 estrellas reales de OTRAS categorías (IndyCar/WEC/FE) que pueden CRUZAR a la F1 a su EDAD REAL:
+// año de nacimiento → edad según el año de la partida, nivel de veterano (base) que decae con la edad.
+const CROSSOVERS = [
+  {name:"A. Palou", flag:"🇪🇸", born:1997, base:87, ceil:90, from:"la IndyCar", fromEn:"IndyCar"}, // campeonísimo (se irán añadiendo más)
+];
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
 const EXPANSION = [
@@ -916,7 +921,7 @@ function startCareer(){
     f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
     bigInjuryDone:false, feuds:[], respects:[], _incRival:null, fiaTitleCount:0, fiaTitlePending:null, _fiaSc:null,
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, forceMove:false, apxShown:false,
-    seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
+    seats:{}, dpool:[], rookies:[...ROOKIE_POOL], crossovers:CROSSOVERS.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
@@ -989,6 +994,21 @@ function refreshCard(){
 /* ---------- gestión de asientos y mercado NPC ---------- */
 const GEN_INITIALS="ADEFGHJKLMNOPRSTV";
 function mkRookie(){
+  // 🏆 crossover: rara vez, una estrella real de otra categoría cruza a la F1 a su EDAD REAL (solo dentro de su ventana)
+  if(S.crossovers && S.crossovers.length && ch(0.045)){
+    const yr=yearNow();
+    const elig=S.crossovers.filter(c=>{ const a=yr-c.born; return a>=27 && a<=37; });
+    if(elig.length){
+      const c=elig[irnd(0,elig.length-1)];
+      S.crossovers.splice(S.crossovers.indexOf(c),1); // una vez por partida, no repite
+      const age=yr-c.born;
+      const skill=Math.round(c.base - Math.max(0,age-32)*1.3); // el nivel de veterano decae con la edad
+      const d={name:c.name, age, skill:Math.max(72,skill), ceil:c.ceil, titles:0, flag:c.flag, crossover:true};
+      S.dpool.push(d);
+      S.pendingEvents.push(L(`🏆 Bombazo: ${surname(c.name)} cruza a la F1 con ${age} años tras brillar en ${c.from}.`,`🏆 Big news: ${surname(c.name)} crosses into F1 at ${age} after starring in ${c.fromEn}.`));
+      return d;
+    }
+  }
   let name, flag;
   if(S.rookies.length){ [name,flag]=S.rookies.splice(irnd(0,S.rookies.length-1),1)[0]; }
   else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)]; name=GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
