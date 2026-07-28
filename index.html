@@ -1735,6 +1735,25 @@ const DILEMAS=[
      [5,()=>(CAR(1),L("Enterráis el hacha por el bien del equipo: la tregua funciona. +1 coche","You bury the hatchet for the team's sake: the truce works. +1 car"))],
      [4,()=>(CAR(-1),L("Choque de egos: el box arde y el rendimiento se resiente. −1 coche","Ego clash: the garage ignites and performance suffers. −1 car"))],
      [2,()=>L("Convivencia tensa, pero sin sangre. Sin cambios.","An uneasy coexistence, but no blood. No change.")])}]},
+ // 🏛️ la FIA toma una decisión polémica (rota entre varios escenarios) y el paddock se parte; tú eliges postura
+ {id:"falloFIA",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("El fallo de la FIA","The FIA's ruling"),
+  d:()=>{ const sc=[
+    L("La FIA prohíbe a mitad de temporada un «invento» que daba ventaja a los coches punteros. Medio paddock lo celebra; la otra mitad grita tongo.","Mid-season, the FIA bans a «device» that gave the top cars an edge. Half the paddock cheers; the other half cries foul."),
+    L("Una decisión confusa de dirección de carrera en la última vuelta cambia quién gana el mundial. Medio paddock aplaude, medio lo llama una vergüenza.","A confusing race-control call on the last lap changes who wins the title. Half the paddock applauds, half calls it a disgrace."),
+    L("La FIA congela el desarrollo de motores para «ahorrar costes». Unos lo ven justo; los que iban por detrás, una condena.","The FIA freezes engine development to «cut costs». Some call it fair; those catching up call it a life sentence."),
+    L("Nuevas reglas de límites de pista reparten sanciones a diestro y siniestro y deciden carreras desde la sala de control. El paddock se parte en dos.","New track-limits rules hand out penalties left and right and decide races from the control room. The paddock splits in two.")
+  ]; return sc[irnd(0,sc.length-1)]+L(" ¿Qué postura tomas?"," What stance do you take?"); },opts:[
+   {l:()=>L("Apoyar la decisión","Back the ruling"),r:()=>roll(
+     [4,()=>(VAL(1.08),L("La FIA agradece tu respaldo institucional: te ganas su favor de cara al futuro. +fama","The FIA values your institutional backing: you earn its goodwill going forward. +fame"))],
+     [3,()=>(VAL(.9),L("Quedas como el pelota del sistema; parte de la afición te silba. −fama","You come off as the establishment's lackey; part of the crowd boos you. −fame"))],
+     [3,()=>L("Tu opinión pasa desapercibida entre el ruido. Sin cambios.","Your take gets lost in the noise. No change.")])},
+   {l:()=>L("Cargar contra la FIA","Blast the FIA"),r:()=>roll(
+     [4,()=>(VAL(1.2),L("Te conviertes en la voz de los pilotos: la afición te idolatra. +20% fama","You become the drivers' voice: the fans idolise you. +20% fame"))],
+     [3,()=>(VAL(.85),L("La FIA te abre expediente y te multa; malas portadas. −fama","The FIA opens a case and fines you; bad headlines. −fame"))],
+     [3,()=>L("Mucho ruido, pero en una semana nadie se acuerda. Sin cambios.","A lot of noise, but a week later nobody remembers. No change.")])},
+   {l:()=>L("No mojarte","Stay out of it"),r:()=>roll(
+     [5,()=>L("Te mantienes por encima del barro y a lo tuyo. Sin cambios.","You rise above the mud and focus on your job. No change.")],
+     [2,()=>(VAL(.93),L("Te tachan de tibio y sin carácter. −fama leve","You're branded lukewarm and spineless. slight −fame"))])}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -1815,7 +1834,7 @@ function renderDilemma(dl){
   const box=$("offerList"); box.innerHTML="";
   dl.opts.forEach((opt,i)=>{
     const b=document.createElement("button"); b.className="offer dilemma";
-    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${i===0?"A":"B"}</span>
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${String.fromCharCode(65+i)}</span>
       <span class="info"><span class="name">${typeof opt.l==="function"?opt.l():opt.l}</span></span>`;
     b.onclick=()=>{
       const txt=opt.r();
