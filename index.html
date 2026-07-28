@@ -1818,7 +1818,8 @@ function renderDilemma(dl){
       setDecision("⚡ "+ttl, txt, false, true);
       refreshCard();
       if(S.retired) return;
-      setTimeout(startSeasonRun, 1100);
+      // en desktop la conclusión se muestra más tiempo (da tiempo a leerla); en móvil va bien más corto
+      setTimeout(startSeasonRun, window.innerWidth>980 ? 2400 : 1100);
     };
     box.appendChild(b);
   });
