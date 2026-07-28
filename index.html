@@ -2679,9 +2679,9 @@ function regResetOffers(){
   // ofertas SIN pistas de nivel: renovación + 2 al azar + X si te quiere
   const o=[];
   if(cur && !S.burned[cur.name] && !S.neverHire[cur.name] && !(cur.name==="Racing Bulls"&&S.age>=32)) o.push({team:cur,note:L("Renovación","Renewal"),role:roleFor(cur.name)});
-  const poolOthers=F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name] && rbOk(t));
+  const poolOthers=feudFilter(F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name] && rbOk(t)));
   pk(poolOthers,2).forEach(t=>o.push({team:t,role:roleFor(t.name)}));
-  if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name]) o.push({team:rumor,role:roleFor(rumor.name),note:L("🔮 El del rumor","🔮 The rumoured one")});
+  if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name] && !teamHasFeud(rumor.name)) o.push({team:rumor,role:roleFor(rumor.name),note:L("🔮 El del rumor","🔮 The rumoured one")});
   while(o.length<3){ const extra=F1_TEAMS.find(t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]&&rbOk(t)); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
   const title=L("🏁 Revolución técnica","🏁 Technical revolution");
   let sub=L(`El año que viene entra un reglamento radical y la parrilla se resetea. En el paddock se rumorea que ${rumor.name} ha entendido el nuevo coche antes que nadie… pero nadie lo sabrá hasta la primera carrera.`,`A radical new rulebook resets the grid next year. The paddock whispers that ${rumor.name} has cracked the new car… but nobody will know until race one.`);
