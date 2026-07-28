@@ -1360,10 +1360,13 @@ function signContract(o){
   S.regUnknown=false;
   const prev=S.team, prevCat=S.cat;
   // traiciones: dejar un equipo de F1 deja cicatrices, seas héroe o lastre
-  if(prevCat==="F1" && prev && o.team.name!==prev.name && F1_TEAMS.some(t=>t.name===prev.name)){
+  // solo te "queman" si PUDISTE quedarte (te ofrecieron renovar) y te fuiste igual → traición.
+  // Si te ECHARON (sin renovación) no hay traición. Y a un CAMPEÓN se le respeta: rara vez se queman puentes.
+  if(prevCat==="F1" && prev && o.team.name!==prev.name && F1_TEAMS.some(t=>t.name===prev.name) && S.couldStay){
     const lastPos=S.seasons.at(-1)?.pos??20;
     const good=lastPos<=5;
-    if(ch(good?.55:.35)){
+    const champ=(S.titles.f1||0)>0;
+    if(ch(champ?.15 : good?.5:.35)){
       S.burned[prev.name]=S.age;
       S.pendingEvents.push(good
         ? L("🚪 En "+prev.name+" no perdonan tu marcha siendo su líder: puertas cerradas.","🚪 "+prev.name+" won't forgive their leader walking out: doors closed.")
@@ -2566,7 +2569,7 @@ function returnF1Offers(){
   const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
   const rep=S.ovr+Math.min(6,fameScore()/180);
   let cands = rep>=86?sorted.slice(1,6) : rep>=78?sorted.slice(4,10) : sorted.slice(6,11);
-  cands=feudFilter(cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]&&!(t.name==="Racing Bulls"&&S.age>=32)));
+  cands=feudFilter(cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]&&rbOk(t)));
   if(!cands.length) cands=sorted.filter(t=>!S.neverHire[t.name]).slice(-4);
   const o=[]; pickN(cands,Math.min(3,cands.length)).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
   const leap = S.youngDetour && (S.f1Seasons||0)===0;
@@ -2577,8 +2580,11 @@ function returnF1Offers(){
   renderOffers(o,false);
 }
 
+// Racing Bulls es el equipo-cantera: solo ficha PROMESAS. No persigue a veteranos NI a consagrados (campeones/élite).
+function rbOk(t){ return !(t && t.name==="Racing Bulls" && (S.age>=32 || (S.titles.f1||0)>0 || S.ovr>=87)); }
 function nextOffers(){
   S.regUnknown=false; // por defecto las tendencias se ven; la revolución técnica lo reactiva puntualmente
+  S.couldStay=false;  // ¿tu equipo te ofreció renovar? (si NO, es que te echaron → al irte no te "queman" por traidor)
   if(S.age>=44){ endCareer(); return; } // tope duro: solo los excepcionales llegan tan lejos
   if(S.cat==="ADV"){ advOffers(); return; } // estás fuera de la F1: menú de aventura
   const o=[];
@@ -2736,9 +2742,10 @@ function nextOffers(){
     const pedRep = S.f1Seasons<=3 ? juniorPedigree()*1.5 : 0;
     const rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180)+pedRep;
     if(rep<68&&S.age>=33){ endCareer(); return; }
-    // el perdón llega, a veces, con los años
+    // el perdón llega con los años; a un CAMPEÓN se le vuelve a llamar antes (2 años vs 4) y más fácil
+    const champ=(S.titles.f1||0)>0;
     Object.entries(S.burned).forEach(([tm,age])=>{
-      if(S.age-age>=4 && ch(.2)){ delete S.burned[tm]; sub="🕊️ "+tm+L(" vuelve a cogerte el teléfono. "," is picking up the phone again. "); }
+      if(S.age-age>=(champ?2:4) && ch(champ?.45:.2)){ delete S.burned[tm]; sub="🕊️ "+tm+L(" vuelve a cogerte el teléfono. "," is picking up the phone again. "); }
     });
     const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
     let cands;
@@ -2746,10 +2753,10 @@ function nextOffers(){
     else if(rep>=80) cands=sorted.slice(1,7);
     else if(rep>=72) cands=sorted.slice(4,10);
     else cands=sorted.slice(7,10);
-    cands=feudFilter(cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name] && !(t.name==="Racing Bulls"&&S.age>=32)));
+    cands=feudFilter(cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name] && rbOk(t)));
     if(S.forceMove){
       cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
-      if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]&&!(t.name==="Racing Bulls"&&S.age>=32));
+      if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]&&rbOk(t));
       // fichaje garantizado si vienes de romper contrato por un top (dilema "contrato")
       const picks=[];
       if(S.poachTeam){ const pt=F1_TEAMS.find(t=>t.name===S.poachTeam && !S.neverHire[t.name]); if(pt) picks.push(pt); S.poachTeam=null; }
@@ -2776,7 +2783,7 @@ function nextOffers(){
         }
       }
       const cur=F1_TEAMS.find(t=>t.name===S.team.name)||S.team;
-      if(!(cur.name==="Racing Bulls"&&S.age>=32)) o.push({team:cur,note:L("Renovación","Contract renewal"),role:roleFor(cur.name)});
+      if(rbOk(cur)){ o.push({team:cur,note:L("Renovación","Contract renewal"),role:roleFor(cur.name)}); S.couldStay=true; }
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title=L("Mercado de fichajes ","Silly season ")+(yearNow());
       sub=(sub||"")+L("Silly season: los contratos están sobre la mesa.","Silly season: the contracts are on the table.");
@@ -2843,8 +2850,7 @@ function regResetOffers(){
   S.regDone=true; S.regUnknown=true;
   const pk=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
   const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]); // peor→mejor (antes del reset)
-  const rbOk=t=>!(t.name==="Racing Bulls"&&S.age>=32); // Racing Bulls no ficha veteranos
-  const badTeams=order.filter(rbOk).slice(0,4);
+  const badTeams=order.filter(rbOk).slice(0,4); // rbOk global: RB no ficha veteranos NI consagrados
   // resetear la parrilla: nuevo pecking order aleatorio
   F1_TEAMS.forEach(t=>{ const v=Math.round(rnd(66,86)); S.f1perf[t.name]=v; S.f1target[t.name]=v; });
   // el "Brawn": un equipo malo que pega el pelotazo
@@ -2864,7 +2870,7 @@ function regResetOffers(){
   S.regReveal={brawn:brawn.name, rumor:rumor.name, rumorTrue, year:yearNow()};
   // ofertas SIN pistas de nivel: renovación + 2 al azar + X si te quiere
   const o=[];
-  if(cur && !S.burned[cur.name] && !S.neverHire[cur.name] && !(cur.name==="Racing Bulls"&&S.age>=32)) o.push({team:cur,note:L("Renovación","Renewal"),role:roleFor(cur.name)});
+  if(cur && !S.burned[cur.name] && !S.neverHire[cur.name] && rbOk(cur)){ o.push({team:cur,note:L("Renovación","Renewal"),role:roleFor(cur.name)}); S.couldStay=true; }
   const poolOthers=feudFilter(F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name] && rbOk(t)));
   pk(poolOthers,2).forEach(t=>o.push({team:t,role:roleFor(t.name)}));
   if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name] && !teamHasFeud(rumor.name)) o.push({team:rumor,role:roleFor(rumor.name),note:L("🔮 El del rumor","🔮 The rumoured one")});
