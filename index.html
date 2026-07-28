@@ -2552,9 +2552,13 @@ function nextOffers(){
     }
     // 🏁 revolución técnica (efecto Brawn): una vez por partida, a partir de ~2046
     if(!S.regDone && yearNow()>=S.regReg){ regResetOffers(); return; }
-    const pOut = S.age>=40?.5 : S.age>=38?.3 : S.age>=36?.15 : 0;
+    // el mercado solo se enfría con la edad SI ya no rindes: si acabas de ganar, hacer top-6 o
+    // sigues con buen OVR, los equipos te quieren (no te jubilan por demostrar que eres bueno)
+    const lastS = S.seasons.at(-1)||{};
+    const stillWanted = (lastS.pos??20)<=6 || (lastS.wins||0)>0 || S.ovr>=83;
+    const pOut = stillWanted ? 0 : (S.age>=40?.4 : S.age>=38?.25 : S.age>=36?.12 : 0);
     if(Math.random()<pOut){
-      setDecision(L("El paddock pasa página","The paddock moves on"),L("Los equipos apuestan por juventud. Esta vez el teléfono no suena.","The teams are betting on youth. This time the phone doesn't ring."));
+      setDecision(L("El paddock pasa página","The paddock moves on"),L("Los años pesan y los resultados ya no acompañan: esta vez el teléfono no suena.","The years weigh and the results no longer follow: this time the phone doesn't ring."));
       $("offerList").innerHTML="";
       setTimeout(endCareer,1500);
       return;
