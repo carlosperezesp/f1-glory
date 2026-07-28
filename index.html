@@ -907,8 +907,9 @@ function startCareer(){
   sel.name = $("inName").value.trim().toUpperCase();
   sel.num = $("inNum").value;
   track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG});
+  const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   S = {
-    age:16, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1, peakOvr:0, peakAge:16, reinvented:false,
+    age:startAge, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1, peakOvr:0, peakAge:startAge, reinvented:false,
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
@@ -1889,9 +1890,9 @@ function renderDilemma(dl){
 function fieldFor(cat){
   if(cat==="KART") return {races:12, size:20, mean:46, spread:7, teamW:.25};
   if(cat==="F4")   return {races:14, size:24, mean:54, spread:6.5, teamW:.3};
-  if(cat==="F3")   return {races:10, size:22, mean:57, spread:6, teamW:.35};
+  if(cat==="F3")   return {races:10, size:22, mean:58, spread:6, teamW:.35};   // antesalas algo más exigentes: llegas más joven
   if(cat==="FR")   return {races:14, size:24, mean:55, spread:6.5, teamW:.32}; // FRECA: campo algo más asequible que la F3
-  if(cat==="F2")   return {races:14, size:22, mean:66, spread:6, teamW:.4};
+  if(cat==="F2")   return {races:14, size:22, mean:67, spread:6, teamW:.4};
   return null;
 }
 
@@ -2154,11 +2155,14 @@ function simJunior(row,st){
   let yrsHere=0; for(let i=S.seasons.length-1;i>=0;i--){ if(S.seasons[i].cat===S.cat) yrsHere++; else break; }
   const feeder = S.cat==="F4"||S.cat==="F3"||S.cat==="FR"||S.cat==="F2";
   const expMod = feeder ? (yrsHere===0 ? -2.5 : Math.min(2, yrsHere)) : 0;
+  // verdor: plantarte MUY joven en las categorías altas (F3/FR/F2) pasa factura; se diluye al madurar
+  const readyAge = S.cat==="F2"?18 : (S.cat==="F3"||S.cat==="FR")?17 : 0;
+  const greenMod = readyAge ? -Math.max(0, readyAge - S.age)*1.1 : 0;
   if(feeder && yrsHere===0) row.rookieYear=true;
   const rivals=[];
   for(let i=0;i<f.size-1;i++) rivals.push(f.mean+gauss()*f.spread+rnd(-2,6));
   let pts=0,wins=0,pods=0,poles=0;
-  const myBase=S.ovr+teamB+expMod;
+  const myBase=S.ovr+teamB+expMod+greenMod;
   const seasonScores=rivals.map(r=>({s:r,pts:0}));
   for(let r=0;r<f.races;r++){
     const out = r<S.missRaces;
