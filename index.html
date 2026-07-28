@@ -1429,7 +1429,7 @@ const DILEMAS=[
      [3,()=>(VAL(1.05),L("Tu deportividad gusta en el paddock. +fama","Your sportsmanship is well liked in the paddock. +fame"))],
      [2,()=>(VAL(.9),L("La afición te llama blando. Fama -10%","The fans call you soft. Fame -10%"))])},
    {l:()=>L("Ignorar la orden","Ignore the order"),r:()=>roll(
-     [4,()=>(VAL(1.15),OVR(1),L("Ganas y el mundo aplaude tu rebeldía. +fama, +1 OVR","You win and the world applauds your defiance. +fame, +1 OVR"))],
+     [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.15),OVR(1),L("Ganas y el mundo aplaude tu rebeldía. +fama, +1 OVR","You win and the world applauds your defiance. +fame, +1 OVR"))],
      [3,()=>(VAL(1.1),CAR(-1),L("Ídolo rebelde, pero el equipo te castiga. +fama, -1 coche","Rebel idol, but the team punishes you. +fame, -1 car"))],
      [3,()=>(CAR(-1),L("El equipo te congela: piezas nuevas… para el otro coche. -1 coche","The team freezes you out: new parts… for the other car. -1 car"))])}]},
  {id:"estrategia",stage:"f1",t:()=>L("Temporada a una carta","All-or-nothing season"),d:()=>L("Los ingenieros proponen un concepto de coche radical para el año: o rompe el cronómetro o rompe a secas.","The engineers propose a radical car concept for the year: it either breaks the stopwatch or just breaks."),opts:[
@@ -1498,9 +1498,9 @@ const DILEMAS=[
      [2,()=>(CAR(-1),L("El equipo te lo hace pagar en desarrollo. -1 coche","The team makes you pay in development. -1 car"))])}]},
  {id:"safetycar",stage:"f1",t:()=>L("La decisión del muro de control","Race control's call"),d:()=>L("Última vuelta, coche de seguridad. Dirección de carrera toma una decisión confusa que TE beneficia de forma dudosa: podrías ganar así. Tu rival estalla por la radio.","Final lap, safety car. Race control makes a confusing call that dubiously benefits YOU: you could win like this. Your rival erupts on the radio."),opts:[
    {l:()=>L("Aprovecharla y ganar","Take it and win"),r:()=>roll(
-     [4,()=>(VAL(1.15),L("Ganas. Injusto para muchos, pero la victoria cuenta. +fama","You win. Unfair to many, but the win counts. +fame"))],
-     [3,()=>(VAL(.95),L("Ganas entre polémica y medio mundo te señala. Fama -5%","You win amid controversy and half the world points at you. Fame -5%"))],
-     [3,()=>L("Revisan la carrera durante semanas sin cambiar nada. Sin cambios.","They review the race for weeks and change nothing. No change.")])},
+     [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.15),L("Ganas. Injusto para muchos, pero la victoria cuenta. +fama","You win. Unfair to many, but the win counts. +fame"))],
+     [3,()=>(S.dilWin=(S.dilWin||0)+1,VAL(.95),L("Ganas entre polémica y medio mundo te señala. Fama -5%","You win amid controversy and half the world points at you. Fame -5%"))],
+     [3,()=>(S.dilWin=(S.dilWin||0)+1,L("Revisan la carrera durante semanas sin cambiar nada: la victoria es tuya.","They review the race for weeks and change nothing: the win is yours."))])},
    {l:()=>L("Ceder la posición","Give the place back"),r:()=>roll(
      [4,()=>(VAL(1.25),L("Gesto histórico de deportividad: cariño eterno del público. +25% fama","A historic act of sportsmanship: the fans' undying love. +25% fame"))],
      [3,()=>(OVR(1),L("Duele, pero te crece por dentro. +1 OVR","It hurts, but you grow inside. +1 OVR"))],
@@ -1613,9 +1613,9 @@ const DILEMAS=[
      [3,()=>L("Cumples, aunque por dentro te quema.","You comply, though it burns inside.")],
      [2,()=>(VAL(.9),L("Los fans querían pelea. Quedas «obediente». Fama −10%","Fans wanted a fight. You look «obedient». Fame −10%"))])},
    {l:()=>L("«No entendí el mensaje» y adelantar","«Didn't get the message» and pass"),r:()=>roll(
-     [4,()=>(VAL(1.2),L("Ganas la posición y el clip es legendario. Fama +20%","You take the place and the clip is legendary. Fame +20%"))],
-     [3,()=>(CAR(-1),L("Ganas la batalla, pero el box se parte. −1 coche","You win the battle, but the garage splits. −1 car"))],
-     [3,()=>(OVR(-1),L("El equipo te sanciona internamente. −1 OVR","The team disciplines you internally. −1 OVR"))])}]},
+     [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.2),L("Ganas la posición y el clip es legendario. Fama +20%","You take the place and the clip is legendary. Fame +20%"))],
+     [3,()=>(S.dilWin=(S.dilWin||0)+1,CAR(-1),L("Ganas la batalla, pero el box se parte. −1 coche","You win the battle, but the garage splits. −1 car"))],
+     [3,()=>(S.dilWin=(S.dilWin||0)+1,OVR(-1),L("Te llevas la victoria, pero el equipo te sanciona internamente. −1 OVR","You take the win, but the team disciplines you internally. −1 OVR"))])}]},
  {id:"cuentas",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&(S.yearsAtTeam||1)>=3,t:()=>L("Cuentas pendientes","Unfinished business"),
   d:()=>{const m=teammateOf(S.team.name);return L(`Llevas años picándote con ${surname(m.name)} en el mismo garaje. El equipo os deja claro: quien acabe por delante manda la próxima temporada. Se decide en la pista.`,`Years of needling ${surname(m.name)} in the same garage. The team is clear: whoever finishes ahead calls the shots next season. Settle it on track.`);},opts:[
    {l:()=>L("Guerra abierta","All-out war"),r:()=>roll(
@@ -2168,6 +2168,8 @@ function simF1(row,st){
     }
   }
   const pts=me.pts;
+  // victoria concedida por un dilema (muro de control, órdenes, multi-21…): cuenta como victoria y podio de esta temporada
+  if(S.dilWin){ wins+=S.dilWin; pods+=S.dilWin; S.dilWin=0; }
   S.wins+=wins;S.podiums+=pods;S.poles+=poles;S.ptsF1+=pts;
   // ¿alguna de tus victorias fue en Mónaco? (cuenta para la 👑 Triple Corona). Más victorias → más probable
   if(wins>0 && !S.tripleCrown.monaco && ch(Math.min(.55, wins*0.13))){
