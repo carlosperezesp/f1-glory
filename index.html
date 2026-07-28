@@ -868,7 +868,7 @@ function posClass(p){
   if(p<=10) return "top";
   return "rest";
 }
-function yearNow(){ return 2026+(S.age-16); }
+function yearNow(){ return 2026+(S.age-(S.startAge??16)); } // la partida SIEMPRE arranca en 2026, empieces con 14/15/16
 
 /* ================= IDENTIDAD ================= */
 function showIdentity(){ $("intro").style.display="none"; $("identity").style.display="block"; renderCountries(); }
@@ -909,7 +909,7 @@ function startCareer(){
   track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG});
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   S = {
-    age:startAge, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1, peakOvr:0, peakAge:startAge, reinvented:false,
+    age:startAge, startAge, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1, peakOvr:0, peakAge:startAge, reinvented:false,
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
@@ -2954,7 +2954,7 @@ function endCareer(){
   // dorado si ganaste algún título; shiny (brillo animado) si ganaste muchos (3+)
   const goldCell=(el,n)=>{ const c=el.parentElement; c.classList.toggle("gold",n>=1); c.classList.toggle("shiny",n>=3); };
   goldCell($("eT"),S.titles.f1); goldCell($("eC"),S.titles.constr);
-  $("endYears").textContent=L(`Carrera: 2026 – ${2026+(S.age-16)} · Retirado a los ${S.age} años`,`Career: 2026 – ${2026+(S.age-16)} · Retired at ${S.age}`);
+  $("endYears").textContent=L(`Carrera: 2026 – ${yearNow()} · Retirado a los ${S.age} años`,`Career: 2026 – ${yearNow()} · Retired at ${S.age}`);
   const shelf=[];
   for(let i=0;i<S.titles.f1;i++)shelf.push("🏆");
   for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
@@ -2976,7 +2976,7 @@ function endCareer(){
   const rows=hallRows();
   const myRank=rows.findIndex(r=>r.me)+1;
   const hf=$("hallFame");
-  hf.innerHTML="<h4>"+L("🏛️ Palmarés histórico de la F1 · ","🏛️ All-time F1 title table · ")+(2026+(S.age-16))+"</h4>"+
+  hf.innerHTML="<h4>"+L("🏛️ Palmarés histórico de la F1 · ","🏛️ All-time F1 title table · ")+(yearNow())+"</h4>"+
     rows.slice(0,5).map((r,i)=>`<div class="hrow${r.me?" me":""}"><span class="rk">${i+1}.</span><span class="nm">${flg(r.flag)} ${r.n}</span><span class="tt">🏆×${r.t}</span></div>`).join("")+
     (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${sel.name} (${L("TÚ","YOU")})</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=S.titles.f1*120+S.titles.constr*30+S.wins*3+S.podiums+S.poles+S.subcamp*15;
@@ -3031,7 +3031,7 @@ function endCareer(){
       <span><b>${S.podiums}</b> podios</span><span><b>${S.poles}</b> poles</span>
       <span><b>${S.titles.f1}</b> Mundiales</span><span><b>${S.titles.constr}</b> Constructores</span>
       <span><b>${S.subcamp}</b> subcamp.</span><span><b>${S.ptsF1}</b> pts F1</span>
-      <span>2026–${2026+(S.age-16)} · retiro a los ${S.age}</span>
+      <span>2026–${yearNow()} · retiro a los ${S.age}</span>
     </div>`;
 }
 
@@ -3076,7 +3076,7 @@ function drawCareerCard(){
   x.fillStyle=bg; x.fillRect(0,0,W,380); checker(380,14);
   fit(`${sel.flag} ${sel.name} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
   fit(S.legacyTxt||"", 262, W-90, 46, "#ffce3a", "800");
-  fit(L(`Carrera 2026–${2026+(S.age-16)}`,`Career 2026–${2026+(S.age-16)}`), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
+  fit(L(`Carrera 2026–${yearNow()}`,`Career 2026–${yearNow()}`), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
   const cell=(cx,cy,w,h,val,lab,gold)=>{
     rr(cx,cy,w,h,18); x.fillStyle=gold?"#f3c866":"#262a34"; x.fill();
     x.fillStyle=gold?"#5a3f00":"#fff"; x.font="900 50px Arial, sans-serif"; x.textAlign="center"; x.fillText(String(val), cx+w/2, cy+62);
