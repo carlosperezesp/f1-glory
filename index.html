@@ -699,6 +699,8 @@ const KART_TEAMS = [
   {name:"CRG Racing Team", color:"#d4820a", color2:"#7a4a06", perf:48, sub:"Garra y kilómetros: la escuela dura"},
   {name:"Ricky Flynn Motorsport", color:"#1560bd", color2:"#0a2f5e", perf:51, sub:"La fábrica de campeones británicos"},
   {name:"Kart Republic", color:"#111318", color2:"#c0392b", perf:49, sub:"El proyecto de Gary Catt: pura velocidad"},
+  {name:"Parolin Racing Kart", color:"#e2001a", color2:"#7a000e", perf:51, sub:"El chasis italiano de moda: velocidad pura"},
+  {name:"Sodikart", color:"#0a4ea2", color2:"#062f61", perf:48, sub:"La armada francesa del karting"},
 ];
 const F4_TEAMS = [
   {name:"Prema F4", color:"#dd0022", color2:"#6b0011", perf:58},{name:"Van Amersfoort F4", color:"#e30613", color2:"#7a0309", perf:55},
@@ -765,7 +767,8 @@ const ROOKIE_POOL = [
   ["P. Aron","🇪🇪"],["D. Beganovic","🇸🇪"],["L. Browning","🇬🇧"],["S. Montoya","🇨🇴"],["J. Edgar","🇬🇧"],
   ["J. Dürksen","🇵🇾"],["R. Verschoor","🇳🇱"],["C. Collet","🇧🇷"],["T. Smith","🇦🇺"],["N. León","🇲🇽"],
   ["O. Goethe","🇩🇪"],["K. Frederick","🇺🇸"],["R. Villagómez","🇲🇽"],["M. Stenshorne","🇳🇴"],["A. García","🇪🇸"],
-  ["T. Tramnitz","🇩🇪"],["T. Barnard","🇬🇧"],["J. Wharton","🇦🇺"],["R. Yamamoto","🇯🇵"]];
+  ["T. Tramnitz","🇩🇪"],["T. Barnard","🇬🇧"],["J. Wharton","🇦🇺"],["R. Yamamoto","🇯🇵"],
+  ["C. Costoya","🇪🇸"],["F. Slater","🇬🇧"],["T. Taponen","🇫🇮"],["E. Deligny","🇫🇷"],["A. Spina","🇮🇹"]];
 // apellidos genéricos para cuando se agota la cantera, cada uno con su bandera acorde
 const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
@@ -2619,6 +2622,10 @@ function nextOffers(){
         if(stuck && ch(0.28 + S.appetite*0.22 + (natAff().series.length?0.12:0)))
           o.push({special:true, em:"🌎", name:L("Buscar aventura fuera de la F1","Seek adventure outside F1"), sub:L("Indy, Le Mans, NASCAR, DTM… una vida nueva","Indy, Le Mans, NASCAR, DTM… a new life"), color:"#0ea5e9", onClick:()=>chooseAdventureSeries()});
       }
+      // 🚪 puertas cerradas: si has quemado varios puentes y te quedan pocas ofertas, la aventura es tu escape (a cualquier edad)
+      if(!o.some(x=>x.special) && S.f1Seasons>=2 && (Object.keys(S.burned).length+Object.keys(S.neverHire).length)>=2 && o.filter(x=>x.team&&x.team.cat==="F1").length<=2){
+        o.push({special:true, em:"🌎", name:L("Buscar aventura fuera de la F1","Seek adventure outside F1"), sub:L("Has quemado demasiados puentes… quizá tu sitio esté en otra parte","You've burned too many bridges… maybe your place is elsewhere"), color:"#0ea5e9", onClick:()=>chooseAdventureSeries()});
+      }
     }
     if(!o.length){
       setDecision(L("Sin ofertas","No offers"),L("Demasiados puentes quemados. El paddock tiene memoria.","Too many bridges burned. The paddock has a long memory."));
@@ -2639,6 +2646,8 @@ function nextOffers(){
         const other={...stars[1-m], skill:Math.round(rnd(78,81)), ceil:88, titles:0};
         S.dpool.push(mate, other); S.seats.APXGP=[mate, other];
       }
+      // APXGP ocupa una plaza: dejamos como mucho 2 ofertas de equipo (renovación + otra) para que con APXGP sean 3, no 4
+      while(o.filter(x=>x.team).length>2){ let done=false; for(let i=o.length-1;i>=0;i--){ if(o[i].team && !/Renovaci|Renewal/.test(o[i].note||"")){ o.splice(i,1); done=true; break; } } if(!done) break; }
       o.push({team:APXGP,note:L("«Una última oportunidad» 🎬","«One last shot» 🎬"),role:"1"});
       sub+=L(" Y hay una llamada inesperada: un proyecto loco con olor a película."," And there's an unexpected call: a crazy project straight out of a movie.");
     }
