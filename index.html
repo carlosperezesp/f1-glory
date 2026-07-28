@@ -911,7 +911,7 @@ function startCareer(){
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
     f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
-    bigInjuryDone:false, feuds:[], respects:[], _incRival:null,
+    bigInjuryDone:false, feuds:[], respects:[], _incRival:null, fiaTitleCount:0, fiaTitlePending:null, _fiaSc:null,
     pendingEvents:[], missRaces:0, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
@@ -1377,6 +1377,47 @@ const CAR=n=>{ if(S.f1perf[S.team.name]!=null) S.f1perf[S.team.name]=Math.max(60
 // desenlace ponderado al azar: roll([peso,fn],[peso,fn],...) → distinto cada partida
 function roll(...outs){ let tot=outs.reduce((s,o)=>s+o[0],0), x=Math.random()*tot; for(const o of outs){ if((x-=o[0])<0) return o[1](); } return outs[outs.length-1][1](); }
 
+/* 🏛️ dilema de la FIA: escenarios que rotan, cada uno con SUS opciones. Desenlaces compartidos por postura. */
+const fiaSupport=()=>roll(
+  [4,()=>(VAL(1.08),L("La FIA agradece tu respaldo institucional: te ganas su favor de cara al futuro. +fama","The FIA values your institutional backing: you earn its goodwill going forward. +fame"))],
+  [3,()=>(VAL(.9),L("Quedas como el pelota del sistema; parte de la afición te silba. −fama","You come off as the establishment's lackey; part of the crowd boos you. −fame"))],
+  [3,()=>L("Tu opinión pasa desapercibida entre el ruido. Sin cambios.","Your take gets lost in the noise. No change.")]);
+const fiaOppose=()=>roll(
+  [4,()=>(VAL(1.2),L("Te conviertes en la voz de los pilotos: la afición te idolatra. +20% fama","You become the drivers' voice: the fans idolise you. +20% fame"))],
+  [3,()=>(VAL(.85),L("La FIA te abre expediente y te multa; malas portadas. −fama","The FIA opens a case and fines you; bad headlines. −fame"))],
+  [3,()=>L("Mucho ruido, pero en una semana nadie se acuerda. Sin cambios.","A lot of noise, but a week later nobody remembers. No change.")]);
+const fiaNeutral=()=>roll(
+  [5,()=>L("Te mantienes por encima del barro y a lo tuyo. Sin cambios.","You rise above the mud and focus on your job. No change.")],
+  [2,()=>(VAL(.93),L("Te tachan de tibio y sin carácter. −fama leve","You're branded lukewarm and spineless. slight −fame"))]);
+const fiaOpt=(a,b,c)=>[{l:()=>a,r:fiaSupport},{l:()=>b,r:fiaOppose},{l:()=>c,r:fiaNeutral}];
+// ¿candidato al título de verdad? (para que el fallo que decide el mundial no salga siendo 20º)
+function fiaContender(){ const lp=S.seasons.at(-1)?.pos??20; return lp<=3 && S.ovr>=84 && (S.f1perf[S.team?.name]??70)>=84; }
+const FIA_SCENARIOS=[
+  { sit:()=>{ const win=ch(.4); if(win){ S.wins++; S.podiums++; } return win
+      ? L("Un coche de seguridad de gestión dudosa en la última vuelta te REGALA la victoria: te la llevas con asterisco. 🏆","A dubiously-managed safety car on the last lap HANDS you the win: you take it with an asterisk. 🏆")
+      : L("Un coche de seguridad de gestión dudosa en la última vuelta te ARREBATA la victoria que ya tenías en el bolsillo.","A dubiously-managed safety car on the last lap ROBS you of a win you already had in the bag."); },
+    opts:()=>fiaOpt(L("Las reglas son las reglas","Rules are rules"),L("Montar el pollo por la radio","Kick off on the radio"),L("Morderte la lengua","Bite your tongue")) },
+  { sit:()=>L("Una bandera roja aparece en el momento más conveniente y regala neumáticos nuevos justo a quien iba a perder.","A red flag appears at the most convenient moment and gifts fresh tyres to whoever was about to lose."),
+    opts:()=>fiaOpt(L("Es parte del juego","It's part of the game"),L("Denunciar el paripé en rueda de prensa","Call out the farce in the press"),L("Ni entrar al trapo","Don't take the bait")) },
+  { sit:()=>L("Dirección de carrera cierra el pit-lane a destiempo: arruina a media parrilla mientras la otra media se libra por segundos.","Race control closes the pit lane at the wrong moment: it wrecks half the grid while the other half escapes by seconds."),
+    opts:()=>fiaOpt(L("Tragar con la norma","Swallow the rule"),L("Poner el grito en el cielo","Raise the roof"),L("Mirar para otro lado","Look the other way")) },
+  { sit:()=>L("Dos comisarios juzgan el mismo adelantamiento con criterios diferentes el mismo día. Nadie entiende el criterio.","Two stewards judge the same overtake by different criteria on the same day. Nobody understands the standard."),
+    opts:()=>fiaOpt(L("Confiar en que lo pulirán","Trust they'll fix it"),L("Exigir criterios claros y en público","Demand clear rules, publicly"),L("No meterte en el barro","Stay out of the mud")) },
+  { sit:()=>L("Un toque 50-50 con un rival y los comisarios te cargan la sanción a TI. Medio paddock lo ve justo; medio, una injusticia.","A 50-50 clash with a rival and the stewards pin the penalty on YOU. Half the paddock calls it fair; half, an injustice."),
+    opts:()=>fiaOpt(L("Aceptarla como un profesional","Take it like a pro"),L("Estallar contra los comisarios","Explode at the stewards"),L("Tragar y callar","Grin and bear it")) },
+  { sit:()=>L("En medios y redes se comenta que los coches nuevos dejan cada vez menos sitio al talento: más apretar botones que pilotar. Veteranos y afición rezongan.","Media and social buzz says the new cars leave less room for talent: more button-pushing than driving. Veterans and fans grumble."),
+    opts:()=>fiaOpt(L("Defender la evolución del deporte","Defend the sport's evolution"),L("Criticar que matan el arte de pilotar","Blast them for killing the art of driving"),L("No pronunciarte","Say nothing")) },
+  { sit:()=>L("La FIA prohíbe a mitad de temporada un «invento» que daba ventaja a los coches punteros. Medio paddock lo celebra; la otra mitad grita tongo.","Mid-season, the FIA bans a «device» that gave the top cars an edge. Half the paddock cheers; the other half cries foul."),
+    opts:()=>fiaOpt(L("Aplaudir la igualdad","Applaud the level field"),L("Denunciar el cambio de reglas a mitad de año","Blast changing the rules mid-year"),L("No tomar partido","Take no side")) },
+  { sit:()=>L("La FIA congela el desarrollo de motores para «ahorrar costes». Unos lo ven justo; los que iban por detrás, una condena.","The FIA freezes engine development to «cut costs». Some call it fair; those catching up call it a life sentence."),
+    opts:()=>fiaOpt(L("Aceptar el congelado","Accept the freeze"),L("Cargar contra la falta de competencia","Rail against killing the fight"),L("Quedarte al margen","Stay on the sidelines")) },
+  // 🏆 el fallo que DECIDE EL MUNDIAL: solo si eres candidato de verdad y máx 2 por partida. Fuerza el resultado del año.
+  { titleDecider:true, sit:()=>{ const win=ch(.5); S.fiaTitlePending=win?"win":"lose"; S.fiaTitleCount=(S.fiaTitleCount||0)+1; return win
+      ? L("El mundial se decide en la última carrera y un fallo de la FIA inclina la balanza… esta vez de TU lado. Vas camino de ser CAMPEÓN. 🏆","The title comes down to the final race and an FIA ruling tips the scales… this time in YOUR favour. You're on course to be CHAMPION. 🏆")
+      : L("El mundial se decide en la última carrera y un fallo de la FIA inclina la balanza… en tu contra. Te quedas SUBCAMPEÓN por una decisión que dolerá siempre.","The title comes down to the final race and an FIA ruling tips the scales… against you. You end up RUNNER-UP by a call that will always sting."); },
+    opts:()=>fiaOpt(L("Aceptar el veredicto","Accept the verdict"),L("Denunciar el atraco al mundo entero","Denounce the robbery to the world"),L("Callar y tragarte la rabia","Say nothing and swallow the rage")) },
+];
+
 const DILEMAS=[
  {id:"testsecreto",stage:"jr",t:()=>L("Test secreto","Secret test"),d:()=>L("Un equipo rival te ofrece probar su coche a escondidas. Si tu equipo se entera, habrá bronca.","A rival team offers you a secret test in their car. If your team finds out, there'll be trouble."),opts:[
    {l:()=>L("Ir a escondidas","Go in secret"),r:()=>ch(.6)?(OVR(1),L("Aprendes muchísimo de otro coche. +1 OVR","You learn a huge amount from another car. +1 OVR")):(VAL(.8),L("Tu equipo se entera. Te señalan como desleal. Fama -20%","Your team finds out. You're branded disloyal. Fame -20%"))},
@@ -1735,25 +1776,15 @@ const DILEMAS=[
      [5,()=>(CAR(1),L("Enterráis el hacha por el bien del equipo: la tregua funciona. +1 coche","You bury the hatchet for the team's sake: the truce works. +1 car"))],
      [4,()=>(CAR(-1),L("Choque de egos: el box arde y el rendimiento se resiente. −1 coche","Ego clash: the garage ignites and performance suffers. −1 car"))],
      [2,()=>L("Convivencia tensa, pero sin sangre. Sin cambios.","An uneasy coexistence, but no blood. No change.")])}]},
- // 🏛️ la FIA toma una decisión polémica (rota entre varios escenarios) y el paddock se parte; tú eliges postura
+ // 🏛️ la FIA toma una decisión polémica (rota entre FIA_SCENARIOS, cada uno con sus opciones) y el paddock se parte
  {id:"falloFIA",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("El fallo de la FIA","The FIA's ruling"),
-  d:()=>{ const sc=[
-    L("La FIA prohíbe a mitad de temporada un «invento» que daba ventaja a los coches punteros. Medio paddock lo celebra; la otra mitad grita tongo.","Mid-season, the FIA bans a «device» that gave the top cars an edge. Half the paddock cheers; the other half cries foul."),
-    L("Una decisión confusa de dirección de carrera en la última vuelta cambia quién gana el mundial. Medio paddock aplaude, medio lo llama una vergüenza.","A confusing race-control call on the last lap changes who wins the title. Half the paddock applauds, half calls it a disgrace."),
-    L("La FIA congela el desarrollo de motores para «ahorrar costes». Unos lo ven justo; los que iban por detrás, una condena.","The FIA freezes engine development to «cut costs». Some call it fair; those catching up call it a life sentence."),
-    L("Nuevas reglas de límites de pista reparten sanciones a diestro y siniestro y deciden carreras desde la sala de control. El paddock se parte en dos.","New track-limits rules hand out penalties left and right and decide races from the control room. The paddock splits in two.")
-  ]; return sc[irnd(0,sc.length-1)]+L(" ¿Qué postura tomas?"," What stance do you take?"); },opts:[
-   {l:()=>L("Apoyar la decisión","Back the ruling"),r:()=>roll(
-     [4,()=>(VAL(1.08),L("La FIA agradece tu respaldo institucional: te ganas su favor de cara al futuro. +fama","The FIA values your institutional backing: you earn its goodwill going forward. +fame"))],
-     [3,()=>(VAL(.9),L("Quedas como el pelota del sistema; parte de la afición te silba. −fama","You come off as the establishment's lackey; part of the crowd boos you. −fame"))],
-     [3,()=>L("Tu opinión pasa desapercibida entre el ruido. Sin cambios.","Your take gets lost in the noise. No change.")])},
-   {l:()=>L("Cargar contra la FIA","Blast the FIA"),r:()=>roll(
-     [4,()=>(VAL(1.2),L("Te conviertes en la voz de los pilotos: la afición te idolatra. +20% fama","You become the drivers' voice: the fans idolise you. +20% fame"))],
-     [3,()=>(VAL(.85),L("La FIA te abre expediente y te multa; malas portadas. −fama","The FIA opens a case and fines you; bad headlines. −fame"))],
-     [3,()=>L("Mucho ruido, pero en una semana nadie se acuerda. Sin cambios.","A lot of noise, but a week later nobody remembers. No change.")])},
-   {l:()=>L("No mojarte","Stay out of it"),r:()=>roll(
-     [5,()=>L("Te mantienes por encima del barro y a lo tuyo. Sin cambios.","You rise above the mud and focus on your job. No change.")],
-     [2,()=>(VAL(.93),L("Te tachan de tibio y sin carácter. −fama leve","You're branded lukewarm and spineless. slight −fame"))])}]},
+  d:()=>{ const pool=FIA_SCENARIOS.filter(sc=>!sc.titleDecider || (fiaContender() && (S.fiaTitleCount||0)<2));
+    const sc=pool[irnd(0,pool.length-1)]; S._fiaSc=sc; S._fiaOpts=sc.opts();
+    return sc.sit()+L(" ¿Qué postura tomas?"," What stance do you take?"); },
+  opts:[
+   {l:()=>S._fiaOpts?S._fiaOpts[0].l():"", r:()=>S._fiaOpts?S._fiaOpts[0].r():""},
+   {l:()=>S._fiaOpts?S._fiaOpts[1].l():"", r:()=>S._fiaOpts?S._fiaOpts[1].r():""},
+   {l:()=>S._fiaOpts?S._fiaOpts[2].l():"", r:()=>S._fiaOpts?S._fiaOpts[2].r():""}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -2207,7 +2238,9 @@ function simF1(row,st){
     row.events.push(crownMsgAfterWin("monaco", base));
   }
   const standings=[...grid].sort((a,b)=>b.pts-a.pts);
-  const pos=1+standings.findIndex(d=>d.isP);
+  let pos=1+standings.findIndex(d=>d.isP);
+  // 🏛️ un fallo de la FIA decidió el título este año (raro, máx 2/partida): fuerza 1º (campeón) o 2º (subcampeón)
+  if(S.fiaTitlePending){ pos = S.fiaTitlePending==="win"?1:2; S.fiaTitlePending=null; row.fiaTitle=true; }
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
   // al debutar en F1, fotografiamos los títulos de los rivales: así "tu era" se mide
   // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
@@ -2236,11 +2269,11 @@ function simF1(row,st){
     c:row.top3c, cmv:constrRank.slice(0,3).map((e,i)=>mvC(e[0],i+1)),
     myPos:pos, myConstr:constrPos, myPosMv:mvD("__ME__",pos), myConstrMv:mvC(myTeam,constrPos)};
   if(row.apxWin) row.events.push(L("🎬 Victoria con APXGP: la remontada digna de Hollywood.","🎬 A win with APXGP: a comeback worthy of Hollywood."));
-  if(pos===1){ S.titles.f1++; row.events.push(L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
+  if(pos===1){ S.titles.f1++; row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️"):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
   else {
     const champ=standings[0];
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
-    if(pos===2){S.subcamp++; row.events.push(L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory."));}
+    if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️"):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory."));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship."));}
   // EFECTO PILOTO: un piloto de élite empuja el proyecto hacia arriba año tras año.
