@@ -915,7 +915,7 @@ function startCareer(){
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, forceMove:false, apxShown:false,
     seats:{}, dpool:[], rookies:[...ROOKIE_POOL], burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
-    advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, monacoWins:0,
+    advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
     regReg:2046+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
   };
@@ -1204,6 +1204,7 @@ const SERIES={
   dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
   formulae: {name:"Fórmula E", nameEn:"Formula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
   brasil:   {name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
+  superformula:{name:"Super Fórmula", nameEn:"Super Formula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1."},
 };
 function serName(k){ const s=SERIES[k]||{}; return L(s.name, s.nameEn||s.name); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
@@ -1228,7 +1229,7 @@ const NAT_AFFINITY={
   "Austria":{teams:["Red Bull"],series:[]},
   "Estados Unidos":{teams:["Haas","Cadillac"],series:["indy","nascar"]},
   "Francia":{teams:["Alpine"],series:["lemans"]},
-  "Japón":{teams:["Racing Bulls"],series:["supercars"]},
+  "Japón":{teams:["Racing Bulls"],series:["superformula"]},
   "Australia":{teams:[],series:["supercars"]},
   "México":{teams:["Cadillac"],series:["nascar"]},
   "Brasil":{teams:[],series:["indy","brasil"]},
@@ -1345,6 +1346,7 @@ function signContract(o){
   S.yearsAtTeam = o.team.cat==="F1" ? (sameSeat ? (S.yearsAtTeam||1)+1 : 1) : 0;
   if(o.team.cat==="F1"){
     occupySeat(o.team.name);
+    S.youngDetour=false; // llegaste a la F1: la vía joven de escape ya cumplió su papel
     const mateName=teammateOf(o.team.name).name;
     // renovación con el mismo compañero → conservar el rol; si no, recalcular
     if(!(sameSeat && S.roleMate===mateName && S.role)) S.role=o.role||roleFor(o.team.name);
@@ -1955,9 +1957,16 @@ function simSeason(){
   // el techo real ronda 88-93; solo un talento excepcional roza el 95.
   let g;
   if(S.cat==="ADV"){
-    // fuera de la F1 pierdes punta: tu OVR se OXIDA (menos si eres técnico/versátil)
     const sr=SERIES[S.advSeries];
-    g = -(sr?sr.decay:1) - (S.age>=34?0.6:0) + (sel.style==="tecnico"?0.3:0) + st.growth*.2;
+    if(S.youngDetour && S.age<=28){
+      // 🌏 joven curtiéndose en Super Fórmula/Indy/FE: NO te oxidas, sigues creciendo (así te ganas el billete a la F1)
+      const la=S.adventures.at(-1);
+      const good = la && (la.win || la.champPos<=3);
+      g = rnd(1.0,2.3) + (good?.8:0) + st.growth*.35;
+    } else {
+      // fuera de la F1 pierdes punta: tu OVR se OXIDA (menos si eres técnico/versátil)
+      g = -(sr?sr.decay:1) - (S.age>=34?0.6:0) + (sel.style==="tecnico"?0.3:0) + st.growth*.2;
+    }
   } else {
     if(S.age<=19) g=rnd(2.5,5.5);
     else if(S.age<=23) g=rnd(1.6,3.6);
@@ -2419,8 +2428,51 @@ function simAdventure(row){
 // probabilidad de que la F1 te vuelva a llamar: fama + OVR − años fuera − edad
 function returnChance(){
   const fameT=Math.min(6, fameScore()/180);
+  if(S.youngDetour){
+    // 🌏 vía joven: esto es F1-Glory, la F1 acaba tirando… pero solo si te has DESARROLLADO de verdad (el OVR manda:
+    // no te llaman siendo un farolillo rojo). Brillar acelera el billete. Si te haces mayor sin madurar, la puerta se cierra.
+    const la=S.adventures.at(-1);
+    const resBoost = !la?0 : la.win?0.30 : la.champPos===1?0.34 : la.champPos<=3?0.16 : la.champPos<=6?0.06 : -0.04;
+    const c = 0.08 + Math.max(0,S.ovr-73)*0.095 + resBoost + fameT*0.04 + Math.min(0.12, S.advYears*0.04) - Math.max(0,S.age-28)*0.06;
+    return Math.max(0.03, Math.min(0.9, c));
+  }
   const c = 0.42 + (S.ovr-76)*0.04 + fameT*0.05 - S.advYears*0.06 - Math.max(0,S.age-36)*0.06;
   return Math.max(0.08, Math.min(0.92, c));
+}
+// 🌏 escape joven: te atascas en la escalera → Super Fórmula/IndyCar/Fórmula E a ganarte la vuelta a la F1
+function youngEscapeOption(){
+  return {special:true, em:"🌏", name:L("Buscarte la vida en otra categoría","Make your name in another series"),
+    sub:L("Super Fórmula, IndyCar o Fórmula E… y ganarte el salto a la F1","Super Formula, IndyCar or Formula E… and earn your leap to F1"),
+    color:"#6d28d9", onClick:()=>chooseYoungSeries()};
+}
+function chooseYoungSeries(){
+  setDecision(L("🌏 Buscarte la vida","🌏 Make your name elsewhere"),L("La escalera a la F1 se te ha atascado. En vez de esperar sentado, te vas a otra categoría a competir de verdad. Brilla —o al menos crece y rueda— y la F1 puede acabar llamándote. Pero es una apuesta: si no cuaja, tu sueño puede quedarse por el camino.","The ladder to F1 has stalled. Instead of waiting around, you head to another series to race for real. Shine —or at least grow and rack up laps— and F1 may end up calling. But it's a gamble: if it doesn't click, your dream may slip away."));
+  $("decRecap").style.display="none";
+  const young=["superformula","indy","formulae"];
+  const fav=natAff().series.filter(k=>young.includes(k));
+  const chosen=[];
+  if(fav.length && ch(.7)) chosen.push(fav[irnd(0,fav.length-1)]);
+  const rest=young.filter(k=>!chosen.includes(k));
+  while(chosen.length<3 && rest.length) chosen.push(rest.splice(irnd(0,rest.length-1),1)[0]);
+  const opts=chosen.map(k=>{ const s=SERIES[k]; return {special:true, em:s.em, name:serName(k),
+    sub:serSub(k), color:s.col, onClick:()=>startYoungDetour(k)}; });
+  opts.push({special:true, em:"🏁", name:L("Rendirse y retirarse","Give up and retire"), sub:L("Colgar el casco","Hang up your helmet"), color:"#71717c", onClick:endCareer});
+  renderSpecialOptions(opts);
+}
+function startYoungDetour(key){
+  S.youngDetour=true;
+  startAdventure(key);
+}
+// callejón sin salida en la escalera: los buenos aún tienen la vía de escape; los demás cuelgan el casco
+function stuckDeadEnd(){
+  if(S.ovr>=63 && ch(0.7)){
+    setDecision(L("🚧 La escalera se ha cerrado","🚧 The ladder has closed"),L("Los asientos que te acercan a la F1 ya no llegan. Te queda una bala: irte a otra categoría y ganarte el salto desde fuera… o colgar el casco.","The seats that lead toward F1 aren't coming anymore. One bullet left: head to another series and earn your leap from the outside… or hang up your helmet."));
+    $("decRecap").style.display="none";
+    renderSpecialOptions([
+      {special:true, em:"🌏", name:L("Buscarte la vida fuera","Make your name elsewhere"), sub:L("Super Fórmula, IndyCar o Fórmula E","Super Formula, IndyCar or Formula E"), color:"#6d28d9", onClick:()=>chooseYoungSeries()},
+      {special:true, em:"🏁", name:L("Retirarse","Retire"), sub:L("Se acabó el sueño de la F1","The F1 dream is over"), color:"#71717c", onClick:endCareer}
+    ]);
+  } else washedOut();
 }
 function chooseAdventureSeries(){
   setDecision(L("🌎 ¿Dónde te lanzas?","🌎 Where do you go?"),L("Elige tu aventura fuera de la Fórmula 1. Cada mundo es distinto… y ninguna victoria está garantizada.","Choose your adventure outside Formula 1. Each world is different… and no win is guaranteed."));
@@ -2456,9 +2508,10 @@ function advOffers(){
         : ar.champPos<=3 ? L(`🥉 ${ar.champPos}º del campeonato`,`🥉 P${ar.champPos} in the championship`)
         : L(`${ar.champPos}º del campeonato`,`P${ar.champPos} in the championship`); }
   setDecision(`${sr.em} `+(resTxt||L("Tu vida fuera de la F1","Your life outside F1")), `${nm} ${yearNow()-1} · `+L("¿Y ahora qué?","What now?"));
+  const first = S.youngDetour && (S.f1Seasons||0)===0; // aún no ha pisado la F1: es un SALTO, no un regreso
   const opts=[
-    {special:true, em:sr.em, name:L("Seguir en ","Stay in ")+nm, sub:L("Otra temporada de aventura","Another adventure season"), color:sr.col, onClick:()=>startSeasonRun()},
-    {special:true, em:"🔙", name:L("Intentar volver a la F1","Try to return to F1"), sub: back>=.6?L("Los equipos te tienen en el radar","Teams have you on their radar"):back>=.3?L("Habrá que convencer a alguien","You'll have to convince someone"):L("Difícil: llevas tiempo fuera y algo oxidado","Tough: you've been away a while and a bit rusty"), color:"#e10600", onClick:()=>attemptReturn()},
+    {special:true, em:sr.em, name:L("Seguir en ","Stay in ")+nm, sub: first?L("Otro año para ganarte la F1","Another year to earn your F1 shot"):L("Otra temporada de aventura","Another adventure season"), color:sr.col, onClick:()=>startSeasonRun()},
+    {special:true, em:"🔙", name: first?L("Dar el salto a la F1","Make the leap to F1"):L("Intentar volver a la F1","Try to return to F1"), sub: back>=.6?L("Los equipos te tienen en el radar","Teams have you on their radar"):back>=.3?L("Habrá que convencer a alguien","You'll have to convince someone"): first?L("Difícil aún: sigue creciendo y dando la cara","Tough still: keep growing and showing up"):L("Difícil: llevas tiempo fuera y algo oxidado","Tough: you've been away a while and a bit rusty"), color:"#e10600", onClick:()=>attemptReturn()},
   ];
   if(S.appetite>=1) opts.push({special:true, em:"🌎", name:L("Probar otra competición","Try another series"), sub:L("El gusanillo aventurero","The adventurer's itch"), color:"#6d28d9", onClick:()=>chooseAdventureSeries()});
   opts.push({special:true, em:"🏁", name:L("Retirarse","Retire"), sub:L("Colgar el casco como aventurero","Hang up your helmet as an adventurer"), color:"#71717c", onClick:endCareer});
@@ -2482,7 +2535,10 @@ function returnF1Offers(){
   cands=feudFilter(cands.filter(t=>!S.burned[t.name]&&!S.neverHire[t.name]&&!(t.name==="Racing Bulls"&&S.age>=32)));
   if(!cands.length) cands=sorted.filter(t=>!S.neverHire[t.name]).slice(-4);
   const o=[]; pickN(cands,Math.min(3,cands.length)).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
-  setDecision(L("🔙 ¡De vuelta en la Fórmula 1!","🔙 Back in Formula 1!"),L("Un equipo apuesta por tu experiencia y tu tirón mediático. Elige tu regreso:","A team bets on your experience and star power. Choose your comeback:"));
+  const leap = S.youngDetour && (S.f1Seasons||0)===0;
+  setDecision(leap?L("🏎️ ¡La F1 te abre la puerta!","🏎️ F1 opens the door!"):L("🔙 ¡De vuelta en la Fórmula 1!","🔙 Back in Formula 1!"),
+    leap?L("Tu grind fuera de la escalera dio fruto: un equipo apuesta por ti para dar el salto. Elige tu debut:","Your grind outside the ladder paid off: a team bets on you for the leap. Choose your debut:")
+        :L("Un equipo apuesta por tu experiencia y tu tirón mediático. Elige tu regreso:","A team bets on your experience and star power. Choose your comeback:"));
   $("decRecap").style.display="none";
   renderOffers(o,false);
 }
@@ -2547,11 +2603,12 @@ function nextOffers(){
       const stayOK3 = yrsHere<2 && !wonHere && S.age<=22;
       juniorOffers(F2_TEAMS,"F2").slice(0, stayOK3?2:3).forEach(x=>o.push(x));
       if(stayOK3){ o.push(stayOffer(F3_TEAMS,"F3")); sub+=L(" O quédate un año más en F3 a por el título.","Or stay one more year in F3 to go for the title."); }
-    } else if(S.age>=24){ washedOut(); return; }
+    } else if(S.age>=24){ stuckDeadEnd(); return; }
     else {
       title=L("Otro año en F3","Another year in F3");
       sub=L("Aún no es suficiente. Necesitas crecer para subir.","Not enough yet. You need to grow to move up.");
       juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
+      if(S.age>=20&&ch(.4)){ o.push(youngEscapeOption()); sub+=L(" O prueba suerte en otra categoría y gánate el salto a la F1.","Or try another series and earn your leap to F1."); }
     }
   }
   else if(S.cat==="FR"){ // Fórmula Regional: sube a F2 (sin salto directo a F1 — eso es exclusivo de la F3)
@@ -2561,11 +2618,12 @@ function nextOffers(){
       const stayOKfr = yrsHere<2 && !wonHere && S.age<=22;
       juniorOffers(F2_TEAMS,"F2").slice(0, stayOKfr?2:3).forEach(x=>o.push(x));
       if(stayOKfr){ o.push(stayOffer(FRECA_TEAMS,"FR")); sub+=L(" O quédate un año más en la Regional a por el título.","Or stay one more year in Regional to go for the title."); }
-    } else if(S.age>=24){ washedOut(); return; }
+    } else if(S.age>=24){ stuckDeadEnd(); return; }
     else {
       title=L("Otro año en Fórmula Regional","Another year in Formula Regional");
       sub=L("Aún no es suficiente. Necesitas crecer para subir.","Not enough yet. You need to grow to move up.");
       juniorOffers(FRECA_TEAMS,"FR").forEach(x=>o.push(x));
+      if(S.age>=20&&ch(.4)){ o.push(youngEscapeOption()); sub+=L(" O prueba suerte en otra categoría y gánate el salto a la F1.","Or try another series and earn your leap to F1."); }
     }
   }
   else if(S.cat==="F2"){
@@ -2585,11 +2643,12 @@ function nextOffers(){
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
       pick(F1_TEAMS, stayOK2?2:3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
       if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(" O quédate un año más en F2 a por el título.","Or stay one more year in F2 to go for the title."); }
-    } else if(S.age>=26){ washedOut(); return; }
+    } else if(S.age>=26){ stuckDeadEnd(); return; }
     else {
       title=L("Otro año en F2","Another year in F2");
       sub=L("Los asientos de F1 no llegan todavía. ¿Coche ganador o seguir desarrollándote?","The F1 seats aren't coming yet. Winning car or keep developing?");
       juniorOffers(F2_TEAMS,"F2").forEach(x=>o.push(x));
+      if(S.age>=21&&ch(.5)){ o.push(youngEscapeOption()); sub+=L(" O da el salto a otra categoría (Super Fórmula, IndyCar, FE) y gánate la F1 desde fuera.","Or leap to another series (Super Formula, IndyCar, FE) and earn F1 from the outside."); }
     }
   }
   else if(S.cat==="TEST"){
@@ -2613,6 +2672,7 @@ function nextOffers(){
       title=L("Otro año de probador","Another year as reserve");
       sub=L("El asiento titular se resiste. Sigues de reserva: FP1, simulador y alguna carrera si surge.","The race seat is elusive. You stay a reserve: FP1, simulator and the odd race if it comes up.");
       pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
+      if(S.age>=22&&S.age<=26&&ch(.45)){ o.push(youngEscapeOption()); sub+=L(" O cansado de esperar, vete a competir fuera y gánate el salto.","Or, tired of waiting, go race elsewhere and earn your leap."); }
     }
   }
   else { // F1 titular
@@ -2862,6 +2922,18 @@ function renderCareerMap(){
   });
   el.innerHTML=html;
 }
+// serie fuera de la F1 en la que dejaste más huella (más títulos; si empatan, donde más corriste)
+function mainAdvSeries(){
+  const titles={}, raced={};
+  (S.adventures||[]).forEach(a=>{ raced[a.series]=(raced[a.series]||0)+1; if(a.champPos===1) titles[a.series]=(titles[a.series]||0)+1; });
+  const top=obj=>{ let b=null,bn=0; for(const k in obj){ if(obj[k]>bn){bn=obj[k];b=k;} } return b; };
+  return top(titles) || top(raced);
+}
+// ¿ganaste alguna joya mítica (Indy 500, Le Mans…)? devuelve su nombre o null
+function bestMarqueeWin(){
+  let best=null; Object.entries(S.advWins||{}).forEach(([k,n])=>{ if(n>0 && !best) best=serMarquee(k); });
+  return best;
+}
 
 function endCareer(){
   S.retired=true;
@@ -2924,6 +2996,9 @@ function endCareer(){
   else if(S.wins>1){legacy=L("GANADOR DE GRANDES PREMIOS","GRAND PRIX WINNER");verdict=L(`Ganaste ${S.wins} carreras y escuchaste tu himno desde lo más alto del podio. Muy pocos en la historia pueden decir lo mismo.`,`You won ${S.wins} races and heard your anthem from the top of the podium. Very few in history can say the same.`);}
   else if(S.wins===1){legacy=L("GANADOR DE UN GRAN PREMIO","GRAND PRIX WINNER");verdict=L("Ganaste una carrera: te subiste a lo más alto del podio y escuchaste tu himno. Ese día es tuyo para siempre y nadie te lo quita.","You won a race: you stood on the top step and heard your anthem. That day is yours forever and nobody can take it.");}
   else if(S.f1Seasons>0){legacy=L("PILOTO DE FÓRMULA 1","FORMULA 1 DRIVER");verdict=L("Llegaste donde solo llegan 20 personas en el planeta. Eso ya te hace extraordinario.","You reached where only 20 people on the planet get to. That alone makes you extraordinary.");}
+  else if((S.advTitles||0)>=3){ const s=serName(mainAdvSeries()); legacy=L("LEYENDA FUERA DE LA F1","LEGEND BEYOND F1");verdict=L(`La F1 nunca te llamó del todo… pero te convertiste en un mito de ${s}. ${S.advTitles} títulos lejos de sus focos: tu nombre es leyenda, aunque jamás sonara en Mónaco.`,`F1 never quite called… but you became a myth of ${s}. ${S.advTitles} titles far from its spotlight: your name is legend, even if it never echoed at Monaco.`);}
+  else if((S.advTitles||0)>=1){ const s=serName(mainAdvSeries()); legacy=L("CAMPEÓN LEJOS DE LA F1","CHAMPION AWAY FROM F1");verdict=L(`Nunca llegaste a la F1, pero conquistaste ${s}. No todos los reyes reinan en el mismo sitio — y tú reinaste en el tuyo.`,`You never reached F1, but you conquered ${s}. Not every king reigns in the same place — and you reigned in yours.`);}
+  else if(S.adventures && S.adventures.length){ const s=serName(mainAdvSeries()); const mq=bestMarqueeWin(); legacy=L("PROFESIONAL DEL VOLANTE","A RACING PRO");verdict=L(`La F1 se te resistió, pero te ganaste la vida compitiendo al máximo nivel en ${s}. Una carrera de verdad, lejos de los focos.`,`F1 eluded you, but you earned your living racing at the top level in ${s}. A real career, away from the spotlight.`)+(mq?L(` Y hasta te llevaste una joya: ${mq}.`,` And you even grabbed a jewel: ${mq}.`):"");}
   else {legacy=L("PROMESA DEL AUTOMOVILISMO","MOTORSPORT PROSPECT");verdict=L("La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.","F1 stayed out of reach, but the track was your home. Not every dream ends in Monaco, and they're worth it all the same.");}
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=L(" Y sí: lo de APXGP fue tan de película como suena. 🎬"," And yes: the APXGP thing was as cinematic as it sounds. 🎬");
   $("endLegacy").textContent=legacy; S.legacyTxt=legacy;
