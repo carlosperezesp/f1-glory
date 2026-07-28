@@ -1366,7 +1366,12 @@ function signContract(o){
     const lastPos=S.seasons.at(-1)?.pos??20;
     const good=lastPos<=5;
     const champ=(S.titles.f1||0)>0;
-    if(ch(champ?.15 : good?.5:.35)){
+    // los equipos TOP se enfadan por orgullo si te vas (tienen recursos para atraer a otros); los MALOS perdonan
+    const perf=S.f1perf[prev.name]??75;
+    const burnP = perf>=85 ? (champ?.35 : good?.55:.4)   // top: orgullo herido
+                : perf<=76 ? (champ?.05 : good?.2:.15)    // malo: te perdonan
+                :            (champ?.15 : good?.4:.3);     // medio
+    if(ch(burnP)){
       S.burned[prev.name]=S.age;
       S.pendingEvents.push(good
         ? L("🚪 En "+prev.name+" no perdonan tu marcha siendo su líder: puertas cerradas.","🚪 "+prev.name+" won't forgive their leader walking out: doors closed.")
@@ -3095,7 +3100,7 @@ function drawCareerCard(){
   const champByTeam={}; seas.filter(s=>s.cat==="F1"&&s.pos===1).forEach(s=>{ const n=s.team&&s.team.name; if(n){ (champByTeam[n]=champByTeam[n]||[]).push(s.year); } });
   const champList=Object.entries(champByTeam);
   const f1Teams=[...new Set(seas.filter(s=>s.cat==="F1").map(s=>s.team&&s.team.name).filter(Boolean))];
-  const nRows=Math.min(4,champList.length);
+  const nRows=Math.min(8,champList.length); // hasta 8 equipos campeones (una leyenda de 7+ escuderías merece verse entera)
   const BLOCK_TOP=845, ROW_H=66;
   const blockBottom = champList.length ? (BLOCK_TOP+52 + (nRows-1)*ROW_H + 30) : (f1Teams.length? BLOCK_TOP+75 : 800);
   const H = blockBottom + 215;
@@ -3122,14 +3127,16 @@ function drawCareerCard(){
   const r2=[[L("🏆 MUNDIALES","🏆 TITLES"),S.titles.f1,S.titles.f1>0],[L("🏭 EQUIPOS","🏭 TEAMS"),S.titles.constr,S.titles.constr>0],[L("🥈 SUBCAMP.","🥈 2ND"),S.subcamp,0],[L("PUNTOS","POINTS"),S.ptsF1,0]];
   r1.forEach((s,i)=>cell(M+i*(CW+GAP),440,CW,CH,s[1],s[0],s[2]));
   r2.forEach((s,i)=>cell(M+i*(CW+GAP),575,CW,CH,s[1],s[0],s[2]));
-  const shelf=[]; for(let i=0;i<S.titles.f1;i++)shelf.push("🏆"); for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
-  if(shelf.length){ x.fillStyle="#fff"; x.font="54px Arial, sans-serif"; x.textAlign="center"; x.fillText(shelf.slice(0,12).join(" "), W/2, 775); }
+  // estante de trofeos: TODOS los mundiales de piloto (auto-ajuste de tamaño para que quepan, aunque sean 14)
+  if(S.titles.f1>0){ const tro="🏆 ".repeat(Math.min(S.titles.f1,20)).trim(); x.fillStyle="#fff"; x.textAlign="center"; let tf=54; do{ x.font=`${tf}px Arial, sans-serif`; }while(x.measureText(tro).width>W-90 && (tf-=3)>22); x.fillText(tro, W/2, 775); }
   // 🏆 CAMPEÓN CON: escudo + equipo + años (o TU TRAYECTORIA si no hay títulos de piloto)
   if(champList.length){
     x.fillStyle="rgba(255,255,255,.5)"; x.textAlign="center"; x.font="700 24px Arial, sans-serif"; x.fillText(L("CAMPEÓN CON","CHAMPION WITH"), W/2, BLOCK_TOP);
-    champList.slice(0,4).forEach(([name,years],i)=>{
+    champList.slice(0,8).forEach(([name,years],i)=>{
       const cy=BLOCK_TOP+52+i*ROW_H;
-      const yrs=[...new Set(years)].sort((a,b)=>a-b).slice(0,7).map(y=>"'"+String(y).slice(-2)).join(" ");
+      const ys=[...new Set(years)].sort((a,b)=>a-b);
+      // muchos años seguidos → rango compacto ('42–'54); pocos → se listan ('36 '37)
+      const yrs = ys.length>3 ? ("'"+String(ys[0]).slice(-2)+"–'"+String(ys[ys.length-1]).slice(-2)) : ys.map(y=>"'"+String(y).slice(-2)).join(" ");
       const LB=50, G=18;
       x.font="800 32px Arial, sans-serif"; const nameW=x.measureText(name).width;
       x.font="700 30px Arial, sans-serif"; const yTxt="   "+yrs; const yW=x.measureText(yTxt).width;
