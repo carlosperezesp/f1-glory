@@ -2340,7 +2340,7 @@ function simF1(row,st){
     c:row.top3c, cmv:constrRank.slice(0,3).map((e,i)=>mvC(e[0],i+1)),
     myPos:pos, myConstr:constrPos, myPosMv:mvD("__ME__",pos), myConstrMv:mvC(myTeam,constrPos)};
   if(row.apxWin) row.events.push(L("🎬 Victoria con APXGP: la remontada digna de Hollywood.","🎬 A win with APXGP: a comeback worthy of Hollywood."));
-  if(pos===1){ S.titles.f1++; row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️"):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
+  if(pos===1){ S.titles.f1++; track("title_won", {team: myTeam, age: S.age}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️"):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
   else {
     const champ=standings[0];
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
