@@ -925,6 +925,7 @@ function startCareer(){
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   S = {
     age:startAge, startAge, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1, peakOvr:0, peakAge:startAge, reinvented:false,
+    recordBoast:null, tooHumble:false, // «pregunta del récord»: arco del bocazas + castigo por conformista
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
@@ -1250,7 +1251,7 @@ function crownMissingLeg(){ return ["monaco","indy","lemans"].find(k=>!(S.triple
 // mensaje al ganar una pata (ya marcada en S.tripleCrown). `leg` = "monaco"|"indy"|"lemans", `winTxt` = frase base de la victoria.
 function crownMsgAfterWin(leg, winTxt){
   const done=crownDone();
-  if(done===3) return `${winTxt} `+L("¡COMPLETAS la Triple Corona! Un club de uno: solo Graham Hill lo había logrado jamás.","You COMPLETE the Triple Crown! A club of one — only Graham Hill had ever done it.");
+  if(done===3){ track("triple_crown", {f1_titles: S.titles.f1, age: S.age}); return `${winTxt} `+L("¡COMPLETAS la Triple Corona! Un club de uno: solo Graham Hill lo había logrado jamás.","You COMPLETE the Triple Crown! A club of one — only Graham Hill had ever done it."); }
   if(done===2){ const m=crownMissingLeg(); return `${winTxt} `+L(`A un paso de la Triple Corona: solo te falta conquistar ${CROWN_LEG[m][0]}.`,`One step from the Triple Crown: all that's left is to conquer ${CROWN_LEG[m][1]}.`); }
   return winTxt; // done===1: no vendemos la Triple Corona como meta si aún estás lejos
 }
@@ -1829,6 +1830,18 @@ const DILEMAS=[
    {l:()=>S._fiaOpts?S._fiaOpts[0].l():"", r:()=>S._fiaOpts?S._fiaOpts[0].r():""},
    {l:()=>S._fiaOpts?S._fiaOpts[1].l():"", r:()=>S._fiaOpts?S._fiaOpts[1].r():""},
    {l:()=>S._fiaOpts?S._fiaOpts[2].l():"", r:()=>S._fiaOpts?S._fiaOpts[2].r():""}]},
+ // 🎤 al coronarte, los medios te preguntan si vas a por el récord de mundiales
+ {id:"recordPregunta",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("La pregunta del récord","The record question"),
+  d:()=>{ const rec=recordTitles(); return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «¿Vas a por el récord de ${rec} mundiales de Schumacher y Hamilton?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Are you going for the record of ${rec} titles held by Schumacher and Hamilton?». Everyone awaits your headline.`); },
+  opts:[
+   {l:()=>L("«Voy a por todos. Sin miedo.»","«I'm going for all of them. No fear.»"),r:()=>{ S.recordBoast={base:S.titles.f1, year:yearNow(), mocked:false}; return roll(
+     [5,()=>(VAL(1.18),L("Los fans alucinan con tu ambición: has puesto el listón por las nubes. +fama","The fans love your ambition: you've set the bar sky-high. +fame"))],
+     [2,()=>(VAL(1.1),L("Titular en todas las portadas. El paddock toma nota. +fama","Front page everywhere. The paddock takes note. +fame"))]); }},
+   {l:()=>L("«Voy carrera a carrera; los récords ya llegarán.»","«Race by race; the records will come or they won't.»"),r:()=>roll(
+     [6,()=>(VAL(1.06),L("Tu madurez gusta en el paddock. Ligero +fama","Your maturity pleases the paddock. Slight +fame"))],
+     [3,()=>(S.tooHumble=true,VAL(.95),L("Te tachan de conformista: en los despachos de los grandes dudan de tu hambre.","You're branded content: in the big teams' offices they doubt your hunger."))])},
+   {l:()=>L("«Mentiría si dijera que no pesa.»","«I'd be lying if I said it doesn't weigh on me.»"),r:()=>(VAL(1.08),L("Tu sinceridad conecta con la gente: te ven humano. +fama","Your honesty connects with people: they see you as human. +fame"))}
+  ]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -1874,6 +1887,8 @@ function bestPoachTeam(){
     .sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
   return c.length?c[0].name:null;
 }
+// récord de mundiales a batir: los 7 de Schumacher/Hamilton, o más si algún rival (o tú) lo supera
+function recordTitles(){ let m=7; (S.dpool||[]).forEach(d=>{ if((d.titles||0)>m)m=d.titles; }); if((S.titles.f1||0)>m)m=S.titles.f1; return m; }
 function pickDilemma(){
   if(S.age<18) return null;
   // reinvención: 28-36, atascado en equipos malos, no en todas las partidas, una vez por carrera
@@ -1883,6 +1898,11 @@ function pickDilemma(){
   // secuela «El fichaje del enemigo»: prioridad cuando hay un enemigo elegible (si no, casi nunca se vería)
   if(S.cat==="F1" && !S.usedDilemmas.fichajeEnemigo && (S.age-S.lastDilemmaAge>=1) && eligibleEnemy() && ch(.4)){
     return DILEMAS.find(d=>d.id==="fichajeEnemigo");
+  }
+  // «La pregunta del récord»: al ganar tu 1er mundial (~50%) o 2 seguidos; una vez por carrera
+  if(S.cat==="F1" && !S.usedDilemmas.recordPregunta && (S.age-S.lastDilemmaAge>=1) && S.seasons.at(-1)?.pos===1){
+    let consec=0; for(let i=S.seasons.length-1;i>=0;i--){ if(S.seasons[i].cat==="F1"&&S.seasons[i].pos===1)consec++; else break; }
+    if((S.titles.f1===1 && ch(.5)) || consec>=2) return DILEMAS.find(d=>d.id==="recordPregunta");
   }
   if(S.dilemmaCount>=5) return null;
   if(S.age-S.lastDilemmaAge<2) return null;
@@ -2372,6 +2392,19 @@ function simF1(row,st){
     if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️"):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory."));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship."));}
+  // 🎤 arco de «voy a por el récord»: cumples/remontas (callas bocas) o te quedas corto (bocazas)
+  if(S.recordBoast){
+    const gained=S.titles.f1-S.recordBoast.base;
+    if(gained>=2){
+      row.events.push(S.recordBoast.mocked
+        ? L("😎 Te llamaron bocazas… y les has callado la boca: sigues sumando mundiales camino del récord.","😎 They called you a blowhard… and you've shut them up: still racking up titles toward the record.")
+        : L("🔥 Vas camino del récord como prometiste: la prensa se rinde.","🔥 On course for the record just as you promised: the press bows down."));
+      VAL(S.recordBoast.mocked?1.25:1.15); S.recordBoast=null;
+    } else if(!S.recordBoast.mocked && yearNow()-S.recordBoast.year>=3 && gained===0){
+      row.events.push(L("📉 Prometiste ir a por el récord y te has quedado corto: te tachan de bocazas.","📉 You promised to chase the record and fell short: they brand you a blowhard."));
+      VAL(.85); S.recordBoast.mocked=true; // sigue vigilando: aún puedes remontar y callar bocas
+    }
+  }
   // EFECTO PILOTO: un piloto de élite empuja el proyecto hacia arriba año tras año.
   // Así un crack puede RESUCITAR a un equipo en declive si se queda y trabaja.
   const pull = Math.max(0,(S.ovr-85))*0.17 + (sel.style==="tecnico"?0.5:0);
@@ -2776,7 +2809,9 @@ function nextOffers(){
     // (un piloto mediático atrae a los equipos por los patrocinadores, pero solo un empujón acotado)
     // pedigrí: los equipos dan cuerda a un rookie hypeado sus primeros 3 años aunque tarde en rendir (luego mandan sus resultados de F1)
     const pedRep = S.f1Seasons<=3 ? juniorPedigree()*1.5 : 0;
-    const rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180)+pedRep;
+    let rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180)+pedRep;
+    // 🎤 castigo por conformista: un proyecto ganador te descarta esta temporada (te sales de la élite)
+    if(S.tooHumble){ rep-=6; S.tooHumble=false; sub=L("😐 Un proyecto ganador te descarta: dudan de tu ambición. ","😐 A winning project passes on you: they doubt your ambition. "); }
     if(rep<68&&S.age>=33){ endCareer(); return; }
     // el perdón llega con los años; a un CAMPEÓN se le vuelve a llamar antes (2 años vs 4) y más fácil
     const champ=(S.titles.f1||0)>0;
