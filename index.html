@@ -2062,18 +2062,36 @@ function evolveF1(){
 
 /* incorpora escuderías nuevas al llegar su año (parrilla en expansión) */
 function checkExpansion(row){
+  // 🔧 corrección de reglamento a un equipo-Brawn el año SIGUIENTE (no siempre: hay quien lo sostiene, como Mercedes)
+  if(S.brawnWatch && yearNow()>S.brawnWatch.year){
+    const tm=S.brawnWatch.name; S.brawnWatch=null;
+    if(F1_TEAMS.some(t=>t.name===tm)){
+      if(ch(.6)){
+        S.f1perf[tm]=rnd(72,78); S.f1target[tm]=rnd(70,77);
+        row.events.push(L("🔧 La FIA corrige el reglamento: "+tm+" pierde su ventaja y vuelve al pelotón.","🔧 The FIA closes the loophole: "+tm+" loses its edge and drops back into the pack."));
+      } else {
+        row.events.push(L("💪 "+tm+" mantiene su ventaja pese a los cambios de reglamento: siguen mandando.","💪 "+tm+" keeps its edge despite the rule changes: still the team to beat."));
+      }
+    }
+  }
   EXPANSION.forEach(e=>{
     if(e.added || yearNow()<e.year) return;
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
-    S.f1perf[e.team.name]=e.team.perf;
-    S.f1target[e.team.name]=e.team.perf+rnd(-2,7);
+    // 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento
+    const brawn = ch(0.03);
+    const perf = brawn ? irnd(88,92) : e.team.perf;
+    S.f1perf[e.team.name]=perf;
+    S.f1target[e.team.name]=perf+(brawn?rnd(-1,3):rnd(-2,7));
     S.f1char[e.team.name]=CHARS[irnd(0,2)];
     S.seats[e.team.name]=(e.drivers||[]).map(([name,age,skill,ceil,titles,flag])=>{
       const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d;
     });
     while(S.seats[e.team.name].length<2) S.seats[e.team.name].push(mkRookie());
-    row.events.push(L("🆕 "+e.team.name+" se estrena en la Fórmula 1 esta temporada.","🆕 "+e.team.name+" makes its Formula 1 debut this season."));
+    row.events.push(brawn
+      ? L("🏁 ¡BOMBAZO! "+e.team.name+" debuta con un COCHAZO: han descifrado el reglamento y son el nuevo equipo a batir.","🏁 SHOCK! "+e.team.name+" debuts with a ROCKET: they've cracked the new rules and are the team to beat.")
+      : L("🆕 "+e.team.name+" se estrena en la Fórmula 1 esta temporada.","🆕 "+e.team.name+" makes its Formula 1 debut this season."));
+    if(brawn) S.brawnWatch={name:e.team.name, year:yearNow()};
   });
 }
 
