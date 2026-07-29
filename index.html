@@ -1834,7 +1834,7 @@ const DILEMAS=[
  {id:"recordPregunta",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("La pregunta del récord","The record question"),
   d:()=>{ const rec=recordTitles(); return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «¿Vas a por el récord de ${rec} mundiales de Schumacher y Hamilton?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Are you going for the record of ${rec} titles held by Schumacher and Hamilton?». Everyone awaits your headline.`); },
   opts:[
-   {l:()=>L("«Voy a por todos. Sin miedo.»","«I'm going for all of them. No fear.»"),r:()=>{ S.recordBoast={base:S.titles.f1, year:yearNow(), mocked:false}; return roll(
+   {l:()=>L("«Voy a por todos. Sin miedo.»","«I'm going for all of them. No fear.»"),r:()=>{ S.recordBoast={base:S.titles.f1, f1s:S.f1Seasons, mocked:false}; return roll(
      [5,()=>(VAL(1.18),L("Los fans alucinan con tu ambición: has puesto el listón por las nubes. +fama","The fans love your ambition: you've set the bar sky-high. +fame"))],
      [2,()=>(VAL(1.1),L("Titular en todas las portadas. El paddock toma nota. +fama","Front page everywhere. The paddock takes note. +fame"))]); }},
    {l:()=>L("«Voy carrera a carrera; los récords ya llegarán.»","«Race by race; the records will come or they won't.»"),r:()=>roll(
@@ -2392,17 +2392,25 @@ function simF1(row,st){
     if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️"):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory."));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship."));}
-  // 🎤 arco de «voy a por el récord»: cumples/remontas (callas bocas) o te quedas corto (bocazas)
+  // 🎤 arco de «voy a por el récord»: remontas (callas bocas), te quedas corto (bocazas) o te quedas a medias.
+  // El reloj cuenta TEMPORADAS DE F1 desde el boast: irte de aventura NO cuenta como "no perseguir el récord".
   if(S.recordBoast){
     const gained=S.titles.f1-S.recordBoast.base;
+    const f1since=(S.f1Seasons||0)-(S.recordBoast.f1s||0);
     if(gained>=2){
       row.events.push(S.recordBoast.mocked
         ? L("😎 Te llamaron bocazas… y les has callado la boca: sigues sumando mundiales camino del récord.","😎 They called you a blowhard… and you've shut them up: still racking up titles toward the record.")
         : L("🔥 Vas camino del récord como prometiste: la prensa se rinde.","🔥 On course for the record just as you promised: the press bows down."));
       VAL(S.recordBoast.mocked?1.25:1.15); S.recordBoast=null;
-    } else if(!S.recordBoast.mocked && yearNow()-S.recordBoast.year>=3 && gained===0){
-      row.events.push(L("📉 Prometiste ir a por el récord y te has quedado corto: te tachan de bocazas.","📉 You promised to chase the record and fell short: they brand you a blowhard."));
-      VAL(.85); S.recordBoast.mocked=true; // sigue vigilando: aún puedes remontar y callar bocas
+    } else if(!S.recordBoast.mocked && f1since>=3){
+      if(gained===0){
+        row.events.push(L("📉 Prometiste ir a por el récord y te has quedado corto: te tachan de bocazas.","📉 You promised to chase the record and fell short: they brand you a blowhard."));
+        VAL(.85);
+      } else { // gained===1: sumaste uno, pero el récord sigue lejísimos
+        row.events.push(L("🤏 Sumaste un mundial más… pero el récord que prometiste sigue lejísimos, y te lo recuerdan sin piedad.","🤏 You added one more title… but the record you promised is still miles away, and they remind you without mercy."));
+        VAL(.93);
+      }
+      S.recordBoast.mocked=true; // sigue vigilando: aún puedes remontar y callar bocas
     }
   }
   // EFECTO PILOTO: un piloto de élite empuja el proyecto hacia arriba año tras año.
