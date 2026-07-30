@@ -1,6 +1,6 @@
 // POST /api/submit  { id, name, flag, country, b:{f1,constr,wins,podiums,poles,subcamp,seasons} }
-// Guarda tu MEJOR "Puntos de leyenda" de la semana y del mes. Recalcula la puntuación en el servidor
-// (no se fía del total del cliente) + topes de cordura + rate-limit. Vercel KV (Upstash Redis) vía REST.
+// Guarda tu MEJOR "Puntos de leyenda" de la SEMANA y de la GLOBAL (histórica). Recalcula la puntuación en el
+// servidor (no se fía del total del cliente) + topes de cordura + rate-limit. Vercel KV (Upstash Redis) vía REST.
 const URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -29,9 +29,6 @@ function isoWeekKey(d) {
   const yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
   const week = Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
   return dt.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
-}
-function monthKey(d) {
-  return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0");
 }
 
 module.exports = async (req, res) => {
@@ -66,20 +63,19 @@ module.exports = async (req, res) => {
 
     const now = new Date();
     const wk = "lb:w:" + isoWeekKey(now);
-    const mo = "lb:m:" + monthKey(now);
+    const GL = "lb:global";
     const disp = JSON.stringify({ n: nm, f: fl, c: co, g: gloria, ts: Date.now() });
     await pipe([
       ["ZADD", wk, "GT", gloria, id],
-      ["ZADD", mo, "GT", gloria, id],
-      ["EXPIRE", wk, 60 * 60 * 24 * 21],
-      ["EXPIRE", mo, 60 * 60 * 24 * 45],
-      ["SET", "pl:" + id, disp, "EX", 60 * 60 * 24 * 45],
+      ["ZADD", GL, "GT", gloria, id],
+      ["EXPIRE", wk, 60 * 60 * 24 * 21], // la semanal se renueva; la global NO caduca
+      ["SET", "pl:" + id, disp],         // display permanente (para el histórico global)
     ]);
-    const ranks = (await pipe([["ZREVRANK", wk, id], ["ZREVRANK", mo, id]])).map((x) => x.result);
+    const ranks = (await pipe([["ZREVRANK", wk, id], ["ZREVRANK", GL, id]])).map((x) => x.result);
     res.status(200).json({
       ok: true, gloria,
       week: { rank: ranks[0] == null ? null : ranks[0] + 1 },
-      month: { rank: ranks[1] == null ? null : ranks[1] + 1 },
+      global: { rank: ranks[1] == null ? null : ranks[1] + 1 },
     });
   } catch (e) {
     res.status(500).json({ error: String((e && e.message) || e) });

@@ -1,5 +1,5 @@
-// GET /api/leaderboard?scope=w|m&limit=500&id=<playerId>
-// Ranking semanal / mensual por "Puntos de leyenda". Lee de Vercel KV (Upstash Redis) vía REST.
+// GET /api/leaderboard?scope=w|g&limit=500&id=<playerId>
+// Ranking SEMANAL (se renueva) o GLOBAL (histórico) por "Puntos de leyenda". Vercel KV (Upstash Redis) vía REST.
 const URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -29,18 +29,15 @@ function isoWeekKey(d) {
   const week = Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
   return dt.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
 }
-function monthKey(d) {
-  return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0");
-}
 
 module.exports = async (req, res) => {
   if (!URL || !TOKEN) { res.status(500).json({ error: "KV no configurado" }); return; }
   try {
-    const scope = req.query.scope === "m" ? "m" : "w";
+    const scope = req.query.scope === "g" ? "g" : "w";
     const limit = Math.max(1, Math.min(500, parseInt(req.query.limit) || 100));
     const id = req.query.id ? String(req.query.id).slice(0, 64) : null;
     const now = new Date();
-    const key = scope === "m" ? "lb:m:" + monthKey(now) : "lb:w:" + isoWeekKey(now);
+    const key = scope === "g" ? "lb:global" : "lb:w:" + isoWeekKey(now);
 
     const top = (await redis(["ZREVRANGE", key, 0, limit - 1, "WITHSCORES"])) || [];
     const rows = [], ids = [];
@@ -63,6 +60,6 @@ module.exports = async (req, res) => {
     res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=60");
     res.status(200).json({ scope, key, count: rows.length, rows, me });
   } catch (e) {
-    res.status(500).json({ error: String(e && e.message || e) });
+    res.status(500).json({ error: String((e && e.message) || e) });
   }
 };
