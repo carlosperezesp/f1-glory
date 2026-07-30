@@ -1022,9 +1022,10 @@ function refreshCard(){
 
 /* ---------- gestión de asientos y mercado NPC ---------- */
 const GEN_INITIALS="ADEFGHJKLMNOPRSTV";
-function mkRookie(){
-  // 🏆 crossover: rara vez, una estrella real de otra categoría cruza a la F1 a su EDAD REAL (solo dentro de su ventana)
-  if(S.crossovers && S.crossovers.length && (S.crossoverCount||0)<2 && ch(0.045)){
+function mkRookie(noCross){
+  // 🏆 crossover: rara vez, una estrella real de otra categoría cruza a la F1 a su EDAD REAL (solo dentro de su ventana).
+  // noCross=true (asiento de Racing Bulls): RB solo ficha jóvenes → ahí NUNCA entra un veterano/crossover (Palou y cía.).
+  if(!noCross && S.crossovers && S.crossovers.length && (S.crossoverCount||0)<2 && ch(0.045)){
     const yr=yearNow();
     const elig=S.crossovers.filter(c=>{ const a=yr-c.born; return a>=27 && a<=37; });
     if(elig.length){
@@ -1047,9 +1048,12 @@ function mkRookie(){
 }
 function npcSeason(){
   // los pilotos con nombre crecen, envejecen y se retiran
-  Object.values(S.seats).forEach(slots=>{
+  Object.entries(S.seats).forEach(([teamName,slots])=>{
+    const isRB = teamName==="Racing Bulls"; // RB no ficha veteranos → su relevo nunca es un crossover
     slots.forEach((d,i)=>{
       if(d==="PLAYER") return;
+      // 🇪🇸 cameo de Alonso: alargó su carrera para tu debut → al terminar esa, su última temporada, se retira
+      if(d.alonsoCameo){ slots[i]=mkRookie(isRB); return; }
       let g;
       if(d.age<=22) g=rnd(1,3);
       else if(d.age<=26) g=rnd(.3,1.6);
@@ -1064,7 +1068,7 @@ function npcSeason(){
         : (d.age>=33 && d.skill<75)?.30
         : (d.age>=28 && d.skill<71)?.07
         : .008;
-      if(ch(pRet)){ slots[i]=mkRookie(); }
+      if(ch(pRet)){ slots[i]=mkRookie(isRB); }
     });
   });
   // mercado: los mejores coches pescan talento de abajo
@@ -1081,6 +1085,8 @@ function npcSeason(){
     // los pilotos NO siempre aciertan el cambio de coche (como en la realidad): fichaje raro
     // y solo con una diferencia clara → el mejor no acaba siempre en el mejor coche
     if(best && best.skill>weak.skill+4 && ch(.2)){
+      // Racing Bulls no acepta veteranos ni siquiera como descarte del mercado (crossover/mayor/campeón)
+      if(bTeam==="Racing Bulls" && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) continue;
       top[wIdx]=best; S.seats[bTeam][bIdx]=weak;
     }
   }
@@ -1095,7 +1101,8 @@ function occupySeat(teamName){
   if(S.mySeatTeam && S.mySeatTeam!==teamName && S.seats[S.mySeatTeam]){
     const old=S.seats[S.mySeatTeam];
     const j=old.indexOf("PLAYER");
-    if(j>=0) old[j]=displaced;
+    // RB no hereda veteranos: si dejas Racing Bulls y el descarte de tu nuevo equipo es un veterano/crossover, RB mete a un joven
+    if(j>=0) old[j] = (S.mySeatTeam==="Racing Bulls" && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true) : displaced;
   }
   S.mySeatTeam=teamName;
 }
@@ -1154,7 +1161,7 @@ function oustTeammate(row){
   } else {
     row.events.push(L("💥 "+surname(mate.name)+", humillado, deja el equipo.","💥 "+surname(mate.name)+", humiliated, leaves the team."));
   }
-  slots[mi]=mkRookie();
+  slots[mi]=mkRookie(teamName==="Racing Bulls");
   S.role="1"; S.roleTeam=teamName; S.roleMate=teammateOf(teamName).name;
 }
 /* rol pegajoso: si sigues en el mismo equipo con el mismo compañero, NO cambia
@@ -2925,6 +2932,23 @@ function nextOffers(){
       while(o.filter(x=>x.team).length>2){ let done=false; for(let i=o.length-1;i>=0;i--){ if(o[i].team && !/Renovaci|Renewal/.test(o[i].note||"")){ o.splice(i,1); done=true; break; } } if(!done) break; }
       o.push({team:APXGP,note:L("«Una última oportunidad» 🎬","«One last shot» 🎬"),role:"1"});
       sub+=L(" Y hay una llamada inesperada: un proyecto loco con olor a película."," And there's an unexpected call: a crazy project straight out of a movie.");
+    }
+  }
+  // 🇪🇸 «Correr con Alonso» (huevo de pascua SIN texto): si un PRODIGIO ESPAÑOL recibe su PRIMERA oferta de
+  // F1 muy pronto (≤5 temporadas), en un pequeño % el PEOR coche (si NO es Racing Bulls, que no ficha veteranos)
+  // le ofrece asiento con Fernando Alonso de compañero, que aguanta ahí su última temporada. Se descubre en la oferta.
+  if(S.f1Seasons===0 && !S._alonsoCameoDone && sel.country==="España"
+     && (S.age-(S.startAge??16))<=5 && o.some(x=>x.team && x.team.cat==="F1")){
+    const worst=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]??75)-(S.f1perf[b.name]??75))[0];
+    const slots=worst?S.seats[worst.name]:null;
+    if(worst && worst.name!=="Racing Bulls" && slots && slots.length>=2 && ch(.4)){
+      // Alonso al slot 0 → teammateOf lo muestra ya en la oferta; dejo al MÁS FLOJO de los dos en el slot 1 (a quien
+      // desplazas al firmar) y a Alonso siempre por encima, para quedarte con él seguro sea cual sea el peor coche
+      const weaker = (((slots[0]&&slots[0].skill)||0) <= ((slots[1]&&slots[1].skill)||0)) ? slots[0] : slots[1];
+      const al={name:"F. Alonso", age:Math.max(46,yearNow()-1981), skill:Math.max(82,((weaker&&weaker.skill)||0)+1), ceil:87, titles:2, flag:"🇪🇸", alonsoCameo:true};
+      slots[0]=al; slots[1]=weaker; (S.dpool=S.dpool||[]).push(al);
+      if(!o.some(x=>x.team && x.team.name===worst.name)) o.unshift({team:worst, role:"2"});
+      S._alonsoCameoDone=true;
     }
   }
   setDecision(title,sub);
