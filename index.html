@@ -983,6 +983,11 @@ function startCareer(){
       S.dpool.push(d); return d;
     });
   });
+  // 💛💙 «GENERACIÓN DORADA» (raro, ~15%): los pilotos de TU nacionalidad reciben un empujón de por vida →
+  // de vez en cuando ves a un compatriota (Sainz, Colapinto, Bortoleto…) pelear e incluso GANAR mundiales.
+  // Raro a propósito: que sea un notición, no la norma. Aplica también a novatos/crossover de tu país (mkRookie).
+  S.homeBuff = ch(0.15);
+  if(S.homeBuff && sel.flag) Object.values(S.seats).forEach(slots=>slots.forEach(homeBuffOne));
   $("identity").style.display="none"; $("career").style.display="block";
   $("tagNum").textContent = "#"+sel.num;
   $("tagStyle").textContent = styleLabel(sel.style);
@@ -1030,6 +1035,8 @@ function refreshCard(){
 
 /* ---------- gestión de asientos y mercado NPC ---------- */
 const GEN_INITIALS="ADEFGHJKLMNOPRSTV";
+// 💛💙 «generación dorada»: si el buff tocó esta partida, empuja a un piloto de TU nacionalidad (grid o novato)
+function homeBuffOne(d){ if(S.homeBuff && d && d.flag===sel.flag){ d.skill=Math.min(96,d.skill+3); d.ceil=Math.min(97,Math.max(d.ceil+5,d.skill)); } return d; }
 function mkRookie(noCross){
   // 🏆 crossover: rara vez, una estrella real de otra categoría cruza a la F1 a su EDAD REAL (solo dentro de su ventana).
   // noCross=true (asiento de Racing Bulls): RB solo ficha jóvenes → ahí NUNCA entra un veterano/crossover (Palou y cía.).
@@ -1042,6 +1049,7 @@ function mkRookie(noCross){
       const age=yr-c.born;
       const skill=Math.round(c.base - Math.max(0,age-32)*1.3); // el nivel de veterano decae con la edad
       const d={name:c.name, age, skill:Math.max(72,skill), ceil:c.ceil, titles:0, flag:c.flag, crossover:true};
+      homeBuffOne(d);
       S.dpool.push(d); S.crossoverCount=(S.crossoverCount||0)+1;
       return d;
     }
@@ -1049,8 +1057,14 @@ function mkRookie(noCross){
   let name, flag;
   if(S.rookies.length){ [name,flag]=S.rookies.splice(irnd(0,S.rookies.length-1),1)[0]; }
   else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)]; name=GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
-  // campo fuerte y variado (varios llegan a muy bueno / crack), como en la parrilla real
-  const d={name, age:irnd(18,21), skill:rnd(74,81), ceil:Math.round(rnd(84,96)), titles:0, flag};
+  // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
+  // reemplaza a los Verstappen que se retiran → cada época conserva sus estrellas y el top no se hunde con los años.
+  // El resto: campo fuerte y variado (varios llegan a muy bueno / crack), como en la parrilla real.
+  const gen = ch(0.11);
+  const d = gen
+    ? {name, age:irnd(17,19), skill:rnd(84,88), ceil:irnd(95,97), titles:0, flag, gen:true}
+    : {name, age:irnd(18,21), skill:rnd(74,81), ceil:Math.round(rnd(84,96)), titles:0, flag};
+  homeBuffOne(d);
   S.dpool.push(d);
   return d;
 }
