@@ -622,6 +622,14 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 <script>
 /* ================= IDIOMA / LANGUAGE ================= */
 let LANG = (function(){ try{return localStorage.getItem("f1lang")||"es";}catch(e){return "es";} })();
+// 🔒 modo PREVIEW (oculto): entra con ?preview=glory26 para activar funciones en pruebas SOLO para el dev
+// (persiste en localStorage; ?preview=off lo apaga). El resto de la gente no ve absolutamente nada distinto.
+const PREVIEW = (function(){ try{
+  const p=new URLSearchParams(location.search).get("preview");
+  if(p==="off"){ localStorage.removeItem("f1g_preview"); return false; }
+  if(p==="glory26"){ localStorage.setItem("f1g_preview","1"); return true; }
+  return localStorage.getItem("f1g_preview")==="1";
+}catch(e){ return false; } })();
 const L = (es,en)=> LANG==="en" ? en : es;
 function applyLang(){
   document.querySelectorAll("[data-es]").forEach(el=>{ el.innerHTML = (LANG==="en"&&el.dataset.en!=null)? el.dataset.en : el.dataset.es; });
