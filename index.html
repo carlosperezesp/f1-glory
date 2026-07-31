@@ -3228,7 +3228,7 @@ function endCareer(){
   const score=gloriaScore();
   // 🏆 ENVÍO REAL pero OCULTO: recoge la puntuación de TODOS los jugadores a partir del 1-ago-2026 (el ranking
   // empieza a "contar" desde ahí), aunque la PANTALLA siga escondida hasta que publiquemos. (Sin efecto hasta conectar el KV.)
-  try{ if(new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
+  try{ if(PREVIEW || new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
   // PANTALLA: solo el dev (preview) ve el botón + guarda sus carreras locales para la vista previa
   if(PREVIEW){ localBoardAdd({n:sel.name, f:sel.flag, g:score, d:yearNow()}); const rb=$("rankBtn"); if(rb) rb.style.display=""; }
   // ¿dominaste tu era? comparar tus títulos con el mejor rival, contando solo los mundiales
