@@ -2284,16 +2284,20 @@ function simTest(row,st){
     const races=irnd(2,9);
     const reason=[L("🚑 El titular se lesiona y saltas al coche","🚑 The regular is injured and you jump in the car"),L("📈 Debut a media temporada como sustituto","📈 Mid-season debut as a stand-in"),
       L("🔁 Te ceden unas carreras para foguearte","🔁 You're loaned a few races to get experience"),L("🎗️ Cubres al titular sancionado","🎗️ You cover for the suspended regular")][irnd(0,3)];
-    let best=99, pts=0, wins=0, pods=0;
+    let best=99, pts=0, wins=0, pods=0, poles=0;
     for(let r=0;r<races;r++){
       const mine = S.ovr*.5 + teamPerf*.5 + gauss()*st.varza;
       const rivals=[]; for(let i=0;i<19;i++) rivals.push(rnd(70,90)*.5 + rnd(66,94)*.5 + gauss()*6);
+      // quali aparte: una pole de sustituto es rara con coche flojo, pero SUMA a tu palmarés si la logras
+      const myQ = S.ovr*.5 + teamPerf*.5 + gauss()*st.varza;
+      let qAhead=0; for(let i=0;i<19;i++){ if((rnd(70,90)*.5 + rnd(66,94)*.5 + gauss()*6) > myQ) qAhead++; }
+      if(qAhead===0) poles++;
       const dnf = Math.random()<st.dnf;
       const pos = dnf?20 : 1+rivals.filter(x=>x>mine).length;
       if(!dnf){ if(pos===1)wins++; if(pos<=3)pods++; pts+=pos<=10?[25,18,15,12,10,8,6,4,2,1][pos-1]:0; best=Math.min(best,pos); }
       S.gp++;
     }
-    S.wins+=wins; S.podiums+=pods; S.ptsF1+=pts;
+    S.wins+=wins; S.podiums+=pods; S.poles+=poles; S.ptsF1+=pts;
     row.wins=wins; row.pods=pods; row.pts=pts; row.subBest=best<99?best:null; row.subRaces=races;
     // 🏁 posición FINAL en el mundial: como en la F1 real, un sustituto queda CLASIFICADO según sus puntos.
     // Curva de totales típicos de los 22 titulares (mundiales 2023-25; validada con casos reales:
@@ -2302,7 +2306,8 @@ function simTest(row,st){
     const champPos = 1 + SEASON_PTS.filter(p=>p*rnd(.9,1.1) > pts).length;
     row.pos=champPos;
     const bestTxt = best<99?(best===1?L("¡victoria! 🏆","win! 🏆"):L("mejor "+best+"º","best "+best+"th")):L("sin puntuar","no points");
-    row.events.push(`${reason} (${races} GP): ${bestTxt}.`);
+    const poleTxt = poles?` · ${poles} pole${poles>1?"s":""} 🅿️`:"";
+    row.events.push(`${reason} (${races} GP): ${bestTxt}${poleTxt}.`);
     // hacerlo bien te pone en el escaparate: sube tu OVR y abre asientos
     if(best<=5){ OVR(1); S.testProved=2; row.events.push(L("⭐ Gran papel de sustituto: los equipos toman nota.","⭐ A great stand-in showing: the teams take note.")); }
     else if(best<=10){ S.testProved=Math.max(S.testProved||0,1); }
