@@ -1287,13 +1287,17 @@ function fameTier(f){
 
 /* ---------- ofertas ---------- */
 /* resumen de tu última temporada, pegado a las ofertas, para decidir con contexto */
+// posición de una temporada de RESERVA: si corriste de sustituto, quedas CLASIFICADO en el mundial
+// según tus puntos (s.pos, como en la F1 real). Si fuiste reserva puro (FP1+simulador), "—".
+function reservePos(s){ return s.pos!=null ? s.pos+"º" : "—"; }
 function renderRecap(){
   const el=$("decRecap"); if(!el) return;
   const s=S.seasons.at(-1);
   if(!s){ el.style.display="none"; el.innerHTML=""; return; }
   const catLbl=s.cat==="KART"?"Karting":s.cat==="TEST"?L("Probador","Reserve"):s.cat==="FR"?"FRECA":s.cat;
   let posTxt, posCol;
-  if(s.pos==null){ posTxt="—"; posCol="#ececf1;color:#8a8a94"; }
+  if(s.cat==="TEST"){ posTxt=reservePos(s); posCol="#ececf1;color:#8a8a94"; }
+  else if(s.pos==null){ posTxt="—"; posCol="#ececf1;color:#8a8a94"; }
   else if(s.pos===1){ posTxt=L("🏆 Campeón","🏆 Champion"); posCol="linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000"; }
   else if(s.pos<=3){ posTxt=s.pos+"º"; posCol="#dcf5e3;color:#15803d"; }
   else { posTxt=s.pos+"º"; posCol="#ececf1;color:#5a5a66"; }
@@ -2291,11 +2295,18 @@ function simTest(row,st){
     }
     S.wins+=wins; S.podiums+=pods; S.ptsF1+=pts;
     row.wins=wins; row.pods=pods; row.pts=pts; row.subBest=best<99?best:null; row.subRaces=races;
+    // 🏁 posición FINAL en el mundial: como en la F1 real, un sustituto queda CLASIFICADO según sus puntos.
+    // Curva de totales típicos de los 22 titulares (mundiales 2023-25; validada con casos reales:
+    // Hülkenberg'20 10pts→P15 · Gasly'23 62pts→P11 · Albon'23 27pts→P13 · Lawson'23 2pts→P20).
+    const SEASON_PTS=[550,380,290,240,210,185,160,135,105,80,60,45,32,22,15,10,6,4,3,2,1,0];
+    const champPos = 1 + SEASON_PTS.filter(p=>p*rnd(.9,1.1) > pts).length;
+    row.pos=champPos;
     const bestTxt = best<99?(best===1?L("¡victoria! 🏆","win! 🏆"):L("mejor "+best+"º","best "+best+"th")):L("sin puntuar","no points");
     row.events.push(`${reason} (${races} GP): ${bestTxt}.`);
     // hacerlo bien te pone en el escaparate: sube tu OVR y abre asientos
     if(best<=5){ OVR(1); S.testProved=2; row.events.push(L("⭐ Gran papel de sustituto: los equipos toman nota.","⭐ A great stand-in showing: the teams take note.")); }
     else if(best<=10){ S.testProved=Math.max(S.testProved||0,1); }
+    return {pos:champPos};
   } else {
     const flavor=[L("🔬 Miles de vueltas en el simulador puliendo tu técnica.","🔬 Thousands of laps in the simulator polishing your craft."),
       L("🛞 FP1 en "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimas del titular.","🛞 FP1 at "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": 3 tenths off the regular."),
@@ -3077,7 +3088,7 @@ function renderTimeline(){
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
     // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
     const advR=r.advResult;
-    const posLab=r.cat==="ADV"?(advR?(advR.win?"🏆":(advR.champPos===1?"🥇 1º":advR.champPos+"º")):"—"):r.cat==="TEST"?"—":(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
+    const posLab=r.cat==="ADV"?(advR?(advR.win?"🏆":(advR.champPos===1?"🥇 1º":advR.champPos+"º")):"—"):r.cat==="TEST"?reservePos(r):(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
     const posCls=r.cat==="ADV"?(advR&&(advR.win||advR.champPos===1)?"p1":advR&&advR.champPos<=3?"top":"rest"):r.cat==="TEST"?"rest":posClass(r.pos);
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
     div.innerHTML=`
@@ -3128,7 +3139,7 @@ function renderCareerMap(){
         return `<span class="cmcell ${cls}" title="${r.year} · ${ar.series?serName(ar.series):L("aventura","adventure")}${ar.win?" · ¡"+serMarquee(ar.series)+"!":""} · OVR ${r.ovr}">${lab}</span>`;
       }
       const cls=isTest?"rest":posClass(r.pos);
-      const lab=isTest?"—":(r.pos==null?"—":r.pos===1?"🏆":r.pos+"º");
+      const lab=isTest?reservePos(r):(r.pos==null?"—":r.pos===1?"🏆":r.pos+"º");
       const tip=isTest?(r.subRaces?L(`${r.year} · probador · ${r.subRaces} GP sustituto (mejor ${r.subBest===1?"1º":r.subBest+"º"}) · OVR ${r.ovr}`,`${r.year} · reserve · ${r.subRaces} sub GPs (best ${r.subBest===1?"1st":"P"+r.subBest}) · OVR ${r.ovr}`):L(`${r.year} · probador · OVR ${r.ovr}`,`${r.year} · reserve · OVR ${r.ovr}`)):`${r.year} · OVR ${r.ovr}`;
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
