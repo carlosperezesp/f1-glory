@@ -2122,9 +2122,11 @@ function simSeason(){
     else {
       // fase madura: el declive arranca ~3 años DESPUÉS de tu pico (picas tarde → declinas tarde),
       // con pendiente según estilo (el agresivo se apaga antes; el consistente envejece como Alonso).
-      const declineStart = Math.max(29, (S.peakAge||27)+3);
+      const declineStart = Math.max(30, (S.peakAge||28)+3);
       const past = Math.max(0, S.age - declineStart);
-      const wear = sel.style==="consistente"?0.5 : sel.style==="agresivo"?1.15 : 0.8;
+      // desgaste anual del declive: el agresivo se apaga antes, el consistente envejece como Alonso.
+      // Suavizado (antes 0.5/0.8/1.15 → se hacía un precipicio a los pocos años).
+      const wear = sel.style==="consistente"?0.42 : sel.style==="agresivo"?0.72 : 0.58;
       const champBonus = Math.min(3, S.titles.f1||0)*0.15;   // los campeones aguantan un pelín más
       const reinvBonus = S.reinvented ? 0.35 : 0;            // reinventar tu estilo te da un respiro
       g = past===0 ? rnd(-.5,.9) : (-(0.5 + past*wear) + champBonus + reinvBonus + rnd(-.6,.6));
