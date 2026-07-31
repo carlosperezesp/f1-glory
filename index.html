@@ -3178,9 +3178,12 @@ function loadRanking(scope){
 }
 function rankRowHTML(r, mine){ return `<div class="rank-row${mine?" me":""}"><span class="rk">${r.rank}</span><span class="nm">${r.flag||"🏁"} ${r.name||"—"}</span><span class="g">${r.gloria}</span></div>`; }
 function renderRankRows(rows, me, local){
+  const meRank=(me&&me.rank)||0;
+  const inList=meRank>0 && rows.some(r=>r.rank===meRank);
   $("rankList").innerHTML = (local?`<div class="rank-note">${L("Vista previa · tus carreras locales (la tabla global entre todos se activa al conectar la base de datos)","Preview · your local careers (the shared global table activates once the database is connected)")}</div>`:"")
-    + rows.map(r=>rankRowHTML(r, false)).join("");
-  $("rankMe").innerHTML = (me && me.rank) ? `<div class="rank-row me"><span class="rk">${me.rank}</span><span class="nm">${sel.flag} ${sel.name} (${L("TÚ","YOU")})</span><span class="g">${me.gloria}</span></div>` : "";
+    + rows.map(r=>rankRowHTML(r, !local && meRank===r.rank)).join("");
+  // fija tu fila arriba SOLO si NO apareces en la lista visible (si ya sales, te resalto ahí y no te duplico)
+  $("rankMe").innerHTML = (meRank>0 && !inList) ? `<div class="rank-row me"><span class="rk">${meRank}</span><span class="nm">${sel.flag} ${sel.name} (${L("TÚ","YOU")})</span><span class="g">${me.gloria}</span></div>` : "";
 }
 function renderLocal(){
   let a=[]; try{ a=JSON.parse(localStorage.getItem("f1g_localboard")||"[]"); }catch(e){}
