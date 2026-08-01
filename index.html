@@ -1196,6 +1196,12 @@ function teamHasFeud(teamName){ return (S.feuds||[]).some(f=>(S.seats[teamName]|
 function feudFilter(cands){ const f=cands.filter(t=>!teamHasFeud(t.name)); return f.length?f:cands; } // fallback: nunca 0 ofertas
 // enemigo elegible para la secuela «El fichaje del enemigo»: pelea de hace ≥1 año, sigue en la parrilla y no es tu compañero
 function eligibleEnemy(){ const yr=yearNow(); return (S.feuds||[]).find(f=>yr-f.year>=2 && f.name!==S.roleMate && (S.dpool||[]).some(d=>d.name===f.name))||null; }
+// ¿podría MI equipo fichar de verdad al enemigo? Racing Bulls solo ficha jóvenes promesa:
+// si el enemigo es veterano/campeón/élite, el dilema del fichaje ahí NO tiene sentido y no salta
+function enemySignable(){ const f=eligibleEnemy(); if(!f) return null;
+  if(S.team && S.team.name==="Racing Bulls"){ const d=(S.dpool||[]).find(x=>x.name===f.name);
+    if(d && ((d.age||0)>=32 || (d.titles||0)>0 || (d.skill||0)>=87)) return null; }
+  return f; }
 // desenlace de "call-up": te quedas el asiento este año; si no se puede, al menos aceleras
 function reserveCallup(){
   if(promoteFromReserve()) return L("🏎️ El equipo te sienta en el coche el resto del año: ¡pasas a piloto de F1!","🏎️ The team puts you in the car for the rest of the year: you're an F1 driver!");
@@ -1902,8 +1908,8 @@ const DILEMAS=[
      [3,()=>(VAL(.93),L("La prensa te pinta de villano. −fama leve","The press paints you as the villain. slight −fame"))],
      [2,()=>(VAL(1.06),L("Impones respeto por no achantarte. +fama leve","You command respect by standing your ground. slight +fame"))])}]},
  // secuela: tu equipo quiere fichar al piloto con quien te enemistaste (≥1 año después). Te hacen más caso si tienes galones.
- {id:"fichajeEnemigo",stage:"f1",cond:()=>S.cat==="F1"&&!!eligibleEnemy(),t:()=>L("El fichaje del enemigo","Signing the enemy"),
-  d:()=>{const e=eligibleEnemy(); S._seqEnemy=e?e.name:null; return L(`El equipo quiere fichar a ${e?surname(e.name):"un viejo rival"}, con quien te llevas a matar desde vuestra pelea en ${e?e.year:"su día"}. Te preguntan por tu opinión:`,`The team wants to sign ${e?surname(e.name):"an old rival"}, whom you've been at war with since your clash in ${e?e.year:"the past"}. They ask for your opinion:`);},opts:[
+ {id:"fichajeEnemigo",stage:"f1",cond:()=>S.cat==="F1"&&!!enemySignable(),t:()=>L("El fichaje del enemigo","Signing the enemy"),
+  d:()=>{const e=eligibleEnemy(); S._seqEnemy=e?e.name:null; const tm=(S.team&&S.team.name)||L("Tu equipo","Your team"); return L(`${tm} quiere fichar a ${e?surname(e.name):"un viejo rival"}, con quien te llevas a matar desde vuestra pelea en ${e?e.year:"su día"}. Te preguntan por tu opinión:`,`${tm} wants to sign ${e?surname(e.name):"an old rival"}, whom you've been at war with since your clash in ${e?e.year:"the past"}. They ask for your opinion:`);},opts:[
    {l:()=>L("«O él, o yo»","«Him or me»"),r:()=>{
      const f1s=S.seasons.filter(s=>s.cat==="F1"); const reigning=(f1s.at(-1)||{}).pos===1;
      const pListen=0.2 + (S.titles.f1>=2?0.4:S.titles.f1>=1?0.2:0) + (reigning?0.35:0) + (S.role==="1"?0.12:0) + Math.min(.12,Math.max(0,(S.ovr-83))*0.04);
@@ -1989,7 +1995,7 @@ function pickDilemma(){
     return reinventionDilemma();
   }
   // secuela «El fichaje del enemigo»: prioridad cuando hay un enemigo elegible (si no, casi nunca se vería)
-  if(S.cat==="F1" && !S.usedDilemmas.fichajeEnemigo && (S.age-S.lastDilemmaAge>=1) && eligibleEnemy() && ch(.4)){
+  if(S.cat==="F1" && !S.usedDilemmas.fichajeEnemigo && (S.age-S.lastDilemmaAge>=1) && enemySignable() && ch(.4)){
     return DILEMAS.find(d=>d.id==="fichajeEnemigo");
   }
   // «La pregunta del récord»: al ganar tu 1er mundial (~50%) o 2 seguidos; una vez por carrera
