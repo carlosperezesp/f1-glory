@@ -631,7 +631,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
         <button class="btn sm" onclick="location.reload()" data-es="Nueva carrera" data-en="New career">Nueva carrera</button>
         <button class="btn sm line" onclick="shareCareer()" data-es="📸 Compartir" data-en="📸 Share">📸 Compartir</button>
         <button class="btn sm line" onclick="viewCareer()" data-es="👁️ Ver carrera" data-en="👁️ View career">👁️ Ver carrera</button>
-        <button class="btn sm line" id="rankBtn" onclick="openRanking()" style="display:none">🏆 Ranking</button>
+        <button class="btn sm line" id="rankBtn" onclick="openRanking()">🏆 Ranking</button>
       </div>
     </div>
   </div>
@@ -3198,14 +3198,14 @@ function rankRowHTML(r, mine){ return `<div class="rank-row${mine?" me":""}"><sp
 function renderRankRows(rows, me, local){
   const meRank=(me&&me.rank)||0;
   const inList=meRank>0 && rows.some(r=>r.rank===meRank);
-  $("rankList").innerHTML = (local?`<div class="rank-note">${L("Vista previa · tus carreras locales (la tabla global entre todos se activa al conectar la base de datos)","Preview · your local careers (the shared global table activates once the database is connected)")}</div>`:"")
+  $("rankList").innerHTML = (local?`<div class="rank-note">${L("Sin conexión con el ranking online — mostrando tus carreras de este dispositivo.","Can't reach the online ranking — showing your careers on this device.")}</div>`:"")
     + rows.map(r=>rankRowHTML(r, !local && meRank===r.rank)).join("");
   // fija tu fila arriba SOLO si NO apareces en la lista visible (si ya sales, te resalto ahí y no te duplico)
   $("rankMe").innerHTML = (meRank>0 && !inList) ? `<div class="rank-row me"><span class="rk">${meRank}</span><span class="nm">${sel.flag} ${sel.name} (${L("TÚ","YOU")})</span><span class="g">${me.gloria}</span></div>` : "";
 }
 function renderLocal(){
   let a=[]; try{ a=JSON.parse(localStorage.getItem("f1g_localboard")||"[]"); }catch(e){}
-  if(!a.length){ $("rankList").innerHTML=`<div class="rank-note">${L("Aún no hay carreras. Termina una en modo preview y aparecerá aquí.","No careers yet. Finish one in preview mode and it'll show up here.")}</div>`; return; }
+  if(!a.length){ $("rankList").innerHTML=`<div class="rank-note">${L("Aún no hay puntuaciones. ¡Termina una carrera y estrena la tabla!","No scores yet. Finish a career and open the table!")}</div>`; return; }
   renderRankRows(a.slice(0,100).map((e,i)=>({rank:i+1, name:e.n, flag:e.f, gloria:e.g})), null, true);
 }
 function endCareer(){
@@ -3250,8 +3250,8 @@ function endCareer(){
   // 🏆 ENVÍO REAL pero OCULTO: recoge la puntuación de TODOS los jugadores a partir del 1-ago-2026 (el ranking
   // empieza a "contar" desde ahí), aunque la PANTALLA siga escondida hasta que publiquemos. (Sin efecto hasta conectar el KV.)
   try{ if(PREVIEW || new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
-  // PANTALLA: solo el dev (preview) ve el botón + guarda sus carreras locales para la vista previa
-  if(PREVIEW){ localBoardAdd({n:sel.name, f:sel.flag, g:score, d:yearNow()}); const rb=$("rankBtn"); if(rb) rb.style.display=""; }
+  // guarda la carrera también en local: respaldo del ranking si no hay conexión
+  localBoardAdd({n:sel.name, f:sel.flag, g:score, d:yearNow()});
   // ¿dominaste tu era? comparar tus títulos con el mejor rival, contando solo los mundiales
   // que ganó DESDE tu debut en F1 (tu época en la élite), no los que ya tenía antes
   const eraT = S.eraStartT || {};
