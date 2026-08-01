@@ -24,10 +24,27 @@ function isoWeekKey(d) {
 module.exports = async (req, res) => {
   if (!URL || !TOKEN) { res.status(500).json({ error: "KV no configurado" }); return; }
   if (req.query.key !== "limpieza-glory-x9k2m7") { res.status(403).json({ error: "no" }); return; }
-  const id = String(req.query.id || "").slice(0, 64);
-  if (!id) { res.status(400).json({ error: "falta id" }); return; }
   try {
     const wk = "lb:w:" + isoWeekKey(new Date());
+    // MODO PURGA: quita del ranking a los tramposos con gloria imposible (>= min) que entraron antes del anti-trampa
+    if (req.query.purge) {
+      const min = Math.floor(Number(req.query.purge)) || 4201;
+      const raw = (await redis(["ZRANGEBYSCORE", "lb:global", min, "+inf", "WITHSCORES"])) || [];
+      const removed = [];
+      for (let i = 0; i < raw.length; i += 2) {
+        const pid = raw[i], score = Number(raw[i + 1]);
+        let nm = ""; try { nm = (JSON.parse((await redis(["GET", "pl:" + pid])) || "{}")).n || ""; } catch (e) {}
+        await redis(["ZREM", "lb:global", pid]);
+        await redis(["ZREM", wk, pid]);
+        await redis(["DEL", "pl:" + pid]);
+        removed.push({ name: nm, score });
+      }
+      res.status(200).json({ ok: true, purgedAbove: min, count: removed.length, removed });
+      return;
+    }
+    // MODO id: borrado dirigido de un id de prueba
+    const id = String(req.query.id || "").slice(0, 64);
+    if (!id) { res.status(400).json({ error: "falta id o purge" }); return; }
     const r1 = await redis(["ZREM", "lb:global", id]);
     const r2 = await redis(["ZREM", wk, id]);
     const r3 = await redis(["DEL", "pl:" + id]);
