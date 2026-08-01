@@ -1067,6 +1067,7 @@ function startCareer(){
   $("identity").style.display="none"; $("career").style.display="block";
   $("tagNum").textContent = "#"+sel.num;
   $("tagStyle").textContent = styleLabel(sel.style);
+  S._t0 = Date.now(); // marca de inicio real (para el filtro anti-trampa de tiempo de juego)
   refreshCard();
   offerAcademies();
 }
@@ -3262,6 +3263,8 @@ function localBoardAdd(e){ try{ const a=JSON.parse(localStorage.getItem("f1g_loc
 function submitScore(){
   try{
     const body={ id:f1gPid(), name:sel.name, flag:sel.flag, country:sel.country,
+      secs: S._t0 ? Math.round((Date.now()-S._t0)/1000) : 0,   // tiempo real jugando esta carrera
+      ns: (S.seasons||[]).length,                              // nº total de temporadas (junior+F1)
       b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons } };
     return fetch("/api/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
   }catch(e){ return Promise.resolve(null); }

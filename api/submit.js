@@ -44,16 +44,29 @@ module.exports = async (req, res) => {
     const fl = String(body.flag || "🏁").slice(0, 8);
     const co = String(body.country || "").slice(0, 32);
     const b = body.b || {};
-    const num = (k) => Math.max(0, Math.min(999, Math.floor(Number(b[k]) || 0)));
+    const num = (k) => Math.max(0, Math.min(9999, Math.floor(Number(b[k]) || 0)));
     const f1 = num("f1"), constr = num("constr"), wins = num("wins"),
           podiums = num("podiums"), poles = num("poles"), subcamp = num("subcamp"), seasons = num("seasons");
-    // topes de cordura (anti-trampa básico)
-    if (f1 > 25 || constr > 25 || wins > 600 || poles > 600 || seasons > 45) {
+    const secs = Math.max(0, Math.floor(Number(body.secs) || 0));
+    const ns = Math.max(0, Math.floor(Number(body.ns) || 0));
+
+    // 🛡️ TOPES realistas (medidos con juego óptimo: máx ~10 títulos, ~140 vict, ~280 podios, ~200 poles, 25 temp F1)
+    if (f1 > 16 || constr > 16 || wins > 240 || podiums > 480 || poles > 320 || subcamp > 20 || seasons > 30) {
       res.status(400).json({ error: "valores imposibles" }); return;
     }
+    // 🛡️ COHERENCIA interna: no puedes tener más títulos que temporadas, ni más victorias que podios (toda victoria es podio)
+    if (f1 > seasons || wins > podiums) { res.status(400).json({ error: "stats incoherentes" }); return; }
+
     // misma fórmula que "Puntos de leyenda" del juego
     const gloria = f1 * 120 + constr * 30 + wins * 3 + podiums + poles + subcamp * 15;
-    if (gloria > seasons * 450 + 2500) { res.status(400).json({ error: "puntuación incoherente con la carrera" }); return; }
+    // 🛡️ TECHO DURO de gloria: el máximo honesto medido ronda 2500-2900; 4200 deja margen de sobra y corta los 6000+
+    if (gloria > 4200) { res.status(400).json({ error: "puntuación imposible" }); return; }
+
+    // 🛡️ PLAUSIBILIDAD DE TIEMPO: una carrera real tarda minutos (cada temporada tiene delays + clics). Si llega
+    // con muchas temporadas en pocos segundos, es que se editó y envió al vuelo. (Solo si el cliente manda `secs`.)
+    if (secs > 0 && ns > 0 && secs < Math.max(12, ns * 0.8)) {
+      res.status(400).json({ error: "carrera demasiado rápida para ser real" }); return;
+    }
 
     // rate-limit por IP (40/hora)
     const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "x";
