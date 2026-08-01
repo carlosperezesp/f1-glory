@@ -360,7 +360,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 }
 .end-card .shelf{font-size:26px;letter-spacing:5px;margin-bottom:6px;line-height:1.5}
 .end-card .verdict{color:#4a4a55;font-size:14.5px;line-height:1.55;margin:14px 0 20px}
-.end-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.end-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
+.ea-row{display:flex;gap:10px;justify-content:center;width:100%;max-width:430px;margin:0 auto}
+.ea-row .btn{flex:1}
+.end-kofi{margin:18px auto 0;max-width:430px;padding-top:16px;border-top:1px solid var(--line);text-align:center}
+.end-kofi p{font-size:12.5px;line-height:1.5;color:var(--muted);margin:0 0 12px}
+.kofi-btn{display:inline-block;background:linear-gradient(135deg,#ff5e5b,#e10600);color:#fff;font-weight:800;font-size:14px;padding:10px 24px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(225,6,0,.25)}
 .btn.sm{padding:13px 24px;font-size:15px}
 .btn.line{background:transparent;color:var(--text);border:1.5px solid var(--text);box-shadow:none}
 
@@ -503,14 +508,6 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <p class="news" style="max-width:540px;margin:8px auto 0;font-size:13px;line-height:1.5;color:var(--muted)"
      data-es="¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧"
      data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
-  <p class="news" style="max-width:540px;margin:14px auto 0;font-size:13px;line-height:1.55;color:var(--muted)"
-     data-es="Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Si quieres apoyarme (o ayudar a mantener el juego y hacerlo crecer), puedes invitarme a un café aquí:"
-     data-en="I build this in my free time, but I'd love to keep adding improvements and new game modes. If you'd like to support me (or help keep the game running and growing), you can buy me a coffee here:">Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Si quieres apoyarme (o ayudar a mantener el juego y hacerlo crecer), puedes invitarme a un café aquí:</p>
-  <p style="margin:10px auto 0;text-align:center">
-    <a href="https://ko-fi.com/carlosperezesp" target="_blank" rel="noopener" onclick="track('kofi_click',{from:'intro'})"
-       style="display:inline-block;background:linear-gradient(135deg,#ff5e5b,#e10600);color:#fff;font-weight:800;font-size:14px;padding:10px 22px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(225,6,0,.25)"
-       data-es="☕ Invítame a un café" data-en="☕ Buy me a coffee">☕ Invítame a un café</a>
-  </p>
 </section>
 
 <!-- ========== IDENTITY ========== -->
@@ -636,10 +633,18 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <div class="verdict" id="endVerdict"></div>
       <div class="legend-score" id="legendScore"></div>
       <div class="end-actions">
-        <button class="btn sm" onclick="location.reload()" data-es="Nueva carrera" data-en="New career">Nueva carrera</button>
-        <button class="btn sm line" onclick="shareCareer()" data-es="📸 Compartir" data-en="📸 Share">📸 Compartir</button>
-        <button class="btn sm line" onclick="viewCareer()" data-es="👁️ Ver carrera" data-en="👁️ View career">👁️ Ver carrera</button>
-        <button class="btn sm line" id="rankBtn" onclick="openRanking()">🏆 Ranking</button>
+        <div class="ea-row">
+          <button class="btn sm" onclick="location.reload()" data-es="Nueva carrera" data-en="New career">Nueva carrera</button>
+          <button class="btn sm line" onclick="shareCareer()" data-es="📸 Compartir" data-en="📸 Share">📸 Compartir</button>
+        </div>
+        <div class="ea-row">
+          <button class="btn sm line" onclick="viewCareer()" data-es="👁️ Ver carrera" data-en="👁️ View career">👁️ Ver carrera</button>
+          <button class="btn sm line" id="rankBtn" onclick="openRanking()">🏆 Ranking</button>
+        </div>
+      </div>
+      <div class="end-kofi">
+        <p data-es="Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Si quieres apoyarme (o ayudar a mantener el juego y a hacerlo crecer), puedes invitarme a un café:" data-en="I build this in my free time, but I'd love to keep adding improvements and new game modes. If you'd like to support me (or help keep the game running and growing), you can buy me a coffee:">Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Si quieres apoyarme (o ayudar a mantener el juego y a hacerlo crecer), puedes invitarme a un café:</p>
+        <a class="kofi-btn" href="https://ko-fi.com/carlosperezesp" target="_blank" rel="noopener" onclick="track('kofi_click',{from:'end'})" data-es="☕ Invítame a un café" data-en="☕ Buy me a coffee">☕ Invítame a un café</a>
       </div>
     </div>
   </div>
