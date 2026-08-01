@@ -67,6 +67,14 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .btn.ghost:hover{box-shadow:0 6px 16px rgba(21,21,30,.15)}
 .btn:disabled{opacity:.35;cursor:default;transform:none;box-shadow:none}
 #intro .btn{animation:fadeUp .6s .24s both}
+.mode-menu{display:flex;flex-direction:column;gap:11px;width:100%;max-width:430px;margin:4px auto 0;animation:fadeUp .6s .32s both}
+.mode-card{position:relative;display:flex;align-items:center;gap:13px;padding:13px 18px;border:2px solid var(--line);border-radius:16px;background:var(--panel);text-align:left}
+.mode-card.soon{opacity:.5}
+.mode-ico{font-size:24px;flex-shrink:0;filter:grayscale(.4)}
+.mode-txt{display:flex;flex-direction:column;min-width:0}
+.mode-txt b{font-size:15px;font-weight:800;color:var(--text)}
+.mode-txt small{font-size:12px;color:var(--muted);margin-top:1px}
+.soon-badge{position:absolute;top:-9px;right:14px;background:linear-gradient(135deg,#ffb52e,#e10600);color:#fff;font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;box-shadow:0 3px 8px rgba(225,6,0,.28);transform:rotate(2.5deg)}
 
 /* ---------- identity ---------- */
 #identity{display:none;max-width:1100px;margin:0 auto;padding:32px 20px}
@@ -502,7 +510,25 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
   <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
   <button class="btn" onclick="showIdentity()" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
-  <p class="news" style="max-width:540px;margin:20px auto 0;font-size:13px;line-height:1.55;color:var(--muted)"
+  <div class="mode-menu">
+    <div class="mode-card soon">
+      <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
+      <span class="mode-ico">📅</span>
+      <span class="mode-txt"><b data-es="Reto semanal" data-en="Weekly challenge">Reto semanal</b><small data-es="Un escenario nuevo cada semana" data-en="A new scenario every week">Un escenario nuevo cada semana</small></span>
+    </div>
+    <div class="mode-card soon">
+      <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
+      <span class="mode-ico">🧑‍💼</span>
+      <span class="mode-txt"><b data-es="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
+    </div>
+    <div class="mode-card soon">
+      <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
+      <span class="mode-ico">🕰️</span>
+      <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Pilota en décadas pasadas" data-en="Race in past decades">Pilota en décadas pasadas</small></span>
+    </div>
+  </div>
+  <!-- OCULTO temporalmente (sin novedades grandes ahora mismo). Quitar el display:none para volver a mostrarlo cuando las haya. -->
+  <p class="news" style="display:none;max-width:540px;margin:20px auto 0;font-size:13px;line-height:1.55;color:var(--muted)"
      data-es="✨ <b>Últimas novedades:</b> ahora empiezas con 14, 15 o 16 años, así que no hay dos carreras iguales. ¿Atascado camino de la F1? Vete a Super Fórmula, IndyCar o Fórmula E y gánate el salto — y ojo, que alguna estrella real de esas categorías puede acabar cruzándose en tu parrilla. Además: los polémicos fallos de la FIA (uno hasta puede decidirte el Mundial) y lesiones que marcan tu carrera. Hacemos mejoras nuevas cada poco, vuelve pronto. 🏗️"
      data-en="✨ <b>What's new:</b> you now start at 14, 15 or 16, so no two careers are alike. Stuck on the road to F1? Head to Super Formula, IndyCar or Formula E and earn your leap — and watch out, a real star from those series might just turn up on your grid. Plus: the FIA's controversial rulings (one can even decide your title) and career-defining injuries. We ship fresh improvements all the time, check back soon. 🏗️">✨ <b>Últimas novedades:</b> ahora empiezas con 14, 15 o 16 años, así que no hay dos carreras iguales. ¿Atascado camino de la F1? Vete a Super Fórmula, IndyCar o Fórmula E y gánate el salto — y ojo, que alguna estrella real de esas categorías puede acabar cruzándose en tu parrilla. Además: los polémicos fallos de la FIA (uno hasta puede decidirte el Mundial) y lesiones que marcan tu carrera. Hacemos mejoras nuevas cada poco, vuelve pronto. 🏗️</p>
   <p class="news" style="max-width:540px;margin:8px auto 0;font-size:13px;line-height:1.5;color:var(--muted)"
