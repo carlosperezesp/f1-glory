@@ -1484,6 +1484,9 @@ function signContract(o){
   }
   const sameSeat = prevCat==="F1" && o.team.cat==="F1" && prev && prev.name===o.team.name;
   S.team=o.team; S.cat=o.team.cat;
+  // rastro imborrable: al CAMBIAR de equipo en F1, la temporada arranca dejando constancia de la firma
+  // (evita confusiones tipo Red Bull vs Racing Bulls en el mercado, y delata cualquier bug de asientos)
+  if(o.team.cat==="F1" && !sameSeat) S.pendingEvents.push(L("✍️ Firmas por "+o.team.name+".","✍️ You sign for "+o.team.name+"."));
   // años consecutivos en el mismo equipo (para que el coche se adapte a ti con el tiempo)
   S.yearsAtTeam = o.team.cat==="F1" ? (sameSeat ? (S.yearsAtTeam||1)+1 : 1) : 0;
   if(o.team.cat==="F1"){
@@ -2023,7 +2026,9 @@ function renderDilemma(dl){
   S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age;
   const desc = typeof dl.d==="function" ? dl.d() : dl.d;
   const ttl = typeof dl.t==="function" ? dl.t() : dl.t;
-  setDecision("⚡ "+ttl, desc);
+  // el título muestra tu equipo actual → tras firmar en el mercado, confirma al instante DÓNDE estás
+  const tmTag = (S.team && S.team.name && S.cat!=="ADV") ? " · "+teamDisp(S.team) : "";
+  setDecision("⚡ "+ttl+tmTag, desc);
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   dl.opts.forEach((opt,i)=>{
