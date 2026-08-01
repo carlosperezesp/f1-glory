@@ -1010,6 +1010,9 @@ function startCareer(){
   // unas veces Hyundai, otras Lotus) → la parrilla nunca pasa de 12. Año de entrada también aleatorio.
   const activeExp = irnd(0, EXPANSION.length-1);
   EXPANSION.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); });
+  // 🐞 F1_TEAMS es GLOBAL y persiste entre partidas de la misma sesión: si la anterior metió un equipo de
+  // expansión, hay que retirarlo aquí (si no, puede ofrecerte asiento SIN asientos sembrados → desajustes)
+  EXPANSION.forEach(e=>{ const i=F1_TEAMS.findIndex(t=>t.name===e.team.name); if(i>=0) F1_TEAMS.splice(i,1); });
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // nivel de las academias de karting: aleatorio cada partida → estrellas variables
   // nivel de cada equipo junior: aleatorio por partida → estrellas variables en KART/F4/F3/F2
@@ -1156,18 +1159,24 @@ function npcSeason(){
   }
 }
 function occupySeat(teamName){
+  // BLINDADO: localiza TODOS los asientos con "PLAYER" (robusto ante duplicados o mySeatTeam desfasado)
+  const spots=[]; Object.entries(S.seats).forEach(([tn,sl])=>{ if(Array.isArray(sl)) sl.forEach((d,j)=>{ if(d==="PLAYER") spots.push([tn,j]); }); });
+  // equipo aún sin asientos sembrados (no debería pasar): se crean para no dejarte en el limbo
+  if(!S.seats[teamName]) S.seats[teamName]=[mkRookie(teamName==="Racing Bulls"), mkRookie(teamName==="Racing Bulls")];
   const slots=S.seats[teamName];
-  if(!slots) { S.mySeatTeam=teamName; return; } // APXGP
-  if(slots.includes("PLAYER")){ S.mySeatTeam=teamName; return; }
-  const wIdx = slots[0].skill<=slots[1].skill?0:1;
-  const displaced=slots[wIdx];
-  slots[wIdx]="PLAYER";
-  if(S.mySeatTeam && S.mySeatTeam!==teamName && S.seats[S.mySeatTeam]){
-    const old=S.seats[S.mySeatTeam];
-    const j=old.indexOf("PLAYER");
-    // RB no hereda veteranos: si dejas Racing Bulls y el descarte de tu nuevo equipo es un veterano/crossover, RB mete a un joven
-    if(j>=0) old[j] = (S.mySeatTeam==="Racing Bulls" && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true) : displaced;
+  const yaSentado = spots.some(([tn])=>tn===teamName);
+  if(!yaSentado){
+    const wIdx = slots[0].skill<=slots[1].skill?0:1;
+    const displaced=slots[wIdx];
+    slots[wIdx]="PLAYER";
+    if(spots.length){
+      const [tn,j]=spots[0];
+      // RB no hereda veteranos: si dejas Racing Bulls y el descarte de tu nuevo equipo es un veterano/crossover, RB mete a un joven
+      S.seats[tn][j] = (tn==="Racing Bulls" && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true) : displaced;
+    }
   }
+  // limpia cualquier "PLAYER" residual en otros equipos (herencia de bugs pasados) con un joven
+  spots.forEach(([tn,j])=>{ if(tn!==teamName && S.seats[tn] && S.seats[tn][j]==="PLAYER") S.seats[tn][j]=mkRookie(tn==="Racing Bulls"); });
   S.mySeatTeam=teamName;
 }
 // call-up de reserva a mitad de temporada: pasas de probador a piloto de F1 ESE año (te subiste
@@ -1202,6 +1211,24 @@ function enemySignable(){ const f=eligibleEnemy(); if(!f) return null;
   if(S.team && S.team.name==="Racing Bulls"){ const d=(S.dpool||[]).find(x=>x.name===f.name);
     if(d && ((d.age||0)>=32 || (d.titles||0)>0 || (d.skill||0)>=87)) return null; }
   return f; }
+// el fichaje del enemigo SE CONSUMA: pasa a ocupar el OTRO asiento de tu equipo (eres su nuevo compañero).
+// Tu compañero anterior sale traspasado al antiguo equipo del enemigo (si ese equipo es Racing Bulls y el
+// desplazado es veterano/consagrado, RB promociona a un joven en su lugar, fiel a su política).
+function seatEnemyAsTeammate(){
+  const nm=S._seqEnemy; if(!nm || !S.team || !S.seats[S.team.name]) return;
+  const enemy=(S.dpool||[]).find(d=>d.name===nm); if(!enemy) return;
+  const my=S.seats[S.team.name];
+  const mi=my.findIndex(x=>x!=="PLAYER"); if(mi<0) return;
+  const oldMate=my[mi];
+  let et=null, ei=-1;
+  Object.entries(S.seats).forEach(([tn,sl])=>{ if(Array.isArray(sl)){ const j=sl.findIndex(d=>d!=="PLAYER"&&d&&d.name===nm); if(j>=0){et=tn;ei=j;} } });
+  my[mi]=enemy;
+  if(et!=null && ei>=0){
+    const heir=(et==="Racing Bulls" && oldMate && (oldMate.crossover||(oldMate.age||0)>=32||(oldMate.titles||0)>0)) ? mkRookie(true) : oldMate;
+    S.seats[et][ei]=heir;
+  }
+  S.roleMate=enemy.name;
+}
 // desenlace de "call-up": te quedas el asiento este año; si no se puede, al menos aceleras
 function reserveCallup(){
   if(promoteFromReserve()) return L("🏎️ El equipo te sienta en el coche el resto del año: ¡pasas a piloto de F1!","🏎️ The team puts you in the car for the rest of the year: you're an F1 driver!");
@@ -1917,12 +1944,12 @@ const DILEMAS=[
      const f1s=S.seasons.filter(s=>s.cat==="F1"); const reigning=(f1s.at(-1)||{}).pos===1;
      const pListen=0.2 + (S.titles.f1>=2?0.4:S.titles.f1>=1?0.2:0) + (reigning?0.35:0) + (S.role==="1"?0.12:0) + Math.min(.12,Math.max(0,(S.ovr-83))*0.04);
      if(ch(Math.min(.9,pListen))) return L("Te hacen caso: no lo fichan. Aquí mandas tú.","They listen: they don't sign him. You call the shots here.");
-     S.forceMove=true; return L("No te hacen caso: lo fichan igual y te toca hacer las maletas.","They don't listen: they sign him anyway and you must pack your bags.");
+     S.forceMove=true; seatEnemyAsTeammate(); return L("No te hacen caso: lo fichan igual y te toca hacer las maletas.","They don't listen: they sign him anyway and you must pack your bags.");
    }},
-   {l:()=>L("«Que venga»","«Let him come»"),r:()=>roll(
-     [5,()=>(CAR(1),L("Enterráis el hacha por el bien del equipo: la tregua funciona. +1 coche","You bury the hatchet for the team's sake: the truce works. +1 car"))],
-     [4,()=>(CAR(-1),L("Choque de egos: el box arde y el rendimiento se resiente. −1 coche","Ego clash: the garage ignites and performance suffers. −1 car"))],
-     [2,()=>L("Convivencia tensa, pero sin sangre. Sin cambios.","An uneasy coexistence, but no blood. No change.")])}]},
+   {l:()=>L("«Que venga»","«Let him come»"),r:()=>{ seatEnemyAsTeammate(); const en=surname(S._seqEnemy||""); return roll(
+     [5,()=>(CAR(1),L(`Enterráis el hacha por el bien del equipo: la tregua con ${en} funciona. +1 coche`,`You bury the hatchet for the team's sake: the truce with ${en} works. +1 car`))],
+     [4,()=>(CAR(-1),L(`Choque de egos con ${en}: el box arde y el rendimiento se resiente. −1 coche`,`Ego clash with ${en}: the garage ignites and performance suffers. −1 car`))],
+     [2,()=>L(`Convivencia tensa con ${en}, pero sin sangre. Sin cambios.`,`An uneasy coexistence with ${en}, but no blood. No change.`)]); }}]},
  // 🏛️ la FIA toma una decisión polémica (rota entre FIA_SCENARIOS, cada uno con sus opciones) y el paddock se parte
  {id:"falloFIA",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("El fallo de la FIA","The FIA's ruling"),
   d:()=>{ const pool=FIA_SCENARIOS.filter(sc=>!sc.titleDecider || (fiaContender() && (S.fiaTitleCount||0)<2));
@@ -2397,6 +2424,13 @@ function simJunior(row,st){
 
 function simF1(row,st){
   const myTeam=S.team.name;
+  // 🛡️ guardián de consistencia asiento↔contrato: NUNCA debería saltar. Si tu asiento en la parrilla
+  // no coincide con el equipo que firmaste, se realinea solo y deja constancia (para cazar bugs fantasma).
+  const seatTeam=Object.keys(S.seats).find(tn=>(S.seats[tn]||[]).includes("PLAYER"));
+  if(seatTeam && seatTeam!==myTeam && S.seats[myTeam]){
+    row.events.push("⚠️ Ajuste interno: tu asiento figuraba en "+seatTeam+" pero tu contrato es con "+myTeam+". Corregido — si ves esto, repórtalo.");
+    occupySeat(myTeam);
+  }
   const perf=S.f1perf;
   if(perf[myTeam]==null){ perf[myTeam]=rnd(73,80); }
   // parrilla real: los pilotos con nombre en sus asientos + tú
