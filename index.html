@@ -1858,7 +1858,7 @@ const DILEMAS=[
      [5,()=>(CAR(1),L("El equipo lo agradece y aprieta por ti. +1 coche","The team appreciates it and pushes for you. +1 car"))],
      [3,()=>L("Nadie nota tu enfado. Sin cambios.","Nobody notices your anger. No change.")],
      [2,()=>(VAL(.9),L("Los fans te ven blando. Fama −10%","Fans find you soft. Fame −10%"))])}]},
- {id:"multi21",stage:"f1",cond:()=>S.team&&S.seats[S.team.name],t:()=>L("Multi 21","Multi 21"),
+ {id:"multi21",stage:"f1",cond:()=>S.team&&S.seats[S.team.name],t:()=>L("Mantén la posición","Hold position"),
   d:()=>{const m=teammateOf(S.team.name);return L(`Vas 2º pegado a ${surname(m.name)}, tu compañero. Por la radio, en clave: «mantén posición». El equipo lo da por hecho.`,`You're 2nd, right behind your teammate ${surname(m.name)}. Over the radio, in code: «hold position». The team takes it for granted.`);},opts:[
    {l:()=>L("Obedecer la orden","Obey the order"),r:()=>roll(
      [5,()=>(CAR(1),L("Armonía total: eres el piloto de equipo perfecto. +1 coche","Total harmony: the perfect team player. +1 car"))],
