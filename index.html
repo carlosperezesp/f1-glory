@@ -975,7 +975,7 @@ const ROOKIE_2010 = [
   ["F. Slater","🇬🇧",2025],["T. Taponen","🇫🇮",2025],["C. Costoya","🇪🇸",2026],["K. Nakamura-Berta","🇯🇵",2026],["N. Monteiro","🇵🇹",2026],
   // probadores/reservas reales de la década que nunca debutaron — con su AÑO DE NACIMIENTO (4º campo):
   // entran con su edad real. López además viene «de serie» si USF1 cuaja (lo fichó de verdad para 2010).
-  ["J.M. López","🇦🇷",2011,1983],["S. Wolff","🇬🇧",2013,1982],["Ma Qinghua","🇨🇳",2013,1987]];
+  ["J.M. López","🇦🇷",2011,1983],["S. Wolff","🇬🇧",2013,1982],["Ma Qinghua","🇨🇳",2013,1987],["M. de Villota","🇪🇸",2012,1980]];
 // escalera junior 2010 (nombres de época): Fórmula Renault → Fórmula 3 → GP3 → GP2
 const FREN_2010 = [
   {name:"Prema FRen", color:"#dd0022", color2:"#6b0011", perf:58},{name:"SG Formula", color:"#1a3a6b", color2:"#0d1f3a", perf:55},
@@ -1463,7 +1463,16 @@ function mkRookie(noCross, forTeam){
   // Y r[3] = año de NACIMIENTO (probadores tipo Wolff/López): debutan con su edad real, no como chavales.
   const _yr=yearNow();
   const _avail=S.rookies.map((r,i)=>i).filter(i=>!S.rookies[i][2] || _yr>=S.rookies[i][2]);
-  if(_avail.length){ const _r=S.rookies.splice(_avail[irnd(0,_avail.length-1)],1)[0]; name=_r[0]; flag=_r[1]; born=_r[3]||null; }
+  if(_avail.length){
+    let _i=_avail[irnd(0,_avail.length-1)];
+    // 🇪🇸 realismo: sin equipo español vivo (HRT), la parrilla no se llena de españoles (máx 3) → se elige otro.
+    // (Los británicos no tienen freno: con tanto equipo británico, sí es realista.)
+    if(S.rookies[_i][1]==="🇪🇸" && seatedPool().filter(d=>d.flag==="🇪🇸").length>=3 && !F1_TEAMS.some(t=>t.name==="HRT")){
+      const _alt=_avail.filter(j=>S.rookies[j][1]!=="🇪🇸");
+      if(_alt.length) _i=_alt[irnd(0,_alt.length-1)];
+    }
+    const _r=S.rookies.splice(_i,1)[0]; name=_r[0]; flag=_r[1]; born=_r[3]||null;
+  }
   else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)]; name=GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
   // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
   // reemplaza a los Verstappen que se retiran → cada época conserva sus estrellas y el top no se hunde con los años.
@@ -1557,8 +1566,10 @@ function promoteFromReserve(){
   return true;
 }
 // incidentes de pista: elige un rival que NO sea tu compañero; guarda su nombre completo por si acaban a hostias
+// pilotos EN ACTIVO (con asiento ahora mismo): para toques, enemigos y demás — un retirado no puede tocarte en pista
+function seatedPool(){ const out=[]; Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") out.push(d); })); return out; }
 function incidentRival(){
-  const pool=(S.dpool||[]).filter(d=>d && d.name && d.name!=="TÚ" && d.name!==S.roleMate);
+  const pool=seatedPool().filter(d=>d.name && d.name!=="TÚ" && d.name!==S.roleMate);
   const d=pool.length?pool[irnd(0,pool.length-1)]:null;
   S._incRival = d?d.name:null;
   return d?surname(d.name):L("un rival","a rival");
@@ -1576,7 +1587,7 @@ function oldChampion(){
 function teamHasFeud(teamName){ return (S.feuds||[]).some(f=>(S.seats[teamName]||[]).some(d=>d&&d!=="PLAYER"&&d.name===f.name)); }
 function feudFilter(cands){ const f=cands.filter(t=>!teamHasFeud(t.name)); return f.length?f:cands; } // fallback: nunca 0 ofertas
 // enemigo elegible para la secuela «El fichaje del enemigo»: pelea de hace ≥1 año, sigue en la parrilla y no es tu compañero
-function eligibleEnemy(){ const yr=yearNow(); return (S.feuds||[]).find(f=>yr-f.year>=2 && f.name!==S.roleMate && (S.dpool||[]).some(d=>d.name===f.name))||null; }
+function eligibleEnemy(){ const yr=yearNow(); return (S.feuds||[]).find(f=>yr-f.year>=2 && f.name!==S.roleMate && seatedPool().some(d=>d.name===f.name))||null; }
 // ¿podría MI equipo fichar de verdad al enemigo? Racing Bulls solo ficha jóvenes promesa:
 // si el enemigo es veterano/campeón/élite, el dilema del fichaje ahí NO tiene sentido y no salta
 function enemySignable(){ const f=eligibleEnemy(); if(!f) return null;
@@ -2290,7 +2301,7 @@ const DILEMAS=[
      [3,()=>(OVR(-1),L("Te arriesgas y pinchas: fuera. −1 OVR","You gamble and puncture: out. −1 OVR"))],
      [2,()=>(VAL(1.12),L("O te sale la jugada y adelantas a cinco. +fama","Or it pays off and you pass five cars. +fame"))])}]},
  // 🥊 incidentes de pista con un rival (NUNCA tu compañero). Si acaba en pelea → enemistados
- {id:"toqueVictima",stage:"f1",cond:()=>S.cat==="F1"&&(S.dpool||[]).some(d=>d&&d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El toque","The tap"),
+ {id:"toqueVictima",stage:"f1",cond:()=>S.cat==="F1"&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El toque","The tap"),
   d:()=>{const r=incidentRival();return L(`En plena remontada, ${r} te da un toque y te manda a la grava: carrera al garete. Puedes ir a hablar con él tras la bandera.`,`Mid-charge, ${r} taps you into the gravel: your race is over. You can go and have words after the flag.`);},opts:[
    {l:()=>L("Hablarlo con calma","Talk it out calmly"),r:()=>roll(
      [4,()=>(respectBuild(),VAL(1.05),L("Te escucha, se disculpa y hasta nace un respeto mutuo. Sin drama.","He listens, apologizes, and a mutual respect is born. No drama."))],
@@ -2299,7 +2310,7 @@ const DILEMAS=[
    {l:()=>L("Tragártelo, «así son las carreras»","Let it go, «racing incidents»"),r:()=>roll(
      [4,()=>(VAL(1.08),L("Pasas página con clase: el paddock lo nota. +fama","You move on with class: the paddock notices. +fame"))],
      [3,()=>L("Te lo guardas. Sin cambios.","You bottle it up. No change.")])}]},
- {id:"toqueCulpable",stage:"f1",cond:()=>S.cat==="F1"&&(S.dpool||[]).some(d=>d&&d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El culpable","The culprit"),
+ {id:"toqueCulpable",stage:"f1",cond:()=>S.cat==="F1"&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El culpable","The culprit"),
   d:()=>{const r=incidentRival();return L(`Un cierre tuyo manda a ${r} contra el muro: su carrera, acabada. ¿Vas a su box a disculparte?`,`A move of yours puts ${r} in the wall: his race is done. Do you go to his garage to apologize?`);},opts:[
    {l:()=>L("Ir a disculparte","Go and apologize"),r:()=>roll(
      [4,()=>(respectBuild(),VAL(1.1),L("Aceptan tus disculpas: quedas como un caballero. +fama","He accepts your apology: you come off as a gentleman. +fame"))],
@@ -2332,7 +2343,7 @@ const DILEMAS=[
    {l:()=>S._fiaOpts?S._fiaOpts[1].l():"", r:()=>S._fiaOpts?S._fiaOpts[1].r():""},
    {l:()=>S._fiaOpts?S._fiaOpts[2].l():"", r:()=>S._fiaOpts?S._fiaOpts[2].r():""}]},
  // 🎤 al coronarte, los medios te preguntan si vas a por el récord de mundiales
- {id:"recordPregunta",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("La pregunta del récord","The record question"),
+ {id:"recordPregunta",stage:"f1",cond:()=>S.cat==="F1"&&S.seasons.at(-1)?.cat==="F1"&&S.seasons.at(-1)?.pos===1,t:()=>L("La pregunta del récord","The record question"),
   d:()=>{ const rh=recordHolders(); const who=joinNames(rh.names);
     if((S.titles.f1||0)>=rh.rec) return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «Nadie ha ganado más que tú. ¿Hasta dónde piensas estirar TU récord?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Nobody has won more than you. How far do you plan to stretch YOUR record?». Everyone awaits your headline.`);
     return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «¿Vas a por el récord de ${rh.rec} mundiales de ${who}?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Are you going for the record of ${rh.rec} titles held by ${who}?». Everyone awaits your headline.`); },
@@ -2408,7 +2419,7 @@ const DILEMAS=[
      [4,()=>(VAL(1.08),L("«Es una leyenda, le respeto». Tu elegancia gusta. +fama leve","«He's a legend, I respect him». Your grace goes down well. slight +fame"))],
      [3,()=>L("Algunos interpretan que le das la razón, pero tú sigues a lo tuyo. Sin cambios.","Some read it as you conceding the point, but you carry on. No change.")])}]},
  // 💥 versión GRAVE y RARA de un incidente (heredera de `toqueCulpable`): mandas a un rival al HOSPITAL. Sin perdón → enemigo garantizado.
- {id:"pesoCulpa",stage:"f1",cond:()=>S.cat==="F1"&&S.ovr>=84&&(S.dpool||[]).some(d=>d&&d.name!=="TÚ"&&d.name!==S.roleMate)&&ch(.5),
+ {id:"pesoCulpa",stage:"f1",cond:()=>S.cat==="F1"&&S.ovr>=84&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate)&&ch(.5),
   t:()=>L("El peso de la culpa","The weight of guilt"),
   d:()=>{const r=incidentRival();return L(`Un adelantamiento agresivo tuyo manda a ${r} a la grava y luego al hospital: fractura y varias carreras de baja. Las cámaras lo repiten en bucle y la prensa te crucifica.`,`An aggressive move of yours sends ${r} into the gravel and then to hospital: a fracture and several races out. The cameras replay it on a loop and the press crucifies you.`);},opts:[
    {l:()=>L("Dar la cara: perdón público y visita al hospital","Front up: public apology and hospital visit"),r:()=>roll(
@@ -2605,7 +2616,9 @@ function maybeInjury(row){
 }
 function simSeason(){
   const st=STYLES[sel.style];
-  let row = {age:S.age, year:yearNow(), team:S.team, cat:S.cat, events:[]};
+  // ⚠️ el equipo se guarda como FOTO ({...}), no como referencia: si años después se renombra (Force India→
+  // Aston Martin), tu historial conserva el nombre y colores DE LA ÉPOCA en que corriste ahí
+  let row = {age:S.age, year:yearNow(), team:S.team?{...S.team}:S.team, cat:S.cat, events:[]};
   if(S.pendingEvents.length){ row.events.push(...S.pendingEvents); S.pendingEvents=[]; }
   checkExpansion(row);
   maybeInjury(row); // lesión grave rara (1 año fuera, asiento en peligro) antes de simular la temporada
@@ -2843,7 +2856,8 @@ function processArrivals(row){
       const d={name:a.n, age, skill, ceil:Math.max(rc,skill+2), titles:a.ti||0, flag:a.f, gen:rc>=94};
       homeBuffOne(d); S.dpool.push(d);
       slots[wi]=d; placed++;
-      row.events.push(L(`🌱 Debut en la F1: ${a.n} llega a ${tn}.`,`🌱 F1 debut: ${a.n} joins ${tn}.`));
+      // solo se anuncia el debut de las FUTURAS ESTRELLAS (techo base ≥93): el resto entra sin titular, menos ruido
+      if(a.c>=93) row.events.push(L(`🌱 Debut en la F1: ${a.n} llega a ${tn}.`,`🌱 F1 debut: ${a.n} joins ${tn}.`));
       break;
     }
   }
@@ -3188,7 +3202,12 @@ function maybeEvent(row,st){
   const inF1=S.cat==="F1";
   const pick=a=>a[irnd(0,a.length-1)];
   const rival = ()=>{ const m=(S.seats[S.team.name]||[]).find(d=>d!=="PLAYER"); return m?surname(m.name):L("tu compañero","your teammate"); };
-  const gp = ()=>pick(["Monaco","Silverstone","Spa","Monza","Suzuka","Interlagos","Singapur","Las Vegas","Austin","Jeddah","Baku","Zandvoort","Hungaroring","Barcelona","Imola","Montreal",L("Abu Dabi","Abu Dhabi"),"Melbourne"]);
+  // circuitos con AÑO DE ESTRENO (2º campo): en 2016 no existe Jeddah ni Las Vegas; Imola no volvió hasta 2020
+  const gp = ()=>{ const yr=yearNow();
+    const cs=[["Monaco"],["Silverstone"],["Spa"],["Monza"],["Suzuka"],["Interlagos"],["Singapur"],["Hungaroring"],
+      ["Barcelona"],["Montreal"],[L("Abu Dabi","Abu Dhabi")],["Melbourne"],["Austin",2012],["Baku",2016],
+      ["Imola",2020],["Zandvoort",2021],["Jeddah",2021],["Las Vegas",2023]].filter(c=>!c[1]||yr>=c[1]);
+    return pick(cs)[0]; };
 
   // estilo del piloto
   if(sel.style==="tecnico") pool.push(
