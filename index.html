@@ -1090,9 +1090,11 @@ const ARRIVALS_2020 = [
 const ERAS = {
   "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null,
     lineage:[], arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
-  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:[], legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null,
+  // crossovers TAMBIÉN en retro: cada estrella lleva su año de nacimiento real y solo cruza con 27-37
+  // años → Palou (n. 1997) solo puede aparecer 2024-2034, empiece la partida en 2010 o en 2020. Sin anacronismos.
+  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null,
     lineage:LINEAGE_2020, arrivals:ARRIVALS_2020, juniorOf:{"AlphaTauri":"Red Bull"} },
-  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:[], legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:"Fórmula Renault",F3:"Fórmula 3",FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010},
+  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:"Fórmula Renault",F3:"Fórmula 3",FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010},
     lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
 };
 let SELECTED_ERA = "2026";
@@ -1194,7 +1196,9 @@ function startCareerFlow(era){ SELECTED_ERA = era||"2026"; showIdentity(); }
 // activa el Modo Retro (2010/2020) SOLO en PREVIEW mientras lo terminamos; el público sigue viendo «Próximamente»
 function initRetroCard(){ if(!PREVIEW) return; const rc=document.getElementById("retroCard"); if(!rc) return;
   rc.classList.remove("soon"); rc.classList.add("retro-on");
-  const b=rc.querySelector(".soon-badge"); if(b) b.style.display="none";
+  // 🔒 recordatorio visual de que ESTO es el modo secreto: solo lo ve quien tiene el preview activado
+  const b=rc.querySelector(".soon-badge");
+  if(b){ b.textContent="🔒 SOLO TÚ"; b.removeAttribute("data-es"); b.removeAttribute("data-en"); b.style.background="linear-gradient(135deg,#3a3f4a,#15151e)"; }
   const sub=document.getElementById("retroSub"); if(sub){ sub.dataset.es="Empieza en el mundo de…"; sub.dataset.en="Start in the world of…"; applyLang(); }
   const ry=document.getElementById("retroYears"); if(ry) ry.style.display="flex"; }
 function showIdentity(){ $("intro").style.display="none"; $("identity").style.display="block"; renderCountries(); }
@@ -1348,6 +1352,7 @@ function mkRookie(noCross, forTeam){
   // entran en el primer hueco que salga (Antonelli puede acabar debutando en otro equipo, como pediste).
   if(S.arrivals && S.arrivals.length){
     const yr=yearNow();
+    S.arrivals=S.arrivals.filter(a=>!S.dpool.some(d=>d.name===a.n)); // sin duplicados (p.ej. entró como crossover)
     const due=S.arrivals.filter(a=>a.y<=yr);
     if(due.length){
       let pick=null;
@@ -1373,7 +1378,8 @@ function mkRookie(noCross, forTeam){
   // noCross=true (asiento de Racing Bulls): RB solo ficha jóvenes → ahí NUNCA entra un veterano/crossover (Palou y cía.).
   if(!noCross && S.crossovers && S.crossovers.length && (S.crossoverCount||0)<2 && ch(0.045)){
     const yr=yearNow();
-    const elig=S.crossovers.filter(c=>{ const a=yr-c.born; return a>=27 && a<=37; });
+    // sin duplicados: si ya entró por otra vía (llegada histórica retro, p.ej. Wehrlein 2016), no cruza
+    const elig=S.crossovers.filter(c=>{ const a=yr-c.born; return a>=27 && a<=37 && !S.dpool.some(d=>d.name===c.name); });
     if(elig.length){
       const c=elig[irnd(0,elig.length-1)];
       S.crossovers.splice(S.crossovers.indexOf(c),1); // una vez por partida, no repite
@@ -1386,6 +1392,7 @@ function mkRookie(noCross, forTeam){
     }
   }
   let name, flag;
+  S.rookies=S.rookies.filter(r=>!S.dpool.some(d=>d.name===r[0])); // purga nombres que ya entraron por otra vía
   if(S.rookies.length){ [name,flag]=S.rookies.splice(irnd(0,S.rookies.length-1),1)[0]; }
   else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)]; name=GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
   // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
@@ -2249,7 +2256,9 @@ const DILEMAS=[
    {l:()=>S._fiaOpts?S._fiaOpts[2].l():"", r:()=>S._fiaOpts?S._fiaOpts[2].r():""}]},
  // 🎤 al coronarte, los medios te preguntan si vas a por el récord de mundiales
  {id:"recordPregunta",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("La pregunta del récord","The record question"),
-  d:()=>{ const rec=recordTitles(); return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «¿Vas a por el récord de ${rec} mundiales de Schumacher y Hamilton?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Are you going for the record of ${rec} titles held by Schumacher and Hamilton?». Everyone awaits your headline.`); },
+  d:()=>{ const rh=recordHolders(); const who=joinNames(rh.names);
+    if((S.titles.f1||0)>=rh.rec) return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «Nadie ha ganado más que tú. ¿Hasta dónde piensas estirar TU récord?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Nobody has won more than you. How far do you plan to stretch YOUR record?». Everyone awaits your headline.`);
+    return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «¿Vas a por el récord de ${rh.rec} mundiales de ${who}?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Are you going for the record of ${rh.rec} titles held by ${who}?». Everyone awaits your headline.`); },
   opts:[
    {l:()=>L("«Voy a por todos. Sin miedo.»","«I'm going for all of them. No fear.»"),r:()=>{ S.recordBoast={base:S.titles.f1, f1s:S.f1Seasons, mocked:false}; return roll(
      [5,()=>(VAL(1.18),L("Los fans alucinan con tu ambición: has puesto el listón por las nubes. +fama","The fans love your ambition: you've set the bar sky-high. +fame"))],
@@ -2377,7 +2386,19 @@ function bestPoachTeam(){
   return c.length?c[0].name:null;
 }
 // récord de mundiales a batir: los 7 de Schumacher/Hamilton, o más si algún rival (o tú) lo supera
-function recordTitles(){ let m=7; (S.dpool||[]).forEach(d=>{ if((d.titles||0)>m)m=d.titles; }); if((S.titles.f1||0)>m)m=S.titles.f1; return m; }
+/* 🏛️ ¿quién ostenta el récord de mundiales en ESTE mundo? Leyendas retiradas de la era + pilotos de la
+   partida (títulos que van ganando incluidos). En 2010 es «Schumacher» a secas (Hamilton tiene 1);
+   en 2026 «Schumacher y Hamilton»; y si en tu partida Fulano llega a 7, será «Schumacher y Fulano». */
+function recordHolders(){
+  const cand={};
+  (S.legends||LEGENDS).forEach(([n,t])=>{ cand[n]=Math.max(cand[n]||0,t); });
+  (S.dpool||[]).forEach(d=>{ if((d.titles||0)>0) cand[d.name]=Math.max(cand[d.name]||0,d.titles); });
+  let rec=1; Object.values(cand).forEach(t=>{ if(t>rec) rec=t; });
+  const names=Object.entries(cand).filter(([,t])=>t===rec).map(([n])=>surname(n)).slice(0,3);
+  return {rec, names};
+}
+function joinNames(a){ return a.length<=1 ? (a[0]||"") : a.slice(0,-1).join(", ")+L(" y "," and ")+a[a.length-1]; }
+function recordTitles(){ const r=recordHolders().rec; return Math.max(r, S.titles.f1||0); }
 function pickDilemma(){
   if(S.age<18) return null;
   // reinvención: 28-36, atascado en equipos malos, no en todas las partidas, una vez por carrera
@@ -2669,6 +2690,7 @@ function processArrivals(row){
   if(!S.arrivals || !S.arrivals.length) return;
   const yr=yearNow();
   let placed=0;
+  S.arrivals=S.arrivals.filter(a=>!S.dpool.some(d=>d.name===a.n)); // sin duplicados
   const due=[...S.arrivals].filter(a=>a.y<=yr).sort((a,b)=>a.y-b.y);
   for(const a of due){
     if(placed>=2) break;
@@ -3782,7 +3804,7 @@ function endCareer(){
     else if(rivalName) era=L(` Aun así, ${rivalName} reinó en tu época con ${bestRival} mundiales: no llegaste a dominar, pero le disputaste el trono hasta el final.`,` Even so, ${rivalName} ruled your era with ${bestRival} titles: you never quite dominated, but you fought them for the throne to the very end.`);
   }
   let legacy,verdict;
-  if(T>=6){legacy=L("LEYENDA ETERNA","ETERNAL LEGEND");verdict=L("Tu nombre se pronuncia junto a Schumacher y Hamilton. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú.","Your name is spoken alongside Schumacher and Hamilton. The grandstands wear your number, and every kid in a kart dreams of being you.")+era;}
+  if(T>=6){legacy=L("LEYENDA ETERNA","ETERNAL LEGEND");const _rh=recordHolders();const _who=joinNames(_rh.names.length?_rh.names:["Schumacher","Hamilton"]);verdict=L(`Tu nombre se pronuncia junto a ${_who}. Las tribunas llevan tu dorsal, y cada niño en un karting sueña con ser tú.`,`Your name is spoken alongside ${_who}. The grandstands wear your number, and every kid in a kart dreams of being you.`)+era;}
   else if(T>=4){legacy=L("MULTICAMPEÓN DEL MUNDO","MULTIPLE WORLD CHAMPION");verdict=L(`${T} coronas mundiales. Los documentales sobre tu carrera ya están en producción.`,`${T} world crowns. The documentaries about your career are already in production.`)+era;}
   else if(T>=2){legacy=(T===2?L("DOBLE","DOUBLE"):L("TRIPLE","TRIPLE"))+L(" CAMPEÓN DEL MUNDO"," WORLD CHAMPION");verdict=L(`${T===2?"Dos":"Tres"} veces en lo más alto del mundo — algo al alcance de muy pocos.`,`${T===2?"Twice":"Three times"} on top of the world — something within reach of very few.`)+era;}
   else if(T===1){legacy=L("CAMPEÓN DEL MUNDO","WORLD CHAMPION");verdict=L("Tocaste el cielo una vez, y nadie podrá borrarlo jamás. Un campeón del mundo, para siempre.","You touched the sky once, and nobody can ever erase it. A world champion, forever.")+era;}
