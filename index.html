@@ -2525,7 +2525,10 @@ const DILEMAS=[
      [3,()=>L("Bicicleta, familia y silencio. Sin cambios.","Bike rides, family and silence. No change.")],
      [2,()=>(VAL(.94),L("Desapareces del mapa y los medios te olvidan un poco. −fama leve","You vanish off the map and the media half-forget you. slight −fame"))])}]},
  // 🧮 inspirado en 2010: Ferrari cubrió al rival mediático (Webber) y el título se lo llevó otro (Vettel)
- {id:"muroRival",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=4,
+ {id:"muroRival",stage:"f1",cond:()=>{ // SOLO si de verdad peleas el título: top-3 del campeonato Y uno de los 3 mejores coches
+   if(S.cat!=="F1"||!S.team||((S.seasons.at(-1)||{}).pos??20)>3) return false;
+   const my=S.f1perf[S.team.name]??75;
+   return my>=85 && F1_TEAMS.filter(t=>(S.f1perf[t.name]??75)>my).length<=2; },
   t:()=>L("El muro se equivoca de rival","The pit wall marks the wrong man"),
   d:()=>L("Final de temporada con el título en juego. El muro decide marcar en carrera a tu rival mediático… pero tu instinto dice que la amenaza REAL es otro coche que vuela sin hacer ruido.","Season finale with the title on the line. The pit wall decides to shadow your headline rival… but your gut says the REAL threat is another car flying under the radar."),opts:[
    {l:()=>L("Imponer tu criterio por radio","Overrule them on the radio"),r:()=>roll(
