@@ -325,7 +325,16 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 
 /* end modal */
 #endModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.45);backdrop-filter:blur(6px);z-index:50;align-items:center;justify-content:center;padding:20px}
-#rankModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.55);backdrop-filter:blur(6px);z-index:60;align-items:center;justify-content:center;padding:16px}
+#rankModal,#patronModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.55);backdrop-filter:blur(6px);z-index:60;align-items:center;justify-content:center;padding:16px}
+/* muro de mecenas */
+.pt-tier{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:14px 4px 6px}
+.pt-tier:first-child{margin-top:4px}
+.pt-row{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:10px;font-size:14px;font-weight:700}
+.pt-row:nth-child(even){background:var(--panel2)}
+.pt-empty{text-align:center;padding:18px 10px 6px;color:var(--muted);font-size:13px;line-height:1.55}
+.pt-cta{display:inline-block;margin-top:12px;background:linear-gradient(135deg,#ff5e5b,#e10600);color:#fff;font-weight:800;font-size:13.5px;padding:9px 20px;border-radius:999px;text-decoration:none}
+.intro-links{margin-top:14px;font-size:13px;color:var(--muted)}
+.intro-links a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none}
 .rank-card{background:var(--panel);border-radius:22px;max-width:520px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(21,21,30,.4);animation:fadeUp .4s both}
 .rank-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;background:linear-gradient(135deg,#15151e,#2b0a08 130%);color:#fff}
 .rank-head h2{font-size:18px;margin:0}
@@ -568,6 +577,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <p class="news" style="max-width:540px;margin:8px auto 0;font-size:13px;line-height:1.5;color:var(--muted)"
      data-es="¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧"
      data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
+  <p class="intro-links"><a onclick="openPatrons()" data-es="☕ Muro de mecenas" data-en="☕ Wall of supporters">☕ Muro de mecenas</a></p>
 </section>
 
 <!-- ========== IDENTITY ========== -->
@@ -703,7 +713,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
         </div>
       </div>
       <div class="end-kofi">
-        <p data-es="Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Si quieres apoyarme (o ayudar a mantener el juego y a hacerlo crecer), puedes invitarme a un café:" data-en="I build this in my free time, but I'd love to keep adding improvements and new game modes. If you'd like to support me (or help keep the game running and growing), you can buy me a coffee:">Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Si quieres apoyarme (o ayudar a mantener el juego y a hacerlo crecer), puedes invitarme a un café:</p>
+        <p data-es="Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Puedes invitarme a un café… o hacerte mecenas: desde 5 € al mes, <b>un piloto con tu apellido correrá en la F1</b> dentro del juego, en las partidas de todo el mundo." data-en="I build this in my free time, but I'd love to keep adding improvements and new game modes. You can buy me a coffee… or become a supporter: from €5 a month, <b>a driver with your surname will race in F1</b> inside the game, in everyone's careers.">Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Puedes invitarme a un café… o hacerte mecenas: desde 5 € al mes, <b>un piloto con tu apellido correrá en la F1</b> dentro del juego, en las partidas de todo el mundo.</p>
         <a class="kofi-btn" href="https://ko-fi.com/carlosperezesp" target="_blank" rel="noopener" onclick="track('kofi_click',{from:'end'})" data-es="☕ Invítame a un café" data-en="☕ Buy me a coffee">☕ Invítame a un café</a>
       </div>
     </div>
@@ -723,6 +733,17 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     </div>
     <div class="rank-me" id="rankMe"></div>
     <div class="rank-list" id="rankList"></div>
+  </div>
+</div>
+
+<!-- ☕ MURO DE MECENAS -->
+<div id="patronModal">
+  <div class="rank-card">
+    <div class="rank-head">
+      <h2>☕ <span data-es="Muro de mecenas" data-en="Wall of supporters">Muro de mecenas</span></h2>
+      <button class="rank-x" onclick="closePatrons()">✕</button>
+    </div>
+    <div class="rank-list" id="patronList"></div>
   </div>
 </div>
 
@@ -914,6 +935,14 @@ const ROOKIE_POOL = [
   // ampliación jul-2026 (sugerencias verificadas): F4 británica/italiana + Eurocup-3
   ["S. Lindblom","🇸🇪"],["T. Harfield","🇬🇧"],["L. Sammalisto","🇫🇮"],["K. Al Azhari","🇦🇪"],["T. Strauven","🇧🇪"]];
 // apellidos genéricos para cuando se agota la cantera, cada uno con su bandera acorde
+/* ☕ MECENAS DE KO-FI — para añadir uno nuevo, pega una línea aquí:
+   {n:"Apellido", f:"🇪🇸", t:2}   ← t: 1=Mecánico · 2=Piloto · 3=Escudería
+   · t>=1 → sale en el muro de mecenas del juego
+   · t>=2 → su apellido se añade SOLO al pool de pilotos (abajo) y puede correr en cualquier partida
+   MODERACIÓN: solo apellido + bandera; nada de nombres ofensivos ni suplantaciones. */
+const SUPPORTERS = [
+  // {n:"Gurría", f:"🇪🇸", t:2},
+];
 const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
   ["Lefèvre","🇫🇷"],["Fischer","🇩🇪"],["Andersen","🇩🇰"],["Salazar","🇲🇽"],["Sørensen","🇩🇰"],["Nakamura","🇯🇵"],
@@ -1482,6 +1511,9 @@ function refreshCard(){
 
 /* ---------- gestión de asientos y mercado NPC ---------- */
 const GEN_INITIALS="ADEFGHJKLMNOPRSTV";
+// ☕ los mecenas de tramo Piloto o superior entran en el pool de apellidos: su nombre puede
+// correr (y ganar) en la partida de cualquier jugador del mundo
+SUPPORTERS.filter(s=>(s.t||0)>=2).forEach(s=>{ if(!GEN_NAMES.some(g=>g[0]===s.n)) GEN_NAMES.push([s.n, s.f||"🏁"]); });
 // 💛💙 «generación dorada»: si el buff tocó esta partida, empuja a un piloto de TU nacionalidad (grid o novato)
 function homeBuffOne(d){ if(S.homeBuff && d && d.flag===sel.flag){ d.skill=Math.min(96,d.skill+3); d.ceil=Math.min(97,Math.max(d.ceil+5,d.skill)); } return d; }
 // nombre ACTUAL del equipo preferido de una llegada (resuelve el linaje: "Sauber"→"Alfa Romeo"→"Audi")
@@ -4053,6 +4085,27 @@ function openRanking(){
   else go();
 }
 function closeRanking(){ $("rankModal").style.display="none"; }
+/* ☕ MURO DE MECENAS */
+const TIER_NAME={3:["🏆 Escudería","🏆 Team owners"],2:["🏎️ Pilotos","🏎️ Drivers"],1:["☕ Mecánicos","☕ Crew"]};
+function openPatrons(){ $("patronModal").style.display="flex"; renderPatrons(); track("patrons_open"); }
+function closePatrons(){ $("patronModal").style.display="none"; }
+function renderPatrons(){
+  const el=$("patronList");
+  if(!SUPPORTERS.length){
+    el.innerHTML=`<div class="pt-empty">${L("Aún no hay mecenas: puedes ser el primero en aparecer aquí.<br>Con el tramo Piloto, además, tu apellido corre en la F1 dentro del juego.","No supporters yet — you could be the first to appear here.<br>With the Driver tier, your surname also races in F1 inside the game.")}
+      <br><a class="pt-cta" href="https://ko-fi.com/carlosperezesp" target="_blank" rel="noopener" onclick="track('kofi_click',{from:'patrons'})">${L("☕ Apoyar el juego","☕ Support the game")}</a></div>`;
+    return;
+  }
+  let html="";
+  [3,2,1].forEach(t=>{
+    const list=SUPPORTERS.filter(s=>(s.t||1)===t);
+    if(!list.length) return;
+    html+=`<div class="pt-tier">${L(TIER_NAME[t][0],TIER_NAME[t][1])}</div>`;
+    html+=list.map(s=>`<div class="pt-row"><span>${s.f||"🏁"}</span><span>${s.n}</span></div>`).join("");
+  });
+  html+=`<div class="pt-empty">${L("Gracias por mantener esto en marcha. 🧡","Thanks for keeping this running. 🧡")}</div>`;
+  el.innerHTML=html;
+}
 function loadRanking(scope){
   rankScope=scope;
   document.querySelectorAll("#rankTabs button").forEach(b=>b.classList.toggle("on", b.dataset.s===scope));
