@@ -529,7 +529,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     <div class="mode-card soon" id="retroCard">
       <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico">🕰️</span>
-      <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Empieza en el mundo de…" data-en="Start in the world of…">Pilota en décadas pasadas</small></span>
+      <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small id="retroSub" data-es="Pilota en décadas pasadas" data-en="Race in past decades">Pilota en décadas pasadas</small></span>
       <span class="retro-years" id="retroYears" style="display:none">
         <button onclick="startCareerFlow('2010')">2010</button>
         <button onclick="startCareerFlow('2020')">2020</button>
@@ -1116,6 +1116,7 @@ function startCareerFlow(era){ SELECTED_ERA = era||"2026"; showIdentity(); }
 function initRetroCard(){ if(!PREVIEW) return; const rc=document.getElementById("retroCard"); if(!rc) return;
   rc.classList.remove("soon"); rc.classList.add("retro-on");
   const b=rc.querySelector(".soon-badge"); if(b) b.style.display="none";
+  const sub=document.getElementById("retroSub"); if(sub){ sub.dataset.es="Empieza en el mundo de…"; sub.dataset.en="Start in the world of…"; applyLang(); }
   const ry=document.getElementById("retroYears"); if(ry) ry.style.display="flex"; }
 function showIdentity(){ $("intro").style.display="none"; $("identity").style.display="block"; renderCountries(); }
 function backToIntro(){ $("identity").style.display="none"; $("intro").style.display="flex"; }
