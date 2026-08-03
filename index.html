@@ -1806,7 +1806,7 @@ function renderRecap(){
   const constr = s.constrPos ? ` · 🏭 ${L("Constructores","Constructors")} ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
   const badge = teamBadge(s.team.name);
   el.style.display="block";
-  el.innerHTML = `<div class="recap-t">${L("📋 Tu temporada","📋 Your season")} ${s.year} · ${badge} ${teamDisp(s.team)} · ${catLbl}</div>
+  el.innerHTML = `<div class="recap-t">${L("📋 Tu temporada","📋 Your season")} ${s.year} · ${badge} ${teamDisp(s.team, s.year)} · ${catLbl}</div>
     <div class="recap-b"><span class="rp" style="background:${posCol}">${posTxt}</span> ${stat}${constr}</div>`;
 }
 
@@ -1839,7 +1839,9 @@ function serName(k, year){ const s=SERIES[k]||{};
     for(let i=s.eras.length-1;i>=0;i--){ if(yr>=s.eras[i][0]) return L(s.eras[i][1], s.eras[i][2]||s.eras[i][1]); } }
   return L(s.name, s.nameEn||s.name); }
 // nombre de equipo según idioma: las aventuras (WEC/FE/Super Fórmula) tienen nombre EN distinto → resolver por su clave de serie
-function teamDisp(t){ return t && t.cat==="ADV" && t.series ? serName(t.series) : (t?t.name:""); }
+// `year` opcional: en el historial, el nombre que tenía la serie el año en que corriste allí
+// (corriste en la Formula Nippon de 2011 aunque te retires en 2035, cuando ya se llama Super Fórmula)
+function teamDisp(t, year){ return t && t.cat==="ADV" && t.series ? serName(t.series, year) : (t?t.name:""); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
 function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee); }
 // Triple Corona: Mónaco + Indy 500 + Le Mans. Nombres de cada pata y estado.
@@ -3952,8 +3954,8 @@ function renderTimeline(){
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
-      <span class="club">${badge(r.team)}
-        <span><span class="nm">${teamDisp(r.team)}</span><br><span class="cat">${r.year} · ${catLbl}${ptsTxt?" · "+ptsTxt:""}${constr}</span></span></span>
+      <span class="club">${badge(r.team,"",r.year)}
+        <span><span class="nm">${teamDisp(r.team, r.year)}</span><br><span class="cat">${r.year} · ${catLbl}${ptsTxt?" · "+ptsTxt:""}${constr}</span></span></span>
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
       <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>
       <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>
@@ -3974,8 +3976,11 @@ function renderCareerMap(){
   const stints=[];
   f1s.forEach(s=>{
     const last=stints[stints.length-1];
-    if(last && last.team.name===s.team.name && last.cat===s.cat) last.rows.push(s);
-    else stints.push({team:s.team, cat:s.cat, rows:[s]});
+    // agrupamos por el nombre QUE TENÍA ese año: así el resumen parte el tramo cuando la serie se
+    // rebautiza (Formula Nippon → Super Fórmula), igual que ya hace con los equipos de F1
+    const key=teamDisp(s.team, s.year);
+    if(last && last.key===key && last.cat===s.cat) last.rows.push(s);
+    else stints.push({team:s.team, cat:s.cat, rows:[s], key});
   });
   // celdas más pequeñas cuando la carrera es larga, para que quepa en una pantalla
   const totalYears=f1s.length;
@@ -4004,7 +4009,7 @@ function renderCareerMap(){
     }).join("");
     html+=`<div class="cmstint">
       <span class="cmmeta">${badge(st.team,"cmdot",y0)}
-        <span class="cmname">${teamDisp(st.team)}${isTest?L(" ·prob"," ·res"):""}</span><span class="cmyears">${yrs}</span></span>
+        <span class="cmname">${teamDisp(st.team, y0)}${isTest?L(" ·prob"," ·res"):""}</span><span class="cmyears">${yrs}</span></span>
       <span class="cmcells">${cells}</span></div>`;
   });
   el.innerHTML=html;
