@@ -77,11 +77,18 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .soon-badge{position:absolute;top:-9px;right:14px;background:linear-gradient(135deg,#ffb52e,#e10600);color:#fff;font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;box-shadow:0 3px 8px rgba(225,6,0,.28);transform:rotate(2.5deg)}
 #previewBar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:#15151e;color:#fff;font-size:12px;font-weight:700;padding:7px 16px;border-radius:999px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:.94;white-space:nowrap}
 #previewBar a{color:#ffb52e;text-decoration:underline}
-.mode-card.retro-on{opacity:1;cursor:default}
+.mode-card.retro-on{opacity:1;cursor:pointer;transition:border-color .15s}
+.mode-card.retro-on:hover{border-color:var(--accent)}
 .mode-card.retro-on .mode-ico{filter:none}
-.retro-years{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
-.retro-years button{font-family:inherit;font-weight:800;font-size:14px;padding:7px 15px;border-radius:11px;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:transform .1s}
-.retro-years button:active{transform:scale(.94)}
+.retro-caret{margin-left:auto;font-size:15px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.mode-card.open .retro-caret{transform:rotate(180deg)}
+.decade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:430px;margin:-3px auto 0;
+  padding:13px;border:2px solid var(--line);border-top:none;border-radius:0 0 16px 16px;background:var(--panel);animation:fadeUp .25s both}
+.decade-grid .dec{font-family:inherit;font-weight:800;font-size:14px;padding:10px 0;border-radius:11px;
+  border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:transform .1s}
+.decade-grid .dec:active{transform:scale(.94)}
+.decade-grid .dec.locked{background:var(--panel2);border-color:var(--line);color:var(--muted);opacity:.55;cursor:default}
+.dec-note{grid-column:1/-1;text-align:center;font-size:11.5px;color:var(--muted);margin-top:3px}
 
 /* ---------- identity ---------- */
 #identity{display:none;max-width:1100px;margin:0 auto;padding:32px 20px}
@@ -528,14 +535,21 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <span class="mode-ico">🧑‍💼</span>
       <span class="mode-txt"><b data-es="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
     </div>
-    <div class="mode-card soon" id="retroCard">
-      <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
+    <div class="mode-card retro-on" id="retroCard" onclick="toggleRetro()">
       <span class="mode-ico">🕰️</span>
-      <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small id="retroSub" data-es="Pilota en décadas pasadas" data-en="Race in past decades">Pilota en décadas pasadas</small></span>
-      <span class="retro-years" id="retroYears" style="display:none">
-        <button onclick="startCareerFlow('2010')">2010</button>
-        <button onclick="startCareerFlow('2020')">2020</button>
-      </span>
+      <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Empieza tu carrera en otra época" data-en="Start your career in another era">Empieza tu carrera en otra época</small></span>
+      <span class="retro-caret" id="retroCaret">▾</span>
+    </div>
+    <div class="decade-grid" id="decadeGrid" style="display:none">
+      <button class="dec locked" disabled>1950</button>
+      <button class="dec locked" disabled>1960</button>
+      <button class="dec locked" disabled>1970</button>
+      <button class="dec locked" disabled>1980</button>
+      <button class="dec locked" disabled>1990</button>
+      <button class="dec locked" disabled>2000</button>
+      <button class="dec" onclick="startCareerFlow('2010')">2010</button>
+      <button class="dec" onclick="startCareerFlow('2020')">2020</button>
+      <div class="dec-note" data-es="Las demás décadas están en camino 🏗️" data-en="The other decades are on the way 🏗️">Las demás décadas están en camino 🏗️</div>
     </div>
   </div>
   <!-- OCULTO temporalmente (sin novedades grandes ahora mismo). Quitar el display:none para volver a mostrarlo cuando las haya. -->
@@ -1298,14 +1312,15 @@ function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
 function startCareerFlow(era){ SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
-// activa el Modo Retro (2010/2020) SOLO en PREVIEW mientras lo terminamos; el público sigue viendo «Próximamente»
-function initRetroCard(){ if(!PREVIEW) return; const rc=document.getElementById("retroCard"); if(!rc) return;
-  rc.classList.remove("soon"); rc.classList.add("retro-on");
-  // 🔒 recordatorio visual de que ESTO es el modo secreto: solo lo ve quien tiene el preview activado
-  const b=rc.querySelector(".soon-badge");
-  if(b){ b.textContent="🔒 SOLO TÚ"; b.removeAttribute("data-es"); b.removeAttribute("data-en"); b.style.background="linear-gradient(135deg,#3a3f4a,#15151e)"; }
-  const sub=document.getElementById("retroSub"); if(sub){ sub.dataset.es="Empieza en el mundo de…"; sub.dataset.en="Start in the world of…"; applyLang(); }
-  const ry=document.getElementById("retroYears"); if(ry) ry.style.display="flex"; }
+// 🕰️ Modo Retro: la tarjeta despliega el selector de décadas (2010 y 2020 jugables; el resto, en camino)
+function toggleRetro(){
+  const rc=document.getElementById("retroCard"), g=document.getElementById("decadeGrid");
+  if(!rc||!g) return;
+  const open = g.style.display==="none";
+  g.style.display = open ? "grid" : "none";
+  rc.classList.toggle("open", open);
+  if(open) track("retro_opened");
+}
 // 🔒 barra fija inconfundible cuando el modo pruebas está activo: esto NO lo ve el público, y de aquí se sale con un clic
 function initPreviewBar(){ if(!PREVIEW) return;
   const b=document.createElement("div"); b.id="previewBar";
@@ -2677,6 +2692,9 @@ function pickDilemma(){
 
 function renderDilemma(dl){
   S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age;
+  // 🏆 los dilemas de pelea por el título se deciden ANTES de simar el año: son un PRONÓSTICO (vienes de
+  // podio y tienes cochazo). Lo apuntamos para que, si luego el año se tuerce, la temporada lo explique.
+  if(/^(muroRival|alianza|titlecrash)$/.test(dl.id)) S._titleTalk=yearNow();
   const desc = typeof dl.d==="function" ? dl.d() : dl.d;
   const ttl = typeof dl.t==="function" ? dl.t() : dl.t;
   // el título muestra tu equipo actual → tras firmar en el mercado, confirma al instante DÓNDE estás
@@ -3246,6 +3264,19 @@ function simF1(row,st){
     pos = S.fiaTitlePending==="win"?1:2; S.fiaTitlePending=null; row.fiaTitle=true;
   }
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
+  // 🎈 EL DESINFLE: el año empezó con pinta de pelea por el título (saltó un dilema de esos) y acabó lejos.
+  // En vez de dejar la incoherencia, la temporada la EXPLICA como en la vida real: el desarrollo se atasca,
+  // el rival aprieta, la fiabilidad te mata o simplemente no cuajas.
+  if(S._titleTalk===row.year && pos>=4){
+    const fuerte = pos<=6;
+    row.events.push(roll(
+      [4,()=>L("🎈 Empezasteis peleando el título y os fuisteis desinflando: las mejoras dejaron de llegar y los rivales se escaparon.","🎈 You started fighting for the title and slowly deflated: the upgrades dried up and your rivals pulled away.")],
+      [3,()=>L("🎈 El equipo tiró la toalla a mitad de año para centrarse en el coche del año que viene. Adiós al título.","🎈 The team gave up mid-season to focus on next year's car. So much for the title.")],
+      [3,()=>L("🔧 Abandonos y problemas de fiabilidad en el peor momento: el campeonato se te escapó en el garaje, no en la pista.","🔧 Retirements and reliability gremlins at the worst time: the championship slipped away in the garage, not on track.")],
+      [fuerte?2:3,()=>L("📉 No supiste sostener el nivel de las primeras carreras y el título se quedó en nada.","📉 You couldn't sustain the level of those early races and the title fizzled out.")],
+      [2,()=>L("🚀 Un rival encontró medio segundo a mitad de temporada y ahí se acabó la pelea por el Mundial.","🚀 A rival found half a second mid-season and that was the end of the title fight.")]));
+    S._titleTalk=null;
+  }
   // al debutar en F1, fotografiamos los títulos de los rivales: así "tu era" se mide
   // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
   S.eraEndT=null; // sigues en la F1 → tu era continúa (si volviste de una aventura, se reabre)
@@ -4246,7 +4277,6 @@ function printCareer(){
 }
 applyLang(); // aplicar el idioma guardado al cargar
 applyTheme(); // aplicar el tema guardado al cargar
-initRetroCard(); // activar Modo Retro (2010/2020) solo en PREVIEW
 initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
