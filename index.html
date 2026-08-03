@@ -951,10 +951,24 @@ const GRID2010 = {
 // leyendas RETIRADAS conocidas en 2010 (Schumacher está EN la parrilla, no aquí)
 const LEGENDS_2010 = [["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["A. Senna",3,"🇧🇷"],["N. Lauda",3,"🇦🇹"],
   ["N. Piquet",3,"🇧🇷"],["J. Stewart",3,"🇬🇧"],["J. Brabham",3,"🇦🇺"],["J. Clark",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["M. Häkkinen",2,"🇫🇮"]];
-// cantera 2010: promesas reales de GP2/GP3/FRen que NO llegaron a la F1 (los que sí, van en ARRIVALS_2010)
+// cantera 2010: promesas reales de GP2/GP3/FRen (los que debutaron en la F1 van en ARRIVALS_2010).
+// El 3er campo es el año de «disponible desde»: las promesas de cada década entran en su época, nunca antes.
 const ROOKIE_2010 = [
   ["R. Frijns","🇳🇱"],["A. Félix da Costa","🇵🇹"],["S. Bird","🇬🇧"],["O. Turvey","🇬🇧"],["L. Razia","🇧🇷"],
-  ["S. Coletti","🇲🇨"],["F. Leimer","🇨🇭"],["D. Valsecchi","🇮🇹"],["J. Cecotto","🇻🇪"],["L. Filippi","🇮🇹"]];
+  ["S. Coletti","🇲🇨"],["F. Leimer","🇨🇭"],["D. Valsecchi","🇮🇹"],["J. Cecotto","🇻🇪"],["L. Filippi","🇮🇹"],
+  // década 2010: nunca llegaron a la F1 (o solo la rozaron)
+  ["C. Vietoris","🇩🇪",2010],["J. Calado","🇬🇧",2011],["D. Clos","🇪🇸",2011],["D. Abt","🇩🇪",2011],
+  ["J. d'Ambrosio","🇧🇪",2011],["M. Chilton","🇬🇧",2012],["F. Rosenqvist","🇸🇪",2012],["J. Jaafar","🇲🇾",2012],
+  ["R. Marciello","🇮🇹",2013],["N. Nato","🇫🇷",2014],["R. Merhi","🇪🇸",2014],["A. Fuoco","🇮🇹",2015],
+  ["L. Ghiotto","🇮🇹",2016],["B. Hartley","🇳🇿",2016],["S. Sirotkin","🇷🇺",2017],["S. Sette Câmara","🇧🇷",2017],
+  ["N. de Vries","🇳🇱",2019],
+  // década 2020 (una partida de 2010 llega hasta aquí): promesas reales de F2/F3
+  ["C. Ilott","🇬🇧",2020],["R. Shwartzman","🇷🇺",2020],["F. Drugovich","🇧🇷",2020],["J. Vips","🇪🇪",2020],
+  ["M. Armstrong","🇳🇿",2020],["J. Daruvala","🇮🇳",2020],["T. Pourchaire","🇫🇷",2021],["F. Vesti","🇩🇰",2021],
+  ["D. Hauger","🇳🇴",2021],["V. Martins","🇫🇷",2021],["P. Aron","🇪🇪",2022],["L. Browning","🇬🇧",2022],
+  ["A. Dunne","🇮🇪",2023],["N. Tsolov","🇧🇬",2024],["R. Camara","🇧🇷",2024],
+  // los chavales de la era actual: solo cuando la línea temporal llega a ~2026
+  ["F. Slater","🇬🇧",2025],["T. Taponen","🇫🇮",2025],["C. Costoya","🇪🇸",2026],["K. Nakamura-Berta","🇯🇵",2026],["N. Monteiro","🇵🇹",2026]];
 // escalera junior 2010 (nombres de época): Fórmula Renault → Fórmula 3 → GP3 → GP2
 const FREN_2010 = [
   {name:"Prema FRen", color:"#dd0022", color2:"#6b0011", perf:58},{name:"SG Formula", color:"#1a3a6b", color2:"#0d1f3a", perf:55},
@@ -1005,11 +1019,15 @@ const GRID2020 = {
 // leyendas retiradas conocidas en 2020 (Vettel/Räikkönen siguen EN la parrilla → no aquí)
 const LEGENDS_2020 = [["M. Schumacher",7,"🇩🇪"],["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["A. Senna",3,"🇧🇷"],
   ["N. Lauda",3,"🇦🇹"],["N. Piquet",3,"🇧🇷"],["J. Stewart",3,"🇬🇧"],["J. Brabham",3,"🇦🇺"]];
-// cantera 2020: promesas reales de F2/F3 que no debutaron (o aún no); los que sí, van en ARRIVALS_2020
+// cantera 2020: promesas reales de F2/F3 (los que debutaron van en ARRIVALS_2020). 3er campo = disponible desde.
 const ROOKIE_2020 = [
-  ["C. Ilott","🇬🇧"],["R. Shwartzman","🇷🇺"],["C. Lundgaard","🇩🇰"],["T. Pourchaire","🇫🇷"],["F. Vesti","🇩🇰"],
-  ["J. Daruvala","🇮🇳"],["F. Drugovich","🇧🇷"],["J. Vips","🇪🇪"],["D. Hauger","🇳🇴"],["M. Armstrong","🇳🇿"],
-  ["A. Dunne","🇮🇪"],["P. Aron","🇪🇪"],["L. Browning","🇬🇧"],["R. Camara","🇧🇷"],["N. Tsolov","🇧🇬"],["V. Martins","🇫🇷"]];
+  ["C. Ilott","🇬🇧"],["R. Shwartzman","🇷🇺"],["C. Lundgaard","🇩🇰"],["J. Daruvala","🇮🇳"],["F. Drugovich","🇧🇷"],
+  ["J. Vips","🇪🇪"],["M. Armstrong","🇳🇿"],["V. Martins","🇫🇷"],["T. Pourchaire","🇫🇷",2021],["F. Vesti","🇩🇰",2021],
+  ["D. Hauger","🇳🇴",2021],["L. Browning","🇬🇧",2022],["P. Aron","🇪🇪",2022],["A. Dunne","🇮🇪",2023],
+  ["R. Camara","🇧🇷",2024],["N. Tsolov","🇧🇬",2024],
+  // los chavales de la era actual: solo cuando la línea temporal llega a ~2026
+  ["F. Slater","🇬🇧",2025],["T. Taponen","🇫🇮",2025],["C. Costoya","🇪🇸",2026],["K. Nakamura-Berta","🇯🇵",2026],
+  ["N. Monteiro","🇵🇹",2026],["E. Deligny","🇫🇷",2026],["A. García","🇪🇸",2026]];
 
 /* 🧬 LINAJE de equipos (retro): cada transformación/quiebra tiene VENTANA de años (~la real ±) y PROBABILIDAD →
    en una partida Renault muta en Alpine en 2021, en otra en 2024, en otra sigue siendo Renault para siempre.
@@ -1400,7 +1418,11 @@ function mkRookie(noCross, forTeam){
   }
   let name, flag;
   S.rookies=S.rookies.filter(r=>!S.dpool.some(d=>d.name===r[0])); // purga nombres que ya entraron por otra vía
-  if(S.rookies.length){ [name,flag]=S.rookies.splice(irnd(0,S.rookies.length-1),1)[0]; }
+  // ⏳ cada promesa puede llevar año de «disponible desde» (r[2]) → los Costoya de 2026 no aparecen en 2012:
+  // en una partida retro, las promesas de cada década van entrando cuando la línea temporal llega a su época
+  const _yr=yearNow();
+  const _avail=S.rookies.map((r,i)=>i).filter(i=>!S.rookies[i][2] || _yr>=S.rookies[i][2]);
+  if(_avail.length){ [name,flag]=S.rookies.splice(_avail[irnd(0,_avail.length-1)],1)[0]; }
   else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)]; name=GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
   // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
   // reemplaza a los Verstappen que se retiran → cada época conserva sus estrellas y el top no se hunde con los años.
