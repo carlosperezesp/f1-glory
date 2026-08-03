@@ -2105,7 +2105,9 @@ const DILEMAS=[
  {id:"filtracion",stage:"f1",t:()=>L("La filtración","The leak"),d:()=>L("Un periodista tiene mensajes tuyos criticando duramente al equipo. Publica mañana.","A journalist has messages of yours harshly criticising the team. He publishes tomorrow."),opts:[
    {l:()=>L("Comprar su silencio","Buy his silence"),r:()=>{VAL(.88);return ch(.7)?L("La historia muere en un cajón. -12% fama","The story dies in a drawer. -12% fame"):L("Paga y aún así se publica. Doble desastre. -12% fama y bronca interna","You pay and it's published anyway. Double disaster. -12% fame and internal fallout");}},
    {l:()=>L("Adelantarte y disculparte","Get ahead of it and apologise"),r:()=>ch(.55)?(VAL(1.05),L("Tu honestidad desactiva la bomba. +fama","Your honesty defuses the bomb. +fame")):(CAR(-1),L("La relación con el equipo queda tocada. -1 coche","Your relationship with the team is damaged. -1 car"))}]},
- {id:"alianza",stage:"f1",t:()=>L("Pacto entre pilotos","A drivers' pact"),d:()=>L("Otro aspirante al título te propone una alianza: no quitaros puntos entre vosotros y atacar juntos al líder.","Another title contender proposes an alliance: don't take points off each other and attack the leader together."),opts:[
+ // solo tiene sentido si de verdad PELEAS el título: con un coche de media tabla nadie te propone un pacto
+ {id:"alianza",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=5,
+  t:()=>L("Pacto entre pilotos","A drivers' pact"),d:()=>L("Otro aspirante al título te propone una alianza: no quitaros puntos entre vosotros y atacar juntos al líder.","Another title contender proposes an alliance: don't take points off each other and attack the leader together."),opts:[
    {l:()=>L("Pactar","Make the pact"),r:()=>ch(.55)?(OVR(1),L("El pacto funciona y llegáis vivos al final. +1 OVR","The pact works and you both reach the finale alive. +1 OVR")):(VAL(.9),L("Te traiciona en la última curva del año. Fama -10%","He betrays you at the final corner of the year. Fame -10%"))},
    {l:()=>L("Ir por libre","Go it alone"),r:()=>ch(.6)?L("Cada lobo caza solo. Sin cambios.","Every wolf hunts alone. No change."):(OVR(1),L("Tu independencia te hace más fuerte. +1 OVR","Your independence makes you stronger. +1 OVR"))}]},
  {id:"fiesta",stage:"f1",t:()=>L("La noche de Mónaco","The Monaco night"),d:()=>L("La víspera del GP más glamuroso, medio Hollywood te invita a la fiesta del año en un yate.","The eve of the most glamorous GP, half of Hollywood invites you to the party of the year on a yacht."),opts:[
@@ -2157,7 +2159,9 @@ const DILEMAS=[
      [4,()=>(VAL(1.25),L("Gesto histórico de deportividad: cariño eterno del público. +25% fama","A historic act of sportsmanship: the fans' undying love. +25% fame"))],
      [3,()=>(OVR(1),L("Duele, pero te crece por dentro. +1 OVR","It hurts, but you grow inside. +1 OVR"))],
      [3,()=>L("Nadie te lo agradece. Regalaste una victoria. Sin cambios.","Nobody thanks you. You gave away a win. No change.")])}]},
- {id:"titlecrash",stage:"vet",t:()=>L("El duelo por el título","The title showdown"),d:()=>L("Última carrera del año, os jugáis el Mundial tú y tu rival. Se acerca por fuera y tienes la puerta para cerrarle de forma temeraria.","Final race of the year, you and your rival are fighting for the title. He comes up the outside and you have the chance to slam the door recklessly."),opts:[
+ // idem: te juegas el Mundial en la última carrera → solo si de verdad estás ahí arriba
+ {id:"titlecrash",stage:"vet",cond:()=>S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=4,
+  t:()=>L("El duelo por el título","The title showdown"),d:()=>L("Última carrera del año, os jugáis el Mundial tú y tu rival. Se acerca por fuera y tienes la puerta para cerrarle de forma temeraria.","Final race of the year, you and your rival are fighting for the title. He comes up the outside and you have the chance to slam the door recklessly."),opts:[
    {l:()=>L("Cerrarle sin piedad","Slam the door mercilessly"),r:()=>roll(
      [4,()=>(VAL(1.15),OVR(1),L("Le echas y sales impune: temido y respetado. +fama, +1 OVR","You run him off and get away with it: feared and respected. +fame, +1 OVR"))],
      [3,()=>(VAL(.75),L("Chocáis los dos: fama de tramposo y un año amargo. Fama -25%","You both crash: a cheat's reputation and a bitter year. Fame -25%"))],
@@ -3177,6 +3181,7 @@ function simF1(row,st){
   row.wins=wins;row.pods=pods;row.pos=pos;row.pts=pts;
   // al debutar en F1, fotografiamos los títulos de los rivales: así "tu era" se mide
   // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
+  S.eraEndT=null; // sigues en la F1 → tu era continúa (si volviste de una aventura, se reabre)
   if(S.f1Seasons===0){
     S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; });
     track("reached_f1", {debut_age: S.age, pedigree: Math.round(juniorPedigree()), era: S.era||"2026"});
@@ -3428,6 +3433,9 @@ function chooseAdventureSeries(){
 }
 function startAdventure(key){
   track("adventure", {series: key, age: S.age, era: S.era||"2026"});
+  // 🏛️ TU ERA acaba cuando dejas la F1: congelamos el palmarés de tus rivales aquí. Lo que ganen
+  // después (cuando tú ya estás en Indy/NASCAR) es SU época, no la tuya — no cuenta para el duelo generacional.
+  if((S.f1Seasons||0)>0 && !S.eraEndT){ S.eraEndT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraEndT[d.name]=d.titles||0; }); }
   S.advSeries=key; S.cat="ADV";
   S.team={name:SERIES[key].name, series:key, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
   S.role=null; S.roleTeam=null; S.roleMate=null;
@@ -4001,15 +4009,20 @@ function endCareer(){
   try{ if(PREVIEW || new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
   // guarda la carrera también en local: respaldo del ranking si no hay conexión
   localBoardAdd({n:sel.name, f:sel.flag, g:score, d:yearNow()});
-  // ¿dominaste tu era? comparar tus títulos con el mejor rival, contando solo los mundiales
-  // que ganó DESDE tu debut en F1 (tu época en la élite), no los que ya tenía antes
-  const eraT = S.eraStartT || {};
+  // ¿dominaste tu era? Se cuentan SOLO los mundiales que tus rivales ganaron DENTRO de tu época en la
+  // élite: desde tu debut en F1 (eraStartT) hasta que la dejaste (eraEndT). Si te fuiste a Indy/NASCAR y
+  // ellos siguieron ganando después, eso ya es SU era, no la tuya.
+  const eraT = S.eraStartT || {}, eraE = S.eraEndT;
   let bestRival=0, rivalName="";
-  S.dpool.forEach(d=>{ if(d.name!=="TÚ"){ const ig=d.titles-(eraT[d.name]||0); if(ig>bestRival){bestRival=ig;rivalName=surname(d.name);} } });
+  S.dpool.forEach(d=>{ if(d.name!=="TÚ"){
+    const end = eraE ? (eraE[d.name]!=null?eraE[d.name]:0) : d.titles; // congelado al irte, o su total si acabaste en F1
+    const ig = end-(eraT[d.name]||0); if(ig>bestRival){bestRival=ig;rivalName=surname(d.name);} } });
   const T=S.titles.f1;
+  const leftOnTop = !!eraE && T>bestRival; // dominaste… y te marchaste a conquistar otro mundo
   let era="";
   if(T>=1){
-    if(T>bestRival) era=L(" Y nadie de tu generación ganó más mundiales que tú: dominaste tu era."," And nobody of your generation won more titles than you: you dominated your era.");
+    if(leftOnTop) era=L(" Nadie de tu generación ganó más que tú: dominaste tu era… y luego te fuiste a buscar otra. Lo que vino después ya fue otra época."," Nobody of your generation won more than you: you dominated your era… then left to find another. What came next was someone else's time.");
+    else if(T>bestRival) era=L(" Y nadie de tu generación ganó más mundiales que tú: dominaste tu era."," And nobody of your generation won more titles than you: you dominated your era.");
     else if(T===bestRival && rivalName) era=L(` Compartiste el trono con ${rivalName} (${T}-${bestRival}): una rivalidad que quedará en la historia.`,` You shared the throne with ${rivalName} (${T}-${bestRival}): a rivalry that will go down in history.`);
     else if(rivalName) era=L(` Aun así, ${rivalName} reinó en tu época con ${bestRival} mundiales: no llegaste a dominar, pero le disputaste el trono hasta el final.`,` Even so, ${rivalName} ruled your era with ${bestRival} titles: you never quite dominated, but you fought them for the throne to the very end.`);
   }
