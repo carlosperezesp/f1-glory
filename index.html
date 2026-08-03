@@ -1744,7 +1744,8 @@ const SERIES={
   dtm:      {name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia.", subEn:"German GT3 touring cars, pure strategy."},
   supercars:{name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
   dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
-  formulae: {name:"Fórmula E", nameEn:"Formula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
+  // ⚡ la Fórmula E NO EXISTE hasta 2014: en una partida que empieza en 2010, no aparece hasta entonces
+  formulae: {from:2014, name:"Fórmula E", nameEn:"Formula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
   brasil:   {name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
   superformula:{name:"Super Fórmula", nameEn:"Super Formula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1."},
 };
@@ -3333,7 +3334,7 @@ function youngEscapeOption(){
 function chooseYoungSeries(){
   setDecision(L("🌏 Buscarte la vida","🌏 Make your name elsewhere"),L("La escalera a la F1 se te ha atascado. En vez de esperar sentado, te vas a otra categoría a competir de verdad. Brilla —o al menos crece y rueda— y la F1 puede acabar llamándote. Pero es una apuesta: si no cuaja, tu sueño puede quedarse por el camino.","The ladder to F1 has stalled. Instead of waiting around, you head to another series to race for real. Shine —or at least grow and rack up laps— and F1 may end up calling. But it's a gamble: if it doesn't click, your dream may slip away."));
   $("decRecap").style.display="none";
-  const young=["superformula","indy","formulae"];
+  const young=["superformula","indy","formulae"].filter(k=>!SERIES[k].from || yearNow()>=SERIES[k].from);
   const fav=natAff().series.filter(k=>young.includes(k));
   const chosen=[];
   if(fav.length && ch(.7)) chosen.push(fav[irnd(0,fav.length-1)]);
@@ -3362,8 +3363,9 @@ function stuckDeadEnd(){
 function chooseAdventureSeries(){
   setDecision(L("🌎 ¿Dónde te lanzas?","🌎 Where do you go?"),L("Elige tu aventura fuera de la Fórmula 1. Cada mundo es distinto… y ninguna victoria está garantizada.","Choose your adventure outside Formula 1. Each world is different… and no win is guaranteed."));
   $("decRecap").style.display="none";
-  // máximo 3 series (+ retirarse): semicableado por nacionalidad + azar (no todas de golpe)
-  const all=Object.keys(SERIES);
+  // máximo 3 series (+ retirarse): semicableado por nacionalidad + azar (no todas de golpe).
+  // ⏳ solo series que YA EXISTEN en el año de la partida (la Fórmula E, desde 2014)
+  const all=Object.keys(SERIES).filter(k=>!SERIES[k].from || yearNow()>=SERIES[k].from);
   const chosen=[];
   const fav=natAff().series.filter(k=>all.includes(k));
   if(fav.length && ch(.75)) chosen.push(fav[irnd(0,fav.length-1)]); // tu país tira hacia una serie afín
