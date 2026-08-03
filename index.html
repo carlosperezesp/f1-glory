@@ -908,6 +908,10 @@ const EXPANSION = [
     drivers:null}, // el gigante coreano entra con talento joven del mercado
   {range:[2030,2039], team:{name:"Lotus", abbr:"LOT", color:"#00543d", color2:"#c9a227", perf:64, cat:"F1"},
     drivers:null}, // renace el mito británico verde y oro
+  {range:[2031,2041], team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:66, cat:"F1"},
+    drivers:null}, // el eterno «casi» por fin da el paso
+  {range:[2030,2040], team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:65, cat:"F1"},
+    drivers:null}, // el gigante japonés vuelve tras su marcha de 2009
 ];
 
 /* ============================================================
@@ -1055,13 +1059,29 @@ const LINEAGE_2020 = [
  {key:"AlphaTauri", steps:[{to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2027], p:.6}]},
  {key:"Alfa Romeo", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2024,2030], p:.65}]},
 ];
-// equipos NUEVOS de la era (con prob por partida; independientes entre sí)
+// equipos NUEVOS de la era (con prob por partida; independientes entre sí, salvo grupo `excl`:
+// el proyecto GM solo entra bajo UNA marca por partida — o Andretti o Cadillac, como en la realidad).
+// `dieAfter`: el recién llegado es frágil y puede quebrar a los w[0]-w[1] años de entrar (prob p).
 const ENTRIES_2010 = [
- {range:[2014,2018], prob:.7, team:{name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:64, cat:"F1"}, drivers:null},
- {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null},
+ {range:[2014,2018], prob:.7,  team:{name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:64, cat:"F1"}, drivers:null},
+ // 🇺🇸 USF1: el proyecto americano que se hundió antes de debutar en 2010 — en muy pocas realidades, cuaja
+ {range:[2011,2014], prob:.12, team:{name:"USF1", abbr:"USF", color:"#1B3E7A", color2:"#C8102E", perf:60, cat:"F1"}, drivers:null},
+ // 🇷🇸 Stefan GP: lo intentó en 2010 y sonó otra vez en 2015 — rarísimo que entre, y rarísimo que aguante
+ {range:[2014,2016], prob:.08, team:{name:"Stefan GP", abbr:"SGP", color:"#C6363C", color2:"#0C4076", perf:57, cat:"F1"}, drivers:null, dieAfter:{w:[2,5], p:.7}},
+ // 🇯🇵 Toyota: se fue a finales de 2009; en algunas realidades el gigante vuelve
+ {range:[2014,2022], prob:.28, team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null},
+ // 🇩🇪 Porsche: el eterno «casi»
+ {range:[2016,2025], prob:.22, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null},
+ // 🇺🇸 proyecto GM: o Andretti o Cadillac, nunca los dos
+ {range:[2022,2027], prob:.3,  team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+ {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
 ];
 const ENTRIES_2020 = [
- {range:[2025,2029], prob:.6, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null},
+ {range:[2024,2028], prob:.35, team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+ {range:[2025,2029], prob:.6,  team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+ // 🇩🇪 Porsche: el acuerdo con Red Bull que se rompió en 2022 — en algunas realidades se firma otro camino
+ {range:[2026,2031], prob:.25, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null},
+ {range:[2027,2033], prob:.2,  team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null},
 ];
 /* 🎬 LLEGADAS históricas: pilotos reales debutan ~cuando lo hicieron en la realidad (año ±1 por partida).
    pref = equipo por su nombre ORIGINAL de la era (se resuelve al nombre actual si el equipo mutó).
@@ -1188,7 +1208,9 @@ const TEAM_LOGOS = {
   // 🕰️ escudos de las eras retro (2010/2020) y sus transformaciones de linaje
   "Renault":"renault.png","Force India":"ForceIndia.png","Toro Rosso":"ToroRosso.png","Sauber":"Sauber.png",
   "Virgin":"virgin.png","HRT":"HRTnew.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
-  "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png"
+  "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png",
+  // equipos de expansión retro/actual (Andretti: pastilla bicolor hasta tener logo)
+  "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png"
 };
 // insignia de equipo: logo si existe, si no la pastilla bicolor (equipos junior)
 function badge(team, extraCls){
@@ -1302,7 +1324,13 @@ function startCareer(){
   // (Haas, Cadillac…) se sortea con SU probabilidad, independientes entre sí.
   const EXP = S.expansion || [];
   if(EXP.length){
-    if(EXP.some(e=>e.prob!=null)){ EXP.forEach(e=>{ e.added = !ch(e.prob); e.year = irnd(e.range[0],e.range[1]); }); }
+    if(EXP.some(e=>e.prob!=null)){
+      EXP.forEach(e=>{ e.added = !ch(e.prob); e.year = irnd(e.range[0],e.range[1]); });
+      // grupos exclusivos (excl): si varios del mismo grupo salieron, se queda solo UNO al azar
+      const gs={};
+      EXP.forEach(e=>{ if(!e.added && e.excl){ (gs[e.excl]=gs[e.excl]||[]).push(e); } });
+      Object.values(gs).forEach(arr=>{ if(arr.length>1){ const keep=irnd(0,arr.length-1); arr.forEach((e,i)=>{ if(i!==keep) e.added=true; }); } });
+    }
     else { const activeExp = irnd(0, EXP.length-1); EXP.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); }); }
   }
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
@@ -2702,6 +2730,10 @@ function checkExpansion(row){
       ? L("🏁 ¡BOMBAZO! "+e.team.name+" debuta con un COCHAZO: han descifrado el reglamento y son el nuevo equipo a batir.","🏁 SHOCK! "+e.team.name+" debuts with a ROCKET: they've cracked the new rules and are the team to beat.")
       : L("🆕 "+e.team.name+" se estrena en la Fórmula 1 esta temporada.","🆕 "+e.team.name+" makes its Formula 1 debut this season."));
     if(brawn) S.brawnWatch={name:e.team.name, year:yearNow()};
+    // 💸 recién llegado FRÁGIL (Stefan GP): puede quebrar a los pocos años — se cablea como un paso de linaje
+    // más, con todas sus protecciones (nunca muere contigo dentro, parrilla mínima de 10)
+    if(e.dieAfter && !brawn){ S.lineage=S.lineage||[]; S.lineage.push({key:e.team.name, cur:e.team.name,
+      steps:[{die:true, year:yearNow()+irnd(e.dieAfter.w[0],e.dieAfter.w[1]), go:ch(e.dieAfter.p), done:false}]}); }
   });
 }
 
@@ -3061,7 +3093,7 @@ function simF1(row,st){
   // desde tu llegada a la élite (no cuentan los mundiales que ganaron antes de que llegaras)
   if(S.f1Seasons===0){
     S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; });
-    track("reached_f1", {debut_age: S.age, pedigree: Math.round(juniorPedigree())});
+    track("reached_f1", {debut_age: S.age, pedigree: Math.round(juniorPedigree()), era: S.era||"2026"});
     // la revolución técnica (efecto Brawn): ~70% de carreras, RELATIVA a tu debut (mitad de carrera,
     // con tiempo de aprovecharla) — antes caía en año absoluto tardío → salía siempre en tu última temporada
     S.regReg = ch(.7) ? yearNow() + irnd(5,10) : 9999;
@@ -3084,7 +3116,7 @@ function simF1(row,st){
     c:row.top3c, cmv:constrRank.slice(0,3).map((e,i)=>mvC(e[0],i+1)),
     myPos:pos, myConstr:constrPos, myPosMv:mvD("__ME__",pos), myConstrMv:mvC(myTeam,constrPos)};
   if(row.apxWin) row.events.push(L("🎬 Victoria con APXGP: la remontada digna de Hollywood.","🎬 A win with APXGP: a comeback worthy of Hollywood."));
-  if(pos===1){ S.titles.f1++; track("title_won", {team: myTeam, age: S.age}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️"):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
+  if(pos===1){ S.titles.f1++; track("title_won", {team: myTeam, age: S.age, era: S.era||"2026"}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️"):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
   else {
     const champ=standings[0];
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
@@ -3303,7 +3335,7 @@ function chooseAdventureSeries(){
   renderSpecialOptions(opts);
 }
 function startAdventure(key){
-  track("adventure", {series: key, age: S.age});
+  track("adventure", {series: key, age: S.age, era: S.era||"2026"});
   S.advSeries=key; S.cat="ADV";
   S.team={name:SERIES[key].name, series:key, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
   S.role=null; S.roleTeam=null; S.roleMate=null;
