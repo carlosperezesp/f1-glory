@@ -75,6 +75,11 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .mode-txt b{font-size:15px;font-weight:800;color:var(--text)}
 .mode-txt small{font-size:12px;color:var(--muted);margin-top:1px}
 .soon-badge{position:absolute;top:-9px;right:14px;background:linear-gradient(135deg,#ffb52e,#e10600);color:#fff;font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;box-shadow:0 3px 8px rgba(225,6,0,.28);transform:rotate(2.5deg)}
+.mode-card.retro-on{opacity:1;cursor:default}
+.mode-card.retro-on .mode-ico{filter:none}
+.retro-years{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
+.retro-years button{font-family:inherit;font-weight:800;font-size:14px;padding:7px 15px;border-radius:11px;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:transform .1s}
+.retro-years button:active{transform:scale(.94)}
 
 /* ---------- identity ---------- */
 #identity{display:none;max-width:1100px;margin:0 auto;padding:32px 20px}
@@ -509,7 +514,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <div class="flag">🏁</div>
   <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
   <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
-  <button class="btn" onclick="showIdentity()" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
+  <button class="btn" onclick="startCareerFlow('2026')" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
   <div class="mode-menu">
     <div class="mode-card soon">
       <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
@@ -521,10 +526,14 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <span class="mode-ico">🧑‍💼</span>
       <span class="mode-txt"><b data-es="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
     </div>
-    <div class="mode-card soon">
+    <div class="mode-card soon" id="retroCard">
       <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico">🕰️</span>
-      <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Pilota en décadas pasadas" data-en="Race in past decades">Pilota en décadas pasadas</small></span>
+      <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Empieza en el mundo de…" data-en="Start in the world of…">Pilota en décadas pasadas</small></span>
+      <span class="retro-years" id="retroYears" style="display:none">
+        <button onclick="startCareerFlow('2010')">2010</button>
+        <button onclick="startCareerFlow('2020')">2020</button>
+      </span>
     </div>
   </div>
   <!-- OCULTO temporalmente (sin novedades grandes ahora mismo). Quitar el display:none para volver a mostrarlo cuando las haya. -->
@@ -898,6 +907,122 @@ const EXPANSION = [
   {range:[2030,2039], team:{name:"Lotus", abbr:"LOT", color:"#00543d", color2:"#c9a227", perf:64, cat:"F1"},
     drivers:null}, // renace el mito británico verde y oro
 ];
+
+/* ============================================================
+   🕰️ MODO RETRO — mundos de época (2010 y 2020). Historia alternativa:
+   arrancas en el karting de ese año y la parrilla evoluciona hacia delante.
+   Parrilla F1, nacionalidades y títulos (antes de ese año) VERIFICADOS.
+   ============================================================ */
+const TEAMS_2026_SNAP = F1_TEAMS.map(t=>({...t})); // foto de la era actual (para volver a ella tras jugar una retro)
+const JR_2026 = {F4:F4_TEAMS.map(t=>({...t})), F3:F3_TEAMS.map(t=>({...t})), FR:FRECA_TEAMS.map(t=>({...t})), F2:F2_TEAMS.map(t=>({...t}))}; // foto de la escalera junior actual
+
+// --- 2010 · 12 equipos / 24 coches ---
+const TEAMS_2010 = [
+  {name:"Red Bull",     abbr:"RBR", color:"#0A1E5E", color2:"#D4001A", perf:92},
+  {name:"McLaren",      abbr:"MCL", color:"#C0C0C8", color2:"#DD1E2F", perf:90},
+  {name:"Ferrari",      abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:89},
+  {name:"Mercedes GP",  abbr:"MER", color:"#00A19B", color2:"#5A6A6A", perf:82},
+  {name:"Renault",      abbr:"REN", color:"#F5D800", color2:"#0A0A0A", perf:79},
+  {name:"Williams",     abbr:"WIL", color:"#1A3D7C", color2:"#7FB2E6", perf:77},
+  {name:"Force India",  abbr:"FI",  color:"#E87511", color2:"#245A2A", perf:76},
+  {name:"Toro Rosso",   abbr:"STR", color:"#153A72", color2:"#D00000", perf:72},
+  {name:"Sauber",       abbr:"SAU", color:"#0A4EA2", color2:"#C00000", perf:71},
+  {name:"Lotus",        abbr:"LOT", color:"#00573F", color2:"#F5D800", perf:64},
+  {name:"Virgin",       abbr:"VIR", color:"#D11D2A", color2:"#151515", perf:61},
+  {name:"HRT",          abbr:"HRT", color:"#8A8D90", color2:"#B01B2E", perf:58},
+];
+// [nombre, edad, nivel, techo, títulos(antes de 2010), bandera]
+const GRID2010 = {
+  "Red Bull":[["S. Vettel",23,90,96,0,"🇩🇪"],["M. Webber",33,87,89,0,"🇦🇺"]],
+  "McLaren":[["L. Hamilton",25,92,95,1,"🇬🇧"],["J. Button",30,88,90,1,"🇬🇧"]],
+  "Ferrari":[["F. Alonso",28,93,95,2,"🇪🇸"],["F. Massa",29,85,88,0,"🇧🇷"]],
+  "Mercedes GP":[["M. Schumacher",41,84,88,7,"🇩🇪"],["N. Rosberg",24,85,91,0,"🇩🇪"]],
+  "Renault":[["R. Kubica",25,88,93,0,"🇵🇱"],["V. Petrov",25,76,83,0,"🇷🇺"]],
+  "Williams":[["R. Barrichello",38,82,85,0,"🇧🇷"],["N. Hülkenberg",22,78,90,0,"🇩🇪"]],
+  "Force India":[["A. Sutil",27,80,84,0,"🇩🇪"],["V. Liuzzi",28,77,81,0,"🇮🇹"]],
+  "Toro Rosso":[["S. Buemi",21,78,85,0,"🇨🇭"],["J. Alguersuari",20,77,85,0,"🇪🇸"]],
+  "Sauber":[["K. Kobayashi",23,80,87,0,"🇯🇵"],["P. de la Rosa",39,78,81,0,"🇪🇸"]],
+  "Lotus":[["J. Trulli",35,80,83,0,"🇮🇹"],["H. Kovalainen",28,80,84,0,"🇫🇮"]],
+  "Virgin":[["T. Glock",28,80,84,0,"🇩🇪"],["L. di Grassi",25,74,82,0,"🇧🇷"]],
+  "HRT":[["B. Senna",26,76,85,0,"🇧🇷"],["K. Chandhok",26,73,79,0,"🇮🇳"]],
+};
+// leyendas RETIRADAS conocidas en 2010 (Schumacher está EN la parrilla, no aquí)
+const LEGENDS_2010 = [["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["A. Senna",3,"🇧🇷"],["N. Lauda",3,"🇦🇹"],
+  ["N. Piquet",3,"🇧🇷"],["J. Stewart",3,"🇬🇧"],["J. Brabham",3,"🇦🇺"],["J. Clark",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["M. Häkkinen",2,"🇫🇮"]];
+// cantera 2010: promesas reales de GP2/GP3/F3/Fórmula Renault (~2009-2011)
+const ROOKIE_2010 = [
+  ["P. Maldonado","🇻🇪"],["S. Pérez","🇲🇽"],["R. Grosjean","🇫🇷"],["J. Bianchi","🇫🇷"],["D. Ricciardo","🇦🇺"],
+  ["J-É. Vergne","🇫🇷"],["V. Bottas","🇫🇮"],["D. Kvyat","🇷🇺"],["E. Gutiérrez","🇲🇽"],["R. Frijns","🇳🇱"],
+  ["A. Félix da Costa","🇵🇹"],["S. Bird","🇬🇧"],["M. Ericsson","🇸🇪"],["K. Magnussen","🇩🇰"],["C. Pic","🇫🇷"],
+  ["G. van der Garde","🇳🇱"],["F. Nasr","🇧🇷"],["R. Haryanto","🇮🇩"]];
+// escalera junior 2010 (nombres de época): Fórmula Renault → Fórmula 3 → GP3 → GP2
+const FREN_2010 = [
+  {name:"Prema FRen", color:"#dd0022", color2:"#6b0011", perf:58},{name:"SG Formula", color:"#1a3a6b", color2:"#0d1f3a", perf:55},
+  {name:"Koiranen FRen", color:"#0e7a5f", color2:"#063d2f", perf:53},{name:"Epsilon Euskadi", color:"#e30613", color2:"#7a0309", perf:51},
+  {name:"ART Junior FRen", color:"#888888", color2:"#444444", perf:56},{name:"Fortec FRen", color:"#e6a01e", color2:"#8a5f0f", perf:50},
+  {name:"Manor FRen", color:"#111318", color2:"#c0392b", perf:49}];
+const F3_2010 = [
+  {name:"ART GP F3", color:"#888888", color2:"#444444", perf:66},{name:"Prema Powerteam F3", color:"#dd0022", color2:"#6b0011", perf:64},
+  {name:"Signature F3", color:"#2a2a35", color2:"#101018", perf:60},{name:"Mücke F3", color:"#e6c31e", color2:"#8a740f", perf:58},
+  {name:"Carlin F3", color:"#1144aa", color2:"#0a2560", perf:61},{name:"Hitech F3", color:"#aaaabb", color2:"#666677", perf:56},
+  {name:"Motopark F3", color:"#e05a00", color2:"#7a3100", perf:57}];
+const GP3_2010 = [
+  {name:"ART GP3", color:"#888888", color2:"#444444", perf:64},{name:"Carlin GP3", color:"#1144aa", color2:"#0a2560", perf:60},
+  {name:"MW Arden GP3", color:"#e05a00", color2:"#7a3100", perf:59},{name:"Status GP3", color:"#0e7a5f", color2:"#063d2f", perf:57},
+  {name:"Tech 1 GP3", color:"#2a2a35", color2:"#101018", perf:56},{name:"Manor GP3", color:"#111318", color2:"#c9a227", perf:55},
+  {name:"Jenzer GP3", color:"#e11", color2:"#7a0909", perf:54}];
+const GP2_2010 = [
+  {name:"ART GP2", color:"#888888", color2:"#444444", perf:76},{name:"DAMS GP2", color:"#0088cc", color2:"#004a70", perf:74},
+  {name:"Rapax GP2", color:"#7a1fa2", color2:"#3d0f52", perf:72},{name:"Barwa Addax GP2", color:"#0e7a5f", color2:"#063d2f", perf:70},
+  {name:"iSport GP2", color:"#1a3a6b", color2:"#0d1f3a", perf:73},{name:"Racing Engineering GP2", color:"#e6c31e", color2:"#8a740f", perf:69},
+  {name:"Super Nova GP2", color:"#e30613", color2:"#7a0309", perf:68}];
+
+// --- 2020 · 10 equipos / 20 coches ---
+const TEAMS_2020 = [
+  {name:"Mercedes",     abbr:"MER", color:"#00A19B", color2:"#C0C0C8", perf:93},
+  {name:"Red Bull",     abbr:"RBR", color:"#0A1E5E", color2:"#D4001A", perf:88},
+  {name:"McLaren",      abbr:"MCL", color:"#FF8000", color2:"#0A1E3C", perf:84},
+  {name:"Racing Point", abbr:"RP",  color:"#F596C8", color2:"#2B2B2B", perf:84},
+  {name:"Renault",      abbr:"REN", color:"#F5D800", color2:"#0A0A0A", perf:82},
+  {name:"Ferrari",      abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:80},
+  {name:"AlphaTauri",   abbr:"AT",  color:"#20394C", color2:"#C0C0C8", perf:76},
+  {name:"Alfa Romeo",   abbr:"ALF", color:"#900000", color2:"#C0C0C8", perf:70},
+  {name:"Haas",         abbr:"HAS", color:"#B6BABD", color2:"#DA291C", perf:66},
+  {name:"Williams",     abbr:"WIL", color:"#00A3E0", color2:"#0A1E3C", perf:66},
+];
+const GRID2020 = {
+  "Mercedes":[["L. Hamilton",35,96,97,6,"🇬🇧"],["V. Bottas",30,88,90,0,"🇫🇮"]],
+  "Red Bull":[["M. Verstappen",22,94,97,0,"🇳🇱"],["A. Albon",24,80,86,0,"🇹🇭"]],
+  "McLaren":[["C. Sainz",25,86,89,0,"🇪🇸"],["L. Norris",20,86,93,0,"🇬🇧"]],
+  "Racing Point":[["S. Pérez",30,86,88,0,"🇲🇽"],["L. Stroll",21,79,83,0,"🇨🇦"]],
+  "Renault":[["D. Ricciardo",30,88,90,0,"🇦🇺"],["E. Ocon",23,82,86,0,"🇫🇷"]],
+  "Ferrari":[["S. Vettel",32,85,90,4,"🇩🇪"],["C. Leclerc",22,91,95,0,"🇲🇨"]],
+  "AlphaTauri":[["P. Gasly",24,84,88,0,"🇫🇷"],["D. Kvyat",26,80,83,0,"🇷🇺"]],
+  "Alfa Romeo":[["K. Räikkönen",40,82,85,1,"🇫🇮"],["A. Giovinazzi",26,78,82,0,"🇮🇹"]],
+  "Haas":[["R. Grosjean",34,80,83,0,"🇫🇷"],["K. Magnussen",27,80,83,0,"🇩🇰"]],
+  "Williams":[["G. Russell",22,85,94,0,"🇬🇧"],["N. Latifi",25,74,79,0,"🇨🇦"]],
+};
+// leyendas retiradas conocidas en 2020 (Vettel/Räikkönen siguen EN la parrilla → no aquí)
+const LEGENDS_2020 = [["M. Schumacher",7,"🇩🇪"],["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["A. Senna",3,"🇧🇷"],
+  ["N. Lauda",3,"🇦🇹"],["N. Piquet",3,"🇧🇷"],["J. Stewart",3,"🇬🇧"],["J. Brabham",3,"🇦🇺"]];
+// cantera 2020: promesas reales de F2/F3/F4 (~2019-2021). "M. Schumacher" aquí = MICK
+const ROOKIE_2020 = [
+  ["M. Schumacher","🇩🇪"],["C. Ilott","🇬🇧"],["Y. Tsunoda","🇯🇵"],["R. Shwartzman","🇷🇺"],["N. Mazepin","🇷🇺"],
+  ["C. Lundgaard","🇩🇰"],["G. Zhou","🇨🇳"],["O. Piastri","🇦🇺"],["L. Sargeant","🇺🇸"],["T. Pourchaire","🇫🇷"],
+  ["F. Vesti","🇩🇰"],["L. Lawson","🇳🇿"],["J. Daruvala","🇮🇳"],["F. Drugovich","🇧🇷"],["J. Vips","🇪🇪"],
+  ["D. Hauger","🇳🇴"],["J. Doohan","🇦🇺"],["M. Armstrong","🇳🇿"]];
+
+// registro de eras. La "2026" envuelve el mundo actual; las retro traen su parrilla/cantera/leyendas de época.
+const ERAS = {
+  "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null },
+  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:[], legends:LEGENDS_2020, expansion:[], cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null },
+  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:[], legends:LEGENDS_2010, expansion:[], cats:{F4:"Fórmula Renault",F3:"Fórmula 3",FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010} },
+};
+let SELECTED_ERA = "2026";
+function curEra(){ return ERAS[(S&&S.era)||SELECTED_ERA]||ERAS["2026"]; }
+// etiqueta de categoría según la era (GP2/GP3 en 2010, F2/F3/FRECA en 2020/2026)
+function catName(cat){ if(cat==="KART") return "Karting"; if(cat==="TEST") return L("Probador","Reserve"); const c=curEra().cats; return c[cat]||cat; }
+
 // vínculos equipo A → equipo B: el filial nunca supera a la marca madre
 const JUNIOR_OF = {"Racing Bulls":"Red Bull"};
 
@@ -982,9 +1107,16 @@ function posClass(p){
   if(p<=10) return "top";
   return "rest";
 }
-function yearNow(){ return 2026+(S.age-(S.startAge??16)); } // la partida SIEMPRE arranca en 2026, empieces con 14/15/16
+function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el año base depende de la era (2010/2020/2026)
 
 /* ================= IDENTIDAD ================= */
+// 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
+function startCareerFlow(era){ SELECTED_ERA = era||"2026"; showIdentity(); }
+// activa el Modo Retro (2010/2020) SOLO en PREVIEW mientras lo terminamos; el público sigue viendo «Próximamente»
+function initRetroCard(){ if(!PREVIEW) return; const rc=document.getElementById("retroCard"); if(!rc) return;
+  rc.classList.remove("soon"); rc.classList.add("retro-on");
+  const b=rc.querySelector(".soon-badge"); if(b) b.style.display="none";
+  const ry=document.getElementById("retroYears"); if(ry) ry.style.display="flex"; }
 function showIdentity(){ $("intro").style.display="none"; $("identity").style.display="block"; renderCountries(); }
 function backToIntro(){ $("identity").style.display="none"; $("intro").style.display="flex"; }
 function idChanged(){
@@ -1022,6 +1154,7 @@ function startCareer(){
   sel.num = $("inNum").value;
   track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG});
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
+  const ERA = ERAS[SELECTED_ERA] || ERAS["2026"];  // 🕰️ era elegida: 2026 (actual) o retro 2010/2020
   S = {
     age:startAge, startAge, ovr:48+irnd(0,6), cat:"KART", team:null, fameMod:1, peakOvr:0, peakAge:startAge, reinvented:false,
     recordBoast:null, tooHumble:false, // «pregunta del récord»: arco del bocazas + castigo por conformista
@@ -1031,28 +1164,29 @@ function startCareer(){
     f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
     bigInjuryDone:false, feuds:[], respects:[], _incRival:null, fiaTitleCount:0, fiaTitlePending:null, _fiaSc:null,
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, forceMove:false, apxShown:false,
-    seats:{}, dpool:[], rookies:[...ROOKIE_POOL], crossovers:CROSSOVERS.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
+    baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
+    seats:{}, dpool:[], rookies:[...ERA.rookies], crossovers:ERA.crossovers.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
     regReg:2046+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
   };
-  // parrilla: base 2026 = 11 equipos. Entra SOLO UN equipo de expansión por partida (aleatorio:
-  // unas veces Hyundai, otras Lotus) → la parrilla nunca pasa de 12. Año de entrada también aleatorio.
-  const activeExp = irnd(0, EXPANSION.length-1);
-  EXPANSION.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); });
-  // 🐞 F1_TEAMS es GLOBAL y persiste entre partidas de la misma sesión: si la anterior metió un equipo de
-  // expansión, hay que retirarlo aquí (si no, puede ofrecerte asiento SIN asientos sembrados → desajustes)
-  EXPANSION.forEach(e=>{ const i=F1_TEAMS.findIndex(t=>t.name===e.team.name); if(i>=0) F1_TEAMS.splice(i,1); });
+  // 🏗️ RECONSTRUIR la parrilla F1 desde la era elegida (contenido reemplazado IN SITU → todas las
+  // referencias globales a F1_TEAMS siguen válidas). Así cada partida arranca con SU parrilla de época
+  // y volver de una retro a 2026 restaura la parrilla actual sin arrastres.
+  F1_TEAMS.length=0; ERA.teams.forEach(t=>F1_TEAMS.push({...t, cat:"F1"}));
+  // escalera junior de la era (2010: Fórmula Renault/F3/GP3/GP2; 2020/2026: las actuales)
+  const JR = ERA.jr || JR_2026;
+  [["F4",F4_TEAMS],["F3",F3_TEAMS],["FR",FRECA_TEAMS],["F2",F2_TEAMS]].forEach(([k,pool])=>{ pool.length=0; JR[k].forEach(t=>pool.push({...t})); });
+  // expansión de la era (retro: sin equipos de expansión por ahora). Entra SOLO UNO por partida.
+  const EXP = S.expansion || [];
+  if(EXP.length){ const activeExp = irnd(0, EXP.length-1); EXP.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); }); }
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
-  // nivel de las academias de karting: aleatorio cada partida → estrellas variables
-  // nivel de cada equipo junior: aleatorio por partida → estrellas variables en KART/F4/F3/F2
-  // Prema es el superequipo de la cantera (como en la realidad): ventaja SIEMPRE positiva → es fiablemente el mejor asiento
+  // nivel de cada equipo junior: aleatorio por partida. Prema (cuando existe en la era) es el superequipo fiable.
   [KART_TEAMS,F4_TEAMS,F3_TEAMS,FRECA_TEAMS,F2_TEAMS].forEach(pool=>pool.forEach(t=>{ S.jrPerf[t.name]=t.perf+(/Prema/.test(t.name)?irnd(2,6):irnd(-4,4)); }));
-  // sembrar la parrilla real de 2026. El TECHO de cada piloto se sortea por partida (horquilla
-  // ~base-8 .. base+3): así el "elegido" cambia cada vez — a veces Antonelli, a veces Verstappen
-  // supera a las leyendas, a veces un regen la lía. Nadie tiene 95 garantizado de fábrica.
-  Object.entries(GRID2026).forEach(([team,list])=>{
+  // sembrar la parrilla de la era. El TECHO de cada piloto se sortea por partida (horquilla
+  // ~base-8 .. base+3): así el "elegido" cambia cada vez y nadie tiene su techo garantizado de fábrica.
+  Object.entries(ERA.grid).forEach(([team,list])=>{
     S.seats[team]=list.map(([name,age,skill,ceil,titles,flag])=>{
       const rolledCeil=Math.round(Math.max(skill+1, Math.min(97, ceil+gauss()*3.4)));
       const d={name,age,skill,ceil:rolledCeil,titles,flag};
@@ -1369,7 +1503,7 @@ function renderRecap(){
   const el=$("decRecap"); if(!el) return;
   const s=S.seasons.at(-1);
   if(!s){ el.style.display="none"; el.innerHTML=""; return; }
-  const catLbl=s.cat==="KART"?"Karting":s.cat==="TEST"?L("Probador","Reserve"):s.cat==="FR"?"FRECA":s.cat;
+  const catLbl=catName(s.cat);
   let posTxt, posCol;
   if(s.cat==="TEST"){ posTxt=reservePos(s); posCol="#ececf1;color:#8a8a94"; }
   else if(s.pos==null){ posTxt="—"; posCol="#ececf1;color:#8a8a94"; }
@@ -1489,7 +1623,7 @@ function renderOffers(offers, withRetire){
     const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-mn)/(mx-mn))));
     // durante la revolución técnica nadie sabe el nivel real de cada coche → estrellas ocultas
     const stars=(S.regUnknown && isF1seat) ? "❓" : ("★".repeat(n5)+"☆".repeat(5-n5));
-    const catLbl = o.team.cat==="KART"?"Karting":o.team.cat==="TEST"?L("Piloto probador F1","F1 Reserve driver"):o.team.cat==="FR"?"FRECA":o.team.cat;
+    const catLbl = o.team.cat==="TEST"?L("Piloto probador F1","F1 Reserve driver"):catName(o.team.cat);
     let roleChip="";
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.")}${o.role}</span>`;
     if(o.team.cat==="TEST") roleChip=`<span class="role rt">${L("PROBADOR","RESERVE")}</span>`;
@@ -2333,7 +2467,7 @@ function checkExpansion(row){
       }
     }
   }
-  EXPANSION.forEach(e=>{
+  (S.expansion||[]).forEach(e=>{
     if(e.added || yearNow()<e.year) return;
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
@@ -2400,7 +2534,7 @@ const flg=f=>`<span class="fl">${f||"🏁"}</span>`;
 /* panel lateral: estado actual de la F1 + palmarés vivo */
 function hallRows(){
   const hall={};
-  LEGENDS.forEach(([n,t,f])=>{hall[n]={t,flag:f};});
+  (S.legends||LEGENDS).forEach(([n,t,f])=>{hall[n]={t,flag:f};});
   S.dpool.forEach(d=>{ if(d.titles>0 && (!hall[d.name]||d.titles>hall[d.name].t)) hall[d.name]={t:d.titles,flag:d.flag}; });
   const rows=Object.entries(hall).map(([n,o])=>({n,t:o.t,flag:o.flag,me:false}));
   if(S.titles.f1>0) rows.push({n:sel.name+" (TÚ)",t:S.titles.f1,flag:sel.flag,me:true});
@@ -3247,7 +3381,7 @@ function renderTimeline(){
     const div=document.createElement("div");
     div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
-    const catLbl=r.cat==="KART"?"Karting":r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="FR"?"FRECA":r.cat==="ADV"?(serName(r.advResult&&r.advResult.series)||L("Aventura","Adventure")):r.cat;
+    const catLbl=r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series)||L("Aventura","Adventure")):catName(r.cat);
     const constr=r.constrPos?` · 🏭 ${L("Constructores (equipo)","Constructors (team)")}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best")} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs")}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator")):r.cat==="ADV"?"":`${r.pts} pts`;
@@ -3392,7 +3526,7 @@ function endCareer(){
   // dorado si ganaste algún título; shiny (brillo animado) si ganaste muchos (3+)
   const goldCell=(el,n)=>{ const c=el.parentElement; c.classList.toggle("gold",n>=1); c.classList.toggle("shiny",n>=3); };
   goldCell($("eT"),S.titles.f1); goldCell($("eC"),S.titles.constr);
-  $("endYears").textContent=L(`Carrera: 2026 – ${yearNow()} · Retirado a los ${S.age} años`,`Career: 2026 – ${yearNow()} · Retired at ${S.age}`);
+  $("endYears").textContent=L(`Carrera: ${S.baseYear||2026} – ${yearNow()} · Retirado a los ${S.age} años`,`Career: ${S.baseYear||2026} – ${yearNow()} · Retired at ${S.age}`);
   const shelf=[];
   for(let i=0;i<S.titles.f1;i++)shelf.push("🏆");
   for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
@@ -3474,7 +3608,7 @@ function endCareer(){
       <span><b>${S.podiums}</b> podios</span><span><b>${S.poles}</b> poles</span>
       <span><b>${S.titles.f1}</b> Mundiales</span><span><b>${S.titles.constr}</b> Constructores</span>
       <span><b>${S.subcamp}</b> subcamp.</span><span><b>${S.ptsF1}</b> pts F1</span>
-      <span>2026–${yearNow()} · retiro a los ${S.age}</span>
+      <span>${S.baseYear||2026}–${yearNow()} · retiro a los ${S.age}</span>
     </div>`;
 }
 
@@ -3519,7 +3653,7 @@ function drawCareerCard(){
   x.fillStyle=bg; x.fillRect(0,0,W,380); checker(380,14);
   fit(`${sel.flag} ${sel.name} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
   fit(S.legacyTxt||"", 262, W-90, 46, "#ffce3a", "800");
-  fit(L(`Carrera 2026–${yearNow()}`,`Career 2026–${yearNow()}`), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
+  fit(L(`Carrera ${S.baseYear||2026}–${yearNow()}`,`Career ${S.baseYear||2026}–${yearNow()}`), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
   const cell=(cx,cy,w,h,val,lab,gold)=>{
     rr(cx,cy,w,h,18); x.fillStyle=gold?"#f3c866":"#262a34"; x.fill();
     x.fillStyle=gold?"#5a3f00":"#fff"; x.font="900 50px Arial, sans-serif"; x.textAlign="center"; x.fillText(String(val), cx+w/2, cy+62);
@@ -3588,6 +3722,7 @@ function printCareer(){
 }
 applyLang(); // aplicar el idioma guardado al cargar
 applyTheme(); // aplicar el tema guardado al cargar
+initRetroCard(); // activar Modo Retro (2010/2020) solo en PREVIEW
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
