@@ -3650,6 +3650,19 @@ function nextOffers(){
         if(stuck && ch(0.28 + S.appetite*0.22 + (natAff().series.length?0.12:0)))
           o.push({special:true, em:"🌎", name:L("Buscar aventura fuera de la F1","Seek adventure outside F1"), sub:L("Indy, Le Mans, NASCAR, DTM… una vida nueva","Indy, Le Mans, NASCAR, DTM… a new life"), color:"#0ea5e9", onClick:()=>chooseAdventureSeries()});
       }
+      // 🏆 LA VÍA DEL MITO (camino Alonso/Montoya/Villeneuve): al final de una GRAN carrera, aunque estés
+      // en un buen coche, puedes elegir irte a conquistar otros mundos en vez de estirar la F1 o retirarte.
+      // Sin pasarse: solo veterano consagrado y ~1 de cada 6 mercados; más probable si te falta la Triple Corona.
+      if(!o.some(x=>x.special) && S.age>=34 && S.f1Seasons>=8 && (S.titles.f1>0 || S.wins>=8 || S.podiums>=25)){
+        const tc=S.tripleCrown||{}; const missing=(tc.monaco?0:1)+(tc.indy?0:1)+(tc.lemans?0:1);
+        const pCrown=(S.monacoWins>0 && missing>0)?0.16:0; // si ya tienes Mónaco, la Corona tira de ti
+        if(ch(0.15 + S.appetite*0.12 + pCrown))
+          o.push({special:true, em:"👑", name:L("Conquistar otro mundo","Conquer another world"),
+            sub:(S.monacoWins>0&&missing>0)
+              ? L("Ya tienes Mónaco: Indy y Le Mans te esperan","You have Monaco: Indy and Le Mans await")
+              : L("Indy, Le Mans, NASCAR… la leyenda no cabe en un solo campeonato","Indy, Le Mans, NASCAR… a legend outgrows one championship"),
+            color:"#b8860b", onClick:()=>chooseAdventureSeries()});
+      }
       // 🚪 puertas cerradas: si has quemado varios puentes y te quedan pocas ofertas, la aventura es tu escape (a cualquier edad)
       if(!o.some(x=>x.special) && S.f1Seasons>=2 && (Object.keys(S.burned).length+Object.keys(S.neverHire).length)>=2 && o.filter(x=>x.team&&x.team.cat==="F1").length<=2){
         o.push({special:true, em:"🌎", name:L("Buscar aventura fuera de la F1","Seek adventure outside F1"), sub:L("Has quemado demasiados puentes… quizá tu sitio esté en otra parte","You've burned too many bridges… maybe your place is elsewhere"), color:"#0ea5e9", onClick:()=>chooseAdventureSeries()});
