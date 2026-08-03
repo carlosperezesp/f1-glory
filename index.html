@@ -949,12 +949,10 @@ const GRID2010 = {
 // leyendas RETIRADAS conocidas en 2010 (Schumacher está EN la parrilla, no aquí)
 const LEGENDS_2010 = [["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["A. Senna",3,"🇧🇷"],["N. Lauda",3,"🇦🇹"],
   ["N. Piquet",3,"🇧🇷"],["J. Stewart",3,"🇬🇧"],["J. Brabham",3,"🇦🇺"],["J. Clark",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["M. Häkkinen",2,"🇫🇮"]];
-// cantera 2010: promesas reales de GP2/GP3/F3/Fórmula Renault (~2009-2011)
+// cantera 2010: promesas reales de GP2/GP3/FRen que NO llegaron a la F1 (los que sí, van en ARRIVALS_2010)
 const ROOKIE_2010 = [
-  ["P. Maldonado","🇻🇪"],["S. Pérez","🇲🇽"],["R. Grosjean","🇫🇷"],["J. Bianchi","🇫🇷"],["D. Ricciardo","🇦🇺"],
-  ["J-É. Vergne","🇫🇷"],["V. Bottas","🇫🇮"],["D. Kvyat","🇷🇺"],["E. Gutiérrez","🇲🇽"],["R. Frijns","🇳🇱"],
-  ["A. Félix da Costa","🇵🇹"],["S. Bird","🇬🇧"],["M. Ericsson","🇸🇪"],["K. Magnussen","🇩🇰"],["C. Pic","🇫🇷"],
-  ["G. van der Garde","🇳🇱"],["F. Nasr","🇧🇷"],["R. Haryanto","🇮🇩"]];
+  ["R. Frijns","🇳🇱"],["A. Félix da Costa","🇵🇹"],["S. Bird","🇬🇧"],["O. Turvey","🇬🇧"],["L. Razia","🇧🇷"],
+  ["S. Coletti","🇲🇨"],["F. Leimer","🇨🇭"],["D. Valsecchi","🇮🇹"],["J. Cecotto","🇻🇪"],["L. Filippi","🇮🇹"]];
 // escalera junior 2010 (nombres de época): Fórmula Renault → Fórmula 3 → GP3 → GP2
 const FREN_2010 = [
   {name:"Prema FRen", color:"#dd0022", color2:"#6b0011", perf:58},{name:"SG Formula", color:"#1a3a6b", color2:"#0d1f3a", perf:55},
@@ -1005,18 +1003,97 @@ const GRID2020 = {
 // leyendas retiradas conocidas en 2020 (Vettel/Räikkönen siguen EN la parrilla → no aquí)
 const LEGENDS_2020 = [["M. Schumacher",7,"🇩🇪"],["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["A. Senna",3,"🇧🇷"],
   ["N. Lauda",3,"🇦🇹"],["N. Piquet",3,"🇧🇷"],["J. Stewart",3,"🇬🇧"],["J. Brabham",3,"🇦🇺"]];
-// cantera 2020: promesas reales de F2/F3/F4 (~2019-2021). "M. Schumacher" aquí = MICK
+// cantera 2020: promesas reales de F2/F3 que no debutaron (o aún no); los que sí, van en ARRIVALS_2020
 const ROOKIE_2020 = [
-  ["M. Schumacher","🇩🇪"],["C. Ilott","🇬🇧"],["Y. Tsunoda","🇯🇵"],["R. Shwartzman","🇷🇺"],["N. Mazepin","🇷🇺"],
-  ["C. Lundgaard","🇩🇰"],["G. Zhou","🇨🇳"],["O. Piastri","🇦🇺"],["L. Sargeant","🇺🇸"],["T. Pourchaire","🇫🇷"],
-  ["F. Vesti","🇩🇰"],["L. Lawson","🇳🇿"],["J. Daruvala","🇮🇳"],["F. Drugovich","🇧🇷"],["J. Vips","🇪🇪"],
-  ["D. Hauger","🇳🇴"],["J. Doohan","🇦🇺"],["M. Armstrong","🇳🇿"]];
+  ["C. Ilott","🇬🇧"],["R. Shwartzman","🇷🇺"],["C. Lundgaard","🇩🇰"],["T. Pourchaire","🇫🇷"],["F. Vesti","🇩🇰"],
+  ["J. Daruvala","🇮🇳"],["F. Drugovich","🇧🇷"],["J. Vips","🇪🇪"],["D. Hauger","🇳🇴"],["M. Armstrong","🇳🇿"],
+  ["A. Dunne","🇮🇪"],["P. Aron","🇪🇪"],["L. Browning","🇬🇧"],["R. Camara","🇧🇷"],["N. Tsolov","🇧🇬"],["V. Martins","🇫🇷"]];
 
+/* 🧬 LINAJE de equipos (retro): cada transformación/quiebra tiene VENTANA de años (~la real ±) y PROBABILIDAD →
+   en una partida Renault muta en Alpine en 2021, en otra en 2024, en otra sigue siendo Renault para siempre.
+   Verificado con la realidad: Renault→Alpine('21) · Force India→Racing Point('18)→Aston Martin('21) ·
+   Toro Rosso→AlphaTauri('20)→Racing Bulls('24) · Sauber→Alfa Romeo('19)→Audi('26) · Lotus→Caterham('12)→☠️('14) ·
+   Virgin→Marussia('12)→☠️('16) · HRT→☠️('12). Haas NO viene de Sauber: entra NUEVO en 2016. */
+const LINEAGE_2010 = [
+ {key:"Mercedes GP", steps:[{to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2011,2014], p:.85}]},
+ {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2016,2026], p:.65}]},
+ {key:"Force India", steps:[{to:{name:"Racing Point",abbr:"RP",color:"#F596C8",color2:"#2B2B2B"}, w:[2016,2020], p:.55},
+                            {to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2020,2027], p:.7}]},
+ {key:"Toro Rosso", steps:[{to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2018,2022], p:.6},
+                           {to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2028], p:.6}]},
+ {key:"Sauber", steps:[{to:{name:"Alfa Romeo",abbr:"ALF",color:"#900000",color2:"#C0C0C8"}, w:[2017,2021], p:.5},
+                       {to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2024,2031], p:.65}]},
+ {key:"Lotus", steps:[{to:{name:"Caterham",abbr:"CAT",color:"#00573F",color2:"#F5D800"}, w:[2011,2013], p:.6},
+                      {die:true, w:[2013,2017], p:.6}]},
+ {key:"Virgin", steps:[{to:{name:"Marussia",abbr:"MAR",color:"#B01717",color2:"#151515"}, w:[2011,2013], p:.6},
+                       {die:true, w:[2014,2018], p:.6}]},
+ {key:"HRT", steps:[{die:true, w:[2012,2015], p:.7}]},
+];
+const LINEAGE_2020 = [
+ {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2021,2024], p:.75}]},
+ {key:"Racing Point", steps:[{to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2021,2023], p:.85}]},
+ {key:"AlphaTauri", steps:[{to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2027], p:.6}]},
+ {key:"Alfa Romeo", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2024,2030], p:.65}]},
+];
+// equipos NUEVOS de la era (con prob por partida; independientes entre sí)
+const ENTRIES_2010 = [
+ {range:[2014,2018], prob:.7, team:{name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:64, cat:"F1"}, drivers:null},
+ {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null},
+];
+const ENTRIES_2020 = [
+ {range:[2025,2029], prob:.6, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null},
+];
+/* 🎬 LLEGADAS históricas: pilotos reales debutan ~cuando lo hicieron en la realidad (año ±1 por partida).
+   pref = equipo por su nombre ORIGINAL de la era (se resuelve al nombre actual si el equipo mutó).
+   [año, "nombre", nacido, techo, bandera, pref] · sk/ti opcionales (veteranos tipo Alonso 2021). */
+const ARRIVALS_2010 = [
+ {y:2011,n:"P. Maldonado",b:1985,c:84,f:"🇻🇪",pref:"Williams"}, {y:2011,n:"S. Pérez",b:1990,c:88,f:"🇲🇽",pref:"Sauber"},
+ {y:2011,n:"D. Ricciardo",b:1989,c:90,f:"🇦🇺",pref:"Toro Rosso"},
+ {y:2012,n:"R. Grosjean",b:1986,c:86,f:"🇫🇷",pref:"Renault"}, {y:2012,n:"J-É. Vergne",b:1990,c:84,f:"🇫🇷",pref:"Toro Rosso"},
+ {y:2012,n:"C. Pic",b:1990,c:79,f:"🇫🇷",pref:"Virgin"},
+ {y:2013,n:"V. Bottas",b:1989,c:88,f:"🇫🇮",pref:"Williams"}, {y:2013,n:"J. Bianchi",b:1989,c:90,f:"🇫🇷",pref:"Virgin"},
+ {y:2013,n:"E. Gutiérrez",b:1991,c:81,f:"🇲🇽",pref:"Sauber"}, {y:2013,n:"G. van der Garde",b:1985,c:78,f:"🇳🇱",pref:"Lotus"},
+ {y:2014,n:"K. Magnussen",b:1992,c:84,f:"🇩🇰",pref:"McLaren"}, {y:2014,n:"D. Kvyat",b:1994,c:85,f:"🇷🇺",pref:"Toro Rosso"},
+ {y:2014,n:"M. Ericsson",b:1990,c:80,f:"🇸🇪",pref:"Lotus"},
+ {y:2015,n:"M. Verstappen",b:1997,c:96,f:"🇳🇱",pref:"Toro Rosso"}, {y:2015,n:"C. Sainz",b:1994,c:89,f:"🇪🇸",pref:"Toro Rosso"},
+ {y:2015,n:"F. Nasr",b:1992,c:82,f:"🇧🇷",pref:"Sauber"}, {y:2015,n:"A. Rossi",b:1991,c:80,f:"🇺🇸",pref:"Virgin"},
+ {y:2016,n:"E. Ocon",b:1996,c:86,f:"🇫🇷",pref:"Force India"}, {y:2016,n:"P. Wehrlein",b:1994,c:84,f:"🇩🇪",pref:"Virgin"},
+ {y:2016,n:"R. Haryanto",b:1993,c:77,f:"🇮🇩",pref:"Virgin"}, {y:2016,n:"J. Palmer",b:1991,c:78,f:"🇬🇧",pref:"Renault"},
+ {y:2017,n:"L. Stroll",b:1998,c:82,f:"🇨🇦",pref:"Williams"}, {y:2017,n:"P. Gasly",b:1996,c:87,f:"🇫🇷",pref:"Toro Rosso"},
+ {y:2017,n:"S. Vandoorne",b:1992,c:85,f:"🇧🇪",pref:"McLaren"},
+ {y:2018,n:"C. Leclerc",b:1997,c:94,f:"🇲🇨",pref:"Sauber"}, {y:2018,n:"A. Giovinazzi",b:1993,c:81,f:"🇮🇹",pref:"Sauber"},
+ {y:2019,n:"L. Norris",b:1999,c:94,f:"🇬🇧",pref:"McLaren"}, {y:2019,n:"G. Russell",b:1998,c:93,f:"🇬🇧",pref:"Williams"},
+ {y:2019,n:"A. Albon",b:1996,c:85,f:"🇹🇭",pref:"Toro Rosso"},
+ {y:2020,n:"N. Latifi",b:1995,c:77,f:"🇨🇦",pref:"Williams"},
+ {y:2021,n:"Y. Tsunoda",b:2000,c:86,f:"🇯🇵",pref:"Toro Rosso"}, {y:2021,n:"Mick Schumacher",b:1999,c:83,f:"🇩🇪",pref:"Haas"},
+ {y:2022,n:"G. Zhou",b:1999,c:82,f:"🇨🇳",pref:"Sauber"},
+ {y:2023,n:"O. Piastri",b:2001,c:94,f:"🇦🇺",pref:"McLaren"}, {y:2023,n:"L. Sargeant",b:2000,c:79,f:"🇺🇸",pref:"Williams"},
+ {y:2023,n:"L. Lawson",b:2002,c:85,f:"🇳🇿",pref:"Toro Rosso"},
+ {y:2024,n:"F. Colapinto",b:2003,c:85,f:"🇦🇷",pref:"Williams"}, {y:2024,n:"O. Bearman",b:2005,c:89,f:"🇬🇧",pref:"Haas"},
+ {y:2025,n:"K. Antonelli",b:2006,c:94,f:"🇮🇹",pref:"Mercedes GP"}, {y:2025,n:"G. Bortoleto",b:2004,c:88,f:"🇧🇷",pref:"Sauber"},
+ {y:2025,n:"I. Hadjar",b:2004,c:87,f:"🇫🇷",pref:"Toro Rosso"}, {y:2025,n:"J. Doohan",b:2003,c:83,f:"🇦🇺",pref:"Renault"},
+ {y:2026,n:"A. Lindblad",b:2007,c:90,f:"🇬🇧",pref:"Toro Rosso"},
+];
+const ARRIVALS_2020 = [
+ {y:2021,n:"Y. Tsunoda",b:2000,c:86,f:"🇯🇵",pref:"AlphaTauri"}, {y:2021,n:"Mick Schumacher",b:1999,c:83,f:"🇩🇪",pref:"Haas"},
+ {y:2021,n:"N. Mazepin",b:1999,c:76,f:"🇷🇺",pref:"Haas"},
+ {y:2021,n:"F. Alonso",b:1981,c:88,f:"🇪🇸",pref:"Renault",sk:85,ti:2}, // el regreso del Nano
+ {y:2022,n:"G. Zhou",b:1999,c:82,f:"🇨🇳",pref:"Alfa Romeo"}, {y:2022,n:"N. de Vries",b:1995,c:82,f:"🇳🇱",pref:"Williams"},
+ {y:2023,n:"O. Piastri",b:2001,c:94,f:"🇦🇺",pref:"McLaren"}, {y:2023,n:"L. Sargeant",b:2000,c:79,f:"🇺🇸",pref:"Williams"},
+ {y:2023,n:"L. Lawson",b:2002,c:85,f:"🇳🇿",pref:"AlphaTauri"},
+ {y:2024,n:"F. Colapinto",b:2003,c:85,f:"🇦🇷",pref:"Williams"}, {y:2024,n:"O. Bearman",b:2005,c:89,f:"🇬🇧",pref:"Haas"},
+ {y:2025,n:"K. Antonelli",b:2006,c:94,f:"🇮🇹",pref:"Mercedes"}, {y:2025,n:"G. Bortoleto",b:2004,c:88,f:"🇧🇷",pref:"Alfa Romeo"},
+ {y:2025,n:"I. Hadjar",b:2004,c:87,f:"🇫🇷",pref:"AlphaTauri"}, {y:2025,n:"J. Doohan",b:2003,c:83,f:"🇦🇺",pref:"Renault"},
+ {y:2026,n:"A. Lindblad",b:2007,c:90,f:"🇬🇧",pref:"AlphaTauri"},
+];
 // registro de eras. La "2026" envuelve el mundo actual; las retro traen su parrilla/cantera/leyendas de época.
 const ERAS = {
-  "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null },
-  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:[], legends:LEGENDS_2020, expansion:[], cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null },
-  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:[], legends:LEGENDS_2010, expansion:[], cats:{F4:"Fórmula Renault",F3:"Fórmula 3",FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010} },
+  "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null,
+    lineage:[], arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
+  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:[], legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null,
+    lineage:LINEAGE_2020, arrivals:ARRIVALS_2020, juniorOf:{"AlphaTauri":"Red Bull"} },
+  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:[], legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:"Fórmula Renault",F3:"Fórmula 3",FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010},
+    lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
 };
 let SELECTED_ERA = "2026";
 function curEra(){ return ERAS[(S&&S.era)||SELECTED_ERA]||ERAS["2026"]; }
@@ -1024,7 +1101,9 @@ function curEra(){ return ERAS[(S&&S.era)||SELECTED_ERA]||ERAS["2026"]; }
 function catName(cat){ if(cat==="KART") return "Karting"; if(cat==="TEST") return L("Probador","Reserve"); const c=curEra().cats; return c[cat]||cat; }
 
 // vínculos equipo A → equipo B: el filial nunca supera a la marca madre
-const JUNIOR_OF = {"Racing Bulls":"Red Bull"};
+let JUNIOR_OF = {"Racing Bulls":"Red Bull"}; // se resetea por partida según la era (Toro Rosso/AlphaTauri/Racing Bulls)
+// ¿es el equipo junior de Red Bull (bajo cualquiera de sus nombres de época)? Sobrevive a los rebrandings.
+function isRBJr(name){ return JUNIOR_OF[name]==="Red Bull"; }
 
 const STYLES = {
   agresivo:{label:"🔥 Agresivo", varza:5.5, dnf:.06, growth:.25, wet:0},
@@ -1170,8 +1249,14 @@ function startCareer(){
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
-    regReg:2046+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
+    regReg:ERA.baseYear+20+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
   };
+  // 🧬 filial de época + plan de linaje sorteado POR PARTIDA (cada transformación: ¿ocurre? ¿qué año?)
+  JUNIOR_OF = {...ERA.juniorOf};
+  S.lineage = (ERA.lineage||[]).map(c=>({key:c.key, cur:c.key,
+    steps:c.steps.map(st=>({to:st.to, die:st.die, year:irnd(st.w[0],st.w[1]), go:ch(st.p), done:false}))}));
+  // 🎬 llegadas históricas con jitter ±1 año (Antonelli puede llegar en 2024, 2025 o 2026…)
+  S.arrivals = (ERA.arrivals||[]).map(a=>({...a, y:a.y+irnd(-1,1)}));
   // 🏗️ RECONSTRUIR la parrilla F1 desde la era elegida (contenido reemplazado IN SITU → todas las
   // referencias globales a F1_TEAMS siguen válidas). Así cada partida arranca con SU parrilla de época
   // y volver de una retro a 2026 restaura la parrilla actual sin arrastres.
@@ -1179,9 +1264,13 @@ function startCareer(){
   // escalera junior de la era (2010: Fórmula Renault/F3/GP3/GP2; 2020/2026: las actuales)
   const JR = ERA.jr || JR_2026;
   [["F4",F4_TEAMS],["F3",F3_TEAMS],["FR",FRECA_TEAMS],["F2",F2_TEAMS]].forEach(([k,pool])=>{ pool.length=0; JR[k].forEach(t=>pool.push({...t})); });
-  // expansión de la era (retro: sin equipos de expansión por ahora). Entra SOLO UNO por partida.
+  // expansión de la era. 2026: entra SOLO UNO por partida (Hyundai o Lotus). Retro: cada entrada
+  // (Haas, Cadillac…) se sortea con SU probabilidad, independientes entre sí.
   const EXP = S.expansion || [];
-  if(EXP.length){ const activeExp = irnd(0, EXP.length-1); EXP.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); }); }
+  if(EXP.length){
+    if(EXP.some(e=>e.prob!=null)){ EXP.forEach(e=>{ e.added = !ch(e.prob); e.year = irnd(e.range[0],e.range[1]); }); }
+    else { const activeExp = irnd(0, EXP.length-1); EXP.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); }); }
+  }
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // nivel de cada equipo junior: aleatorio por partida. Prema (cuando existe en la era) es el superequipo fiable.
   [KART_TEAMS,F4_TEAMS,F3_TEAMS,FRECA_TEAMS,F2_TEAMS].forEach(pool=>pool.forEach(t=>{ S.jrPerf[t.name]=t.perf+(/Prema/.test(t.name)?irnd(2,6):irnd(-4,4)); }));
@@ -1249,7 +1338,37 @@ function refreshCard(){
 const GEN_INITIALS="ADEFGHJKLMNOPRSTV";
 // 💛💙 «generación dorada»: si el buff tocó esta partida, empuja a un piloto de TU nacionalidad (grid o novato)
 function homeBuffOne(d){ if(S.homeBuff && d && d.flag===sel.flag){ d.skill=Math.min(96,d.skill+3); d.ceil=Math.min(97,Math.max(d.ceil+5,d.skill)); } return d; }
-function mkRookie(noCross){
+// nombre ACTUAL del equipo preferido de una llegada (resuelve el linaje: "Sauber"→"Alfa Romeo"→"Audi")
+function arrTeamNow(pref){ if(!pref) return null;
+  const c=(S.lineage||[]).find(x=>x.key===pref); const nm=c?c.cur:pref;
+  return F1_TEAMS.some(t=>t.name===nm)?nm:null; }
+function mkRookie(noCross, forTeam){
+  // 🎬 llegadas históricas (retro): los pilotos reales debutan ~cuando lo hicieron en la realidad.
+  // Si el asiento libre es el de SU equipo real → casi seguro entra ahí; si llevan 2+ años esperando,
+  // entran en el primer hueco que salga (Antonelli puede acabar debutando en otro equipo, como pediste).
+  if(S.arrivals && S.arrivals.length){
+    const yr=yearNow();
+    const due=S.arrivals.filter(a=>a.y<=yr);
+    if(due.length){
+      let pick=null;
+      if(forTeam){ const m=due.filter(a=>arrTeamNow(a.pref)===forTeam); if(m.length && ch(.85)) pick=m[0]; }
+      if(!pick){
+        const late=due.filter(a=>yr-a.y>=2);
+        if(late.length) pick=late[0];
+        else if(ch(.35)) pick=due[irnd(0,due.length-1)];
+      }
+      if(pick){
+        S.arrivals.splice(S.arrivals.indexOf(pick),1);
+        const age=Math.max(17, yr-pick.b);
+        const rc=Math.round(Math.max(78, Math.min(97, pick.c+gauss()*3)));  // techo variable por partida
+        const skill=pick.sk!=null ? pick.sk
+          : Math.round(Math.max(72, Math.min(rc-3, rc-13+rnd(-2,3)+Math.min(6,Math.max(0,(age-19)*.8)))));
+        const d={name:pick.n, age, skill, ceil:Math.max(rc,skill+2), titles:pick.ti||0, flag:pick.f, gen:rc>=94};
+        homeBuffOne(d); S.dpool.push(d);
+        return d;
+      }
+    }
+  }
   // 🏆 crossover: rara vez, una estrella real de otra categoría cruza a la F1 a su EDAD REAL (solo dentro de su ventana).
   // noCross=true (asiento de Racing Bulls): RB solo ficha jóvenes → ahí NUNCA entra un veterano/crossover (Palou y cía.).
   if(!noCross && S.crossovers && S.crossovers.length && (S.crossoverCount||0)<2 && ch(0.045)){
@@ -1283,11 +1402,11 @@ function mkRookie(noCross){
 function npcSeason(){
   // los pilotos con nombre crecen, envejecen y se retiran
   Object.entries(S.seats).forEach(([teamName,slots])=>{
-    const isRB = teamName==="Racing Bulls"; // RB no ficha veteranos → su relevo nunca es un crossover
+    const isRB = isRBJr(teamName); // el filial de RB no ficha veteranos → su relevo nunca es un crossover
     slots.forEach((d,i)=>{
       if(d==="PLAYER") return;
       // 🇪🇸 cameo de Alonso: alargó su carrera para tu debut → al terminar esa, su última temporada, se retira
-      if(d.alonsoCameo){ slots[i]=mkRookie(isRB); return; }
+      if(d.alonsoCameo){ slots[i]=mkRookie(isRB, teamName); return; }
       let g;
       if(d.age<=22) g=rnd(1,3);
       else if(d.age<=26) g=rnd(.3,1.6);
@@ -1302,7 +1421,7 @@ function npcSeason(){
         : (d.age>=33 && d.skill<75)?.30
         : (d.age>=28 && d.skill<71)?.07
         : .008;
-      if(ch(pRet)){ slots[i]=mkRookie(isRB); }
+      if(ch(pRet)){ slots[i]=mkRookie(isRB, teamName); }
     });
   });
   // mercado: los mejores coches pescan talento de abajo
@@ -1320,7 +1439,7 @@ function npcSeason(){
     // y solo con una diferencia clara → el mejor no acaba siempre en el mejor coche
     if(best && best.skill>weak.skill+4 && ch(.2)){
       // Racing Bulls no acepta veteranos ni siquiera como descarte del mercado (crossover/mayor/campeón)
-      if(bTeam==="Racing Bulls" && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) continue;
+      if(isRBJr(bTeam) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) continue;
       top[wIdx]=best; S.seats[bTeam][bIdx]=weak;
     }
   }
@@ -1329,7 +1448,7 @@ function occupySeat(teamName){
   // BLINDADO: localiza TODOS los asientos con "PLAYER" (robusto ante duplicados o mySeatTeam desfasado)
   const spots=[]; Object.entries(S.seats).forEach(([tn,sl])=>{ if(Array.isArray(sl)) sl.forEach((d,j)=>{ if(d==="PLAYER") spots.push([tn,j]); }); });
   // equipo aún sin asientos sembrados (no debería pasar): se crean para no dejarte en el limbo
-  if(!S.seats[teamName]) S.seats[teamName]=[mkRookie(teamName==="Racing Bulls"), mkRookie(teamName==="Racing Bulls")];
+  if(!S.seats[teamName]) S.seats[teamName]=[mkRookie(isRBJr(teamName), teamName), mkRookie(isRBJr(teamName), teamName)];
   const slots=S.seats[teamName];
   const yaSentado = spots.some(([tn])=>tn===teamName);
   if(!yaSentado){
@@ -1339,11 +1458,11 @@ function occupySeat(teamName){
     if(spots.length){
       const [tn,j]=spots[0];
       // RB no hereda veteranos: si dejas Racing Bulls y el descarte de tu nuevo equipo es un veterano/crossover, RB mete a un joven
-      S.seats[tn][j] = (tn==="Racing Bulls" && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true) : displaced;
+      S.seats[tn][j] = (isRBJr(tn) && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true, tn) : displaced;
     }
   }
   // limpia cualquier "PLAYER" residual en otros equipos (herencia de bugs pasados) con un joven
-  spots.forEach(([tn,j])=>{ if(tn!==teamName && S.seats[tn] && S.seats[tn][j]==="PLAYER") S.seats[tn][j]=mkRookie(tn==="Racing Bulls"); });
+  spots.forEach(([tn,j])=>{ if(tn!==teamName && S.seats[tn] && S.seats[tn][j]==="PLAYER") S.seats[tn][j]=mkRookie(isRBJr(tn), tn); });
   S.mySeatTeam=teamName;
 }
 // call-up de reserva a mitad de temporada: pasas de probador a piloto de F1 ESE año (te subiste
@@ -1377,7 +1496,7 @@ function eligibleEnemy(){ const yr=yearNow(); return (S.feuds||[]).find(f=>yr-f.
 // ¿podría MI equipo fichar de verdad al enemigo? Racing Bulls solo ficha jóvenes promesa:
 // si el enemigo es veterano/campeón/élite, el dilema del fichaje ahí NO tiene sentido y no salta
 function enemySignable(){ const f=eligibleEnemy(); if(!f) return null;
-  if(S.team && S.team.name==="Racing Bulls"){ const d=(S.dpool||[]).find(x=>x.name===f.name);
+  if(S.team && isRBJr(S.team.name)){ const d=(S.dpool||[]).find(x=>x.name===f.name);
     if(d && ((d.age||0)>=32 || (d.titles||0)>0 || (d.skill||0)>=87)) return null; }
   return f; }
 // el fichaje del enemigo SE CONSUMA: pasa a ocupar el OTRO asiento de tu equipo (eres su nuevo compañero).
@@ -1393,7 +1512,7 @@ function seatEnemyAsTeammate(){
   Object.entries(S.seats).forEach(([tn,sl])=>{ if(Array.isArray(sl)){ const j=sl.findIndex(d=>d!=="PLAYER"&&d&&d.name===nm); if(j>=0){et=tn;ei=j;} } });
   my[mi]=enemy;
   if(et!=null && ei>=0){
-    const heir=(et==="Racing Bulls" && oldMate && (oldMate.crossover||(oldMate.age||0)>=32||(oldMate.titles||0)>0)) ? mkRookie(true) : oldMate;
+    const heir=(isRBJr(et) && oldMate && (oldMate.crossover||(oldMate.age||0)>=32||(oldMate.titles||0)>0)) ? mkRookie(true, et) : oldMate;
     S.seats[et][ei]=heir;
   }
   S.roleMate=enemy.name;
@@ -1427,7 +1546,7 @@ function oustTeammate(row){
   } else {
     row.events.push(L("💥 "+surname(mate.name)+", humillado, deja el equipo.","💥 "+surname(mate.name)+", humiliated, leaves the team."));
   }
-  slots[mi]=mkRookie(teamName==="Racing Bulls");
+  slots[mi]=mkRookie(isRBJr(teamName), teamName);
   S.role="1"; S.roleTeam=teamName; S.roleMate=teammateOf(teamName).name;
 }
 /* rol pegajoso: si sigues en el mismo equipo con el mismo compañero, NO cambia
@@ -2468,8 +2587,11 @@ function checkExpansion(row){
       }
     }
   }
+  processLineage(row);  // 🧬 transformaciones/quiebras de equipos de la era (retro)
+  processArrivals(row); // 🎬 debuts históricos que no esperan jubilación
   (S.expansion||[]).forEach(e=>{
     if(e.added || yearNow()<e.year) return;
+    if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
     // 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento
@@ -2481,7 +2603,7 @@ function checkExpansion(row){
     S.seats[e.team.name]=(e.drivers||[]).map(([name,age,skill,ceil,titles,flag])=>{
       const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d;
     });
-    while(S.seats[e.team.name].length<2) S.seats[e.team.name].push(mkRookie());
+    while(S.seats[e.team.name].length<2) S.seats[e.team.name].push(mkRookie(false, e.team.name));
     row.events.push(brawn
       ? L("🏁 ¡BOMBAZO! "+e.team.name+" debuta con un COCHAZO: han descifrado el reglamento y son el nuevo equipo a batir.","🏁 SHOCK! "+e.team.name+" debuts with a ROCKET: they've cracked the new rules and are the team to beat.")
       : L("🆕 "+e.team.name+" se estrena en la Fórmula 1 esta temporada.","🆕 "+e.team.name+" makes its Formula 1 debut this season."));
@@ -2489,6 +2611,95 @@ function checkExpansion(row){
   });
 }
 
+/* 🧬 LINAJE (retro): renombra un equipo migrando TODO el estado tecleado por nombre.
+   El historial de temporadas pasadas conserva el nombre antiguo (corriste para Force India en 2017: eso se queda). */
+function rebrandTeam(oldName, to, row){
+  const t=F1_TEAMS.find(x=>x.name===oldName); if(!t) return;
+  const nn=to.name;
+  if(F1_TEAMS.some(x=>x.name===nn)) return; // colisión de nombres: no renombrar
+  ["f1perf","f1target","f1char"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
+  if(S.seats[oldName]){ S.seats[nn]=S.seats[oldName]; delete S.seats[oldName]; }
+  ["burned","neverHire"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
+  if(S.roleTeam===oldName) S.roleTeam=nn;
+  if(S.mySeatTeam===oldName) S.mySeatTeam=nn;
+  if(S.poachTeam===oldName) S.poachTeam=nn;
+  if(S.brawnWatch && S.brawnWatch.name===oldName) S.brawnWatch.name=nn;
+  // el filial de Red Bull conserva su condición bajo el nuevo nombre (Toro Rosso→AlphaTauri→Racing Bulls)
+  if(JUNIOR_OF[oldName]!=null){ JUNIOR_OF[nn]=JUNIOR_OF[oldName]; delete JUNIOR_OF[oldName]; }
+  Object.keys(JUNIOR_OF).forEach(k=>{ if(JUNIOR_OF[k]===oldName) JUNIOR_OF[k]=nn; });
+  Object.assign(t,{name:nn, abbr:to.abbr||t.abbr, color:to.color||t.color, color2:to.color2||t.color2});
+  const mine = S.team && S.team.name===oldName;
+  if(mine && S.team!==t){ S.team.name=nn; S.team.abbr=t.abbr; S.team.color=t.color; S.team.color2=t.color2; }
+  row.events.push(mine
+    ? L(`🔄 Tu equipo cambia de manos: ${oldName} pasa a ser ${nn}. Nuevos colores, mismo box.`,`🔄 Your team changes hands: ${oldName} becomes ${nn}. New colours, same garage.`)
+    : L(`🔄 ${oldName} se transforma en ${nn}.`,`🔄 ${oldName} becomes ${nn}.`));
+}
+function killTeam(name, row){
+  const i=F1_TEAMS.findIndex(t=>t.name===name); if(i<0) return;
+  F1_TEAMS.splice(i,1);
+  delete S.seats[name]; delete S.f1perf[name]; delete S.f1target[name]; delete S.f1char[name];
+  delete S.burned[name]; delete S.neverHire[name];
+  row.events.push(L(`🪦 ${name} no sobrevive: cierra sus puertas y la parrilla pierde un equipo.`,`🪦 ${name} doesn't survive: it shuts its doors and the grid loses a team.`));
+}
+function processLineage(row){
+  (S.lineage||[]).forEach(chn=>{
+    chn.steps.forEach(st=>{
+      if(st.done || !st.go || yearNow()<st.year) return;
+      const t=F1_TEAMS.find(x=>x.name===chn.cur);
+      if(!t){ st.done=true; return; } // el equipo ya no existe (murió antes)
+      if(st.die){
+        // nunca muere con el JUGADOR dentro (titular o probador): agoniza un año, te avisa y te obliga a salir
+        const mine = (S.team && S.team.name===chn.cur) || ((S.seats[chn.cur]||[]).includes("PLAYER"));
+        if(mine){
+          if(!st.warned){ st.warned=true; S.forceMove=true;
+            row.events.push(L(`💸 ${chn.cur} está en quiebra: los sueldos no llegan y el barco se hunde. Busca asiento YA.`,`💸 ${chn.cur} is going under: wages are late and the ship is sinking. Find a seat NOW.`)); }
+          st.year=yearNow()+1; return; // reintenta al año siguiente, cuando ya hayas salido
+        }
+        if(F1_TEAMS.length<=10){ st.done=true; return; } // parrilla mínima de 10: no se muere nadie más
+        killTeam(chn.cur, row); st.done=true; return;
+      }
+      rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true;
+    });
+  });
+}
+/* 🎬 empujón de LLEGADAS (retro): los debuts reales no esperan jubilaciones — como en la realidad,
+   el rookie ECHA al más flojo. Máx 2 debuts/año; 1º su equipo real, con 2+ años de espera cualquier
+   equipo de la mitad baja. A un joven que promete no lo echan a la primera. */
+function processArrivals(row){
+  if(!S.arrivals || !S.arrivals.length) return;
+  const yr=yearNow();
+  let placed=0;
+  const due=[...S.arrivals].filter(a=>a.y<=yr).sort((a,b)=>a.y-b.y);
+  for(const a of due){
+    if(placed>=2) break;
+    const wait=yr-a.y;
+    if(wait<1 && !ch(.5)) continue; // recién llegado: a veces espera al año siguiente
+    const prefNm=arrTeamNow(a.pref);
+    const cands=[];
+    if(prefNm) cands.push(prefNm);
+    if(wait>=2) [...F1_TEAMS].sort((x,z)=>(S.f1perf[x.name]??75)-(S.f1perf[z.name]??75)).slice(0,6)
+      .forEach(t=>{ if(!cands.includes(t.name)) cands.push(t.name); });
+    for(const tn of cands){
+      const slots=S.seats[tn]; if(!slots) continue;
+      const age=Math.max(17, yr-a.b);
+      if(isRBJr(tn) && (age>=32 || (a.ti||0)>0)) continue; // el filial de RB no ficha veteranos/campeones
+      let wi=-1, wsk=999;
+      slots.forEach((d,i)=>{ if(d!=="PLAYER" && d && !d.alonsoCameo && d.skill<wsk){ wsk=d.skill; wi=i; } });
+      if(wi<0) continue;
+      const v=slots[wi];
+      if((v.age||30)<24 && (v.skill||0)>=78 && !(v.titles>0) && wait<3) continue;
+      S.arrivals.splice(S.arrivals.indexOf(a),1);
+      const rc=Math.round(Math.max(78, Math.min(97, a.c+gauss()*3)));
+      const skill=a.sk!=null ? a.sk
+        : Math.round(Math.max(72, Math.min(rc-3, rc-13+rnd(-2,3)+Math.min(6,Math.max(0,(age-19)*.8)))));
+      const d={name:a.n, age, skill, ceil:Math.max(rc,skill+2), titles:a.ti||0, flag:a.f, gen:rc>=94};
+      homeBuffOne(d); S.dpool.push(d);
+      slots[wi]=d; placed++;
+      row.events.push(L(`🌱 Debut en la F1: ${a.n} llega a ${tn}.`,`🌱 F1 debut: ${a.n} joins ${tn}.`));
+      break;
+    }
+  }
+}
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
 function bgF1Season(row){
   const rows=[];
@@ -3051,7 +3262,7 @@ function returnF1Offers(){
 }
 
 // Racing Bulls es el equipo-cantera: solo ficha PROMESAS. No persigue a veteranos NI a consagrados (campeones/élite).
-function rbOk(t){ return !(t && t.name==="Racing Bulls" && (S.age>=32 || (S.titles.f1||0)>0 || S.ovr>=87)); }
+function rbOk(t){ return !(t && isRBJr(t.name) && (S.age>=32 || (S.titles.f1||0)>0 || S.ovr>=87)); }
 function nextOffers(){
   S.regUnknown=false; // por defecto las tendencias se ven; la revolución técnica lo reactiva puntualmente
   S.couldStay=false;  // ¿tu equipo te ofreció renovar? (si NO, es que te echaron → al irte no te "queman" por traidor)
@@ -3244,8 +3455,8 @@ function nextOffers(){
       if(home && home.name!==S.team.name && !others.some(t=>t.name===home.name) && ch(.45)){
         if(others.length) others[others.length-1]=home; else others.push(home);
       }
-      // pipeline Racing Bulls → Red Bull: una joven promesa que rinde asciende al equipo madre
-      if(S.team.name==="Racing Bulls" && S.age<=28){
+      // pipeline filial → Red Bull: una joven promesa que rinde asciende al equipo madre (Toro Rosso/AlphaTauri/Racing Bulls)
+      if(isRBJr(S.team.name) && S.age<=28){
         const lastPos=S.seasons.at(-1).pos;
         const promo=(lastPos<=6?.62:lastPos<=10?.34:.12)+(S.ovr>=80?.15:0);
         const rb=F1_TEAMS.find(t=>t.name==="Red Bull");
@@ -3305,11 +3516,11 @@ function nextOffers(){
   // 🇪🇸 «Correr con Alonso» (huevo de pascua SIN texto): si un PRODIGIO ESPAÑOL recibe su PRIMERA oferta de
   // F1 muy pronto (≤5 temporadas), en un pequeño % el PEOR coche (si NO es Racing Bulls, que no ficha veteranos)
   // le ofrece asiento con Fernando Alonso de compañero, que aguanta ahí su última temporada. Se descubre en la oferta.
-  if(S.f1Seasons===0 && !S._alonsoCameoDone && sel.country==="España"
+  if(S.f1Seasons===0 && !S._alonsoCameoDone && sel.country==="España" && S.era==="2026"
      && (S.age-(S.startAge??16))<=5 && o.some(x=>x.team && x.team.cat==="F1")){
     const worst=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]??75)-(S.f1perf[b.name]??75))[0];
     const slots=worst?S.seats[worst.name]:null;
-    if(worst && worst.name!=="Racing Bulls" && slots && slots.length>=2 && ch(.4)){
+    if(worst && !isRBJr(worst.name) && slots && slots.length>=2 && ch(.4)){
       // Alonso al slot 0 → teammateOf lo muestra ya en la oferta; dejo al MÁS FLOJO de los dos en el slot 1 (a quien
       // desplazas al firmar) y a Alonso siempre por encima, para quedarte con él seguro sea cual sea el peor coche
       const weaker = (((slots[0]&&slots[0].skill)||0) <= ((slots[1]&&slots[1].skill)||0)) ? slots[0] : slots[1];
