@@ -1183,7 +1183,8 @@ function badgeStyle(t){
 const TEAM_LOGOS = {
   "McLaren":"mclaren.png","Ferrari":"ferrari.png","Red Bull":"redbull.png","Mercedes":"mercedes.png",
   "Aston Martin":"aston.png","Racing Bulls":"racingbulls.png","Williams":"williamsok.png","Alpine":"alpine.png",
-  "Audi":"Audi.png","Haas":"haas.png","Cadillac":"cadillac.png","Hyundai":"hyundaiok.png","Lotus":"lotus.png","APXGP":"apx.png"
+  "Audi":"Audi.png","Haas":"haas.png","Cadillac":"cadillac.png","Hyundai":"hyundaiok.png","Lotus":"lotus.png","APXGP":"apx.png",
+  "Mercedes GP":"mercedes.png" // era 2010: mismo escudo que el Mercedes actual
 };
 // insignia de equipo: logo si existe, si no la pastilla bicolor (equipos junior)
 function badge(team, extraCls){
@@ -1935,7 +1936,7 @@ const DILEMAS=[
      [4,()=>(OVR(1),L("Desarrollas un criterio técnico único. +1 OVR","You develop a unique technical understanding. +1 OVR"))],
      [4,()=>L("Progreso lento pero tuyo. Sin cambios.","Slow progress, but your own. No change.")],
      [2,()=>(OVR(-1),L("Te obcecas en una vía muerta. -1 OVR","You stubbornly chase a dead end. -1 OVR"))])}]},
- {id:"redes",stage:"jr",t:()=>L("Fama antes de tiempo","Fame too soon"),d:()=>L("Una marca te ofrece mucho dinero por ser imagen en redes. Exposición máxima… y distracción máxima.","A brand offers big money to be their social media face. Maximum exposure… and maximum distraction."),opts:[
+ {id:"redes",stage:"jr",from:2015,t:()=>L("Fama antes de tiempo","Fame too soon"),d:()=>L("Una marca te ofrece mucho dinero por ser imagen en redes. Exposición máxima… y distracción máxima.","A brand offers big money to be their social media face. Maximum exposure… and maximum distraction."),opts:[
    {l:()=>L("Aceptar la campaña","Take the deal"),r:()=>ch(.6)?(VAL(1.35),L("Te conviertes en la promesa mediática. Fama +35%","You become the media darling. Fame +35%")):(VAL(1.15),OVR(-1),L("Dinero sí, pero pierdes foco. +fama, -1 OVR","Money yes, but you lose focus. +fame, -1 OVR"))},
    {l:()=>L("Rechazarla","Turn it down"),r:()=>ch(.6)?(OVR(1),L("Cero ruido, todo pista. +1 OVR","Zero noise, all track. +1 OVR")):L("Nadie se acuerda de ti en los medios. Sin cambios.","Nobody in the media remembers you. No change.")}]},
  {id:"espionaje",stage:"f1",t:()=>L("El sobre anónimo","The anonymous envelope"),d:()=>L("Recibes datos técnicos filtrados del coche rival. Nadie lo sabe. Todavía.","You receive leaked technical data from a rival car. Nobody knows. Yet."),opts:[
@@ -1980,7 +1981,7 @@ const DILEMAS=[
  {id:"ingeniero",stage:"f1",t:()=>L("Tu ingeniero se va","Your engineer leaves"),d:()=>L("Tu ingeniero de carrera de toda la vida ficha por un rival. Te quiere llevar con él.","Your lifelong race engineer signs for a rival. He wants to take you with him."),opts:[
    {l:()=>L("Irte con él","Follow him"),r:()=>{S.forceMove=true;return ch(.6)?(OVR(1),L("La dupla sigue haciendo magia en otro garaje. +1 OVR","The duo keeps working magic in another garage. +1 OVR")):L("El nuevo proyecto no arranca. Empiezas de cero.","The new project doesn't get going. You start from scratch.");}},
    {l:()=>L("Quedarte","Stay"),r:()=>ch(.55)?(CAR(.5),L("El nuevo ingeniero trae ideas frescas. +0.5 coche","The new engineer brings fresh ideas. +0.5 car")):(OVR(-1),L("Nada suena igual por la radio. -1 OVR","Nothing sounds the same on the radio. -1 OVR"))}]},
- {id:"docu",stage:"f1",t:()=>L("Cámaras en el box","Cameras in the garage"),d:()=>L("Una plataforma quiere rodar tu documental durante la temporada. Fama mundial… con micrófonos hasta en la sopa.","A streaming platform wants to film your documentary all season. Global fame… with mics everywhere."),opts:[
+ {id:"docu",stage:"f1",from:2019,t:()=>L("Cámaras en el box","Cameras in the garage"),d:()=>L("Una plataforma quiere rodar tu documental durante la temporada. Fama mundial… con micrófonos hasta en la sopa.","A streaming platform wants to film your documentary all season. Global fame… with mics everywhere."),opts:[
    {l:()=>L("Luces, cámara","Lights, camera"),r:()=>ch(.65)?(VAL(1.3),L("Te conviertes en el favorito del público. Fama +30%","You become the fan favourite. Fame +30%")):(VAL(1.1),OVR(-1),L("El circo mediático te pasa factura. +fama, -1 OVR","The media circus takes its toll. +fame, -1 OVR"))},
    {l:()=>L("Puerta cerrada","Closed doors"),r:()=>ch(.6)?(OVR(1),L("Misterio y foco. La pista habla por ti. +1 OVR","Mystery and focus. The track speaks for you. +1 OVR")):(VAL(.92),L("La prensa te pinta como antipático. Fama -8%","The press paints you as unfriendly. Fame -8%"))}]},
  {id:"lemans",stage:"f1",t:()=>L("La tentación de Le Mans","The Le Mans temptation"),d:()=>L("Te invitan a correr las 24h de Le Mans en tu semana libre. Gloria extra… o fatiga extra.","You're invited to race the Le Mans 24h on your week off. Extra glory… or extra fatigue."),opts:[
@@ -2127,7 +2128,7 @@ const DILEMAS=[
      S.neverHire[old]=true; S.forceMove=true; S.poachTeam=b;
      return L(`Rompes el contrato y te vas a por ${b||"el top"}. ${old} te cierra la puerta PARA SIEMPRE, pero tendrás un cochazo bajo el culo.`,`You break the contract and go for ${b||"the top team"}. ${old} shuts the door FOREVER, but you'll have a rocket beneath you.`); }},
    {l:()=>L("Cumplir tu palabra","Keep your word"),r:()=>{VAL(1.08);return L("Honras el contrato. El paddock respeta tu lealtad, aunque el coche de al lado corra más. +fama","You honour the contract. The paddock respects your loyalty, even if the car next door is faster. +fame");}}]},
- {id:"gesto",stage:"f1",cond:()=>S.seasons.length>0 && (S.seasons.at(-1).pos??20)<=3,t:()=>L("El gesto en el podio","The podium statement"),
+ {id:"gesto",stage:"f1",from:2017,cond:()=>S.seasons.length>0 && (S.seasons.at(-1).pos??20)<=3,t:()=>L("El gesto en el podio","The podium statement"),
   d:()=>L("Subes al podio y quieres usar tu momento de gloria para un mensaje que te importa. El equipo teme el lío con los patrocinadores.","You climb the podium and want to use your moment of glory for a message that matters to you. The team fears trouble with the sponsors."),opts:[
    {l:()=>L("Alzar la voz 🏳️","Speak out 🏳️"),r:()=>ch(.6)?(VAL(1.25),L("Te conviertes en un icono más allá del deporte: la gente te admira. +fama","You become an icon beyond the sport: people admire you. +fame")):(VAL(.9),L("Hay reacción y bronca con el patrocinador: te llueven palos. −fama","There's a backlash and a row with the sponsor: you get hammered. −fame"))},
    {l:()=>L("Morderte la lengua","Bite your tongue"),r:()=>{CAR(.5);return L("El patrocinador respira aliviado y afloja el presupuesto. +0.5 coche","The sponsor breathes easy and loosens the budget. +0.5 car");}}]},
@@ -2369,6 +2370,33 @@ const DILEMAS=[
    {l:()=>L("Defenderte: «es parte de las carreras»","Defend yourself: «it's part of racing»"),r:()=>{ feudBurn(); return ch(.5)
      ?(VAL(.88),L("No agachas la cabeza y suena a frío con él en el hospital: la afición te lo hace pagar. Con él, ni agua. −fama","You don't back down and it sounds cold with him in hospital: the fans make you pay. You two are done. −fame"))
      :L("Firme y sin dramatismo, pero no te lo perdona: os habéis ganado un enemigo. Con él, ni agua.","Firm and undramatic, but he won't forgive you: you've made an enemy. You two are done."); }}]},
+ // 🎬 2023-25 (solo se vive en las líneas retro): Hollywood rueda la superproducción de F1 en los GP reales
+ {id:"pelicula",stage:"f1",cond:()=>S.cat==="F1"&&yearNow()>=2023&&yearNow()<=2025,
+  t:()=>L("Hollywood en el paddock","Hollywood in the paddock"),
+  d:()=>L("Se está rodando una superproducción de Hollywood sobre la F1: estrellas de cine, un equipo ficticio y cámaras en los garajes de los GP reales. Producción te lo propone: salir en la película.","A Hollywood blockbuster about F1 is being shot: movie stars, a fictional team and cameras inside real GP garages. Production makes you an offer: appear in the movie."),opts:[
+   {l:()=>L("Participar en el rodaje","Join the shoot"),r:()=>roll(
+     [5,()=>(VAL(1.25),L("Tu cameo llena la pantalla grande: medio planeta descubre tu nombre. Fama +25%","Your cameo lights up the big screen: half the planet learns your name. Fame +25%"))],
+     [3,()=>(VAL(1.15),OVR(-1),L("Entre tomas, estrenos y alfombras rojas pierdes foco. +fama, −1 OVR","Between takes, premieres and red carpets you lose focus. +fame, −1 OVR"))],
+     [2,()=>(VAL(1.05),L("Tu escena se queda en un segundo del montaje final. +fama leve","Your scene ends up as one second of the final cut. slight +fame"))])},
+   {l:()=>L("«Estoy para ganar carreras»","«I'm here to win races»"),r:()=>roll(
+     [6,()=>L("Cero distracciones: el cine puede esperar. Sin cambios.","Zero distractions: the movies can wait. No change.")],
+     [2,()=>(OVR(1),L("Mientras otros ruedan escenas, tú ruedas tandas. +1 OVR","While others shoot scenes, you pound out laps. +1 OVR"))],
+     [2,()=>(VAL(.95),L("Te llaman soso por decirle que no a Hollywood. −fama leve","They call you dull for saying no to Hollywood. slight −fame"))])}]},
+ // 🦠 2020 (solo se vive en la línea retro de 2010): la pandemia detiene el mundo
+ {id:"pandemia",stage:"f1",cond:()=>S.cat==="F1"&&yearNow()===2020,
+  t:()=>L("El año que el mundo se detuvo","The year the world stopped"),
+  d:()=>L("Una pandemia global congela el planeta: GPs cancelados, paddocks vacíos y la temporada en el aire. Encerrado en casa, tienes que decidir cómo pasar el parón.","A global pandemic freezes the planet: cancelled GPs, empty paddocks and the season in limbo. Locked down at home, you must decide how to spend the stoppage."),opts:[
+   {l:()=>L("Dominar los GP virtuales","Rule the virtual GPs"),r:()=>roll(
+     [5,()=>(VAL(1.3),L("Arrasas en el simulador y conquistas a una generación nueva de fans. Fama +30%","You crush it on the sim and win over a whole new generation of fans. Fame +30%"))],
+     [3,()=>(VAL(1.08),L("Buenas carreras, buenos clips. +fama","Good races, good clips. +fame"))],
+     [2,()=>(VAL(.92),L("Un rage-quit tuyo en pleno directo se hace viral. −fama","Your mid-stream rage-quit goes viral. −fame"))])},
+   {l:()=>L("Recortarte el sueldo por el equipo","Take a pay cut for the team"),r:()=>roll(
+     [6,()=>(CAR(1),L("Tu gesto salva empleos y el garaje te lo devuelve con creces. +1 coche","Your gesture saves jobs and the garage repays you tenfold. +1 car"))],
+     [4,()=>(VAL(1.05),L("El paddock aplaude el detalle. +fama leve","The paddock applauds the gesture. slight +fame"))])},
+   {l:()=>L("Desconectar del todo","Switch off completely"),r:()=>roll(
+     [5,()=>(OVR(1),L("Vuelves al monoplaza descansado y con hambre. +1 OVR","You return to the car rested and hungry. +1 OVR"))],
+     [3,()=>L("Bicicleta, familia y silencio. Sin cambios.","Bike rides, family and silence. No change.")],
+     [2,()=>(VAL(.94),L("Desapareces del mapa y los medios te olvidan un poco. −fama leve","You vanish off the map and the media half-forget you. slight −fame"))])}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -2443,11 +2471,20 @@ function pickDilemma(){
     let consec=0; for(let i=S.seasons.length-1;i>=0;i--){ if(S.seasons[i].cat==="F1"&&S.seasons[i].pos===1)consec++; else break; }
     if((S.titles.f1===1 && ch(.5)) || consec>=2) return DILEMAS.find(d=>d.id==="recordPregunta");
   }
+  // 🦠 2020 (línea temporal retro): la pandemia es EL acontecimiento del año → prioridad casi segura
+  if(S.cat==="F1" && !S.usedDilemmas.pandemia && yearNow()===2020 && (S.age-S.lastDilemmaAge>=1) && ch(.85)){
+    return DILEMAS.find(d=>d.id==="pandemia");
+  }
+  // 🎬 2023-2025 (línea temporal retro): Hollywood rueda la peli de F1 en los circuitos
+  if(S.cat==="F1" && !S.usedDilemmas.pelicula && yearNow()>=2023 && yearNow()<=2025 && (S.age-S.lastDilemmaAge>=1) && ch(.5)){
+    return DILEMAS.find(d=>d.id==="pelicula");
+  }
   if(S.dilemmaCount>=5) return null;
   if(S.age-S.lastDilemmaAge<2) return null;
   if(!ch(.30)) return null;
   const pool=DILEMAS.filter(d=>{
     if(S.usedDilemmas[d.id]) return false;
+    if(d.from && yearNow()<d.from) return false; // ⏳ filtro de ÉPOCA: en 2012 no hay documentales de plataforma ni activismo de podio
     if(d.cond && !d.cond()) return false; // condición extra (año joven, Nº1 en equipo malo, edad del compañero…)
     if(d.stage==="test") return S.cat==="TEST" && S.reserveDilOK; // reserva: no en todas las partidas
     if(d.stage==="jr") return S.cat!=="F1" && S.cat!=="TEST";
@@ -2639,6 +2676,9 @@ function checkExpansion(row){
   }
   processLineage(row);  // 🧬 transformaciones/quiebras de equipos de la era (retro)
   processArrivals(row); // 🎬 debuts históricos que no esperan jubilación
+  // 🦠 2020 en las líneas retro: el mundo se para (ambientación; el dilema aparte, si estás en F1)
+  if(yearNow()===2020 && (S.baseYear||2026)<2026 && !S._covid){ S._covid=true;
+    row.events.push(L("🦠 Una pandemia global sacude el mundo: temporada recortada, gradas vacías y carreras a puerta cerrada.","🦠 A global pandemic shakes the world: a shortened season, empty grandstands and races behind closed doors.")); }
   (S.expansion||[]).forEach(e=>{
     if(e.added || yearNow()<e.year) return;
     if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
