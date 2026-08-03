@@ -75,6 +75,8 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .mode-txt b{font-size:15px;font-weight:800;color:var(--text)}
 .mode-txt small{font-size:12px;color:var(--muted);margin-top:1px}
 .soon-badge{position:absolute;top:-9px;right:14px;background:linear-gradient(135deg,#ffb52e,#e10600);color:#fff;font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;box-shadow:0 3px 8px rgba(225,6,0,.28);transform:rotate(2.5deg)}
+#previewBar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:#15151e;color:#fff;font-size:12px;font-weight:700;padding:7px 16px;border-radius:999px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:.94;white-space:nowrap}
+#previewBar a{color:#ffb52e;text-decoration:underline}
 .mode-card.retro-on{opacity:1;cursor:default}
 .mode-card.retro-on .mode-ico{filter:none}
 .retro-years{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
@@ -1201,6 +1203,11 @@ function initRetroCard(){ if(!PREVIEW) return; const rc=document.getElementById(
   if(b){ b.textContent="🔒 SOLO TÚ"; b.removeAttribute("data-es"); b.removeAttribute("data-en"); b.style.background="linear-gradient(135deg,#3a3f4a,#15151e)"; }
   const sub=document.getElementById("retroSub"); if(sub){ sub.dataset.es="Empieza en el mundo de…"; sub.dataset.en="Start in the world of…"; applyLang(); }
   const ry=document.getElementById("retroYears"); if(ry) ry.style.display="flex"; }
+// 🔒 barra fija inconfundible cuando el modo pruebas está activo: esto NO lo ve el público, y de aquí se sale con un clic
+function initPreviewBar(){ if(!PREVIEW) return;
+  const b=document.createElement("div"); b.id="previewBar";
+  b.innerHTML=`🔒 ${L("Modo pruebas: esto solo lo ves TÚ","Preview mode: only YOU can see this")} · <a href="?preview=off">${L("salir","exit")}</a>`;
+  document.body.appendChild(b); }
 function showIdentity(){ $("intro").style.display="none"; $("identity").style.display="block"; renderCountries(); }
 function backToIntro(){ $("identity").style.display="none"; $("intro").style.display="flex"; }
 function idChanged(){
@@ -3957,6 +3964,7 @@ function printCareer(){
 applyLang(); // aplicar el idioma guardado al cargar
 applyTheme(); // aplicar el tema guardado al cargar
 initRetroCard(); // activar Modo Retro (2010/2020) solo en PREVIEW
+initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
