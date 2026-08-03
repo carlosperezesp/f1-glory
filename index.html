@@ -1184,7 +1184,11 @@ const TEAM_LOGOS = {
   "McLaren":"mclaren.png","Ferrari":"ferrari.png","Red Bull":"redbull.png","Mercedes":"mercedes.png",
   "Aston Martin":"aston.png","Racing Bulls":"racingbulls.png","Williams":"williamsok.png","Alpine":"alpine.png",
   "Audi":"Audi.png","Haas":"haas.png","Cadillac":"cadillac.png","Hyundai":"hyundaiok.png","Lotus":"lotus.png","APXGP":"apx.png",
-  "Mercedes GP":"mercedes.png" // era 2010: mismo escudo que el Mercedes actual
+  "Mercedes GP":"mercedes.png", // era 2010: mismo escudo que el Mercedes actual
+  // 🕰️ escudos de las eras retro (2010/2020) y sus transformaciones de linaje
+  "Renault":"renault.png","Force India":"ForceIndia.png","Toro Rosso":"ToroRosso.png","Sauber":"Sauber.png",
+  "Virgin":"virgin.png","HRT":"HRTnew.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
+  "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png"
 };
 // insignia de equipo: logo si existe, si no la pastilla bicolor (equipos junior)
 function badge(team, extraCls){
@@ -1213,7 +1217,7 @@ function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el 
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
-function startCareerFlow(era){ SELECTED_ERA = era||"2026"; showIdentity(); }
+function startCareerFlow(era){ SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
 // activa el Modo Retro (2010/2020) SOLO en PREVIEW mientras lo terminamos; el público sigue viendo «Próximamente»
 function initRetroCard(){ if(!PREVIEW) return; const rc=document.getElementById("retroCard"); if(!rc) return;
   rc.classList.remove("soon"); rc.classList.add("retro-on");
@@ -1262,7 +1266,7 @@ function track(name, data){ try{ if(window.va) window.va("event", data?{name,dat
 function startCareer(){
   sel.name = $("inName").value.trim().toUpperCase();
   sel.num = $("inNum").value;
-  track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG});
+  track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG, era: SELECTED_ERA});
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   const ERA = ERAS[SELECTED_ERA] || ERAS["2026"];  // 🕰️ era elegida: 2026 (actual) o retro 2010/2020
   S = {
@@ -3820,7 +3824,7 @@ function endCareer(){
   S.retired=true;
   const result = S.titles.f1>=2?"multi_champion" : S.titles.f1===1?"champion" : S.titles.constr>0?"constructors_champion"
     : S.subcamp>0?"runner_up" : S.wins>0?"race_winner" : S.f1Seasons>0?"f1_driver" : "prospect";
-  track("career_ended", {result, f1_titles:S.titles.f1, constructors:S.titles.constr, f1_seasons:S.f1Seasons, wins:S.wins, retire_age:S.age});
+  track("career_ended", {result, f1_titles:S.titles.f1, constructors:S.titles.constr, f1_seasons:S.f1Seasons, wins:S.wins, retire_age:S.age, era:S.era||"2026"});
   const m=$("endModal"); m.style.display="flex";
   $("endName").textContent=sel.flag+" "+sel.name+" #"+sel.num;
   $("eGP").textContent=S.gp; $("eW").textContent=S.wins; $("eP").textContent=S.podiums;
