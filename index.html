@@ -1257,12 +1257,25 @@ const TEAM_LOGOS = {
   // equipos de expansión retro/actual
   "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png"
 };
-// insignia de equipo: logo si existe, si no la pastilla bicolor (equipos junior)
-function badge(team, extraCls){
+// 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
+// se volvió papaya; el Williams clásico dio paso al actual). [desdeAño, fichero] — el último que cumple manda.
+const TEAM_LOGOS_ERA = {
+  "McLaren":[[0,"mclaren-chrome.png"],[2017,"mclaren.png"]],
+  "Williams":[[0,"williams-classic.png"],[2020,"williamsok.png"]],
+};
+function logoFor(name, year){
+  const eras=TEAM_LOGOS_ERA[name];
+  if(eras){ const yr=year||yearNow();
+    for(let i=eras.length-1;i>=0;i--){ if(yr>=eras[i][0]) return eras[i][1]; } }
+  return TEAM_LOGOS[name];
+}
+// insignia de equipo: logo (de su época) si existe, si no la pastilla bicolor (equipos junior)
+function badge(team, extraCls, year){
   const name = typeof team==="string" ? team : (team&&team.name);
   const obj  = (team && typeof team==="object") ? team : (F1_TEAMS.find(x=>x.name===name)||(name==="APXGP"?APXGP:null));
   const cls  = extraCls||"";
-  if(TEAM_LOGOS[name]) return `<img class="team-dot tlogo ${cls}" src="${TEAM_LOGOS[name]}" alt="${name}">`;
+  const src  = logoFor(name, year);
+  if(src) return `<img class="team-dot tlogo ${cls}" src="${src}" alt="${name}">`;
   return `<span class="team-dot ${cls}" style="${obj?badgeStyle(obj):'background:#bbb'}">${(obj&&obj.abbr)||""}</span>`;
 }
 function ovrColor(o){
@@ -1419,7 +1432,8 @@ function refreshCard(){
     $("teamName").textContent = S.team.name;
     $("teamRole").textContent = roleTxt;
     const d=$("teamDot");
-    if(TEAM_LOGOS[S.team.name]){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${TEAM_LOGOS[S.team.name]}) center/cover;border:none`; d.textContent=""; }
+    const _lg=logoFor(S.team.name);
+    if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
   } else {
@@ -2952,10 +2966,11 @@ function trackRanks(driverOrder, teamOrder){
 }
 
 /* escudo mini de una escudería + bandera de un piloto */
-function teamBadge(name){
+function teamBadge(name, year){
   const T=F1_TEAMS.find(t=>t.name===name)||(name==="APXGP"?APXGP:null);
   if(!T) return "";
-  if(TEAM_LOGOS[name]) return `<img class="tlogo mb" src="${TEAM_LOGOS[name]}" alt="${name}">`;
+  const src=logoFor(name, year);
+  if(src) return `<img class="tlogo mb" src="${src}" alt="${name}">`;
   return `<span class="mini-badge" style="${badgeStyle(T)}">${T.abbr}</span>`;
 }
 const flg=f=>`<span class="fl">${f||"🏁"}</span>`;
@@ -3896,7 +3911,7 @@ function renderCareerMap(){
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
     html+=`<div class="cmstint">
-      <span class="cmmeta">${badge(st.team,"cmdot")}
+      <span class="cmmeta">${badge(st.team,"cmdot",y0)}
         <span class="cmname">${teamDisp(st.team)}${isTest?L(" ·prob"," ·res"):""}</span><span class="cmyears">${yrs}</span></span>
       <span class="cmcells">${cells}</span></div>`;
   });
