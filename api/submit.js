@@ -22,6 +22,27 @@ async function pipe(cmds) {
   });
   return await r.json();
 }
+// 🚫 FILTRO DE NOMBRES: el ranking es público (y lo juegan críos). Apología nazi, insultos de odio y
+// obscenidades obvias se sustituyen por "PILOTO" — la puntuación cuenta igual, el nombre no se muestra.
+// Normaliza para saltarse los trucos habituales: acentos, puntos, espacios, 0/1/3/4/$ por letras.
+const BANNED = [
+  // odio / apología
+  "hitler", "adolfh", "adolfoh", "adolh", "nazi", "fuhrer", "fuehrer", "heilhit", "sieghei", "tercerreich",
+  "thirdreich", "holocaust", "holocaus", "genocid", "kukluxklan", "kkk", "isis", "alqaeda", "pedofil", "pedophil",
+  // insultos de odio (es/en)
+  "nigger", "nigga", "negrata", "maricon", "faggot", "sudaca", "panchito", "gitanaco", "retrasad", "subnormal",
+  // obscenidades obvias
+  "hijoputa", "hijodeputa", "malparido", "fuckyou", "fuck", "shit", "polla", "verga", "cabron", "puto", "puta", "coño", "cono",
+];
+function cleanName(raw) {
+  const norm = String(raw || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")   // fuera acentos
+    .replace(/0/g, "o").replace(/1/g, "i").replace(/3/g, "e").replace(/4/g, "a")
+    .replace(/5/g, "s").replace(/7/g, "t").replace(/\$/g, "s").replace(/@/g, "a")
+    .replace(/[^a-z]/g, "");                            // fuera puntos, espacios y símbolos
+  return BANNED.some((w) => norm.includes(w)) ? null : String(raw || "").slice(0, 14);
+}
 function isoWeekKey(d) {
   const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
   const day = dt.getUTCDay() || 7;
@@ -40,7 +61,7 @@ module.exports = async (req, res) => {
     body = body || {};
     const id = String(body.id || "");
     if (id.length < 8 || id.length > 64) { res.status(400).json({ error: "id inválido" }); return; }
-    const nm = String(body.name || "").slice(0, 14);
+    const nm = cleanName(body.name) || "PILOTO"; // nombre ofensivo → se guarda anónimo, la marca cuenta igual
     const fl = String(body.flag || "🏁").slice(0, 8);
     const co = String(body.country || "").slice(0, 32);
     const b = body.b || {};
