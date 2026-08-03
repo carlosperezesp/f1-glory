@@ -2524,6 +2524,51 @@ const DILEMAS=[
      [5,()=>(OVR(1),L("Vuelves al monoplaza descansado y con hambre. +1 OVR","You return to the car rested and hungry. +1 OVR"))],
      [3,()=>L("Bicicleta, familia y silencio. Sin cambios.","Bike rides, family and silence. No change.")],
      [2,()=>(VAL(.94),L("Desapareces del mapa y los medios te olvidan un poco. −fama leve","You vanish off the map and the media half-forget you. slight −fame"))])}]},
+ // 🧮 inspirado en 2010: Ferrari cubrió al rival mediático (Webber) y el título se lo llevó otro (Vettel)
+ {id:"muroRival",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=4,
+  t:()=>L("El muro se equivoca de rival","The pit wall marks the wrong man"),
+  d:()=>L("Final de temporada con el título en juego. El muro decide marcar en carrera a tu rival mediático… pero tu instinto dice que la amenaza REAL es otro coche que vuela sin hacer ruido.","Season finale with the title on the line. The pit wall decides to shadow your headline rival… but your gut says the REAL threat is another car flying under the radar."),opts:[
+   {l:()=>L("Imponer tu criterio por radio","Overrule them on the radio"),r:()=>roll(
+     [5,()=>(S.dilWin=(S.dilWin||0)+1,OVR(1),VAL(1.12),L("Tenías razón: cubres al rival correcto y el paddock alucina con tu lectura de carrera. +1 OVR, +fama","You were right: you cover the real threat and the paddock marvels at your racecraft. +1 OVR, +fame"))],
+     [3,()=>L("Ni tú ni ellos: la carrera se decide por otro lado. Sin cambios.","Neither call mattered: the race is decided elsewhere. No change.")],
+     [2,()=>(CAR(-1),VAL(.94),L("Te equivocas… y encima desautorizaste al muro delante de todos. −1 coche, −fama","You were wrong — and you overruled the wall in front of everyone. −1 car, −fame"))])},
+   {l:()=>L("Confiar en el muro","Trust the pit wall"),r:()=>roll(
+     [4,()=>(CAR(.5),L("El muro acierta y la maquinaria funciona como un reloj. +0.5 coche","The wall gets it right and the machine hums. +0.5 car"))],
+     [3,()=>L("Nadie acierta del todo, pero salvas los muebles.","Nobody quite nails it, but you salvage the day.")],
+     [3,()=>(VAL(.93),L("Cubristeis al rival equivocado y el que volaba sin ruido se lleva el premio. La prensa no perdona. −fama","You shadowed the wrong man and the quiet flyer takes the prize. The press is merciless. −fame"))])}]},
+ // 🚩 inspirado en 2012: Grosjean, un GP de suspensión por la montonera de Spa
+ {id:"sancionGP",stage:"f1",cond:()=>S.cat==="F1",
+  t:()=>L("La sanción de un Gran Premio","A one-race ban"),
+  d:()=>L("Salida caótica: calculas mal un hueco y provocas una montonera que se lleva a cuatro coches. La FIA dicta algo histórico: UN GRAN PREMIO de suspensión, el primero en años.","A chaotic start: you misjudge a gap and trigger a pile-up that collects four cars. The FIA hands down something historic: a ONE-RACE ban, the first in years."),opts:[
+   {l:()=>L("Recurrir y defenderte en público","Appeal and fight it in public"),r:()=>roll(
+     [3,()=>L("El recurso prospera: la sanción se queda en multa. Te libras por los pelos.","The appeal succeeds: the ban becomes a fine. You dodge it by a whisker.")],
+     [4,()=>{S.missRaces=1;VAL(.9);return L("Sanción ratificada… y encima quedas de llorón. Te pierdes 1 GP. −fama","Ban upheld — and you come across as a whiner. You miss 1 GP. −fame");}],
+     [3,()=>{S.missRaces=1;return L("Sanción ratificada, pero tu defensa fue digna. Te pierdes 1 GP.","Ban upheld, but you defended yourself with dignity. You miss 1 GP.");}])},
+   {l:()=>L("Aceptarla y trabajar en silencio","Accept it and work in silence"),r:()=>{S.missRaces=1;return roll(
+     [5,()=>(OVR(1),VAL(1.05),L("Vuelves más fino y más frío: la lección duele pero te hace mejor. +1 OVR, +fama leve","You come back sharper and calmer: the lesson hurts but improves you. +1 OVR, slight +fame"))],
+     [3,()=>L("Cumples el castigo y pasas página. Te pierdes 1 GP.","You serve the ban and move on. You miss 1 GP.")],
+     [2,()=>(VAL(.95),L("El GP en el sofá se te hace eterno y vuelves algo espeso. −fama leve","The GP on your sofa drags forever and you return rusty. slight −fame"))]);}}]},
+ // 🦺 inspirado en 2013: reventones de Silverstone y la GPDA al borde del plante
+ {id:"rebelion",stage:"f1",cond:()=>S.cat==="F1",
+  t:()=>L("La rebelión de los pilotos","The drivers' revolt"),
+  d:()=>L("Cuatro reventones en una tarde y nadie sabe por qué. La asociación de pilotos propone plantarse: si es peligroso, NO se corre. Los equipos aprietan para correr igual. Te toca elegir.","Four blowouts in one afternoon and nobody knows why. The drivers' association proposes standing down: if it's unsafe, NOBODY races. The teams push to race anyway. Your call."),opts:[
+   {l:()=>L("No correr: seguridad primero","Refuse to race: safety first"),r:()=>roll(
+     [5,()=>(VAL(1.15),L("La parrilla entera te sigue y la FIA cede: neumáticos nuevos en 48 horas. Te has ganado al vestuario. +fama","The whole grid follows you and the FIA caves: new tyres within 48 hours. You've won the drivers' room. +fame"))],
+     [3,()=>(VAL(1.05),L("El plante se queda a medias, pero tu postura gusta. +fama leve","The strike fizzles, but your stance lands well. slight +fame"))],
+     [2,()=>{S.missRaces=1;VAL(.92);return L("Te quedas casi solo: los demás corren y tú ves la carrera desde el muro. −fama y cero puntos ese finde","You're left nearly alone: the rest race while you watch from the wall. −fame and zero points that weekend");}])},
+   {l:()=>L("Correr: mi trabajo es pilotar","Race: my job is to drive"),r:()=>roll(
+     [4,()=>L("Sobrevives a la ruleta y sumas puntos valiosos.","You survive the roulette and bank valuable points.")],
+     [3,()=>(VAL(.93),L("Los pilotos te miran distinto: cuando tocaba estar juntos, fuiste por libre. −fama","The drivers look at you differently: when unity mattered, you went alone. −fame"))],
+     [3,()=>(OVR(-1),L("Un reventón a 300 km/h te pega el susto de tu vida. −1 OVR","A blowout at 300 km/h gives you the fright of your life. −1 OVR"))])}]},
+ // 🏁 inspirado en 2016: Rosberg ganó su PRIMER Mundial con 31 años y se retiró cinco días después
+ {id:"cimaRosberg",stage:"f1",cond:()=>S.cat==="F1"&&S.titles.f1===1&&(S.seasons.at(-1)||{}).pos===1&&S.age>=30,
+  t:()=>L("¿Retirarte en la cima?","Retire on top?"),
+  d:()=>L("Lo has conseguido: campeón del mundo, después de todo el sacrificio que nadie vio. Y una voz dentro pregunta: ¿y ahora qué? Ya no queda nada que demostrar. Podrías irte como los más grandes: por la puerta de arriba.","You've done it: world champion, after sacrifices nobody saw. And a voice inside asks: now what? There's nothing left to prove. You could leave like the greats — through the top door."),opts:[
+   {l:()=>L("Colgar el casco siendo campeón","Hang up the helmet as champion"),r:()=>{ endCareer(); return L("Cinco días después del título lo anuncias: te vas. El paddock se queda helado… y en pie, aplaudiendo.","Five days after the title you announce it: you're leaving. The paddock is stunned — and on its feet, applauding."); }},
+   {l:()=>L("Seguir: aún tengo hambre","Keep going: I'm still hungry"),r:()=>roll(
+     [4,()=>L("El fuego sigue vivo. A por el siguiente.","The fire still burns. On to the next one.")],
+     [4,()=>(OVR(-1),L("Lo notas enseguida: sin montaña que escalar, entrenar cuesta el doble. −1 OVR","You feel it at once: with no mountain left to climb, training is twice as hard. −1 OVR"))],
+     [2,()=>(OVR(-1),VAL(.95),L("El campeón defensor vive vigilado: cada tropiezo es portada. −1 OVR, −fama leve","The defending champion lives under a microscope: every stumble makes headlines. −1 OVR, slight −fame"))])}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -2592,6 +2637,10 @@ function pickDilemma(){
   // secuela «El fichaje del enemigo»: prioridad cuando hay un enemigo elegible (si no, casi nunca se vería)
   if(S.cat==="F1" && !S.usedDilemmas.fichajeEnemigo && (S.age-S.lastDilemmaAge>=1) && enemySignable() && ch(.4)){
     return DILEMAS.find(d=>d.id==="fichajeEnemigo");
+  }
+  // 🏁 primer Mundial con 30+ (camino Rosberg): la pregunta de la cima llega casi siempre, y ANTES que la del récord
+  if(S.cat==="F1" && !S.usedDilemmas.cimaRosberg && S.titles.f1===1 && S.age>=30 && S.seasons.at(-1)?.pos===1 && (S.age-S.lastDilemmaAge>=1) && ch(.75)){
+    return DILEMAS.find(d=>d.id==="cimaRosberg");
   }
   // «La pregunta del récord»: al ganar tu 1er mundial (~50%) o 2 seguidos; una vez por carrera
   if(S.cat==="F1" && !S.usedDilemmas.recordPregunta && (S.age-S.lastDilemmaAge>=1) && S.seasons.at(-1)?.pos===1){
