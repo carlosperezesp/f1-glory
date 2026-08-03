@@ -335,6 +335,9 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .pt-cta{display:inline-block;margin-top:12px;background:linear-gradient(135deg,#ff5e5b,#e10600);color:#fff;font-weight:800;font-size:13.5px;padding:9px 20px;border-radius:999px;text-decoration:none}
 .intro-links{margin-top:14px;font-size:13px;color:var(--muted)}
 .intro-links a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none}
+/* aviso legal: discreto, al pie de la portada */
+/* sin animación a propósito: el aviso legal debe verse siempre, no depender de que la animación corra */
+#intro p.legal{max-width:520px;margin:22px auto 0;font-size:10.5px;line-height:1.5;color:var(--muted);opacity:.62;animation:none}
 .rank-card{background:var(--panel);border-radius:22px;max-width:520px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(21,21,30,.4);animation:fadeUp .4s both}
 .rank-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;background:linear-gradient(135deg,#15151e,#2b0a08 130%);color:#fff}
 .rank-head h2{font-size:18px;margin:0}
@@ -578,6 +581,9 @@ img.tlogo.mb{width:20px;height:20px;border:none}
      data-es="¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧"
      data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
   <p class="intro-links"><a onclick="openPatrons()" data-es="☕ Muro de mecenas" data-en="☕ Wall of supporters">☕ Muro de mecenas</a></p>
+  <p class="legal"
+     data-es="Proyecto no oficial hecho por un aficionado, sin ánimo de lucro. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares."
+     data-en="Unofficial, non-commercial fan project. Not affiliated with or endorsed by Formula 1, the FIA or any team. All names, trademarks and badges belong to their respective owners.">Proyecto no oficial hecho por un aficionado, sin ánimo de lucro. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares.</p>
 </section>
 
 <!-- ========== IDENTITY ========== -->
@@ -1319,7 +1325,8 @@ const TEAM_LOGOS_ERA = {
 };
 function logoFor(name, year){
   const eras=TEAM_LOGOS_ERA[name];
-  if(eras){ const yr=year||yearNow();
+  // sin partida en curso (S null) no hay año que resolver: se usa el logo actual
+  if(eras){ const yr=year||((typeof S!=="undefined"&&S)?yearNow():9999);
     for(let i=eras.length-1;i>=0;i--){ if(yr>=eras[i][0]) return eras[i][1]; } }
   return TEAM_LOGOS[name];
 }
