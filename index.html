@@ -77,6 +77,14 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .soon-badge{position:absolute;top:-9px;right:14px;background:linear-gradient(135deg,#ffb52e,#e10600);color:#fff;font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:999px;box-shadow:0 3px 8px rgba(225,6,0,.28);transform:rotate(2.5deg)}
 #previewBar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:#15151e;color:#fff;font-size:12px;font-weight:700;padding:7px 16px;border-radius:999px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:.94;white-space:nowrap}
 #previewBar a{color:#ffb52e;text-decoration:underline}
+/* cartel «¡Nuevo!»: misma pastilla que PRÓXIMAMENTE pero en dorado y con destello que la recorre */
+.new-badge{position:absolute;top:-9px;right:14px;z-index:2;overflow:hidden;
+  background:linear-gradient(135deg,#ffd54a,#e2a400 55%,#c9820a);color:#4a2f00;
+  font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 11px;border-radius:999px;
+  box-shadow:0 3px 10px rgba(226,164,0,.5),inset 0 1px 0 rgba(255,255,255,.65);transform:rotate(-2.5deg)}
+.new-badge::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.95),transparent);transform:skewX(-18deg);
+  animation:shine 2.6s ease-in-out infinite}
 .mode-card.retro-on{opacity:1;cursor:pointer;transition:border-color .15s}
 .mode-card.retro-on:hover{border-color:var(--accent)}
 .mode-card.retro-on .mode-ico{filter:none}
@@ -536,6 +544,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <span class="mode-txt"><b data-es="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
     </div>
     <div class="mode-card retro-on" id="retroCard" onclick="toggleRetro()">
+      <span class="new-badge" data-es="¡Nuevo!" data-en="New!">¡Nuevo!</span>
       <span class="mode-ico">🕰️</span>
       <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Empieza tu carrera en otra época" data-en="Start your career in another era">Empieza tu carrera en otra época</small></span>
       <span class="retro-caret" id="retroCaret">▾</span>
