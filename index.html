@@ -972,7 +972,10 @@ const ROOKIE_2010 = [
   ["D. Hauger","🇳🇴",2021],["V. Martins","🇫🇷",2021],["P. Aron","🇪🇪",2022],["L. Browning","🇬🇧",2022],
   ["A. Dunne","🇮🇪",2023],["N. Tsolov","🇧🇬",2024],["R. Camara","🇧🇷",2024],
   // los chavales de la era actual: solo cuando la línea temporal llega a ~2026
-  ["F. Slater","🇬🇧",2025],["T. Taponen","🇫🇮",2025],["C. Costoya","🇪🇸",2026],["K. Nakamura-Berta","🇯🇵",2026],["N. Monteiro","🇵🇹",2026]];
+  ["F. Slater","🇬🇧",2025],["T. Taponen","🇫🇮",2025],["C. Costoya","🇪🇸",2026],["K. Nakamura-Berta","🇯🇵",2026],["N. Monteiro","🇵🇹",2026],
+  // probadores/reservas reales de la década que nunca debutaron — con su AÑO DE NACIMIENTO (4º campo):
+  // entran con su edad real. López además viene «de serie» si USF1 cuaja (lo fichó de verdad para 2010).
+  ["J.M. López","🇦🇷",2011,1983],["S. Wolff","🇬🇧",2013,1982],["Ma Qinghua","🇨🇳",2013,1987]];
 // escalera junior 2010 (nombres de época): Fórmula Renault → Fórmula 3 → GP3 → GP2
 const FREN_2010 = [
   {name:"Prema FRen", color:"#dd0022", color2:"#6b0011", perf:58},{name:"SG Formula", color:"#1a3a6b", color2:"#0d1f3a", perf:55},
@@ -1031,7 +1034,9 @@ const ROOKIE_2020 = [
   ["R. Camara","🇧🇷",2024],["N. Tsolov","🇧🇬",2024],
   // los chavales de la era actual: solo cuando la línea temporal llega a ~2026
   ["F. Slater","🇬🇧",2025],["T. Taponen","🇫🇮",2025],["C. Costoya","🇪🇸",2026],["K. Nakamura-Berta","🇯🇵",2026],
-  ["N. Monteiro","🇵🇹",2026],["E. Deligny","🇫🇷",2026],["A. García","🇪🇸",2026]];
+  ["N. Monteiro","🇵🇹",2026],["E. Deligny","🇫🇷",2026],["A. García","🇪🇸",2026],
+  // reservas reales de 2020 que apenas debutaron (con año de nacimiento → edad real)
+  ["J. Aitken","🇬🇧",2020,1995],["P. Fittipaldi","🇧🇷",2020,1996]];
 
 /* 🧬 LINAJE de equipos (retro): cada transformación/quiebra tiene VENTANA de años (~la real ±) y PROBABILIDAD →
    en una partida Renault muta en Alpine en 2021, en otra en 2024, en otra sigue siendo Renault para siempre.
@@ -1064,8 +1069,10 @@ const LINEAGE_2020 = [
 // `dieAfter`: el recién llegado es frágil y puede quebrar a los w[0]-w[1] años de entrar (prob p).
 const ENTRIES_2010 = [
  {range:[2014,2018], prob:.7,  team:{name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:64, cat:"F1"}, drivers:null},
- // 🇺🇸 USF1: el proyecto americano que se hundió antes de debutar en 2010 — en muy pocas realidades, cuaja
- {range:[2011,2014], prob:.12, team:{name:"USF1", abbr:"USF", color:"#1B3E7A", color2:"#C8102E", perf:60, cat:"F1"}, drivers:null},
+ // 🇺🇸 USF1: el proyecto americano que se hundió antes de debutar en 2010 — en muy pocas realidades, cuaja.
+ // Y si cuaja, debuta con J.M. López 🇦🇷: su fichaje REAL para 2010 (driversBorn = [nombre, nacido, nivel, techo, bandera])
+ {range:[2011,2014], prob:.12, team:{name:"USF1", abbr:"USF", color:"#1B3E7A", color2:"#C8102E", perf:60, cat:"F1"}, drivers:null,
+  driversBorn:[["J.M. López",1983,79,85,"🇦🇷"]]},
  // 🇷🇸 Stefan GP: lo intentó en 2010 y sonó otra vez en 2015 — rarísimo que entre, y rarísimo que aguante
  {range:[2014,2016], prob:.08, team:{name:"Stefan GP", abbr:"SGP", color:"#C6363C", color2:"#0C4076", perf:57, cat:"F1"}, drivers:null, dieAfter:{w:[2,5], p:.7}},
  // 🇯🇵 Toyota: se fue a finales de 2009; en algunas realidades el gigante vuelve
@@ -1209,8 +1216,8 @@ const TEAM_LOGOS = {
   "Renault":"renault.png","Force India":"ForceIndia.png","Toro Rosso":"ToroRosso.png","Sauber":"Sauber.png",
   "Virgin":"virgin.png","HRT":"HRTnew.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
   "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png",
-  // equipos de expansión retro/actual (Andretti: pastilla bicolor hasta tener logo)
-  "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png"
+  // equipos de expansión retro/actual
+  "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png"
 };
 // insignia de equipo: logo si existe, si no la pastilla bicolor (equipos junior)
 function badge(team, extraCls){
@@ -1449,20 +1456,23 @@ function mkRookie(noCross, forTeam){
       return d;
     }
   }
-  let name, flag;
+  let name, flag, born=null;
   S.rookies=S.rookies.filter(r=>!S.dpool.some(d=>d.name===r[0])); // purga nombres que ya entraron por otra vía
   // ⏳ cada promesa puede llevar año de «disponible desde» (r[2]) → los Costoya de 2026 no aparecen en 2012:
-  // en una partida retro, las promesas de cada década van entrando cuando la línea temporal llega a su época
+  // en una partida retro, las promesas de cada década van entrando cuando la línea temporal llega a su época.
+  // Y r[3] = año de NACIMIENTO (probadores tipo Wolff/López): debutan con su edad real, no como chavales.
   const _yr=yearNow();
   const _avail=S.rookies.map((r,i)=>i).filter(i=>!S.rookies[i][2] || _yr>=S.rookies[i][2]);
-  if(_avail.length){ [name,flag]=S.rookies.splice(_avail[irnd(0,_avail.length-1)],1)[0]; }
+  if(_avail.length){ const _r=S.rookies.splice(_avail[irnd(0,_avail.length-1)],1)[0]; name=_r[0]; flag=_r[1]; born=_r[3]||null; }
   else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)]; name=GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
   // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
   // reemplaza a los Verstappen que se retiran → cada época conserva sus estrellas y el top no se hunde con los años.
   // El resto: campo fuerte y variado (varios llegan a muy bueno / crack), como en la parrilla real.
-  const gen = ch(0.11);
+  const gen = !born && ch(0.11); // un probador treintañero no puede ser el «fenómeno generacional»
   const d = gen
     ? {name, age:irnd(17,19), skill:rnd(84,88), ceil:irnd(95,97), titles:0, flag, gen:true}
+    : born
+    ? {name, age:Math.max(18,Math.min(34,yearNow()-born)), skill:rnd(75,81), ceil:Math.round(rnd(82,88)), titles:0, flag}
     : {name, age:irnd(18,21), skill:rnd(74,81), ceil:Math.round(rnd(84,93)), titles:0, flag};
   homeBuffOne(d);
   S.dpool.push(d);
@@ -1556,8 +1566,13 @@ function incidentRival(){
 // si la cosa acaba en pelea: quedáis enemistados → su equipo no te fichará mientras él siga ahí
 function feudBurn(){ if(S._incRival){ S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===S._incRival)) S.feuds.push({name:S._incRival, year:yearNow()}); } }
 function respectBuild(){ if(S._incRival){ S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===S._incRival)) S.respects.push({name:S._incRival, year:yearNow()}); } }
-// 🗣️ leyenda que puede llamarte «blando»: un MULTICAMPEÓN claramente MAYOR que tú (nunca un chaval del karting)
-function oldChampion(){ const pool=(S.dpool||[]).filter(d=>d && d.name && d.name!=="TÚ" && d.name!==S.roleMate && (d.titles||0)>=2 && (d.age||0)>S.age+1); if(!pool.length) return null; pool.sort((a,b)=>(b.titles||0)-(a.titles||0)); return pool[0]; }
+// 🗣️ leyenda que puede llamarte «blando»: un MULTICAMPEÓN RETIRADO (sin asiento) y de verdad mayor.
+// Un Hamilton de 29 años EN ACTIVO jamás dirá «en mi época se peleaba de verdad»: solo los que ya colgaron el casco.
+function oldChampion(){
+  const seated=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(x=>{ if(x&&x!=="PLAYER") seated.add(x.name); }));
+  const pool=(S.dpool||[]).filter(d=>d && d.name && d.name!=="TÚ" && d.name!==S.roleMate
+    && (d.titles||0)>=2 && !seated.has(d.name) && (d.age||0)>=36 && (d.age||0)>S.age+2);
+  if(!pool.length) return null; pool.sort((a,b)=>(b.titles||0)-(a.titles||0)); return pool[0]; }
 function teamHasFeud(teamName){ return (S.feuds||[]).some(f=>(S.seats[teamName]||[]).some(d=>d&&d!=="PLAYER"&&d.name===f.name)); }
 function feudFilter(cands){ const f=cands.filter(t=>!teamHasFeud(t.name)); return f.length?f:cands; } // fallback: nunca 0 ofertas
 // enemigo elegible para la secuela «El fichaje del enemigo»: pelea de hace ≥1 año, sigue en la parrilla y no es tu compañero
@@ -2724,6 +2739,12 @@ function checkExpansion(row){
     S.f1char[e.team.name]=CHARS[irnd(0,2)];
     S.seats[e.team.name]=(e.drivers||[]).map(([name,age,skill,ceil,titles,flag])=>{
       const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d;
+    });
+    // pilotos «de serie» con año de nacimiento (López en USF1): entran con su edad real, si no llegaron ya por otra vía
+    (e.driversBorn||[]).forEach(([name,bn,skill,ceil,flag])=>{
+      if(S.seats[e.team.name].length>=2 || S.dpool.some(d=>d.name===name)) return;
+      const d={name, age:Math.max(20,yearNow()-bn), skill, ceil, titles:0, flag};
+      homeBuffOne(d); S.dpool.push(d); S.seats[e.team.name].push(d);
     });
     while(S.seats[e.team.name].length<2) S.seats[e.team.name].push(mkRookie(false, e.team.name));
     row.events.push(brawn
