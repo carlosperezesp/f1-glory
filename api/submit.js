@@ -71,8 +71,10 @@ module.exports = async (req, res) => {
     const secs = Math.max(0, Math.floor(Number(body.secs) || 0));
     const ns = Math.max(0, Math.floor(Number(body.ns) || 0));
 
-    // 🛡️ TOPES realistas (medidos con juego óptimo: máx ~10 títulos, ~140 vict, ~280 podios, ~200 poles, 25 temp F1)
-    if (f1 > 16 || constr > 16 || wins > 240 || podiums > 480 || poles > 320 || subcamp > 20 || seasons > 30) {
+    // 🛡️ TOPES de cordura. El que MANDA de verdad es el techo de gloria (abajo): estos solo cortan valores
+    // absurdos. Ojo: f1 estaba en 16 y rechazaba carreras legítimas de dios (18 mundiales ≈ 3750 pts, por
+    // debajo del techo) → subido a 20, que con cualquier reparto realista sigue quedando bajo los 4200.
+    if (f1 > 20 || constr > 20 || wins > 240 || podiums > 480 || poles > 320 || subcamp > 20 || seasons > 32) {
       res.status(400).json({ error: "valores imposibles" }); return;
     }
     // 🛡️ COHERENCIA interna: no puedes tener más títulos que temporadas, ni más victorias que podios (toda victoria es podio)
