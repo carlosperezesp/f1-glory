@@ -791,12 +791,24 @@ function natCode(flag){ const iso=isoFromFlag(flag); return NAT_CODE[iso]||iso||
 
 const KART_TEAMS = [
   {name:"Academia Tony Kart", color:"#2a9d3a", color2:"#136223", perf:52, sub:"La cantera de los campeones europeos"},
-  {name:"Birel ART Junior", color:"#cc2222", color2:"#5e0f0f", perf:50, sub:"Programa técnico y metódico"},
+  {name:"Birel ART Racing", color:"#cc2222", color2:"#5e0f0f", perf:50, sub:"Programa técnico y metódico"},
   {name:"CRG Racing Team", color:"#d4820a", color2:"#7a4a06", perf:48, sub:"Garra y kilómetros: la escuela dura"},
   {name:"Ricky Flynn Motorsport", color:"#1560bd", color2:"#0a2f5e", perf:51, sub:"La fábrica de campeones británicos"},
-  {name:"Kart Republic", color:"#111318", color2:"#c0392b", perf:49, sub:"El proyecto de Gary Catt: pura velocidad"},
+  {name:"Kart Republic", color:"#111318", color2:"#c0392b", perf:49, sub:"El proyecto de Dino Chiesa: pura velocidad"},
   {name:"Parolin Racing Kart", color:"#e2001a", color2:"#7a000e", perf:51, sub:"El chasis italiano de moda: velocidad pura"},
   {name:"Sodikart", color:"#0a4ea2", color2:"#062f61", perf:48, sub:"La armada francesa del karting"},
+];
+// 🕰️ karting de 2010: Kart Republic (2018), Birel ART (2015) y el equipo oficial Parolin (2015) aún NO existen.
+// En su lugar, los que de verdad mandaban entonces — incluido Intrepid, del que salieron Verstappen, Leclerc, Russell y Albon.
+const KART_2010 = [
+  {name:"Tony Kart Racing Team", color:"#2a9d3a", color2:"#136223", perf:52, sub:"La cantera de los campeones europeos"},
+  {name:"Intrepid Driver Program", color:"#0f7ac0", color2:"#08405f", perf:52, sub:"El programa del que salen los futuros cracks"},
+  {name:"CRG Racing Team", color:"#d4820a", color2:"#7a4a06", perf:48, sub:"Garra y kilómetros: la escuela dura"},
+  {name:"Ricky Flynn Motorsport", color:"#1560bd", color2:"#0a2f5e", perf:51, sub:"La fábrica de campeones británicos"},
+  {name:"Chiesa Corse", color:"#111318", color2:"#c0392b", perf:50, sub:"El ojo de Dino Chiesa para el talento"},
+  {name:"Birel", color:"#cc2222", color2:"#5e0f0f", perf:49, sub:"La escuela italiana de toda la vida"},
+  {name:"Energy Corse", color:"#e2a400", color2:"#7a5a00", perf:48, sub:"Chasis propio y ambición de sobra"},
+  {name:"Sodi Racing Team", color:"#0a4ea2", color2:"#062f61", perf:47, sub:"La armada francesa del karting"},
 ];
 const F4_TEAMS = [
   {name:"Prema F4", color:"#dd0022", color2:"#6b0011", perf:58},{name:"Van Amersfoort F4", color:"#e30613", color2:"#7a0309", perf:55},
@@ -921,6 +933,7 @@ const EXPANSION = [
    ============================================================ */
 const TEAMS_2026_SNAP = F1_TEAMS.map(t=>({...t})); // foto de la era actual (para volver a ella tras jugar una retro)
 const JR_2026 = {F4:F4_TEAMS.map(t=>({...t})), F3:F3_TEAMS.map(t=>({...t})), FR:FRECA_TEAMS.map(t=>({...t})), F2:F2_TEAMS.map(t=>({...t}))}; // foto de la escalera junior actual
+const KART_2026 = KART_TEAMS.map(t=>({...t})); // foto del karting actual (Kart Republic 2018, Birel ART 2015, Parolin 2015: válidos desde 2020)
 
 // --- 2010 · 12 equipos / 24 coches ---
 const TEAMS_2010 = [
@@ -977,10 +990,11 @@ const ROOKIE_2010 = [
   // entran con su edad real. López además viene «de serie» si USF1 cuaja (lo fichó de verdad para 2010).
   ["J.M. López","🇦🇷",2011,1983],["S. Wolff","🇬🇧",2013,1982],["Ma Qinghua","🇨🇳",2013,1987],["M. de Villota","🇪🇸",2012,1980]];
 // escalera junior 2010 (nombres de época): Fórmula Renault → Fórmula 3 → GP3 → GP2
+// Eurocup/NEC 2010 reales (SG Formula se retiró a principios de 2010 y «ART Junior» es el R-ace GP de 2013: fuera)
 const FREN_2010 = [
-  {name:"Prema FRen", color:"#dd0022", color2:"#6b0011", perf:58},{name:"SG Formula", color:"#1a3a6b", color2:"#0d1f3a", perf:55},
-  {name:"Koiranen FRen", color:"#0e7a5f", color2:"#063d2f", perf:53},{name:"Epsilon Euskadi", color:"#e30613", color2:"#7a0309", perf:51},
-  {name:"ART Junior FRen", color:"#888888", color2:"#444444", perf:56},{name:"Fortec FRen", color:"#e6a01e", color2:"#8a5f0f", perf:50},
+  {name:"Tech 1 FRen", color:"#1a3a6b", color2:"#0d1f3a", perf:58},{name:"Koiranen Bros", color:"#0e7a5f", color2:"#063d2f", perf:55},
+  {name:"Epsilon Euskadi", color:"#e30613", color2:"#7a0309", perf:53},{name:"MP Motorsport FRen", color:"#e05a00", color2:"#7a3100", perf:54},
+  {name:"Josef Kaufmann Racing", color:"#c9a227", color2:"#6b5210", perf:56},{name:"Fortec FRen", color:"#e6a01e", color2:"#8a5f0f", perf:50},
   {name:"Manor FRen", color:"#111318", color2:"#c0392b", perf:49}];
 const F3_2010 = [
   {name:"ART GP F3", color:"#888888", color2:"#444444", perf:66},{name:"Prema Powerteam F3", color:"#dd0022", color2:"#6b0011", perf:64},
@@ -997,6 +1011,30 @@ const GP2_2010 = [
   {name:"Rapax GP2", color:"#7a1fa2", color2:"#3d0f52", perf:72},{name:"Barwa Addax GP2", color:"#0e7a5f", color2:"#063d2f", perf:70},
   {name:"iSport GP2", color:"#1a3a6b", color2:"#0d1f3a", perf:73},{name:"Racing Engineering GP2", color:"#e6c31e", color2:"#8a740f", perf:69},
   {name:"Super Nova GP2", color:"#e30613", color2:"#7a0309", perf:68}];
+
+// 🕰️ escalera junior REAL de 2020 (heredarla de 2026 metía anacronismos: Invicta era UNI-Virtuosi,
+// Rodin era Carlin, PHM no existía hasta 2021 y la FRECA no se llamó así hasta 2021 — en 2020 la vía
+// paralela de referencia era la última Fórmula Renault Eurocup)
+const F4_2020 = [
+  {name:"Prema F4", color:"#dd0022", color2:"#6b0011", perf:58},{name:"Van Amersfoort F4", color:"#e30613", color2:"#7a0309", perf:55},
+  {name:"US Racing F4", color:"#1a3a6b", color2:"#0d1f3a", perf:53},{name:"R-ace GP F4", color:"#2a2a35", color2:"#101018", perf:54},
+  {name:"AS Motorsport F4", color:"#e6a01e", color2:"#8a5f0f", perf:49},
+  {name:"Mücke Motorsport F4", color:"#7a1fa2", color2:"#3d0f52", perf:50},{name:"Jenzer Motorsport F4", color:"#e11", color2:"#7a0909", perf:47}];
+const F3_2020 = [
+  {name:"Prema F3", color:"#dd0022", color2:"#6b0011", perf:66},{name:"ART Grand Prix F3", color:"#888888", color2:"#444444", perf:63},
+  {name:"Trident F3", color:"#1166cc", color2:"#083a75", perf:58},{name:"Hitech F3", color:"#aaaabb", color2:"#666677", perf:61},
+  {name:"Campos F3", color:"#e6c31e", color2:"#8a740f", perf:56},
+  {name:"MP Motorsport F3", color:"#e05a00", color2:"#7a3100", perf:59},{name:"Carlin Buzz F3", color:"#1144aa", color2:"#0a2560", perf:60}];
+const FREN_2020 = [ // Fórmula Renault Eurocup 2020: su última temporada antes de fundirse en la FRECA
+  {name:"R-ace GP FRen", color:"#2a2a35", color2:"#101018", perf:64},{name:"MP Motorsport FRen", color:"#e05a00", color2:"#7a3100", perf:61},
+  {name:"ART GP FRen", color:"#888888", color2:"#444444", perf:62},{name:"JD Motorsport", color:"#0e7a5f", color2:"#063d2f", perf:57},
+  {name:"M2 Competition", color:"#111318", color2:"#c9a227", perf:58},{name:"Arden FRen", color:"#e6a01e", color2:"#8a5f0f", perf:56},
+  {name:"FA Racing", color:"#1a3a6b", color2:"#0d1f3a", perf:55}];
+const F2_2020 = [
+  {name:"Prema F2", color:"#dd0022", color2:"#6b0011", perf:76},{name:"ART Grand Prix F2", color:"#888888", color2:"#444444", perf:74},
+  {name:"DAMS F2", color:"#0088cc", color2:"#004a70", perf:72},{name:"Carlin F2", color:"#1144aa", color2:"#0a2560", perf:70},
+  {name:"MP Motorsport F2", color:"#e05a00", color2:"#7a3100", perf:68},
+  {name:"UNI-Virtuosi F2", color:"#0e7a5f", color2:"#063d2f", perf:73},{name:"Campos Racing F2", color:"#e6c31e", color2:"#8a740f", perf:69}];
 
 // --- 2020 · 10 equipos / 20 coches ---
 const TEAMS_2020 = [
@@ -1135,13 +1173,13 @@ const ARRIVALS_2020 = [
 ];
 // registro de eras. La "2026" envuelve el mundo actual; las retro traen su parrilla/cantera/leyendas de época.
 const ERAS = {
-  "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null,
+  "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
     lineage:[], arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
   // crossovers TAMBIÉN en retro: cada estrella lleva su año de nacimiento real y solo cruza con 27-37
   // años → Palou (n. 1997) solo puede aparecer 2024-2034, empiece la partida en 2010 o en 2020. Sin anacronismos.
-  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null,
+  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:"Fórmula Renault",F2:"F2"}, jr:{F4:F4_2020,F3:F3_2020,FR:FREN_2020,F2:F2_2020}, kart:null,
     lineage:LINEAGE_2020, arrivals:ARRIVALS_2020, juniorOf:{"AlphaTauri":"Red Bull"} },
-  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:"Fórmula Renault",F3:"Fórmula 3",FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010},
+  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:"Fórmula Renault",F3:"Fórmula 3",FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010}, kart:KART_2010,
     lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
 };
 let SELECTED_ERA = "2026";
@@ -1327,6 +1365,7 @@ function startCareer(){
   // escalera junior de la era (2010: Fórmula Renault/F3/GP3/GP2; 2020/2026: las actuales)
   const JR = ERA.jr || JR_2026;
   [["F4",F4_TEAMS],["F3",F3_TEAMS],["FR",FRECA_TEAMS],["F2",F2_TEAMS]].forEach(([k,pool])=>{ pool.length=0; JR[k].forEach(t=>pool.push({...t})); });
+  KART_TEAMS.length=0; (ERA.kart || KART_2026).forEach(t=>KART_TEAMS.push({...t})); // karting de la era (2010 tiene el suyo)
   // expansión de la era. 2026: entra SOLO UNO por partida (Hyundai o Lotus). Retro: cada entrada
   // (Haas, Cadillac…) se sortea con SU probabilidad, independientes entre sí.
   const EXP = S.expansion || [];
@@ -1739,17 +1778,28 @@ function renderRecap(){
 // decay = cuánto se oxida tu OVR de F1 por año fuera; fame = multiplicador de fama por buen año
 const SERIES={
   indy:     {name:"IndyCar", em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500", triple:"indy", decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas.", subEn:"Ovals and road courses. The jewel: the Indy 500."},
-  lemans:   {name:"Resistencia (WEC)", nameEn:"Endurance (WEC)", em:"🕔", col:"#1d6a3c", perf:83, varza:5, marquee:"Le Mans 24h", triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans.", subEn:"Sportscars. The jewel: the Le Mans 24h."},
+  // el WEC nace en 2012: antes, la resistencia europea era la Le Mans Series (las 24h siempre existieron)
+  lemans:   {eras:[[0,"Resistencia (Le Mans Series)","Endurance (Le Mans Series)"],[2012,"Resistencia (WEC)","Endurance (WEC)"]],
+             name:"Resistencia (WEC)", nameEn:"Endurance (WEC)", em:"🕔", col:"#1d6a3c", perf:83, varza:5, marquee:"Le Mans 24h", triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans.", subEn:"Sportscars. The jewel: the Le Mans 24h."},
   nascar:   {name:"NASCAR", em:"🏁", col:"#ffd200", perf:80, varza:8, marquee:"Daytona 500", triple:null, decay:1.4, sub:"Stock cars. Otro mundo: puro contacto.", subEn:"Stock cars. Another world: pure contact."},
   dtm:      {name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia.", subEn:"German GT3 touring cars, pure strategy."},
-  supercars:{name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
+  supercars:{eras:[[0,"V8 Supercars"],[2016,"Supercars AUS"]],
+             name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
   dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
   // ⚡ la Fórmula E NO EXISTE hasta 2014: en una partida que empieza en 2010, no aparece hasta entonces
   formulae: {from:2014, name:"Fórmula E", nameEn:"Formula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
-  brasil:   {name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
-  superformula:{name:"Super Fórmula", nameEn:"Super Formula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1."},
+  brasil:   {eras:[[0,"Stock Car Brasil"],[2022,"Stock Car Pro Series"]],
+             name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
+  // «Super Fórmula» solo desde 2013: antes era la Formula Nippon
+  superformula:{eras:[[0,"Formula Nippon"],[2013,"Super Fórmula","Super Formula"]],
+             name:"Super Fórmula", nameEn:"Super Formula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1."},
 };
-function serName(k){ const s=SERIES[k]||{}; return L(s.name, s.nameEn||s.name); }
+// nombre de la serie EN SU ÉPOCA (Formula Nippon→Super Fórmula, Le Mans Series→WEC, V8 Supercars→Supercars…).
+// `year` opcional: para el historial, el nombre que tenía el año en que corriste allí.
+function serName(k, year){ const s=SERIES[k]||{};
+  if(s.eras){ const yr=year||yearNow();
+    for(let i=s.eras.length-1;i>=0;i--){ if(yr>=s.eras[i][0]) return L(s.eras[i][1], s.eras[i][2]||s.eras[i][1]); } }
+  return L(s.name, s.nameEn||s.name); }
 // nombre de equipo según idioma: las aventuras (WEC/FE/Super Fórmula) tienen nombre EN distinto → resolver por su clave de serie
 function teamDisp(t){ return t && t.cat==="ADV" && t.series ? serName(t.series) : (t?t.name:""); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
@@ -3775,7 +3825,7 @@ function renderTimeline(){
     const div=document.createElement("div");
     div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
-    const catLbl=r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series)||L("Aventura","Adventure")):catName(r.cat);
+    const catLbl=r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series, r.year)||L("Aventura","Adventure")):catName(r.cat);
     const constr=r.constrPos?` · 🏭 ${L("Constructores (equipo)","Constructors (team)")}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best")} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs")}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator")):r.cat==="ADV"?"":`${r.pts} pts`;
@@ -3830,7 +3880,7 @@ function renderCareerMap(){
         const ar=r.advResult||{}, sr=SERIES[ar.series]||{};
         const cls = (ar.win||ar.champPos===1)?"p1" : ar.champPos<=3?"top" : "rest";
         const lab = ar.win?"🏆" : (ar.champPos?ar.champPos+"º":"—");
-        return `<span class="cmcell ${cls}" title="${r.year} · ${ar.series?serName(ar.series):L("aventura","adventure")}${ar.win?" · ¡"+serMarquee(ar.series)+"!":""} · OVR ${r.ovr}">${lab}</span>`;
+        return `<span class="cmcell ${cls}" title="${r.year} · ${ar.series?serName(ar.series, r.year):L("aventura","adventure")}${ar.win?" · ¡"+serMarquee(ar.series)+"!":""} · OVR ${r.ovr}">${lab}</span>`;
       }
       const cls=isTest?"rest":posClass(r.pos);
       const lab=isTest?reservePos(r):(r.pos==null?"—":r.pos===1?"🏆":r.pos+"º");
