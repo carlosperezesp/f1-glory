@@ -4136,13 +4136,17 @@ function loadRanking(scope){
   rankScope=scope;
   document.querySelectorAll("#rankTabs button").forEach(b=>b.classList.toggle("on", b.dataset.s===scope));
   $("rankMe").innerHTML=""; $("rankList").innerHTML=`<div class="rank-note">${L("Cargando…","Loading…")}</div>`;
-  // ⚠️ SIN rompe-caché: un &t=Date.now() aquí hacía que CADA visita al ranking fuese a la base de datos
-  // (fue lo que agotó la cuota el 4-ago-2026). La marca recién hecha ya se ve bien porque openRanking()
-  // espera a que aterrice el envío y la fila «TÚ» nunca muestra menos que _myGloria.
-  fetch("/api/leaderboard?scope="+scope+"&limit=100&id="+encodeURIComponent(f1gPid()))
-    .then(r=>r.json())
-    .then(d=>{ if(d && Array.isArray(d.rows) && d.rows.length){ renderRankRows(d.rows, d.me, false); } else { renderLocal(); } })
-    .catch(()=>renderLocal());
+  // ⚠️ SIN rompe-caché y SIN `id` en la URL: así la lista es idéntica para todos y el CDN la cachea UNA
+  // vez para todo el mundo (con `id` cada jugador tenía su propia copia y casi nunca había acierto de
+  // caché → todas las visitas iban a la base de datos, que fue lo que agotó la cuota el 4-ago-2026).
+  // Tu puesto se pide aparte a /api/me, que es barato (2 comandos) y no se cachea.
+  Promise.all([
+    fetch("/api/leaderboard?scope="+scope+"&limit=100").then(r=>r.json()).catch(()=>null),
+    fetch("/api/me?scope="+scope+"&id="+encodeURIComponent(f1gPid())).then(r=>r.json()).catch(()=>null)
+  ]).then(([d,m])=>{
+    if(d && Array.isArray(d.rows) && d.rows.length) renderRankRows(d.rows, (m&&m.me)||d.me, false);
+    else renderLocal();
+  }).catch(()=>renderLocal());
 }
 function rankRowHTML(r, mine){ return `<div class="rank-row${mine?" me":""}"><span class="rk">${r.rank}</span><span class="nm">${r.flag||"🏁"} ${r.name||"—"}</span><span class="g">${r.gloria}</span></div>`; }
 function renderRankRows(rows, me, local){

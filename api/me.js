@@ -1,0 +1,37 @@
+// GET /api/me?scope=w|g&id=<playerId> → { rank, gloria } SOLO de un jugador (2 comandos).
+// Existe para que /api/leaderboard NO lleve el `id` en la URL: así la lista es idéntica para todo el
+// mundo y el CDN la cachea UNA vez para todos, en vez de una copia por jugador.
+const URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+async function pipe(cmds) {
+  const r = await fetch(URL + "/pipeline", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(cmds),
+  });
+  return await r.json();
+}
+function isoWeekKey(d) {
+  const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = dt.getUTCDay() || 7;
+  dt.setUTCDate(dt.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
+  return dt.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
+}
+
+module.exports = async (req, res) => {
+  if (!URL || !TOKEN) { res.status(500).json({ error: "KV no configurado" }); return; }
+  try {
+    const id = req.query.id ? String(req.query.id).slice(0, 64) : null;
+    if (!id) { res.status(400).json({ error: "falta id" }); return; }
+    const key = req.query.scope === "g" ? "lb:global" : "lb:w:" + isoWeekKey(new Date());
+    const r = await pipe([["ZREVRANK", key, id], ["ZSCORE", key, id]]);
+    const rk = r[0] && r[0].result;
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).json({ me: rk == null ? null : { rank: rk + 1, gloria: Number(r[1] && r[1].result) } });
+  } catch (e) {
+    res.status(500).json({ error: String((e && e.message) || e) });
+  }
+};
