@@ -1494,16 +1494,23 @@ const TEAM_LOGOS = {
   "Mercedes GP":"mercedes.png", // era 2010: mismo escudo que el Mercedes actual
   // 🕰️ escudos de las eras retro (2010/2020) y sus transformaciones de linaje
   "Renault":"renault.png","Force India":"ForceIndia.png","Toro Rosso":"ToroRosso.png","Sauber":"Sauber.png",
-  "Virgin":"virgin.png","HRT":"HRTnew.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
+  "Virgin":"virgin-new.png","Spyker":"Spyker.png","HRT":"HRTnew.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
   "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png",
   // equipos de expansión retro/actual
-  "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png"
+  "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png",
+  // 🕰️ era 2000 y sus transformaciones
+  "Jordan":"Jordan.png","Jaguar":"Jaguar.png","Minardi":"Minardi.png","Benetton":"Benetton.png",
+  "BAR":"BAR.png","Arrows":"Arrows.png","Prost":"Prost.png","BMW Sauber":"BMW.png",
+  "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png"
 };
 // 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
 // se volvió papaya; el Williams clásico dio paso al actual). [desdeAño, fichero] — el último que cumple manda.
 const TEAM_LOGOS_ERA = {
   "McLaren":[[0,"mclaren-chrome.png"],[2017,"mclaren.png"]],
   "Williams":[[0,"williams-classic.png"],[2020,"williamsok.png"]],
+  // Renault tuvo dos vidas muy distintas: el azul y amarillo de los títulos de Alonso (2002-2010)
+  // y el amarillo y negro de su vuelta (2016-2020)
+  "Renault":[[0,"renault-azul.png"],[2016,"renault.png"]],
 };
 function logoFor(name, year){
   const eras=TEAM_LOGOS_ERA[name];
@@ -1886,6 +1893,14 @@ function incidentRival(){
 // si la cosa acaba en pelea: quedáis enemistados → su equipo no te fichará mientras él siga ahí
 function feudBurn(){ if(S._incRival){ S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===S._incRival)) S.feuds.push({name:S._incRival, year:yearNow()}); } }
 function respectBuild(){ if(S._incRival){ S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===S._incRival)) S.respects.push({name:S._incRival, year:yearNow()}); } }
+/* versiones para tu COMPAÑERO (feudBurn/respectBuild trabajan sobre el rival de un toque).
+   Un enemigo DENTRO de tu garaje es mucho peor: convive contigo y acelera la ruptura del equipo. */
+function mateNow(){ return (S.team && S.seats[S.team.name]) ? teammateOf(S.team.name) : null; }
+function feudMate(){ const m=mateNow(); if(!m||!m.name) return;
+  S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===m.name)) S.feuds.push({name:m.name, year:yearNow(), mate:true}); }
+function respectMate(){ const m=mateNow(); if(!m||!m.name) return;
+  S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===m.name)) S.respects.push({name:m.name, year:yearNow()}); }
+function atWarWith(d){ return d && d!=="PLAYER" && (S.feuds||[]).some(f=>f.name===d.name); }
 // 🗣️ leyenda que puede llamarte «blando»: un MULTICAMPEÓN RETIRADO (sin asiento) y de verdad mayor.
 // Un Hamilton de 29 años EN ACTIVO jamás dirá «en mi época se peleaba de verdad»: solo los que ya colgaron el casco.
 /* 🕊️ Pilotos REALES a los que no se les inventan declaraciones despectivas. Solo afecta a que HABLEN:
@@ -2405,6 +2420,34 @@ const DILEMAS=[
    {l:()=>L("Comprar su silencio","Buy his silence"),r:()=>{VAL(.88);return ch(.7)?L("La historia muere en un cajón. -12% fama","The story dies in a drawer. -12% fame"):L("Paga y aún así se publica. Doble desastre. -12% fama y bronca interna","You pay and it's published anyway. Double disaster. -12% fame and internal fallout");}},
    {l:()=>L("Adelantarte y disculparte","Get ahead of it and apologise"),r:()=>ch(.55)?(VAL(1.05),L("Tu honestidad desactiva la bomba. +fama","Your honesty defuses the bomb. +fame")):(CAR(-1),L("La relación con el equipo queda tocada. -1 coche","Your relationship with the team is damaged. -1 car"))}]},
  // solo tiene sentido si de verdad PELEAS el título: con un coche de media tabla nadie te propone un pacto
+ /* 🤝 PACTO DE NO AGRESIÓN CON TU COMPAÑERO. Distinto del pacto con un rival: aquí no hay a quién
+    atacar juntos, lleváis el MISMO coche y el enemigo es el de al lado. Dos sabores por partida:
+    · lo proponéis los pilotos (Hamilton y Rosberg antes de Spa 2014)
+    · lo IMPONE el equipo, estilo «papaya rules» de McLaren con Norris y Piastri
+    Romperlo deja un enemigo DENTRO de tu garaje, y eso alimenta al hervidero de gallos (alphaClash). */
+ {id:"pactoInterno",stage:"f1",
+  cond:()=>{ if(S.cat!=="F1"||!S.team||!S.seats[S.team.name]) return false;
+    if((S.f1perf[S.team.name]??75) < 85) return false;              // hace falta un coche de ganar
+    const m=teammateOf(S.team.name);
+    return !!m && ((m.skill||0)>=85 || (m.titles||0)>0);            // y un compañero de verdad peligroso
+  },
+  t:()=>L("El pacto de no agresión","The non-aggression pact"),
+  d:()=>{ const m=teammateOf(S.team.name); S._mateName=m?surname(m.name):L("tu compañero","your teammate");
+    S._papaya=ch(.5);
+    return S._papaya
+      ? L(`El coche da para ganar y ${S._mateName} y tú vais a pelear el título entre vosotros. El equipo os sienta en una sala y os impone sus normas: podéis competir, pero no tocaros. Ni un roce.`,
+          `The car is a winner and ${S._mateName} and you are going to fight for the title with each other. The team sits you both down and lays down the rules: you may race, but you will not touch. Not once.`)
+      : L(`El coche da para ganar y ${S._mateName} y tú vais a pelear el título entre vosotros. Él te busca antes de la primera carrera: un pacto entre los dos, sin el equipo delante — corremos limpio y que gane el mejor.`,
+          `The car is a winner and ${S._mateName} and you are going to fight for the title with each other. He comes to you before the first race: a pact between the two of you, with the team out of the room — we race clean and may the best man win.`); },
+  opts:[
+   {l:()=>L("Aceptar y correr limpio","Accept and race clean"),r:()=>{ const n=S._mateName; return roll(
+     [5,()=>(CAR(1),respectMate(),L(`🤝 Ninguno de los dos se pasa de la raya en todo el año: sin guerra interna, el equipo empuja a tope y el coche mejora. +1 coche`,`🤝 Neither of you crosses the line all year: no internal war, the team pushes flat out and the car improves. +1 car`))],
+     [3,()=>L(`Tensión contenida, pero el pacto aguanta. Sin cambios.`,`Simmering tension, but the pact holds. No change.`)],
+     [3,()=>(feudMate(),VAL(.9),L(`🗡️ ${n} se lo salta a la primera y te echa fuera: tú cumpliendo y él no. A partir de hoy, con él ni agua. −fama`,`🗡️ ${n} breaks it at the first opportunity and shoves you wide: you kept your word, he didn't. From today, you two are done. −fame`))]); }},
+   {l:()=>L("Ni hablar: sin ataduras","No deal: no strings"),r:()=>{ const n=S._mateName; return roll(
+     [4,()=>(OVR(1),L(`Guerra abierta desde la primera curva. Sales reforzado de la pelea. +1 OVR`,`Open war from turn one. You come out of the fight stronger. +1 OVR`))],
+     [3,()=>(CAR(-1),L(`El garaje se parte en dos y el desarrollo se resiente: dos proyectos en vez de uno. −1 coche`,`The garage splits in two and development suffers: two projects instead of one. −1 car`))],
+     [3,()=>(feudMate(),L(`${n} se lo toma como una declaración de guerra. Con él, ni agua.`,`${n} takes it as a declaration of war. You two are done.`))]); }}]},
  // 🤝 el pacto ya NO es un texto suelto: hay un rival CON NOMBRE, y de aquí sale un aliado o un enemigo
  {id:"alianza",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=5&&titleRivals().length>0,
   t:()=>L("Pacto entre pilotos","A drivers' pact"),
@@ -3325,9 +3368,12 @@ function alphaClash(row){
     const bE = isElite(slots[1]) || playerElite(slots[1]);
     if(!(aE && bE)){ delete S.alphaYears[tn]; return; }
     S.alphaYears[tn] = (S.alphaYears[tn]||0) + 1;
-    if(S.alphaYears[tn] < 2) return;   // el primer año se aguanta: la tensión se cuece
+    // 🔥 si ya hay guerra declarada con ese compañero (pacto de no agresión roto o rechazado),
+    // no hace falta esperar y la ruptura llega mucho antes
+    const guerra = atWarWith(slots[0]) || atWarWith(slots[1]);
+    if(S.alphaYears[tn] < (guerra?1:2)) return;   // sin guerra, el primer año se aguanta
     // …y a partir de ahí la olla sube de presión cada temporada que siguen juntos
-    if(!ch(Math.min(.92, .45 + .18*(S.alphaYears[tn]-2)))) return;
+    if(!ch(Math.min(.95, (guerra?.75:.45) + .18*(S.alphaYears[tn]-2)))) return;
     // ¿QUIÉN se va? En la vida real NO siempre es el más flojo — hay cuatro guiones típicos:
     const st=(x,k)=> x==="PLAYER"
       ? ({skill:S.ovr, age:S.age, titles:S.titles.f1||0})[k]
