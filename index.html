@@ -952,7 +952,7 @@ const ROOKIE_POOL = [
    · t>=2 → su apellido se añade SOLO al pool de pilotos (abajo) y puede correr en cualquier partida
    MODERACIÓN: solo apellido + bandera; nada de nombres ofensivos ni suplantaciones. */
 const SUPPORTERS = [
-  {n:"Braisferso", f:"🏁", t:1},   // ⭐ el primero de todos
+  {n:"Braisferso", t:1},   // ⭐ el primero de todos (sin bandera: no la sabemos)
 ];
 const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
@@ -4524,7 +4524,7 @@ function renderPatrons(){
     const list=SUPPORTERS.filter(s=>(s.t||1)===t);
     if(!list.length) return;
     html+=`<div class="pt-tier">${L(TIER_NAME[t][0],TIER_NAME[t][1])}</div>`;
-    html+=list.map(s=>`<div class="pt-row"><span>${s.f||"🏁"}</span><span>${s.n}</span></div>`).join("");
+    html+=list.map(s=>`<div class="pt-row">${s.f?`<span>${s.f}</span>`:""}<span>${s.n}</span></div>`).join("");
   });
   html+=`<div class="pt-empty">${L("Gracias por mantener esto en marcha. 🧡","Thanks for keeping this running. 🧡")}</div>`;
   el.innerHTML=html;
