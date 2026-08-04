@@ -3029,6 +3029,7 @@ function simSeason(){
   if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
   evolveF1();
   npcSeason();
+  alphaClash(row); // 🐓 dos gallos no caben en el mismo corral
   // pico de carrera: mejor OVR alcanzado y a qué edad (define cuándo empieza tu declive)
   if(S.ovr > (S.peakOvr||0)){ S.peakOvr=S.ovr; S.peakAge=S.age; }
   // crecimiento con rendimientos decrecientes: cuanto más alto, más cuesta.
@@ -3108,7 +3109,19 @@ function checkExpansion(row){
         S.f1perf[tm]=rnd(72,78); S.f1target[tm]=rnd(70,77);
         row.events.push(L("🔧 La FIA corrige el reglamento: "+tm+" pierde su ventaja y vuelve al pelotón.","🔧 The FIA closes the loophole: "+tm+" loses its edge and drops back into the pack."));
       } else {
-        row.events.push(L("💪 "+tm+" mantiene su ventaja pese a los cambios de reglamento: siguen mandando.","💪 "+tm+" keeps its edge despite the rule changes: still the team to beat."));
+        // 🎯 COHERENCIA: el coche sigue siendo un misil… pero ¿tienen pilotos para aprovecharlo?
+        // (antes se anunciaba "siguen mandando" aunque llevaran dos novatos y no ganaran nada)
+        const drv=(S.seats[tm]||[]).filter(d=>d&&d!=="PLAYER");
+        const best=drv.length?Math.max(...drv.map(d=>d.skill||0)):0;
+        if(best>=86){
+          row.events.push(L("💪 "+tm+" mantiene su ventaja pese a los cambios de reglamento: siguen mandando.","💪 "+tm+" keeps its edge despite the rule changes: still the team to beat."));
+        } else {
+          const bisoños = drv.length && drv.every(d=>(d.age||30)<=23);
+          row.events.push(bisoños
+            ? L("😖 "+tm+" tiene el mejor coche de la parrilla y sus novatos no consiguen darle la gloria. En el equipo cunde la impaciencia.","😖 "+tm+" has the best car on the grid and their rookies can't deliver the glory. Patience is running out.")
+            : L("😖 Los pilotos de "+tm+" no cumplen con el mejor coche de la parrilla: decepción mayúscula y caos interno.","😖 "+tm+"'s drivers fail to deliver with the best car on the grid: huge disappointment and internal chaos."));
+          poachStar(tm, row); // …y se mueven en el mercado, que es lo que haría cualquier equipo
+        }
       }
     }
   }
@@ -3239,6 +3252,64 @@ function processArrivals(row){
       break;
     }
   }
+}
+/* 🐓 DOS GALLOS NO CABEN EN EL MISMO CORRAL.
+   En la F1 real, cuando dos cracks comparten garaje la cosa dura poco: Hamilton y Alonso aguantaron
+   UN año, Vettel se fue en cuanto Ricciardo empezó a ganarle, Hamilton y Rosberg explotaron en cuatro.
+   Sin esta regla, dos pilotos de 95 podían compartir equipo una década repartiéndose los títulos. */
+function isElite(d){ return d && d!=="PLAYER" && ((d.skill||0)>=87 || (d.titles||0)>=1); }
+/* 💰 un equipo con un cochazo desaprovechado sale al mercado y se lleva a la mejor estrella disponible */
+function poachStar(tn, row){
+  const slots=S.seats[tn]; if(!slots || slots.length<2) return;
+  const wIdx = slots[0]==="PLAYER"?1 : slots[1]==="PLAYER"?0 : (((slots[0].skill||0)<=(slots[1].skill||0))?0:1);
+  const weak=slots[wIdx]; if(!weak || weak==="PLAYER") return;
+  let best=null,bT=null,bI=0;
+  Object.entries(S.seats).forEach(([t,s])=>{ if(t===tn) return;
+    (s||[]).forEach((d,i)=>{ if(d && d!=="PLAYER" && (!best || (d.skill||0)>(best.skill||0))){ best=d; bT=t; bI=i; } }); });
+  if(!best || (best.skill||0) <= (weak.skill||0)+3) return;
+  if(isRBJr(bT) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) return; // el filial no acepta veteranos
+  S.seats[bT][bI]=weak; slots[wIdx]=best;
+  row.events.push(L(`💰 ${tn} mueve ficha y se lleva a ${surname(best.name)} de ${bT}.`,
+                    `💰 ${tn} makes its move and signs ${surname(best.name)} from ${bT}.`));
+}
+function alphaClash(row){
+  S.alphaYears = S.alphaYears || {};
+  Object.keys(S.seats).forEach(tn=>{
+    const slots=S.seats[tn]; if(!slots || slots.length<2) return;
+    const playerElite = x => x==="PLAYER" && (S.ovr>=87 || (S.titles.f1||0)>=1);
+    const aE = isElite(slots[0]) || playerElite(slots[0]);
+    const bE = isElite(slots[1]) || playerElite(slots[1]);
+    if(!(aE && bE)){ delete S.alphaYears[tn]; return; }
+    S.alphaYears[tn] = (S.alphaYears[tn]||0) + 1;
+    if(S.alphaYears[tn] < 2) return;   // el primer año se aguanta: la tensión se cuece
+    // …y a partir de ahí la olla sube de presión cada temporada que siguen juntos
+    if(!ch(Math.min(.92, .45 + .18*(S.alphaYears[tn]-2)))) return;
+    // se marcha el MÁS FLOJO (primero por títulos, luego por nivel). Al jugador nunca lo mueve esto.
+    let goIdx;
+    if(slots[0]==="PLAYER") goIdx=1;
+    else if(slots[1]==="PLAYER") goIdx=0;
+    else { const rank=d=>(d.titles||0)*100+(d.skill||0); goIdx = rank(slots[0])<=rank(slots[1]) ? 0 : 1; }
+    const leaver=slots[goIdx]; if(!leaver || leaver==="PLAYER") return;
+    const stays=slots[1-goIdx];
+    const stayName = stays==="PLAYER" ? L("TÚ","YOU") : surname(stays.name);
+    // destino: el mejor equipo que NO tenga ya su propia pareja de gallos (y nunca el filial de RB)
+    const posibles=F1_TEAMS
+      .filter(t=>t.name!==tn && S.seats[t.name] && S.seats[t.name].length>=2 && !isRBJr(t.name)
+                 && S.seats[t.name].some(d=>d!=="PLAYER"))
+      .sort((x,y)=>(S.f1perf[y.name]??70)-(S.f1perf[x.name]??70));
+    // primero un equipo sin su propia pareja de gallos; si TODOS están llenos de estrellas,
+    // se va igualmente al mejor sitio libre (en la vida real uno se acaba yendo sí o sí)
+    const dest = posibles.find(t=>S.seats[t.name].filter(d=>isElite(d)).length<=1) || posibles[0];
+    if(!dest) return;
+    const ds=S.seats[dest.name];
+    let swapIdx = ds[0]==="PLAYER"?1 : ds[1]==="PLAYER"?0 : (((ds[0].skill||0)<=(ds[1].skill||0))?0:1);
+    const back=ds[swapIdx]; if(!back || back==="PLAYER") return;
+    ds[swapIdx]=leaver; slots[goIdx]=back;   // intercambio
+    S.alphaYears[tn]=0; S.alphaYears[dest.name]=0;
+    row.events.push(L(
+      `🐓 ${surname(leaver.name)} y ${stayName} no caben en el mismo garaje: ${surname(leaver.name)} se marcha a ${dest.name} y ${surname(back.name)} ocupa su asiento en ${tn}.`,
+      `🐓 ${surname(leaver.name)} and ${stayName} can't share a garage: ${surname(leaver.name)} leaves for ${dest.name} and ${surname(back.name)} takes the seat at ${tn}.`));
+  });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
 function bgF1Season(row){
@@ -3536,7 +3607,9 @@ function simF1(row,st){
   const constrPos=1+constrRank.findIndex(e=>e[0]===myTeam);
   row.constrPos=constrPos;
   // top 3 de ambos campeonatos, visible en la línea de tiempo y el panel
-  row.top3d=standings.slice(0,3).map(d=>d.isP?L("TÚ","YOU"):surname(d.name));
+  // guardamos también EN QUÉ EQUIPO estaba cada uno: con los renombrados y las mariposas de una
+  // partida larga, un nombre suelto no dice nada ("¿Coulthard en qué coche ganó ese año?")
+  row.top3d=standings.slice(0,3).map(d=>({n:d.isP?L("TÚ","YOU"):surname(d.name), t:d.isP?myTeam:d.team}));
   row.top3c=constrRank.slice(0,3).map(e=>e[0]);
   const {mvD,mvC}=trackRanks(standings.map(d=>d.isP?"__ME__":d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
@@ -4183,7 +4256,10 @@ function renderTimeline(){
     const advR=r.advResult;
     const posLab=r.cat==="ADV"?(advR?(advR.win?"🏆":(advR.champPos===1?"🥇 1º":advR.champPos+"º")):"—"):r.cat==="TEST"?reservePos(r):(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
     const posCls=r.cat==="ADV"?(advR&&(advR.win||advR.champPos===1)?"p1":advR&&advR.champPos<=3?"top":"rest"):r.cat==="TEST"?"rest":posClass(r.pos);
-    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.join(" · ")}</span>`:"";
+    // cada campeón con el escudo del equipo con el que corrió ESE año (formato viejo = solo texto)
+    const nameWithBadge=(x)=> (x && typeof x==="object")
+      ? `${teamBadge(x.t, r.year)||""}&nbsp;${x.n}` : x;
+    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
       <span class="club">${badge(r.team,"",r.year)}
