@@ -1884,9 +1884,17 @@ function feudBurn(){ if(S._incRival){ S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f
 function respectBuild(){ if(S._incRival){ S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===S._incRival)) S.respects.push({name:S._incRival, year:yearNow()}); } }
 // 🗣️ leyenda que puede llamarte «blando»: un MULTICAMPEÓN RETIRADO (sin asiento) y de verdad mayor.
 // Un Hamilton de 29 años EN ACTIVO jamás dirá «en mi época se peleaba de verdad»: solo los que ya colgaron el casco.
+/* 🕊️ Pilotos REALES a los que no se les inventan declaraciones despectivas. Solo afecta a que HABLEN:
+   pueden correr, ganar y ser leyendas en la simulación con total normalidad.
+   · M. Schumacher → desde 2014. Antes era un personaje público y famosamente combativo, y ahí la
+     frase encaja sin problema; a partir de ese año, no le ponemos palabras en la boca.
+   · J. Bianchi → nunca. Que viva y triunfe en una línea temporal alternativa es bonito; hacerle
+     despreciar a nadie, no. */
+const NO_TAUNT = { "M. Schumacher": 2014, "J. Bianchi": 0 };
+function canTaunt(name){ const from=NO_TAUNT[name]; return from===undefined || yearNow() < from; }
 function oldChampion(){
   const seated=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(x=>{ if(x&&x!=="PLAYER") seated.add(x.name); }));
-  const pool=(S.dpool||[]).filter(d=>d && d.name && d.name!=="TÚ" && d.name!==S.roleMate
+  const pool=(S.dpool||[]).filter(d=>d && d.name && d.name!=="TÚ" && d.name!==S.roleMate && canTaunt(d.name)
     && (d.titles||0)>=2 && !seated.has(d.name) && (d.age||0)>=36 && (d.age||0)>S.age+2);
   if(!pool.length) return null; pool.sort((a,b)=>(b.titles||0)-(a.titles||0)); return pool[0]; }
 function teamHasFeud(teamName){ return (S.feuds||[]).some(f=>(S.seats[teamName]||[]).some(d=>d&&d!=="PLAYER"&&d.name===f.name)); }
