@@ -3284,14 +3284,42 @@ function alphaClash(row){
     if(S.alphaYears[tn] < 2) return;   // el primer año se aguanta: la tensión se cuece
     // …y a partir de ahí la olla sube de presión cada temporada que siguen juntos
     if(!ch(Math.min(.92, .45 + .18*(S.alphaYears[tn]-2)))) return;
-    // se marcha el MÁS FLOJO (primero por títulos, luego por nivel). Al jugador nunca lo mueve esto.
+    // ¿QUIÉN se va? En la vida real NO siempre es el más flojo — hay cuatro guiones típicos:
+    const st=(x,k)=> x==="PLAYER"
+      ? ({skill:S.ovr, age:S.age, titles:S.titles.f1||0})[k]
+      : ({skill:x.skill||0, age:x.age||0, titles:x.titles||0})[k];
+    const r=Math.random();
+    const modo = r<.38 ? "peor"      // el equipo construye sobre su verdadero Nº1 (Alonso se fue, no Hamilton)
+               : r<.58 ? "mejor"     // el que va mejor anuncia que se marcha a otro proyecto
+               : r<.82 ? "veterano"  // el mayor va a perder nivel: apuestan por el joven
+                       : "joven";    // o al revés: aseguran el título YA con el veterano
     let goIdx;
-    if(slots[0]==="PLAYER") goIdx=1;
-    else if(slots[1]==="PLAYER") goIdx=0;
-    else { const rank=d=>(d.titles||0)*100+(d.skill||0); goIdx = rank(slots[0])<=rank(slots[1]) ? 0 : 1; }
-    const leaver=slots[goIdx]; if(!leaver || leaver==="PLAYER") return;
-    const stays=slots[1-goIdx];
+    if(modo==="peor")      goIdx = st(slots[0],"skill") <= st(slots[1],"skill") ? 0 : 1;
+    else if(modo==="mejor")goIdx = st(slots[0],"skill") >= st(slots[1],"skill") ? 0 : 1;
+    else if(modo==="veterano") goIdx = st(slots[0],"age") >= st(slots[1],"age") ? 0 : 1;
+    else                   goIdx = st(slots[0],"age") <= st(slots[1],"age") ? 0 : 1;
+    // a un campeón vigente no lo echa nadie: si le tocaba, se va el otro
+    const campeonVigente = x => x==="PLAYER"
+      ? ((S.seasons.at(-1)||{}).cat==="F1" && (S.seasons.at(-1)||{}).pos===1)
+      : false;
+    if(campeonVigente(slots[goIdx])) goIdx = 1-goIdx;
+    const leaver=slots[goIdx], stays=slots[1-goIdx];
     const stayName = stays==="PLAYER" ? L("TÚ","YOU") : surname(stays.name);
+    // 🫵 SI EL QUE SOBRA ERES TÚ: no te movemos a la fuerza de equipo, pero el asiento se acaba y
+    // sales al mercado (como ya hacen otros dilemas). Con el motivo bien explicado.
+    if(leaver==="PLAYER"){
+      S.forceMove=true; S.alphaYears[tn]=0;
+      row.events.push(L(
+        modo==="peor"     ? `🐓 ${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
+      : modo==="mejor"    ? `🐓 Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
+      : modo==="veterano" ? `🐓 ${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
+                          : `🐓 ${tn} quiere el título YA y prefiere la veteranía de ${stayName}: tu asiento se acaba.`,
+        modo==="peor"     ? `🐓 ${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
+      : modo==="mejor"    ? `🐓 You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
+      : modo==="veterano" ? `🐓 ${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
+                          : `🐓 ${tn} wants the title NOW and prefers ${stayName}'s experience: your seat is gone.`));
+      return;
+    }
     // destino: el mejor equipo que NO tenga ya su propia pareja de gallos (y nunca el filial de RB)
     const posibles=F1_TEAMS
       .filter(t=>t.name!==tn && S.seats[t.name] && S.seats[t.name].length>=2 && !isRBJr(t.name)
@@ -3306,9 +3334,16 @@ function alphaClash(row){
     const back=ds[swapIdx]; if(!back || back==="PLAYER") return;
     ds[swapIdx]=leaver; slots[goIdx]=back;   // intercambio
     S.alphaYears[tn]=0; S.alphaYears[dest.name]=0;
+    const va=surname(leaver.name), vuelve=surname(back.name);
     row.events.push(L(
-      `🐓 ${surname(leaver.name)} y ${stayName} no caben en el mismo garaje: ${surname(leaver.name)} se marcha a ${dest.name} y ${surname(back.name)} ocupa su asiento en ${tn}.`,
-      `🐓 ${surname(leaver.name)} and ${stayName} can't share a garage: ${surname(leaver.name)} leaves for ${dest.name} and ${surname(back.name)} takes the seat at ${tn}.`));
+      modo==="peor"     ? `🐓 ${tn} construye sobre ${stayName} y deja marchar a ${va}, que ficha por ${dest.name}. ${vuelve} ocupa su asiento.`
+    : modo==="mejor"    ? `🐓 Bombazo: ${va} anuncia que se va a ${dest.name} buscando ser el número uno. ${vuelve} llega a ${tn} para acompañar a ${stayName}.`
+    : modo==="veterano" ? `🐓 ${tn} apuesta por la juventud de ${stayName}: ${va} hace las maletas rumbo a ${dest.name} y llega ${vuelve}.`
+                        : `🐓 ${tn} quiere el título ya y se queda con la veteranía de ${stayName}: ${va} se marcha a ${dest.name} y entra ${vuelve}.`,
+      modo==="peor"     ? `🐓 ${tn} builds around ${stayName} and lets ${va} go: he signs for ${dest.name}. ${vuelve} takes the seat.`
+    : modo==="mejor"    ? `🐓 Bombshell: ${va} announces a move to ${dest.name} to be the undisputed No.1. ${vuelve} arrives at ${tn} alongside ${stayName}.`
+    : modo==="veterano" ? `🐓 ${tn} bets on ${stayName}'s youth: ${va} packs his bags for ${dest.name} and ${vuelve} comes in.`
+                        : `🐓 ${tn} wants the title now and keeps ${stayName}'s experience: ${va} leaves for ${dest.name} and ${vuelve} arrives.`));
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
