@@ -567,7 +567,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <button class="dec locked" disabled>1970</button>
       <button class="dec locked" disabled>1980</button>
       <button class="dec locked" disabled>1990</button>
-      <button class="dec locked" disabled>2000</button>
+      <button class="dec locked" id="dec2000" disabled>2000</button>
       <button class="dec" onclick="startCareerFlow('2010')">2010</button>
       <button class="dec" onclick="startCareerFlow('2020')">2020</button>
       <div class="dec-note" data-es="Las demás décadas están en camino 🏗️" data-en="The other decades are on the way 🏗️">Las demás décadas están en camino 🏗️</div>
@@ -1229,6 +1229,169 @@ const ARRIVALS_2020 = [
  {y:2025,n:"I. Hadjar",b:2004,c:87,f:"🇫🇷",pref:"AlphaTauri"}, {y:2025,n:"J. Doohan",b:2003,c:83,f:"🇦🇺",pref:"Renault"},
  {y:2026,n:"A. Lindblad",b:2007,c:90,f:"🇬🇧",pref:"AlphaTauri"},
 ];
+/* ============================================================
+   🕰️ ERA 2000 · 11 equipos / 22 coches (datos verificados)
+   El año con MENOS pilotos usados de la historia (23): solo un cambio en toda la
+   temporada (Burti por Irvine, enfermo, en Austria). Dos cochazos —Ferrari y McLaren—
+   y un abismo hasta el resto. Récord de mundiales en 2000: Fangio, con 5.
+   ============================================================ */
+const TEAMS_2000 = [
+  {name:"Ferrari",   abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:93},
+  {name:"McLaren",   abbr:"MCL", color:"#C0C0C8", color2:"#DD1E2F", perf:92},
+  {name:"Williams",  abbr:"WIL", color:"#1A3D7C", color2:"#7FB2E6", perf:80},
+  {name:"Benetton",  abbr:"BEN", color:"#0A9BD8", color2:"#F5D800", perf:77},
+  {name:"BAR",       abbr:"BAR", color:"#D0021B", color2:"#F5F5F5", perf:76},
+  {name:"Jordan",    abbr:"JOR", color:"#F5D800", color2:"#111111", perf:75},
+  {name:"Arrows",    abbr:"ARR", color:"#F58220", color2:"#111111", perf:71},
+  {name:"Sauber",    abbr:"SAU", color:"#0A4EA2", color2:"#C00000", perf:70},
+  {name:"Jaguar",    abbr:"JAG", color:"#00563F", color2:"#C0A062", perf:68},
+  {name:"Minardi",   abbr:"MIN", color:"#111111", color2:"#F5D800", perf:63},
+  {name:"Prost",     abbr:"PRO", color:"#1A56A8", color2:"#F5F5F5", perf:62},
+];
+// [nombre, edad, nivel, techo, títulos(antes de 2000), bandera]
+const GRID2000 = {
+  "Ferrari":[["M. Schumacher",31,95,97,2,"🇩🇪"],["R. Barrichello",28,85,88,0,"🇧🇷"]],
+  "McLaren":[["M. Häkkinen",32,92,94,2,"🇫🇮"],["D. Coulthard",29,87,89,0,"🇬🇧"]],
+  "Williams":[["R. Schumacher",25,84,88,0,"🇩🇪"],["J. Button",20,78,91,0,"🇬🇧"]],
+  "Benetton":[["G. Fisichella",27,84,87,0,"🇮🇹"],["A. Wurz",26,79,83,0,"🇦🇹"]],
+  "BAR":[["J. Villeneuve",29,85,88,1,"🇨🇦"],["R. Zonta",24,77,82,0,"🇧🇷"]],
+  "Jordan":[["H-H. Frentzen",33,85,88,0,"🇩🇪"],["J. Trulli",26,82,86,0,"🇮🇹"]],
+  "Arrows":[["P. de la Rosa",29,76,80,0,"🇪🇸"],["J. Verstappen",28,78,82,0,"🇳🇱"]],
+  "Sauber":[["M. Salo",34,78,81,0,"🇫🇮"],["P. Diniz",30,72,76,0,"🇧🇷"]],
+  "Jaguar":[["E. Irvine",35,82,85,0,"🇬🇧"],["J. Herbert",36,77,80,0,"🇬🇧"]],
+  "Minardi":[["M. Gené",26,74,78,0,"🇪🇸"],["G. Mazzacane",25,70,75,0,"🇦🇷"]],
+  "Prost":[["J. Alesi",36,80,83,0,"🇫🇷"],["N. Heidfeld",23,78,86,0,"🇩🇪"]],
+};
+// leyendas RETIRADAS conocidas en 2000. OJO: Schumacher (2), Häkkinen (2) y Villeneuve (1)
+// estaban EN ACTIVO ese año → no van aquí. El récord lo tenía Fangio con 5.
+const LEGENDS_2000 = [["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],
+  ["N. Lauda",3,"🇦🇹"],["N. Piquet",3,"🇧🇷"],["A. Senna",3,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["J. Clark",2,"🇬🇧"],
+  ["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["N. Mansell",1,"🇬🇧"],["D. Hill",1,"🇬🇧"]];
+// cantera 2000: promesas reales de F3000/F3/F.Renault de 1999-2002 que NO llegaron a la F1
+// (los que sí llegaron van en ARRIVALS_2000, con su año real). 3er campo = disponible desde.
+const ROOKIE_2000 = [
+  ["B. Junqueira","🇧🇷"],["N. Minassian","🇫🇷"],["D. Manning","🇬🇧"],["T. Scheckter","🇿🇦"],["M. Hynes","🇬🇧"],
+  ["J. Cochet","🇫🇷"],["A. Priaulx","🇬🇧"],["A. Couto","🇵🇹"],["S. Mücke","🇩🇪"],["P. Kaffer","🇩🇪"],
+  ["A. Müller","🇩🇪"],["D. Uboldi","🇮🇹"],["R. Mauricio","🇧🇷"],["M. Pavlović","🇷🇸"],["C. Zwolsman","🇳🇱"],
+  ["B. Wirdheim","🇸🇪",2003],["A. Farfus","🇧🇷",2002],["É. Salignon","🇫🇷",2002],["R. Dalziel","🇬🇧",2002],
+  ["B. Collins","🇬🇧",2002],
+  // promesas de las décadas siguientes (una partida de 2000 llega hasta los 2020)
+  ["R. Frijns","🇳🇱",2010],["A. Félix da Costa","🇵🇹",2010],["S. Bird","🇬🇧",2010],["O. Turvey","🇬🇧",2010],
+  ["L. Razia","🇧🇷",2010],["S. Coletti","🇲🇨",2011],["F. Leimer","🇨🇭",2011],["D. Valsecchi","🇮🇹",2011],
+  ["R. Marciello","🇮🇹",2013],["F. Rosenqvist","🇸🇪",2012],["J. Calado","🇬🇧",2011],["D. Clos","🇪🇸",2011],
+  ["S. Sirotkin","🇷🇺",2017],["N. de Vries","🇳🇱",2019],["C. Ilott","🇬🇧",2020],["R. Shwartzman","🇷🇺",2020],
+  ["T. Pourchaire","🇫🇷",2021],["F. Vesti","🇩🇰",2021],["A. Dunne","🇮🇪",2023],["C. Costoya","🇪🇸",2026]];
+// escalera junior de 2000: Karting → Fórmula Renault → F3 (británica o alemana, en paralelo) → F3000 → F1
+// (la GP2 no existe hasta 2005 y la GP3 hasta 2010; la F3000 internacional corrió de 1985 a 2004)
+const FREN_2000 = [
+  {name:"Manor Motorsport", color:"#111318", color2:"#c0392b", perf:58},{name:"Cram Competition", color:"#e30613", color2:"#7a0309", perf:57},
+  {name:"JD Motorsport", color:"#0e7a5f", color2:"#063d2f", perf:55},{name:"Team DFR", color:"#1a3a6b", color2:"#0d1f3a", perf:53},
+  {name:"Motaworld Racing", color:"#e6a01e", color2:"#8a5f0f", perf:51},{name:"GM Motorsport", color:"#888888", color2:"#444444", perf:52},
+  {name:"SL Formula Racing", color:"#7a1fa2", color2:"#3d0f52", perf:50}];
+const F3BR_2000 = [ // F3 británica 2000
+  {name:"Manor F3", color:"#111318", color2:"#c0392b", perf:66},{name:"Carlin Motorsport", color:"#1144aa", color2:"#0a2560", perf:64},
+  {name:"Stewart Racing", color:"#f5f5f5", color2:"#1a3d7c", perf:63},{name:"Promatecme UK", color:"#0a9bd8", color2:"#065a7d", perf:60},
+  {name:"Fortec F3", color:"#e6a01e", color2:"#8a5f0f", perf:58},{name:"Alan Docking Racing", color:"#2a2a35", color2:"#101018", perf:56},
+  {name:"Team Avanti", color:"#0e7a5f", color2:"#063d2f", perf:55}];
+const F3DE_2000 = [ // F3 alemana 2000
+  {name:"Opel Team KMS", color:"#f5d800", color2:"#8a7400", perf:66},{name:"Opel Team BSR", color:"#e30613", color2:"#7a0309", perf:63},
+  {name:"Van Amersfoort F3", color:"#e30613", color2:"#7a0309", perf:61},{name:"Team Rosberg", color:"#0a4ea2", color2:"#062f61", perf:60},
+  {name:"Prema Powerteam", color:"#dd0022", color2:"#6b0011", perf:62},{name:"Josef Kaufmann F3", color:"#c9a227", color2:"#6b5210", perf:57},
+  {name:"Jo Zeller Racing", color:"#888888", color2:"#444444", perf:55}];
+const F3000_2000 = [ // F3000 internacional 2000 (campo real)
+  {name:"Super Nova F3000", color:"#0a4ea2", color2:"#062f61", perf:76},{name:"Petrobras Junior", color:"#0e7a5f", color2:"#063d2f", perf:75},
+  {name:"MySAP.com F3000", color:"#1a3a6b", color2:"#0d1f3a", perf:72},{name:"Team Astromega", color:"#e6a01e", color2:"#8a5f0f", perf:71},
+  {name:"European Arrows", color:"#F58220", color2:"#111111", perf:70},{name:"Nordic Racing", color:"#c0c0c8", color2:"#5a5a66", perf:69},
+  {name:"Red Bull Junior", color:"#0A1E5E", color2:"#D4001A", perf:68},{name:"DAMS F3000", color:"#0088cc", color2:"#004a70", perf:67}];
+// karting de 2000 (marcas y equipos que existían entonces; ni Kart Republic ni Birel ART ni Parolin de fábrica)
+const KART_2000 = [
+  {name:"Tony Kart Racing Team", color:"#2a9d3a", color2:"#136223", perf:52, sub:"El chasis dominante de la época"},
+  {name:"CRG Racing Team", color:"#d4820a", color2:"#7a4a06", perf:52, sub:"Garra y kilómetros: la escuela dura"},
+  {name:"Birel", color:"#cc2222", color2:"#5e0f0f", perf:50, sub:"La escuela italiana de toda la vida"},
+  {name:"Kosmic Racing", color:"#0f7ac0", color2:"#08405f", perf:50, sub:"La marca joven que sube como la espuma"},
+  {name:"Maranello Kart", color:"#e2001a", color2:"#7a000e", perf:49, sub:"Rojo y ambición"},
+  {name:"Energy Corse", color:"#e2a400", color2:"#7a5a00", perf:48, sub:"Chasis propio y hambre"},
+  {name:"Top Kart", color:"#111318", color2:"#c0392b", perf:47, sub:"Modesto pero competitivo"},
+  {name:"DAP", color:"#0a4ea2", color2:"#062f61", perf:47, sub:"La vieja escuela del karting"},
+];
+// 🧬 linaje desde 2000 (verificado). La cadena de Jordan es la más larga de la historia de la F1.
+const LINEAGE_2000 = [
+ {key:"Jaguar", steps:[{to:{name:"Red Bull",abbr:"RBR",color:"#0A1E5E",color2:"#D4001A"}, w:[2004,2007], p:.8}]},
+ {key:"Minardi", steps:[{to:{name:"Toro Rosso",abbr:"STR",color:"#153A72",color2:"#D00000"}, w:[2005,2008], p:.75},
+                        {to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2019,2022], p:.6},
+                        {to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2028], p:.6}]},
+ {key:"BAR", steps:[{to:{name:"Honda",abbr:"HON",color:"#F5F5F5",color2:"#D0021B"}, w:[2005,2008], p:.7},
+                    {to:{name:"Brawn",abbr:"BGP",color:"#C6E600",color2:"#111111"}, w:[2008,2011], p:.5},
+                    {to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2010,2013], p:.8}]},
+ {key:"Benetton", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2001,2004], p:.8},
+                         {to:{name:"Lotus",abbr:"LOT",color:"#111111",color2:"#c9a227"}, w:[2011,2014], p:.5},
+                         {to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2019,2024], p:.6}]},
+ {key:"Sauber", steps:[{to:{name:"BMW Sauber",abbr:"BMW",color:"#0a4ea2",color2:"#c0c0c8"}, w:[2005,2008], p:.6},
+                       {to:{name:"Sauber",abbr:"SAU",color:"#0A4EA2",color2:"#C00000"}, w:[2009,2012], p:.7},
+                       {to:{name:"Alfa Romeo",abbr:"ALF",color:"#900000",color2:"#C0C0C8"}, w:[2018,2022], p:.5},
+                       {to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2025,2031], p:.6}]},
+ {key:"Jordan", steps:[{to:{name:"Midland",abbr:"MID",color:"#C00000",color2:"#f5f5f5"}, w:[2005,2008], p:.5},
+                       {to:{name:"Spyker",abbr:"SPY",color:"#F58220",color2:"#111111"}, w:[2006,2009], p:.6},
+                       {to:{name:"Force India",abbr:"FI",color:"#E87511",color2:"#245A2A"}, w:[2007,2011], p:.75},
+                       {to:{name:"Racing Point",abbr:"RP",color:"#F596C8",color2:"#2B2B2B"}, w:[2017,2021], p:.55},
+                       {to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2020,2026], p:.7}]},
+ {key:"Arrows", steps:[{die:true, w:[2002,2006], p:.7}]},
+ {key:"Prost",  steps:[{die:true, w:[2002,2005], p:.75}]},
+];
+// equipos NUEVOS entre 2000 y hoy (con su probabilidad y, los frágiles, su fecha de caducidad)
+const ENTRIES_2000 = [
+ {range:[2001,2004], prob:.75, team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:70, cat:"F1"}, drivers:null, dieAfter:{w:[6,10], p:.5}},
+ {range:[2005,2008], prob:.4,  team:{name:"Super Aguri", abbr:"SAG", color:"#D0021B", color2:"#F5F5F5", perf:60, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.75}},
+ {range:[2009,2012], prob:.5,  team:{name:"HRT", abbr:"HRT", color:"#8A8D90", color2:"#B01B2E", perf:58, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.75}},
+ {range:[2009,2012], prob:.5,  team:{name:"Virgin", abbr:"VIR", color:"#D11D2A", color2:"#151515", perf:60, cat:"F1"}, drivers:null, dieAfter:{w:[4,7], p:.6}},
+ {range:[2014,2018], prob:.6,  team:{name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:64, cat:"F1"}, drivers:null},
+ {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+];
+/* 🎬 debuts REALES de 2001 en adelante (año ±1 por partida). `pref` usa el nombre del equipo EN 2000:
+   arrTeamNow() lo resuelve al nombre que tenga ese año (Minardi→Toro Rosso→AlphaTauri…). */
+const ARRIVALS_2000 = [
+ {y:2001,n:"F. Alonso",b:1981,c:95,f:"🇪🇸",pref:"Minardi"}, {y:2001,n:"K. Räikkönen",b:1979,c:93,f:"🇫🇮",pref:"Sauber"},
+ {y:2001,n:"J.P. Montoya",b:1975,c:90,f:"🇨🇴",pref:"Williams"}, {y:2001,n:"E. Bernoldi",b:1978,c:76,f:"🇧🇷",pref:"Arrows"},
+ {y:2002,n:"F. Massa",b:1981,c:88,f:"🇧🇷",pref:"Sauber"}, {y:2002,n:"M. Webber",b:1976,c:88,f:"🇦🇺",pref:"Minardi"},
+ {y:2002,n:"T. Sato",b:1977,c:82,f:"🇯🇵",pref:"Jordan"},
+ {y:2003,n:"C. da Matta",b:1973,c:80,f:"🇧🇷",pref:"Toyota"}, {y:2003,n:"A. Pizzonia",b:1980,c:80,f:"🇧🇷",pref:"Jaguar"},
+ {y:2003,n:"J. Wilson",b:1978,c:82,f:"🇬🇧",pref:"Minardi"},
+ {y:2004,n:"C. Klien",b:1983,c:80,f:"🇦🇹",pref:"Jaguar"}, {y:2004,n:"T. Glock",b:1982,c:84,f:"🇩🇪",pref:"Jordan"},
+ {y:2004,n:"G. Pantano",b:1979,c:79,f:"🇮🇹",pref:"Jordan"},
+ {y:2005,n:"V. Liuzzi",b:1981,c:81,f:"🇮🇹",pref:"Jaguar"}, {y:2005,n:"T. Monteiro",b:1976,c:77,f:"🇵🇹",pref:"Jordan"},
+ {y:2005,n:"N. Karthikeyan",b:1977,c:76,f:"🇮🇳",pref:"Jordan"}, {y:2005,n:"C. Albers",b:1979,c:77,f:"🇳🇱",pref:"Minardi"},
+ {y:2006,n:"N. Rosberg",b:1985,c:91,f:"🇩🇪",pref:"Williams"}, {y:2006,n:"R. Kubica",b:1984,c:93,f:"🇵🇱",pref:"Sauber"},
+ {y:2006,n:"S. Speed",b:1983,c:76,f:"🇺🇸",pref:"Minardi"},
+ {y:2007,n:"L. Hamilton",b:1985,c:97,f:"🇬🇧",pref:"McLaren"}, {y:2007,n:"H. Kovalainen",b:1981,c:85,f:"🇫🇮",pref:"Benetton"},
+ {y:2007,n:"S. Vettel",b:1987,c:95,f:"🇩🇪",pref:"Sauber"}, {y:2007,n:"A. Sutil",b:1983,c:82,f:"🇩🇪",pref:"Jordan"},
+ {y:2008,n:"S. Bourdais",b:1979,c:82,f:"🇫🇷",pref:"Minardi"}, {y:2008,n:"N. Piquet Jr.",b:1985,c:78,f:"🇧🇷",pref:"Benetton"},
+ {y:2009,n:"S. Buemi",b:1988,c:84,f:"🇨🇭",pref:"Minardi"}, {y:2009,n:"R. Grosjean",b:1986,c:86,f:"🇫🇷",pref:"Benetton"},
+ {y:2009,n:"J. Alguersuari",b:1990,c:82,f:"🇪🇸",pref:"Minardi"}, {y:2009,n:"K. Kobayashi",b:1986,c:84,f:"🇯🇵",pref:"Toyota"},
+ {y:2010,n:"N. Hülkenberg",b:1987,c:88,f:"🇩🇪",pref:"Williams"}, {y:2010,n:"V. Petrov",b:1984,c:78,f:"🇷🇺",pref:"Benetton"},
+ {y:2010,n:"B. Senna",b:1983,c:82,f:"🇧🇷",pref:"HRT"}, {y:2010,n:"L. di Grassi",b:1984,c:80,f:"🇧🇷",pref:"Virgin"},
+ {y:2011,n:"S. Pérez",b:1990,c:88,f:"🇲🇽",pref:"Sauber"}, {y:2011,n:"P. Maldonado",b:1985,c:82,f:"🇻🇪",pref:"Williams"},
+ {y:2011,n:"P. di Resta",b:1986,c:82,f:"🇬🇧",pref:"Jordan"}, {y:2011,n:"D. Ricciardo",b:1989,c:91,f:"🇦🇺",pref:"HRT"},
+ {y:2012,n:"J-É. Vergne",b:1990,c:84,f:"🇫🇷",pref:"Minardi"}, {y:2012,n:"C. Pic",b:1990,c:78,f:"🇫🇷",pref:"Virgin"},
+ {y:2013,n:"V. Bottas",b:1989,c:88,f:"🇫🇮",pref:"Williams"}, {y:2013,n:"E. Gutiérrez",b:1991,c:79,f:"🇲🇽",pref:"Sauber"},
+ {y:2013,n:"J. Bianchi",b:1989,c:88,f:"🇫🇷",pref:"Virgin"},
+ {y:2014,n:"K. Magnussen",b:1992,c:84,f:"🇩🇰",pref:"McLaren"}, {y:2014,n:"D. Kvyat",b:1994,c:84,f:"🇷🇺",pref:"Minardi"},
+ {y:2014,n:"M. Ericsson",b:1990,c:78,f:"🇸🇪",pref:"Sauber"},
+ {y:2015,n:"M. Verstappen",b:1997,c:96,f:"🇳🇱",pref:"Minardi"}, {y:2015,n:"C. Sainz",b:1994,c:89,f:"🇪🇸",pref:"Minardi"},
+ {y:2015,n:"F. Nasr",b:1992,c:81,f:"🇧🇷",pref:"Sauber"},
+ {y:2016,n:"E. Ocon",b:1996,c:86,f:"🇫🇷",pref:"Jordan"}, {y:2016,n:"P. Wehrlein",b:1994,c:84,f:"🇩🇪",pref:"Virgin"},
+ {y:2017,n:"L. Stroll",b:1998,c:82,f:"🇨🇦",pref:"Williams"}, {y:2017,n:"P. Gasly",b:1996,c:87,f:"🇫🇷",pref:"Minardi"},
+ {y:2018,n:"C. Leclerc",b:1997,c:94,f:"🇲🇨",pref:"Sauber"},
+ {y:2019,n:"L. Norris",b:1999,c:94,f:"🇬🇧",pref:"McLaren"}, {y:2019,n:"G. Russell",b:1998,c:93,f:"🇬🇧",pref:"Williams"},
+ {y:2019,n:"A. Albon",b:1996,c:85,f:"🇹🇭",pref:"Minardi"},
+ {y:2021,n:"Y. Tsunoda",b:2000,c:86,f:"🇯🇵",pref:"Minardi"}, {y:2021,n:"Mick Schumacher",b:1999,c:83,f:"🇩🇪",pref:"Haas"},
+ {y:2022,n:"G. Zhou",b:1999,c:82,f:"🇨🇳",pref:"Sauber"},
+ {y:2023,n:"O. Piastri",b:2001,c:94,f:"🇦🇺",pref:"McLaren"}, {y:2023,n:"L. Lawson",b:2002,c:85,f:"🇳🇿",pref:"Minardi"},
+ {y:2024,n:"F. Colapinto",b:2003,c:85,f:"🇦🇷",pref:"Williams"}, {y:2024,n:"O. Bearman",b:2005,c:89,f:"🇬🇧",pref:"Haas"},
+ {y:2025,n:"K. Antonelli",b:2006,c:94,f:"🇮🇹",pref:"BAR"}, {y:2025,n:"G. Bortoleto",b:2004,c:88,f:"🇧🇷",pref:"Sauber"},
+ {y:2025,n:"I. Hadjar",b:2004,c:87,f:"🇫🇷",pref:"Minardi"},
+ {y:2026,n:"A. Lindblad",b:2007,c:90,f:"🇬🇧",pref:"Minardi"},
+];
+
 // registro de eras. La "2026" envuelve el mundo actual; las retro traen su parrilla/cantera/leyendas de época.
 const ERAS = {
   "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
@@ -1237,6 +1400,16 @@ const ERAS = {
   // años → Palou (n. 1997) solo puede aparecer 2024-2034, empiece la partida en 2010 o en 2020. Sin anacronismos.
   "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:["Fórmula Renault","Formula Renault"],F2:"F2"}, jr:{F4:F4_2020,F3:F3_2020,FR:FREN_2020,F2:F2_2020}, kart:null,
     lineage:LINEAGE_2020, arrivals:ARRIVALS_2020, juniorOf:{"AlphaTauri":"Red Bull"} },
+  // 🚧 2000 EN PRUEBAS: solo jugable con ?preview=glory26 (initSecretDecades) hasta darla por buena.
+  // La escalera de 2000 no tenía un escalón intermedio tipo GP3, pero SÍ dos F3 nacionales en paralelo
+  // (británica y alemana), que es justo lo que el juego modela con F3 y FR.
+  "2000":{ id:"2000", baseYear:2000, teams:TEAMS_2000, grid:GRID2000, rookies:ROOKIE_2000, crossovers:CROSSOVERS, legends:LEGENDS_2000, expansion:ENTRIES_2000,
+    cats:{F4:["Fórmula Renault","Formula Renault"],F3:["F3 Británica","British F3"],FR:["F3 Alemana","German F3"],F2:"F3000"},
+    jr:{F4:FREN_2000,F3:F3BR_2000,FR:F3DE_2000,F2:F3000_2000}, kart:KART_2000,
+    lineage:LINEAGE_2000, arrivals:ARRIVALS_2000,
+    // en 2000 no hay filial de Red Bull (compró Jaguar en 2005 y Minardi en 2006). La clave apunta al
+    // nombre FUTURO: en cuanto Minardi pase a llamarse Toro Rosso, empieza a comportarse como filial.
+    juniorOf:{"Toro Rosso":"Red Bull"} },
   "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:["Fórmula Renault","Formula Renault"],F3:["Fórmula 3","Formula 3"],FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010}, kart:KART_2010,
     lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
 };
@@ -1367,6 +1540,15 @@ function toggleRetro(){
   g.style.display = open ? "grid" : "none";
   rc.classList.toggle("open", open);
   if(open) track("retro_opened");
+}
+// 🚧 DÉCADAS EN PRUEBAS: jugables solo con ?preview=glory26 mientras se testean. El público las ve bloqueadas.
+function initSecretDecades(){ if(!PREVIEW) return;
+  [["dec2000","2000"]].forEach(([id,era])=>{
+    const b=document.getElementById(id); if(!b || !ERAS[era]) return;
+    b.disabled=false; b.classList.remove("locked");
+    b.onclick=()=>startCareerFlow(era);
+    b.title="🔒 En pruebas — solo tú";
+  });
 }
 // 🔒 barra fija inconfundible cuando el modo pruebas está activo: esto NO lo ve el público, y de aquí se sale con un clic
 function initPreviewBar(){ if(!PREVIEW) return;
@@ -4377,6 +4559,7 @@ function printCareer(){
 }
 applyLang(); // aplicar el idioma guardado al cargar
 applyTheme(); // aplicar el tema guardado al cargar
+initSecretDecades(); // décadas en pruebas (2000): jugables solo con el preview activo
 initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
