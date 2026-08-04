@@ -107,12 +107,9 @@ module.exports = async (req, res) => {
       ["EXPIRE", wk, 60 * 60 * 24 * 21], // la semanal se renueva; la global NO caduca
       ["SET", "pl:" + id, disp],         // display permanente (para el histórico global)
     ]);
-    const ranks = (await pipe([["ZREVRANK", wk, id], ["ZREVRANK", GL, id]])).map((x) => x.result);
-    res.status(200).json({
-      ok: true, gloria,
-      week: { rank: ranks[0] == null ? null : ranks[0] + 1 },
-      global: { rank: ranks[1] == null ? null : ranks[1] + 1 },
-    });
+    // (antes se devolvía aquí el puesto con 2 ZREVRANK más; el cliente no los usaba y costaban
+    //  2 comandos por envío → fuera. El puesto se ve al abrir el ranking.)
+    res.status(200).json({ ok: true, gloria });
   } catch (e) {
     res.status(500).json({ error: String((e && e.message) || e) });
   }

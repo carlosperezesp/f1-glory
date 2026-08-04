@@ -46,7 +46,9 @@ module.exports = async (req, res) => {
       rows.push({ rank: rows.length + 1, gloria: Number(top[i + 1]) });
     }
     if (ids.length) {
-      const disp = (await pipe(ids.map((x) => ["GET", "pl:" + x]))).map((z) => z.result);
+      // ⚡ UN SOLO comando MGET en vez de un GET por jugador. Antes, con 100 filas, cada visita al
+      // ranking costaba ~103 comandos de Redis y eso reventó la cuota mensual (4-ago-2026).
+      const disp = (await redis(["MGET"].concat(ids.map((x) => "pl:" + x)))) || [];
       rows.forEach((row, i) => {
         let d = {}; try { d = JSON.parse(disp[i] || "{}"); } catch (e) {}
         row.name = d.n || "—"; row.flag = d.f || "🏁"; row.country = d.c || "";
@@ -54,10 +56,13 @@ module.exports = async (req, res) => {
     }
     let me = null;
     if (id) {
-      const rk = await redis(["ZREVRANK", key, id]);
-      if (rk != null) me = { rank: rk + 1, gloria: Number(await redis(["ZSCORE", key, id])) };
+      // ZREVRANK + ZSCORE en un único pipeline (2 comandos, 1 viaje)
+      const r = await pipe([["ZREVRANK", key, id], ["ZSCORE", key, id]]);
+      const rk = r[0] && r[0].result;
+      if (rk != null) me = { rank: rk + 1, gloria: Number(r[1] && r[1].result) };
     }
-    res.setHeader("Cache-Control", "s-maxage=20, stale-while-revalidate=60");
+    // caché más larga: la mayoría de visitas se sirven desde el CDN sin tocar la base de datos
+    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
     res.status(200).json({ scope, key, count: rows.length, rows, me });
   } catch (e) {
     res.status(500).json({ error: String((e && e.message) || e) });

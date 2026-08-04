@@ -4077,13 +4077,26 @@ function bestMarqueeWin(){
 function gloriaScore(){ return S.titles.f1*120 + S.titles.constr*30 + S.wins*3 + S.podiums + S.poles + S.subcamp*15; }
 function f1gPid(){ try{ let id=localStorage.getItem("f1g_pid"); if(!id){ id="p"+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem("f1g_pid",id); } return id; }catch(e){ return "p0"; } }
 function localBoardAdd(e){ try{ const a=JSON.parse(localStorage.getItem("f1g_localboard")||"[]"); a.push(e); a.sort((x,y)=>y.g-x.g); localStorage.setItem("f1g_localboard",JSON.stringify(a.slice(0,200))); }catch(err){} }
+// semana ISO (igual que en el servidor) para saber a qué tabla semanal pertenece esta marca
+function isoWeekNow(){ const d=new Date(); const dt=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));
+  const day=dt.getUTCDay()||7; dt.setUTCDate(dt.getUTCDate()+4-day);
+  const y0=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+  return dt.getUTCFullYear()+"-W"+String(Math.ceil((((dt-y0)/86400000)+1)/7)).padStart(2,"0"); }
 function submitScore(){
   try{
+    const score=gloriaScore();
+    _myGloria=score;  // tu marca de ESTA carrera: la fila "TÚ" nunca mostrará menos que esto aunque la lectura llegue tarde
+    // 💾 AHORRO: el servidor solo guarda tu MEJOR marca (ZADD GT), así que enviar una peor no cambia
+    // nada y solo gasta cuota. Nos saltamos el envío si no puede mejorar NI la global NI la de esta semana.
+    let best={}; try{ best=JSON.parse(localStorage.getItem("f1g_best")||"{}"); }catch(e){}
+    const wk=isoWeekNow();
+    const gBest=best.g||0, wBest=(best.w===wk)?(best.wg||0):0;
+    if(score<=gBest && score<=wBest){ _rankSubmit=null; return Promise.resolve(null); }
+    try{ localStorage.setItem("f1g_best",JSON.stringify({g:Math.max(gBest,score), w:wk, wg:Math.max(wBest,score)})); }catch(e){}
     const body={ id:f1gPid(), name:sel.name, flag:sel.flag, country:sel.country,
       secs: S._t0 ? Math.round((Date.now()-S._t0)/1000) : 0,   // tiempo real jugando esta carrera
       ns: (S.seasons||[]).length,                              // nº total de temporadas (junior+F1)
       b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons } };
-    _myGloria=gloriaScore();  // tu marca de ESTA carrera: la fila "TÚ" nunca mostrará menos que esto aunque la lectura llegue tarde
     _rankSubmit=fetch("/api/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null);
     return _rankSubmit;
   }catch(e){ return Promise.resolve(null); }
@@ -4123,7 +4136,10 @@ function loadRanking(scope){
   rankScope=scope;
   document.querySelectorAll("#rankTabs button").forEach(b=>b.classList.toggle("on", b.dataset.s===scope));
   $("rankMe").innerHTML=""; $("rankList").innerHTML=`<div class="rank-note">${L("Cargando…","Loading…")}</div>`;
-  fetch("/api/leaderboard?scope="+scope+"&limit=100&id="+encodeURIComponent(f1gPid())+"&t="+Date.now())
+  // ⚠️ SIN rompe-caché: un &t=Date.now() aquí hacía que CADA visita al ranking fuese a la base de datos
+  // (fue lo que agotó la cuota el 4-ago-2026). La marca recién hecha ya se ve bien porque openRanking()
+  // espera a que aterrice el envío y la fila «TÚ» nunca muestra menos que _myGloria.
+  fetch("/api/leaderboard?scope="+scope+"&limit=100&id="+encodeURIComponent(f1gPid()))
     .then(r=>r.json())
     .then(d=>{ if(d && Array.isArray(d.rows) && d.rows.length){ renderRankRows(d.rows, d.me, false); } else { renderLocal(); } })
     .catch(()=>renderLocal());
