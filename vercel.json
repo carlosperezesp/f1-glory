@@ -1,0 +1,11 @@
+{
+  "headers": [
+    {
+      "comment": "Los escudos y demás imágenes casi nunca cambian. Sin esto, Vercel las servía con max-age=0 y el navegador revalidaba las ~33 en CADA visita (peticiones que se facturan). Con 1 día de caché desaparecen casi todas; si cambias un logo, se ve al día siguiente como mucho.",
+      "source": "/(.*).(png|jpg|jpeg|svg|webp|ico)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    }
+  ]
+}
