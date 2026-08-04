@@ -1906,9 +1906,11 @@ function oldChampion(){
    y si cumple, en aliado — con `commit` fijamos S._incRival para que feudBurn/respectBuild lo recojan. */
 function titleRivals(){
   const mine=(S.team&&S.team.name)||"";
+  // «pelear el título» = estar en uno de los TRES mejores coches de la parrilla, no solo en uno bueno
+  const top3=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).slice(0,3).map(t=>t.name);
   const out=[];
   Object.entries(S.seats||{}).forEach(([tn,sl])=>{
-    if(tn===mine || (S.f1perf[tn]??70) < 84) return;
+    if(tn===mine || !top3.includes(tn)) return;
     (sl||[]).forEach(d=>{ if(d && d!=="PLAYER" && (d.skill||0)>=85) out.push(d); });
   });
   return out.sort((a,b)=>(b.skill||0)-(a.skill||0));
@@ -2410,10 +2412,12 @@ const DILEMAS=[
     const eq=r?(Object.keys(S.seats).find(tn=>(S.seats[tn]||[]).some(d=>d&&d!=="PLAYER"&&d.name===r.name))||""):"";
     return L(`${n}${eq?" ("+eq+")":""} te busca en el motorhome: propone que no os quitéis puntos entre vosotros y atacar juntos al líder. Un pacto de caballeros… sin nada firmado.`,
              `${n}${eq?" ("+eq+")":""} finds you in the motorhome: he proposes you don't take points off each other and go after the leader together. A gentlemen's agreement… with nothing in writing.`); },opts:[
+   // ⚠️ los desenlaces describen CONDUCTAS, nunca quién gana el título: la temporada se simula DESPUÉS
+   // (mismo error que tuvo el «desinfle»: no afirmar resultados que el simulador aún no ha decidido)
    {l:()=>L("Pactar","Make the pact"),r:()=>{ const n=surname(S._incRival||""); return roll(
-     [5,()=>(respectBuild(),OVR(1),L(`🤝 ${n} cumple su palabra hasta la última carrera: llegáis vivos los dos y nace un respeto que durará años. +1 OVR`,`🤝 ${n} keeps his word to the last race: you both make it to the finale and a lasting respect is born. +1 OVR`))],
+     [5,()=>(respectBuild(),OVR(1),L(`🤝 ${n} cumple su palabra: ni un solo roce entre vosotros en todo el año. De ahí nace un respeto que durará años. +1 OVR`,`🤝 ${n} keeps his word: not a single clash between you all year. A respect is born that will last for years. +1 OVR`))],
      [3,()=>L(`El pacto se diluye solo: ni ayuda ni estorbo. Sin cambios.`,`The pact quietly fades: no help, no harm. No change.`)],
-     [3,()=>(feudBurn(),VAL(.88),L(`🗡️ ${n} te tira por fuera en la última curva del año y se queda con todo: te ha usado. Con él, ni agua. −fama`,`🗡️ ${n} runs you wide at the final corner of the year and takes it all: he used you. You two are done. −fame`))]); }},
+     [3,()=>(feudBurn(),VAL(.88),L(`🗡️ ${n} rompe el pacto y te echa fuera en la primera ocasión que tiene: era papel mojado. Con él, ni agua. −fama`,`🗡️ ${n} breaks the pact and muscles you out at the first chance he gets: it was worthless. You two are done. −fame`))]); }},
    {l:()=>L("Ir por libre","Go it alone"),r:()=>{ const n=surname(S._incRival||""); return roll(
      [5,()=>L("Cada lobo caza solo. Sin cambios.","Every wolf hunts alone. No change.")],
      [3,()=>(OVR(1),L("Tu independencia te hace más fuerte: no le debes nada a nadie. +1 OVR","Your independence makes you stronger: you owe nobody anything. +1 OVR"))],
