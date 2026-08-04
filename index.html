@@ -975,6 +975,10 @@ const CROSSOVERS = [
   {name:"J. Dennis", flag:"🇬🇧", born:1995, base:82, ceil:86},    // Fórmula E (campeón)
   {name:"M. Evans", flag:"🇳🇿", born:1994, base:81, ceil:86},     // Fórmula E
   {name:"R. Hirakawa", flag:"🇯🇵", born:1994, base:81, ceil:86},  // WEC (Toyota, ganador de Le Mans)
+  // 🏍️ EL SALTO DE DOS RUEDAS A CUATRO: Rossi probó el Ferrari de F1 en 2006, 2008 y 2010 y el cambio
+  // llegó a rumorearse en serio. Nacido en 1979 → solo puede aparecer entre 2006 y 2016, así que es
+  // un cameo exclusivo de las eras retro. Rápido y taquillero, pero no candidato al título: otro mundo.
+  {name:"V. Rossi", flag:"🇮🇹", born:1979, base:79, ceil:84},
 ];
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
@@ -1897,6 +1901,23 @@ function oldChampion(){
   const pool=(S.dpool||[]).filter(d=>d && d.name && d.name!=="TÚ" && d.name!==S.roleMate && canTaunt(d.name)
     && (d.titles||0)>=2 && !seated.has(d.name) && (d.age||0)>=36 && (d.age||0)>S.age+2);
   if(!pool.length) return null; pool.sort((a,b)=>(b.titles||0)-(a.titles||0)); return pool[0]; }
+/* 🤝 rival CONCRETO que pelea el título contigo: pilotón (85+) en un coche capaz (84+) y que no sea
+   tu compañero. Se usa en el «pacto entre pilotos»: si te traiciona se convierte en enemigo de verdad,
+   y si cumple, en aliado — con `commit` fijamos S._incRival para que feudBurn/respectBuild lo recojan. */
+function titleRivals(){
+  const mine=(S.team&&S.team.name)||"";
+  const out=[];
+  Object.entries(S.seats||{}).forEach(([tn,sl])=>{
+    if(tn===mine || (S.f1perf[tn]??70) < 84) return;
+    (sl||[]).forEach(d=>{ if(d && d!=="PLAYER" && (d.skill||0)>=85) out.push(d); });
+  });
+  return out.sort((a,b)=>(b.skill||0)-(a.skill||0));
+}
+function pickTitleRival(){
+  const c=titleRivals(); if(!c.length) return null;
+  const d=c[irnd(0,Math.min(2,c.length-1))];   // uno de los tres mejores, no siempre el mismo
+  S._incRival=d.name; return d;
+}
 function teamHasFeud(teamName){ return (S.feuds||[]).some(f=>(S.seats[teamName]||[]).some(d=>d&&d!=="PLAYER"&&d.name===f.name)); }
 function feudFilter(cands){ const f=cands.filter(t=>!teamHasFeud(t.name)); return f.length?f:cands; } // fallback: nunca 0 ofertas
 // enemigo elegible para la secuela «El fichaje del enemigo»: pelea de hace ≥1 año, sigue en la parrilla y no es tu compañero
@@ -2382,10 +2403,21 @@ const DILEMAS=[
    {l:()=>L("Comprar su silencio","Buy his silence"),r:()=>{VAL(.88);return ch(.7)?L("La historia muere en un cajón. -12% fama","The story dies in a drawer. -12% fame"):L("Paga y aún así se publica. Doble desastre. -12% fama y bronca interna","You pay and it's published anyway. Double disaster. -12% fame and internal fallout");}},
    {l:()=>L("Adelantarte y disculparte","Get ahead of it and apologise"),r:()=>ch(.55)?(VAL(1.05),L("Tu honestidad desactiva la bomba. +fama","Your honesty defuses the bomb. +fame")):(CAR(-1),L("La relación con el equipo queda tocada. -1 coche","Your relationship with the team is damaged. -1 car"))}]},
  // solo tiene sentido si de verdad PELEAS el título: con un coche de media tabla nadie te propone un pacto
- {id:"alianza",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=5,
-  t:()=>L("Pacto entre pilotos","A drivers' pact"),d:()=>L("Otro aspirante al título te propone una alianza: no quitaros puntos entre vosotros y atacar juntos al líder.","Another title contender proposes an alliance: don't take points off each other and attack the leader together."),opts:[
-   {l:()=>L("Pactar","Make the pact"),r:()=>ch(.55)?(OVR(1),L("El pacto funciona y llegáis vivos al final. +1 OVR","The pact works and you both reach the finale alive. +1 OVR")):(VAL(.9),L("Te traiciona en la última curva del año. Fama -10%","He betrays you at the final corner of the year. Fame -10%"))},
-   {l:()=>L("Ir por libre","Go it alone"),r:()=>ch(.6)?L("Cada lobo caza solo. Sin cambios.","Every wolf hunts alone. No change."):(OVR(1),L("Tu independencia te hace más fuerte. +1 OVR","Your independence makes you stronger. +1 OVR"))}]},
+ // 🤝 el pacto ya NO es un texto suelto: hay un rival CON NOMBRE, y de aquí sale un aliado o un enemigo
+ {id:"alianza",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=5&&titleRivals().length>0,
+  t:()=>L("Pacto entre pilotos","A drivers' pact"),
+  d:()=>{ const r=pickTitleRival(); const n=r?surname(r.name):L("otro aspirante","another contender");
+    const eq=r?(Object.keys(S.seats).find(tn=>(S.seats[tn]||[]).some(d=>d&&d!=="PLAYER"&&d.name===r.name))||""):"";
+    return L(`${n}${eq?" ("+eq+")":""} te busca en el motorhome: propone que no os quitéis puntos entre vosotros y atacar juntos al líder. Un pacto de caballeros… sin nada firmado.`,
+             `${n}${eq?" ("+eq+")":""} finds you in the motorhome: he proposes you don't take points off each other and go after the leader together. A gentlemen's agreement… with nothing in writing.`); },opts:[
+   {l:()=>L("Pactar","Make the pact"),r:()=>{ const n=surname(S._incRival||""); return roll(
+     [5,()=>(respectBuild(),OVR(1),L(`🤝 ${n} cumple su palabra hasta la última carrera: llegáis vivos los dos y nace un respeto que durará años. +1 OVR`,`🤝 ${n} keeps his word to the last race: you both make it to the finale and a lasting respect is born. +1 OVR`))],
+     [3,()=>L(`El pacto se diluye solo: ni ayuda ni estorbo. Sin cambios.`,`The pact quietly fades: no help, no harm. No change.`)],
+     [3,()=>(feudBurn(),VAL(.88),L(`🗡️ ${n} te tira por fuera en la última curva del año y se queda con todo: te ha usado. Con él, ni agua. −fama`,`🗡️ ${n} runs you wide at the final corner of the year and takes it all: he used you. You two are done. −fame`))]); }},
+   {l:()=>L("Ir por libre","Go it alone"),r:()=>{ const n=surname(S._incRival||""); return roll(
+     [5,()=>L("Cada lobo caza solo. Sin cambios.","Every wolf hunts alone. No change.")],
+     [3,()=>(OVR(1),L("Tu independencia te hace más fuerte: no le debes nada a nadie. +1 OVR","Your independence makes you stronger: you owe nobody anything. +1 OVR"))],
+     [2,()=>(feudBurn(),L(`${n} se lo toma como un desprecio personal. A partir de hoy, con él ni agua.`,`${n} takes it as a personal snub. From today, you two are done.`))]); }}]},
  {id:"fiesta",stage:"f1",t:()=>L("La noche de Mónaco","The Monaco night"),d:()=>L("La víspera del GP más glamuroso, medio Hollywood te invita a la fiesta del año en un yate.","The eve of the most glamorous GP, half of Hollywood invites you to the party of the year on a yacht."),opts:[
    {l:()=>L("Una copita y ya…","Just one drink…"),r:()=>roll(
      [3,()=>(VAL(1.25),L("Sales en todas las portadas junto a estrellas de cine. Fama +25%","You're on every front page next to movie stars. Fame +25%"))],
@@ -4138,6 +4170,15 @@ function nextOffers(){
       const home=natAff().teams.map(n=>cands.find(t=>t.name===n)).find(Boolean);
       if(home && home.name!==S.team.name && !others.some(t=>t.name===home.name) && ch(.45)){
         if(others.length) others[others.length-1]=home; else others.push(home);
+      }
+      // 🤝 EL PESO DE UN ALIADO: si un piloto con el que te ganaste un respeto (pacto cumplido, toque
+      // resuelto con elegancia) está en un equipo, allí hablan bien de ti y es más fácil que te llamen.
+      // Es el espejo exacto de las enemistades, que ya BLOQUEAN ofertas vía feudFilter.
+      const ally=cands.find(t=>t.name!==S.team.name
+        && (S.respects||[]).some(r=>(S.seats[t.name]||[]).some(d=>d&&d!=="PLAYER"&&d.name===r.name)));
+      if(ally && !others.some(t=>t.name===ally.name) && ch(.5)){
+        if(others.length) others[others.length-1]=ally; else others.push(ally);
+        S._allyOffer=ally.name;
       }
       // pipeline filial → Red Bull: una joven promesa que rinde asciende al equipo madre (Toro Rosso/AlphaTauri/Racing Bulls)
       if(isRBJr(S.team.name) && S.age<=28){
