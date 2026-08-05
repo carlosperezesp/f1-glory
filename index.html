@@ -2067,10 +2067,13 @@ function npcMercadoOrdinario(){
       // debajo de lo que da el coche te pone en la calle antes
       const flojo=(d.skill||75) < perf(tm)-6;
       const p=Math.min(.34, .02 + Math.max(0,d.yrs-3)*.04 + (flojo?.12:0));
-      if(ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
+      // a un galáctico en su prime NO lo echa su propio equipo (y con el caché activo, echarlo podía
+      // hacerlo desaparecer de la F1 si ningún equipo con pedigrí tenía hueco ese año)
+      if(!primeGalactico(d) && ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
     });
   });
-  if(!huecos.length) return;
+  // 🔁 vía Albon: los agentes libres del año pasado (buenos que se quedaron sin asiento) reentran en la bolsa
+  (S.freeAgents||[]).forEach(d=>{ d.yrs=0; bolsa.push(d); }); S.freeAgents=[];
   // el mejor coche elige primero
   huecos.sort((a,b)=>perf(b.tm)-perf(a.tm));
   const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
@@ -2097,6 +2100,8 @@ function npcMercadoOrdinario(){
     bolsa.splice(bolsa.indexOf(eleg),1);
     eleg.yrs=0; S.seats[h.tm][h.i]=eleg;
   });
+  // 🔁 los buenos que se quedan sin asiento no se esfuman: esperan en la nevera a la próxima ventana
+  S.freeAgents = bolsa.filter(d=>(d.skill||0)>=84 && (d.age||0)<=34).slice(0,3);
   // 🔒 red de seguridad: ningún asiento puede quedarse vacío bajo ninguna circunstancia
   Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
     sl.forEach((d,i)=>{ if(d===null||d===undefined) sl[i]=mkRookie(isRBJr(tm), tm); }); });
@@ -2116,6 +2121,9 @@ function maybeComeback(row){
   });
   if(!cands.length) return;
   const r=cands[irnd(0,cands.length-1)];
+  // 🛡️ los regens pueden repetir nombre: si alguien LLAMADO IGUAL está sentado ahora mismo,
+  // dpool.find agarraría al que corre y lo sentaría en DOS equipos a la vez. Mejor no volver.
+  if(Object.values(S.seats).some(sl=>Array.isArray(sl)&&sl.some(x=>x&&x!=="PLAYER"&&x.name===r.name))) return;
   const fuera=yr-r.retiredYear;
   const skill=Math.max(74, Math.round(r.skill-2-fuera));   // el óxido del parón
   const dest=F1_TEAMS.filter(t=>!isRBJr(t.name) && (((S.cache&&S.cache[t.name])||0)>=70 || (S.f1perf[t.name]||0)>=85))
@@ -3860,7 +3868,8 @@ function alphaClash(row){
   S.alphaYears = S.alphaYears || {};
   Object.keys(S.seats).forEach(tn=>{
     const slots=S.seats[tn]; if(!slots || slots.length<2) return;
-    const playerElite = x => x==="PLAYER" && (S.ovr>=87 || (S.titles.f1||0)>=1);
+    // la MISMA regla que isElite: el jugador campeón pero crepuscular también puede ser escudero
+    const playerElite = x => x==="PLAYER" && (S.ovr>=87 || ((S.titles.f1||0)>=1 && S.age<34));
     const aE = isElite(slots[0]) || playerElite(slots[0]);
     const bE = isElite(slots[1]) || playerElite(slots[1]);
     if(!(aE && bE)){ delete S.alphaYears[tn]; return; }
