@@ -1793,7 +1793,7 @@ function startCareer(){
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
     regReg:ERA.baseYear+20+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
-    regYear:null, regBet:null, regBetGrade:null, regBetRefused:null, commitTeam:null, commitYears:0,
+    regYear:null, regBet:null, regBetGrade:null, regBetRefused:null, regPrepared:null, commitTeam:null, commitYears:0,
   };
   // 🧬 filial de época + plan de linaje sorteado POR PARTIDA (cada transformación: ¿ocurre? ¿qué año?)
   JUNIOR_OF = {...ERA.juniorOf};
@@ -3103,13 +3103,20 @@ const DILEMAS=[
      S.regBet=b.name; S.commitTeam=b.name; S.commitYears=2; VAL(.93);
      return L(`Firmas por ${b.name} y medio paddock te llama loco. Dos temporadas comprometido y sin puerta de salida: te bajas de un coche que gana hoy para subirte a unos planos. Ahora toca esperar al reglamento. −fama`,
               `You sign for ${b.name} and half the paddock calls you mad. Two seasons committed, no way out: you step off a car that wins today onto a set of blueprints. Now you wait for the new rules. −fame`); }},
-   {l:()=>L("Quedarte donde se gana","Stay where the winning is"),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
+   {l:()=>L("Quedarte y no tocar nada","Stay and change nothing"),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
      return L(`Les das las gracias y te quedas. Tienes un coche que gana AHORA; lo demás son planos y palabras bonitas. Ya se verá dentro de dos años quién tenía razón.`,
               `You thank them and stay. You have a car that wins NOW; the rest is blueprints and pretty words. In two years we'll see who was right.`); }},
-   {l:()=>L("Exigir a los tuyos que se pongan las pilas","Demand your own team wakes up"),r:()=>{ const t=S.team.name;
-     return ch(.6) ? (S.f1target[t]=Math.min(93,(S.f1target[t]??S.f1perf[t])+rnd(4,8)),
-       L(`Enseñas la oferta en tu propia fábrica y montas el escándalo: si ellos van dos años por delante, ¿qué hacéis vosotros? Funciona. El proyecto se pone las pilas con el reglamento nuevo. 📈`,
-         `You wave the offer around your own factory and make a scene: if they're two years ahead, what are you lot doing? It works. The project gets serious about the new rules. 📈`))
+   {l:()=>L("Quedarte… y encender a los tuyos 🔥","Stay… and light a fire under your own team 🔥"),r:()=>{ const t=S.team.name;
+     // también los estás rechazando: se apunta igual que en la opción de quedarse sin más, para que
+     // dos años después recibas el desenlace (la puñalada o la bala esquivada). Antes se perdía.
+     const b=regBetTeam(); if(b) S.regBetRefused=b.name;
+     // ⚠️ el premio NO puede ser subir el coche: para que salga este dilema ya tienes un top-3, y el
+     // +4/+8 chocaba contra el tope de 93 → de media subía +1 y un 30% de las veces era CERO, mientras
+     // el castigo sí se aplicaba entero. El premio de verdad es un SEGURO para cuando llegue el cambio:
+     // tu fábrica llega preparada y no se hunde en el reseteo (regReset le pone un suelo).
+     return ch(.6) ? (S.regPrepared=t, S.f1target[t]=Math.min(93,(S.f1target[t]??S.f1perf[t])+rnd(2,5)),
+       L(`Enseñas la oferta en tu propia fábrica y montas el escándalo: si ellos van dos años por delante, ¿qué hacéis vosotros? Funciona: aparcan medio desarrollo del coche actual y se vuelcan en el reglamento que viene. Pase lo que pase, no os va a pillar en pañales. 🛡️`,
+         `You wave the offer around your own factory and make a scene: if they're two years ahead, what are you lot doing? It works: they shelve half of this year's development and throw themselves at the coming rules. Whatever happens, it won't catch you unprepared. 🛡️`))
       : (S.f1target[t]=Math.max(62,(S.f1target[t]??S.f1perf[t])-rnd(2,5)),
        L(`Enseñas la oferta y te dan palmaditas en la espalda: llevan años ganando, ¿qué les vas a contar? Se quedan mirando el trofeo mientras otros miran los planos. 📉`,
          `You wave the offer around and they pat you on the back: they've been winning for years, what could you possibly teach them? They keep staring at the trophy while others stare at blueprints. 📉`)); }}]},
@@ -3567,6 +3574,7 @@ function rebrandTeam(oldName, to, row){
   if(S.commitTeam===oldName) S.commitTeam=nn;
   if(S.regBet===oldName) S.regBet=nn;
   if(S.regBetRefused===oldName) S.regBetRefused=nn;
+  if(S.regPrepared===oldName) S.regPrepared=nn;
   if(S.regReveal){ ["brawn","rumor","bet","refused"].forEach(k=>{ if(S.regReveal[k]===oldName) S.regReveal[k]=nn; }); }
   if(S.brawnWatch && S.brawnWatch.name===oldName) S.brawnWatch.name=nn;
   // el filial de Red Bull conserva su condición bajo el nuevo nombre (Toro Rosso→AlphaTauri→Racing Bulls)
@@ -3587,6 +3595,7 @@ function killTeam(name, row){
   // si el equipo al que te habías comprometido desaparece, el compromiso muere con él
   if(S.commitTeam===name){ S.commitTeam=null; S.commitYears=0; }
   if(S.regBet===name){ S.regBet=null; S.regBetGrade=null; }
+  if(S.regPrepared===name) S.regPrepared=null;
   row.events.push(L(`🪦 ${name} no sobrevive: cierra sus puertas y la parrilla pierde un equipo.`,`🪦 ${name} doesn't survive: it shuts its doors and the grid loses a team.`));
 }
 function processLineage(row){
@@ -4687,8 +4696,14 @@ function regReset(){
   // el "Brawn": un equipo malo que pega el pelotazo
   let brawn=badTeams[irnd(0,badTeams.length-1)];
   const bv=Math.round(rnd(90,94)); S.f1perf[brawn.name]=bv; S.f1target[brawn.name]=bv;
-  // uno o dos ex-grandes se hunden
-  order.slice(-2).forEach(t=>{ if(ch(.6)){ const v=Math.round(rnd(63,70)); S.f1perf[t.name]=v; S.f1target[t.name]=v; } });
+  // uno o dos ex-grandes se hunden… salvo el que llegó PREPARADO (dilema de la apuesta, opción C)
+  order.slice(-2).forEach(t=>{ if(t.name!==S.regPrepared && ch(.6)){ const v=Math.round(rnd(63,70)); S.f1perf[t.name]=v; S.f1target[t.name]=v; } });
+  // 🛡️ EL SEGURO: tu fábrica se volcó en el reglamento dos años antes, así que el reseteo no la pilla
+  // en pañales. No es el pelotazo (eso es el "brawn", 90-94): es no hundirte.
+  if(S.regPrepared && F1_TEAMS.some(t=>t.name===S.regPrepared) && S.regPrepared!==brawn.name){
+    const v=Math.max(S.f1perf[S.regPrepared], Math.round(rnd(80,88)));
+    S.f1perf[S.regPrepared]=v; S.f1target[S.regPrepared]=v;
+  }
   // 🎲 ¿apostaste por un equipo modesto dos años antes? Aquí se cobra la apuesta, en tres grados.
   if(S.regBet && F1_TEAMS.some(t=>t.name===S.regBet)){
     const r=Math.random();
