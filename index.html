@@ -730,7 +730,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
         </div>
       </div>
       <div class="end-kofi">
-        <p data-es="Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Puedes invitarme a un café… o hacerte mecenas: desde 5 € al mes, <b>un piloto con tu apellido correrá en la F1</b> dentro del juego, en las partidas de todo el mundo." data-en="I build this in my free time, but I'd love to keep adding improvements and new game modes. You can buy me a coffee… or become a supporter: from €5 a month, <b>a driver with your surname will race in F1</b> inside the game, in everyone's careers.">Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Puedes invitarme a un café… o hacerte mecenas: desde 5 € al mes, <b>un piloto con tu apellido correrá en la F1</b> dentro del juego, en las partidas de todo el mundo.</p>
+        <p data-es="Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Puedes invitarme a un café… o hacerte mecenas." data-en="I build this in my free time, but I'd love to keep adding improvements and new game modes. You can buy me a coffee… or become a supporter.">Esto lo hago en mi tiempo libre, pero me encantaría seguir metiendo mejoras y nuevos modos de juego. Puedes invitarme a un café… o hacerte mecenas.</p>
         <a class="kofi-btn" href="https://ko-fi.com/carlosperezesp" target="_blank" rel="noopener" onclick="track('kofi_click',{from:'end'})" data-es="☕ Invítame a un café" data-en="☕ Buy me a coffee">☕ Invítame a un café</a>
       </div>
     </div>
@@ -787,6 +787,10 @@ function setLang(l){
   applyLang();
   // la lista de países se ordena y se muestra en el idioma activo → reordenar y repintar al cambiarlo
   try{ sortCountries(); if($("identity") && $("identity").style.display!=="none") renderCountries(); }catch(e){}
+  // la rejilla de retos se construye UNA vez al cargar (con data-es/data-en no vale: es dinámica),
+  // así que hay que rehacerla o se queda en el idioma con el que entraste
+  try{ const g=document.getElementById("challengeGrid");
+       if(g){ const vis=g.style.display; initSecretChallenges(); g.style.display=vis; } }catch(e){}
   // re-render de lo que esté en pantalla (si hay partida)
   try{ if(typeof S!=="undefined" && S){
     refreshCard(); renderF1State(); renderTimeline();
@@ -1602,8 +1606,8 @@ const CHALLENGES = {
     // estilo "consistente": es el que el propio juego describe como «estilo Alonso»
     who:{ born:1981, age:19, ovr:74, ceil:95, flag:"🇪🇸", country:"España", style:"consistente", num:"21" },
     drop:["F. Alonso"],
-    t:["Eres Alonso","You are Alonso"],
-    sub:["Minardi · 2001 · 19 años","Minardi · 2001 · aged 19"],
+    t:["El Nano","El Nano"],   // el apodo funciona igual en los dos idiomas
+    sub:["Alonso en Minardi · 2001 · 19 años","Alonso at Minardi · 2001 · aged 19"],
     d:["Diecinueve años, el peor coche de la parrilla y un asiento que nadie envidia. Nadie sabe todavía quién eres y nadie apuesta un duro por ti. Tienes su talento y su punto de partida: lo que hagas con ellos ya no es cosa suya.",
        "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business."],
     // palmarés REAL de Alonso, para el veredicto
@@ -2018,7 +2022,39 @@ function npcSeason(){
       // Racing Bulls no acepta veteranos ni siquiera como descarte del mercado (crossover/mayor/campeón)
       if(isRBJr(bTeam) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) continue;
       top[wIdx]=best; S.seats[bTeam][bIdx]=weak;
+      best.yrs=0; weak.yrs=0;
     }
+  }
+  npcMercadoOrdinario();
+}
+/* 🔄 MERCADO ORDINARIO DE LOS NPC.
+   Antes SOLO fichaban los 4 mejores equipos y con un 20% de probabilidad → menos de un traspaso por
+   temporada en toda la parrilla, y el 25% de las estancias duraban 12+ años (Fisichella eternizado en
+   Benetton, que fue lo que lo destapó). En la F1 real cambian de equipo 4-8 pilotos cada año.
+   Ahora cada piloto acumula años en su equipo y, cuantos más lleva, más fácil es que se mueva.
+   Los cambios se hacen por INTERCAMBIO entre dos pilotos: la parrilla nunca cambia de tamaño y no se
+   crean ni se destruyen asientos, así que no puede romper la integridad. */
+function npcMercadoOrdinario(){
+  const mov=[];
+  Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
+    sl.forEach((d,i)=>{ if(!d || d==="PLAYER") return;
+      d.yrs=(d.yrs||0)+1;
+      // 3 primeros años tranquilos (contratos); a partir de ahí la probabilidad sube con la antigüedad
+      const p=Math.min(.30, .03 + Math.max(0, d.yrs-3)*.045);
+      if(ch(p)) mov.push({d, tm, i});
+    });
+  });
+  // barajar para que las parejas no salgan siempre entre equipos vecinos de la tabla
+  for(let k=mov.length-1;k>0;k--){ const j=irnd(0,k); const t=mov[k]; mov[k]=mov[j]; mov[j]=t; }
+  for(let k=0;k+1<mov.length;k+=2){
+    const a=mov[k], b=mov[k+1];
+    if(a.tm===b.tm) continue;
+    // el filial de Red Bull sigue sin aceptar veteranos ni campeones, tampoco por esta vía
+    if(isRBJr(b.tm) && (a.d.crossover || (a.d.age||0)>=32 || (a.d.titles||0)>0)) continue;
+    if(isRBJr(a.tm) && (b.d.crossover || (b.d.age||0)>=32 || (b.d.titles||0)>0)) continue;
+    if(S.seats[a.tm][a.i]!==a.d || S.seats[b.tm][b.i]!==b.d) continue; // por si algo lo movió antes
+    S.seats[a.tm][a.i]=b.d; S.seats[b.tm][b.i]=a.d;
+    a.d.yrs=0; b.d.yrs=0;
   }
 }
 function occupySeat(teamName){
@@ -2985,10 +3021,12 @@ const DILEMAS=[
  // 🏢 nuevo Team Principal / CEO: mueve el RUMBO del coche (f1target deriva con los años) → repercusión real
  {id:"nuevoJefe",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&S.f1target[S.team.name]!=null,
   t:()=>L("El nuevo Team Principal","The new Team Principal"),
-  d:()=>{ S._jefe=[
-      {k:"win", s:L("Un peso pesado se sienta en el muro: viene de ganarlo todo y trae una obsesión, el título cueste lo que cueste.","A heavyweight takes over the pit wall: he's won everything and brings one obsession, the title at any cost.")},
-      {k:"cut", s:L("Un CEO recién llegado del mundo de la tecnología toma el mando: habla de datos, disrupción y recortes «inteligentes».","A CEO fresh from the tech world takes charge: he talks data, disruption and «smart» cuts.")},
-      {k:"young", s:L("Asciende una joven promesa del management, con ideas rompedoras y muchas ganas de demostrar.","A young management prospect is promoted, with bold ideas and everything to prove.")}
+  // el texto NOMBRA al equipo y dice qué clase de jefe llega, sin eufemismos («un peso pesado se sienta
+  // en el muro» sonaba a acertijo: lo cazó Carlos jugando)
+  d:()=>{ const tn=S.team?S.team.name:L("Tu equipo","Your team"); S._jefe=[
+      {k:"win", s:L(`${tn} ficha como Team Principal a un hombre que viene de ganarlo todo, y llega con una obsesión: el título, cueste lo que cueste.`,`${tn} hires a Team Principal who has won everything, and he arrives with one obsession: the title, whatever it takes.`)},
+      {k:"cut", s:L(`${tn} pone al mando a un CEO recién llegado del mundo de la tecnología: habla de datos, de disrupción y de recortes «inteligentes».`,`${tn} puts a CEO fresh from the tech world in charge: he talks data, disruption and «smart» cuts.`)},
+      {k:"young", s:L(`${tn} asciende a Team Principal a una joven promesa del management, con ideas rompedoras y muchas ganas de demostrar.`,`${tn} promotes a young management prospect to Team Principal, with bold ideas and everything to prove.`)}
     ][irnd(0,2)];
     return S._jefe.s+L(" Te cita en su despacho para conoceros. ¿Cómo te posicionas?"," He calls you into his office to get acquainted. How do you position yourself?"); },opts:[
    {l:()=>L("Ganarte su confianza","Win his trust"),r:()=>{ const t=S.team.name, k=S._jefe.k;
@@ -3117,13 +3155,13 @@ const DILEMAS=[
     return cabeza + L(` ${b.name} tiene el ${suyo}. Y su director se planta delante de ti con los planos del reglamento que entra dentro de dos años: llevan desde el primer día construyendo para ese coche y te juran que cuando llegue mandarán ellos. Nadie podrá comprobarlo hasta que se apaguen los semáforos, dos temporadas más tarde.`,
                       ` ${b.name} has the ${suyo}. And their boss sits down in front of you with the blueprints of the rulebook that lands in two years: they've been building for that car since day one, and they swear that when it arrives they'll be the ones in charge. Nobody can check it until the lights go out, two seasons later.`); },
   opts:[
-   {l:()=>L("Firmar por ellos para el año que viene 🎲","Sign with them for next season 🎲"),r:()=>{ const b=regBetTeam();
+   {l:()=>L("Firmar con ellos al acabar la temporada 🎲","Sign with them at the end of this season 🎲"),r:()=>{ const b=regBetTeam();
      if(!b) return L("La operación se cae en el último momento y te quedas donde estás.","The deal collapses at the last minute and you stay put.");
      S.regBet=b.name; S.commitTeam=b.name; S.commitYears=2; VAL(.93);
      // ⚠️ la firma es para la temporada SIGUIENTE: esta la terminas donde estás. Decirlo o el jugador
      // cree que se cambia de mono a mitad de año (lo cazó Carlos: gana el Mundial y luego "firmas por X").
-     return L(`Firmas por ${b.name} A PARTIR DEL AÑO QUE VIENE: esta temporada la terminas donde estás. Medio paddock te llama loco. Dos temporadas comprometido y sin puerta de salida: te bajarás de un coche que gana hoy para subirte a unos planos. −fama`,
-              `You sign with ${b.name} FROM NEXT SEASON: you'll see out this year where you are. Half the paddock calls you mad. Two seasons committed, no way out: you'll step off a car that wins today onto a set of blueprints. −fame`); }},
+     return L(`Firmas con ${b.name} AL ACABAR ESTA TEMPORADA: el año en curso lo terminas donde estás. Medio paddock te llama loco. Dos temporadas comprometido y sin puerta de salida: te bajarás de un coche que gana hoy para subirte a unos planos. −fama`,
+              `You sign with ${b.name} AT THE END OF THIS SEASON: you'll see out the current year where you are. Half the paddock calls you mad. Two seasons committed, no way out: you'll step off a car that wins today onto a set of blueprints. −fame`); }},
    {l:()=>L("Quedarte y no tocar nada","Stay and change nothing"),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
      return L(`Les das las gracias y te quedas. Tienes un coche que gana AHORA; lo demás son planos y palabras bonitas. Ya se verá dentro de dos años quién tenía razón.`,
               `You thank them and stay. You have a car that wins NOW; the rest is blueprints and pretty words. In two years we'll see who was right.`); }},
