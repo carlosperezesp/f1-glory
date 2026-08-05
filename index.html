@@ -1649,7 +1649,9 @@ const CHALLENGES = {
     d:["Diecinueve años, el peor coche de la parrilla y un asiento que nadie envidia. Nadie sabe todavía quién eres y nadie apuesta un duro por ti. Tienes su talento y su punto de partida: lo que hagas con ellos ya no es cosa suya. ¿Crees que puedes ganar más de 2 Mundiales?",
        "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business. Do you think you can win more than 2 titles?"],
     // palmarés REAL de Alonso, para el veredicto
-    bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:"Alonso",
+    persona:"ALONSO",   // en el ranking y la tarjeta saldrás como ALONSO (TU APODO)
+    // par [es,en]: L() aquí se resolvería al CARGAR la página, no al mostrarla
+    bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:["El Alonso real","The real Alonso"],
   },
 };
 let CHALLENGE = null;
@@ -1659,6 +1661,14 @@ const ROMANOS=["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"]
 function challengeLabel(c){
   const i=Object.keys(CHALLENGES).indexOf(c.id)+1;
   return L(`Reto ${ROMANOS[i]||i} · ${c.t[0]}`, `Challenge ${ROMANOS[i]||i} · ${c.t[1]}`);
+}
+/* 🪪 NOMBRE VISIBLE. En un reto NO eres tú con su coche: ERES ÉL, y tu apodo va entre paréntesis →
+   «ALONSO (PEPITO)». Se usa en la pantalla final, la tarjeta compartible y el ranking.
+   ⚠️ `sel.name` sigue siendo SOLO tu apodo: de él dependen surname() en los dilemas y el filtro de
+   nombres del backend, así que no se toca. */
+function pName(){
+  const c=S.challenge&&CHALLENGES[S.challenge];
+  return (c&&c.persona) ? `${c.persona} (${sel.name})` : sel.name;
 }
 function startChallengeFlow(id){
   if(!CHALLENGES[id]) return;
@@ -2360,8 +2370,14 @@ function roleFor(teamName){
   const lp=last==null?99:last;
   // ser campeón o venir en gran forma te da estatus de Nº1
   const formBonus = lp===1?9 : lp<=3?4 : lp<=6?1 : 0;
-  const myRep = S.ovr + S.titles.f1*6 + formBonus;
-  const earned = myRep >= (mate.skill||75) ? "1":"2";
+  // ⚠️ COMPARACIÓN SIMÉTRICA. Antes a TI se te sumaban 6 por título y a tu compañero NO se le contaban
+  // los suyos: un veterano de 35 en declive con 3 mundiales salía Nº1 por encima de un bicampeón en su
+  // mejor momento (lo cazó Carlos con Rosberg). Y el peso del palmarés DECAE al pasar los 33: en la F1
+  // real lo que manda a esa edad es el crono, no la vitrina.
+  const pesoTit = a => a>=36 ? 2 : a>=34 ? 4 : 6;
+  const myRep   = S.ovr + (S.titles.f1||0)*pesoTit(S.age) + formBonus;
+  const mateRep = (mate.skill||75) + (mate.titles||0)*pesoTit(mate.age||28);
+  const earned = myRep >= mateRep ? "1":"2";
   // ¿te ganó tu compañero el campeonato el año pasado? Entonces el rol NO está blindado.
   const ls = S.seasons.at(-1)||{};
   const mismoCompa = ls.mateName===mate.name && ls.matePos!=null;
@@ -2580,7 +2596,7 @@ function renderOffers(offers, withRetire){
     const subNote = (noteTxt && !o.profile) ? " · "+noteTxt : "";
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
-      <span class="sub" style="display:block">${catLbl} · ${yearNow()}${mate}${subNote}</span>${trendLine}${carLine}${profileLine}</span>
+      <span class="sub" style="display:block">${catLbl} · ${yearNow()}</span>${(mate||subNote)?`<span class="sub" style="display:block">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}${profileLine}</span>
       <span class="perfwrap"><span class="perf">${stars}</span></span>`;
     b.onclick=()=>signContract(o);
     box.appendChild(b);
@@ -4016,15 +4032,18 @@ function alphaClash(row){
     ds[swapIdx]=leaver; slots[goIdx]=back;   // intercambio
     S.alphaYears[tn]=0; S.alphaYears[dest.name]=0;
     const va=surname(leaver.name), vuelve=surname(back.name);
+    // ⚠️ cuando el que se queda eres TÚ, las frases tienen que ir en 2ª persona: «la veteranía de TÚ»
+    // o «para acompañar a TÚ» no son español (lo cazó Carlos). Cada variante tiene su forma propia.
+    const yo = stays==="PLAYER";
     row.events.push(L(
-      modo==="peor"     ? `🐓 ${tn} construye sobre ${stayName} y deja marchar a ${va}, que ficha por ${dest.name}. ${vuelve} ocupa su asiento.`
-    : modo==="mejor"    ? `🐓 Bombazo: ${va} anuncia que se va a ${dest.name} buscando ser el número uno. ${vuelve} llega a ${tn} para acompañar a ${stayName}.`
-    : modo==="veterano" ? `🐓 ${tn} apuesta por la juventud de ${stayName}: ${va} hace las maletas rumbo a ${dest.name} y llega ${vuelve}.`
-                        : `🐓 ${tn} quiere el título ya y se queda con la veteranía de ${stayName}: ${va} se marcha a ${dest.name} y entra ${vuelve}.`,
-      modo==="peor"     ? `🐓 ${tn} builds around ${stayName} and lets ${va} go: he signs for ${dest.name}. ${vuelve} takes the seat.`
-    : modo==="mejor"    ? `🐓 Bombshell: ${va} announces a move to ${dest.name} to be the undisputed No.1. ${vuelve} arrives at ${tn} alongside ${stayName}.`
-    : modo==="veterano" ? `🐓 ${tn} bets on ${stayName}'s youth: ${va} packs his bags for ${dest.name} and ${vuelve} comes in.`
-                        : `🐓 ${tn} wants the title now and keeps ${stayName}'s experience: ${va} leaves for ${dest.name} and ${vuelve} arrives.`));
+      modo==="peor"     ? `🐓 ${tn} construye ${yo?"sobre ti":"sobre "+stayName} y deja marchar a ${va}, que ficha por ${dest.name}. ${vuelve} ocupa su asiento.`
+    : modo==="mejor"    ? `🐓 Bombazo: ${va} anuncia que se va a ${dest.name} buscando ser el número uno. ${vuelve} llega a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
+    : modo==="veterano" ? `🐓 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hace las maletas rumbo a ${dest.name} y llega ${vuelve}.`
+                        : `🐓 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marcha a ${dest.name} y entra ${vuelve}.`,
+      modo==="peor"     ? `🐓 ${tn} builds around ${yo?"you":stayName} and lets ${va} go: he signs for ${dest.name}. ${vuelve} takes the seat.`
+    : modo==="mejor"    ? `🐓 Bombshell: ${va} announces a move to ${dest.name} to be the undisputed No.1. ${vuelve} arrives at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
+    : modo==="veterano" ? `🐓 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} comes in.`
+                        : `🐓 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives.`));
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
@@ -4088,7 +4107,7 @@ function hallRows(){
   (S.legends||LEGENDS).forEach(([n,t,f])=>{hall[n]={t,flag:f};});
   S.dpool.forEach(d=>{ if(d.titles>0 && (!hall[d.name]||d.titles>hall[d.name].t)) hall[d.name]={t:d.titles,flag:d.flag}; });
   const rows=Object.entries(hall).map(([n,o])=>({n,t:o.t,flag:o.flag,me:false}));
-  if(S.titles.f1>0) rows.push({n:sel.name+" (TÚ)",t:S.titles.f1,flag:sel.flag,me:true});
+  if(S.titles.f1>0) rows.push({n:pName()+" (TÚ)",t:S.titles.f1,flag:sel.flag,me:true});
   rows.sort((a,b)=>b.t-a.t);
   return rows;
 }
@@ -5172,7 +5191,7 @@ function submitScore(){
     const gBest=best.g||0, wBest=(best.w===wk)?(best.wg||0):0;
     if(score<=gBest && score<=wBest){ _rankSubmit=null; return Promise.resolve(null); }
     try{ localStorage.setItem("f1g_best",JSON.stringify({g:Math.max(gBest,score), w:wk, wg:Math.max(wBest,score)})); }catch(e){}
-    const body={ id:f1gPid(), name:sel.name, flag:sel.flag, country:sel.country,
+    const body={ id:f1gPid(), name:pName(), flag:sel.flag, country:sel.country,
       secs: S._t0 ? Math.round((Date.now()-S._t0)/1000) : 0,   // tiempo real jugando esta carrera
       ns: (S.seasons||[]).length,                              // nº total de temporadas (junior+F1)
       b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons } };
@@ -5235,7 +5254,7 @@ function renderRankRows(rows, me, local){
     + rows.map(r=>rankRowHTML(r, !local && meRank===r.rank)).join("");
   // fija tu fila arriba SOLO si NO apareces en la lista visible (si ya sales, te resalto ahí y no te duplico)
   const meG = Math.max((me&&me.gloria)||0, _myGloria||0);  // nunca por debajo de lo que acabas de puntuar
-  $("rankMe").innerHTML = (meRank>0 && !inList) ? `<div class="rank-row me"><span class="rk">${meRank}</span><span class="nm">${sel.flag} ${sel.name} (${L("TÚ","YOU")})</span><span class="g">${meG}</span></div>` : "";
+  $("rankMe").innerHTML = (meRank>0 && !inList) ? `<div class="rank-row me"><span class="rk">${meRank}</span><span class="nm">${sel.flag} ${pName()} (${L("TÚ","YOU")})</span><span class="g">${meG}</span></div>` : "";
 }
 function renderLocal(){
   let a=[]; try{ a=JSON.parse(localStorage.getItem("f1g_localboard")||"[]"); }catch(e){}
@@ -5248,7 +5267,7 @@ function endCareer(){
     : S.subcamp>0?"runner_up" : S.wins>0?"race_winner" : S.f1Seasons>0?"f1_driver" : "prospect";
   track("career_ended", {result, f1_titles:S.titles.f1, constructors:S.titles.constr, f1_seasons:S.f1Seasons, wins:S.wins, retire_age:S.age, era:S.era||"2026"});
   const m=$("endModal"); m.style.display="flex";
-  $("endName").textContent=sel.flag+" "+sel.name+" #"+sel.num;
+  $("endName").textContent=sel.flag+" "+pName()+" #"+sel.num;
   $("eGP").textContent=S.gp; $("eW").textContent=S.wins; $("eP").textContent=S.podiums;
   $("ePP").textContent=S.poles; $("eT").textContent=S.titles.f1; $("eC").textContent=S.titles.constr;
   $("eSub").textContent=S.subcamp; $("ePts").textContent=S.ptsF1;
@@ -5282,13 +5301,13 @@ function endCareer(){
   const hf=$("hallFame");
   hf.innerHTML="<h4>"+L("🏛️ Palmarés histórico de la F1 · ","🏛️ All-time F1 title table · ")+(yearNow())+"</h4>"+
     rows.slice(0,5).map((r,i)=>`<div class="hrow${r.me?" me":""}"><span class="rk">${i+1}.</span><span class="nm">${flg(r.flag)} ${r.n}</span><span class="tt">🏆×${r.t}</span></div>`).join("")+
-    (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${sel.name} (${L("TÚ","YOU")})</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
+    (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${pName()} (${L("TÚ","YOU")})</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=gloriaScore();
   // 🏆 ENVÍO REAL pero OCULTO: recoge la puntuación de TODOS los jugadores a partir del 1-ago-2026 (el ranking
   // empieza a "contar" desde ahí), aunque la PANTALLA siga escondida hasta que publiquemos. (Sin efecto hasta conectar el KV.)
   try{ if(PREVIEW || new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
   // guarda la carrera también en local: respaldo del ranking si no hay conexión
-  localBoardAdd({n:sel.name, f:sel.flag, g:score, d:yearNow()});
+  localBoardAdd({n:pName(), f:sel.flag, g:score, d:yearNow()});
   // ¿dominaste tu era? Se cuentan SOLO los mundiales que tus rivales ganaron DENTRO de tu época en la
   // élite: desde tu debut en F1 (eraStartT) hasta que la dejaste (eraEndT). Si te fuiste a Indy/NASCAR y
   // ellos siguieron ganando después, eso ya es SU era, no la tuya.
@@ -5332,7 +5351,7 @@ function endCareer(){
              : L("📉 ÉL LLEGÓ MÁS LEJOS","📉 HE WENT FURTHER");
     // tabla de TRES columnas de verdad (etiqueta · él · tú): la versión anterior apelotonaba
     // los números en una esquina y no se leía (lo cazó Carlos)
-    const rname=_CHend.benchName||L("Él","Him");
+    const rname=Array.isArray(_CHend.benchName)?L(_CHend.benchName[0],_CHend.benchName[1]):(_CHend.benchName||L("Él","Him"));
     // cada línea es un duelo: cifras + barra que muestra de un vistazo cuánto le sacas o te saca
     const fila=(et,a,b)=>{
       const tot=Math.max(a,b,1), pa=Math.round(100*a/tot), pb=Math.round(100*b/tot);
@@ -5371,7 +5390,7 @@ function endCareer(){
   ls.style.background=legTier.bg; ls.style.borderColor="transparent"; ls.style.color=legTier.ink;
   ls.innerHTML=`<div><div class="ls-k">${L("🏅 Puntos de leyenda","🏅 Legacy points")}</div><div class="ls-tier">${legTier.name}</div></div><div class="ls-v">${score}</div>`;
   const [tier]=fameTier(fameScore());
-  $("printHeader").innerHTML=`<h2>${sel.flag} ${sel.name} #${sel.num}</h2>
+  $("printHeader").innerHTML=`<h2>${sel.flag} ${pName()} #${sel.num}</h2>
     <div class="pl">${legacy} · Fama: ${tier}</div>
     <div class="ps">
       <span><b>${S.gp}</b> GP</span><span><b>${S.wins}</b> victorias</span>
@@ -5421,7 +5440,7 @@ function drawCareerCard(){
   x.fillStyle="#16161e"; x.fillRect(0,0,W,H);
   const bg=x.createLinearGradient(0,0,W,380); bg.addColorStop(0,"#15151e"); bg.addColorStop(.55,"#2b0a08"); bg.addColorStop(1,"#e10600");
   x.fillStyle=bg; x.fillRect(0,0,W,380); checker(380,14);
-  fit(`${sel.flag} ${sel.name} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
+  fit(`${sel.flag} ${pName()} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
   fit(S.legacyTxt||"", 262, W-90, 46, "#ffce3a", "800");
   // 📅 en un reto, la tarjeta compartible dice CUÁL es (si no, nadie sabe que jugabas un escenario fijo)
   const _chC=S.challenge&&CHALLENGES[S.challenge];

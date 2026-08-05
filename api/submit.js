@@ -41,7 +41,9 @@ function cleanName(raw) {
     .replace(/0/g, "o").replace(/1/g, "i").replace(/3/g, "e").replace(/4/g, "a")
     .replace(/5/g, "s").replace(/7/g, "t").replace(/\$/g, "s").replace(/@/g, "a")
     .replace(/[^a-z]/g, "");                            // fuera puntos, espacios y símbolos
-  return BANNED.some((w) => norm.includes(w)) ? null : String(raw || "").slice(0, 14);
+  // 26 y no 14: en los RETOS el nombre visible es «ALONSO (APODO)» y con 14 se cortaba a la mitad.
+  // El apodo que teclea el jugador sigue capado a 14 por el maxlength del input.
+  return BANNED.some((w) => norm.includes(w)) ? null : String(raw || "").slice(0, 26);
 }
 function isoWeekKey(d) {
   const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
