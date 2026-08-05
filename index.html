@@ -785,6 +785,8 @@ function applyLang(){
 function setLang(l){
   LANG=l; try{localStorage.setItem("f1lang",l);}catch(e){}
   applyLang();
+  // la lista de países se ordena y se muestra en el idioma activo → reordenar y repintar al cambiarlo
+  try{ sortCountries(); if($("identity") && $("identity").style.display!=="none") renderCountries(); }catch(e){}
   // re-render de lo que esté en pantalla (si hay partida)
   try{ if(typeof S!=="undefined" && S){
     refreshCard(); renderF1State(); renderTimeline();
@@ -805,35 +807,44 @@ function setTheme(t){
   try{ if(typeof S!=="undefined" && S){ refreshCard(); } }catch(e){}
 }
 /* ================= DATOS ================= */
+/* [nombre ES, bandera, nombre EN]. ⚠️ El nombre ESPAÑOL es la CLAVE canónica: `sel.country` guarda
+   siempre c[0], porque de ahí cuelgan NAT_AFFINITY, el cameo de Alonso y el país del ranking.
+   El inglés es solo para MOSTRAR y BUSCAR (un neozelandés escribe "New Zealand", no "Nueva Zelanda"). */
 const COUNTRIES = [
-  ["Alemania","🇩🇪"],["Angola","🇦🇴"],["Arabia Saudita","🇸🇦"],["Argelia","🇩🇿"],["Argentina","🇦🇷"],
-  ["Armenia","🇦🇲"],["Australia","🇦🇺"],["Austria","🇦🇹"],["Azerbaiyán","🇦🇿"],["Bélgica","🇧🇪"],
-  ["Bielorrusia","🇧🇾"],["Bolivia","🇧🇴"],["Bosnia","🇧🇦"],["Brasil","🇧🇷"],["Bulgaria","🇧🇬"],
-  ["Camerún","🇨🇲"],["Canadá","🇨🇦"],["Catar","🇶🇦"],["Chequia","🇨🇿"],["Chile","🇨🇱"],
-  ["China","🇨🇳"],["Chipre","🇨🇾"],["Colombia","🇨🇴"],["Corea del Sur","🇰🇷"],["Costa de Marfil","🇨🇮"],
-  ["Costa Rica","🇨🇷"],["Croacia","🇭🇷"],["Cuba","🇨🇺"],["Dinamarca","🇩🇰"],["Ecuador","🇪🇨"],
-  ["Egipto","🇪🇬"],["El Salvador","🇸🇻"],["Emiratos Árabes","🇦🇪"],["Eslovaquia","🇸🇰"],["Eslovenia","🇸🇮"],
-  ["España","🇪🇸"],["Estados Unidos","🇺🇸"],["Estonia","🇪🇪"],["Etiopía","🇪🇹"],["Filipinas","🇵🇭"],
-  ["Finlandia","🇫🇮"],["Francia","🇫🇷"],["Georgia","🇬🇪"],["Ghana","🇬🇭"],["Grecia","🇬🇷"],
-  ["Guatemala","🇬🇹"],["Guinea Ecuatorial","🇬🇶"],["Honduras","🇭🇳"],["Hungría","🇭🇺"],["India","🇮🇳"],["Indonesia","🇮🇩"],
-  ["Irán","🇮🇷"],["Irlanda","🇮🇪"],["Islandia","🇮🇸"],["Israel","🇮🇱"],["Italia","🇮🇹"],
-  ["Jamaica","🇯🇲"],["Japón","🇯🇵"],["Kazajistán","🇰🇿"],["Kenia","🇰🇪"],["Kuwait","🇰🇼"],
-  ["Letonia","🇱🇻"],["Líbano","🇱🇧"],["Lituania","🇱🇹"],["Luxemburgo","🇱🇺"],["Malasia","🇲🇾"],
-  ["Malta","🇲🇹"],["Marruecos","🇲🇦"],["México","🇲🇽"],["Mónaco","🇲🇨"],["Montenegro","🇲🇪"],
-  ["Nicaragua","🇳🇮"],["Nigeria","🇳🇬"],["Noruega","🇳🇴"],["Nueva Zelanda","🇳🇿"],["Países Bajos","🇳🇱"],["Pakistán","🇵🇰"],
-  ["Panamá","🇵🇦"],["Paraguay","🇵🇾"],["Perú","🇵🇪"],["Polonia","🇵🇱"],["Portugal","🇵🇹"],["Puerto Rico","🇵🇷"],
-  ["Reino Unido","🇬🇧"],["Rep. Dominicana","🇩🇴"],["Rumanía","🇷🇴"],["Rusia","🇷🇺"],["Senegal","🇸🇳"],
-  ["Serbia","🇷🇸"],["Singapur","🇸🇬"],["Sudáfrica","🇿🇦"],["Suecia","🇸🇪"],["Suiza","🇨🇭"],
-  ["Tailandia","🇹🇭"],["Taiwán","🇹🇼"],["Túnez","🇹🇳"],["Turquía","🇹🇷"],["Ucrania","🇺🇦"],
-  ["Uruguay","🇺🇾"],["Uzbekistán","🇺🇿"],["Venezuela","🇻🇪"],["Vietnam","🇻🇳"],
+  ["Alemania","🇩🇪","Germany"],["Angola","🇦🇴","Angola"],["Arabia Saudita","🇸🇦","Saudi Arabia"],["Argelia","🇩🇿","Algeria"],["Argentina","🇦🇷","Argentina"],
+  ["Armenia","🇦🇲","Armenia"],["Australia","🇦🇺","Australia"],["Austria","🇦🇹","Austria"],["Azerbaiyán","🇦🇿","Azerbaijan"],["Bélgica","🇧🇪","Belgium"],
+  ["Bielorrusia","🇧🇾","Belarus"],["Bolivia","🇧🇴","Bolivia"],["Bosnia","🇧🇦","Bosnia"],["Brasil","🇧🇷","Brazil"],["Bulgaria","🇧🇬","Bulgaria"],
+  ["Camerún","🇨🇲","Cameroon"],["Canadá","🇨🇦","Canada"],["Catar","🇶🇦","Qatar"],["Chequia","🇨🇿","Czechia"],["Chile","🇨🇱","Chile"],
+  ["China","🇨🇳","China"],["Chipre","🇨🇾","Cyprus"],["Colombia","🇨🇴","Colombia"],["Corea del Sur","🇰🇷","South Korea"],["Costa de Marfil","🇨🇮","Ivory Coast"],
+  ["Costa Rica","🇨🇷","Costa Rica"],["Croacia","🇭🇷","Croatia"],["Cuba","🇨🇺","Cuba"],["Dinamarca","🇩🇰","Denmark"],["Ecuador","🇪🇨","Ecuador"],
+  ["Egipto","🇪🇬","Egypt"],["El Salvador","🇸🇻","El Salvador"],["Emiratos Árabes","🇦🇪","United Arab Emirates"],["Eslovaquia","🇸🇰","Slovakia"],["Eslovenia","🇸🇮","Slovenia"],
+  ["España","🇪🇸","Spain"],["Estados Unidos","🇺🇸","United States"],["Estonia","🇪🇪","Estonia"],["Etiopía","🇪🇹","Ethiopia"],["Filipinas","🇵🇭","Philippines"],
+  ["Finlandia","🇫🇮","Finland"],["Francia","🇫🇷","France"],["Georgia","🇬🇪","Georgia"],["Ghana","🇬🇭","Ghana"],["Grecia","🇬🇷","Greece"],
+  ["Guatemala","🇬🇹","Guatemala"],["Guinea Ecuatorial","🇬🇶","Equatorial Guinea"],["Honduras","🇭🇳","Honduras"],["Hungría","🇭🇺","Hungary"],["India","🇮🇳","India"],["Indonesia","🇮🇩","Indonesia"],
+  ["Irán","🇮🇷","Iran"],["Irlanda","🇮🇪","Ireland"],["Islandia","🇮🇸","Iceland"],["Israel","🇮🇱","Israel"],["Italia","🇮🇹","Italy"],
+  ["Jamaica","🇯🇲","Jamaica"],["Japón","🇯🇵","Japan"],["Kazajistán","🇰🇿","Kazakhstan"],["Kenia","🇰🇪","Kenya"],["Kuwait","🇰🇼","Kuwait"],
+  ["Letonia","🇱🇻","Latvia"],["Líbano","🇱🇧","Lebanon"],["Lituania","🇱🇹","Lithuania"],["Luxemburgo","🇱🇺","Luxembourg"],["Malasia","🇲🇾","Malaysia"],
+  ["Malta","🇲🇹","Malta"],["Marruecos","🇲🇦","Morocco"],["México","🇲🇽","Mexico"],["Mónaco","🇲🇨","Monaco"],["Montenegro","🇲🇪","Montenegro"],
+  ["Nicaragua","🇳🇮","Nicaragua"],["Nigeria","🇳🇬","Nigeria"],["Noruega","🇳🇴","Norway"],["Nueva Zelanda","🇳🇿","New Zealand"],["Países Bajos","🇳🇱","Netherlands"],["Pakistán","🇵🇰","Pakistan"],
+  ["Panamá","🇵🇦","Panama"],["Paraguay","🇵🇾","Paraguay"],["Perú","🇵🇪","Peru"],["Polonia","🇵🇱","Poland"],["Portugal","🇵🇹","Portugal"],["Puerto Rico","🇵🇷","Puerto Rico"],
+  ["Reino Unido","🇬🇧","United Kingdom"],["Rep. Dominicana","🇩🇴","Dominican Republic"],["Rumanía","🇷🇴","Romania"],["Rusia","🇷🇺","Russia"],["Senegal","🇸🇳","Senegal"],
+  ["Serbia","🇷🇸","Serbia"],["Singapur","🇸🇬","Singapore"],["Sudáfrica","🇿🇦","South Africa"],["Suecia","🇸🇪","Sweden"],["Suiza","🇨🇭","Switzerland"],
+  ["Tailandia","🇹🇭","Thailand"],["Taiwán","🇹🇼","Taiwan"],["Túnez","🇹🇳","Tunisia"],["Turquía","🇹🇷","Turkey"],["Ucrania","🇺🇦","Ukraine"],
+  ["Uruguay","🇺🇾","Uruguay"],["Uzbekistán","🇺🇿","Uzbekistan"],["Venezuela","🇻🇪","Venezuela"],["Vietnam","🇻🇳","Vietnam"],
   // ampliación ago-2026 (+28)
-  ["Afganistán","🇦🇫"],["Albania","🇦🇱"],["Andorra","🇦🇩"],["Bahréin","🇧🇭"],["Bangladés","🇧🇩"],
-  ["Barbados","🇧🇧"],["Haití","🇭🇹"],["Hong Kong","🇭🇰"],["Irak","🇮🇶"],["Jordania","🇯🇴"],
-  ["Kosovo","🇽🇰"],["Liechtenstein","🇱🇮"],["Macao","🇲🇴"],["Macedonia del Norte","🇲🇰"],["Moldavia","🇲🇩"],
-  ["Mongolia","🇲🇳"],["Mozambique","🇲🇿"],["Namibia","🇳🇦"],["Nepal","🇳🇵"],["Omán","🇴🇲"],
-  ["Ruanda","🇷🇼"],["San Marino","🇸🇲"],["Sri Lanka","🇱🇰"],["Tanzania","🇹🇿"],["Trinidad y Tobago","🇹🇹"],
-  ["Uganda","🇺🇬"],["Zambia","🇿🇲"],["Zimbabue","🇿🇼"]
-].sort((a,b)=>a[0].localeCompare(b[0],"es"));
+  ["Afganistán","🇦🇫","Afghanistan"],["Albania","🇦🇱","Albania"],["Andorra","🇦🇩","Andorra"],["Bahréin","🇧🇭","Bahrain"],["Bangladés","🇧🇩","Bangladesh"],
+  ["Barbados","🇧🇧","Barbados"],["Haití","🇭🇹","Haiti"],["Hong Kong","🇭🇰","Hong Kong"],["Irak","🇮🇶","Iraq"],["Jordania","🇯🇴","Jordan"],
+  ["Kosovo","🇽🇰","Kosovo"],["Liechtenstein","🇱🇮","Liechtenstein"],["Macao","🇲🇴","Macau"],["Macedonia del Norte","🇲🇰","North Macedonia"],["Moldavia","🇲🇩","Moldova"],
+  ["Mongolia","🇲🇳","Mongolia"],["Mozambique","🇲🇿","Mozambique"],["Namibia","🇳🇦","Namibia"],["Nepal","🇳🇵","Nepal"],["Omán","🇴🇲","Oman"],
+  ["Ruanda","🇷🇼","Rwanda"],["San Marino","🇸🇲","San Marino"],["Sri Lanka","🇱🇰","Sri Lanka"],["Tanzania","🇹🇿","Tanzania"],["Trinidad y Tobago","🇹🇹","Trinidad and Tobago"],
+  ["Uganda","🇺🇬","Uganda"],["Zambia","🇿🇲","Zambia"],["Zimbabue","🇿🇼","Zimbabwe"]
+];
+// nombre del país en el idioma activo (la clave interna sigue siendo siempre el español)
+function countryLabel(c){ return (LANG==="en" && c[2]) ? c[2] : c[0]; }
+// sin acentos y en minúsculas: "mexico" encuentra "México" y "banglades" encuentra "Bangladés"
+function sinTildes(s){ return (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+function sortCountries(){ COUNTRIES.sort((a,b)=>countryLabel(a).localeCompare(countryLabel(b), LANG==="en"?"en":"es")); }
+sortCountries();
 
 // código de nacionalidad de 3 letras (estándar IOC/F1, igual en todos los idiomas),
 // derivado de la bandera → evita cortar el nombre español ("Bélgica"→"BÉL", "Reino Unido"→"REI")
@@ -1724,12 +1735,15 @@ function idChanged(){
   validateIdentity();
 }
 function renderCountries(){
-  const q = $("inCountry").value.toLowerCase();
+  const q = sinTildes($("inCountry").value);
   const list = $("countryList"); list.innerHTML="";
-  COUNTRIES.filter(c=>c[0].toLowerCase().includes(q)).forEach(c=>{
+  // se busca por el nombre en ESPAÑOL, en INGLÉS y por el código de nacionalidad (NZL, GER…),
+  // todo sin acentos: "mexico", "New Zealand" y "NZL" llegan al mismo sitio.
+  COUNTRIES.filter(c=> !q || sinTildes(c[0]).includes(q) || sinTildes(c[2]||"").includes(q)
+                        || sinTildes(natCode(c[1])).includes(q)).forEach(c=>{
     const b=document.createElement("button");
-    b.innerHTML = `<span>${c[1]}</span> ${c[0]}`;
-    if(sel.country===c[0]) b.classList.add("sel");
+    b.innerHTML = `<span>${c[1]}</span> ${countryLabel(c)}`;
+    if(sel.country===c[0]) b.classList.add("sel");   // la clave guardada es SIEMPRE la española
     b.onclick=()=>{ sel.country=c[0]; sel.flag=c[1]; renderCountries(); validateIdentity(); };
     list.appendChild(b);
   });
