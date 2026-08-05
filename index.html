@@ -100,6 +100,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .decade-grid .dec{font-family:inherit;font-weight:800;font-size:14px;padding:10px 0;border-radius:11px;
   border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:transform .1s}
 .decade-grid .dec:active{transform:scale(.94)}
+/* el botón del RETO lleva el mismo degradado y brillo que «Iniciar carrera»: es la llamada principal */
+#challengeGrid .dec{background:linear-gradient(135deg,#e10600,#ff4d1c);border-color:transparent;
+  box-shadow:0 6px 18px rgba(225,6,0,.32), 0 2px 6px rgba(225,6,0,.22)}
+#challengeGrid .dec:hover{filter:brightness(1.06)}
 .decade-grid .dec.locked{background:var(--panel2);border-color:var(--line);color:var(--muted);opacity:.55;cursor:default}
 .dec-note{grid-column:1/-1;text-align:center;font-size:11.5px;color:var(--muted);margin-top:3px}
 
