@@ -105,6 +105,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
   box-shadow:0 6px 18px rgba(225,6,0,.32), 0 2px 6px rgba(225,6,0,.22)}
 #challengeGrid .dec:hover{filter:brightness(1.06)}
 .decade-grid .dec.locked{background:var(--panel2);border-color:var(--line);color:var(--muted);opacity:.55;cursor:default}
+/* la década con cuenta atrás no se ve «apagada»: está a punto de llegar y tiene que llamar la atención */
+.decade-grid .dec .dec-sub{display:block;font-size:10px;font-weight:800;letter-spacing:.3px;opacity:.95;margin-top:1px;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.decade-grid .dec.dec-count{opacity:1;background:linear-gradient(135deg,#8a6a10,#c9a227);border-color:#c9a227;color:#fff;
+  box-shadow:0 4px 12px rgba(201,162,39,.3)}
 .dec-note{grid-column:1/-1;text-align:center;font-size:11.5px;color:var(--muted);margin-top:3px}
 
 /* ---------- identity ---------- */
@@ -809,7 +813,10 @@ function setLang(l){
   // la pantalla de identidad tiene contenido puesto por JS (tarjeta del reto, chips, subtítulo):
   // los data-es/data-en no la cubren → se repinta ENTERA al cambiar de idioma (lo cazó Carlos: la
   // tarjeta de «El Nano» se quedaba en el idioma con el que se abrió)
-  try{ sortCountries(); if($("identity") && $("identity").style.display!=="none") showIdentity(); }catch(e){}
+  // ⚠️ NO vale mirar style.display: #identity está oculto por CSS, así que su estilo EN LÍNEA está vacío
+  // y «!== none» daba verdadero siempre → pulsar EN te llevaba a la pantalla de identidad (lo cazó Carlos).
+  // offsetParent===null es la forma fiable de saber si un elemento está realmente oculto.
+  try{ sortCountries(); const id=$("identity"); if(id && id.offsetParent!==null) showIdentity(); }catch(e){}
   // la rejilla de retos se construye UNA vez al cargar (con data-es/data-en no vale: es dinámica),
   // así que hay que rehacerla o se queda en el idioma con el que entraste
   try{ const g=document.getElementById("challengeGrid");
@@ -1757,11 +1764,11 @@ function initSecretChallenges(){
    Cada novedad tiene su fecha en UTC y se ABRE SOLA al llegar: nadie tiene que tocar nada ni desplegar.
    La pegatina escala con la urgencia:  «EN 5 DÍAS» → «¡MAÑANA!» → cronómetro en vivo (<24 h) → «¡NUEVO!»
    (14 días) → nada.  Con el modo pruebas activo, todo está abierto desde ya.               */
-// ⏰ 06:00 UTC = 8:00 de la mañana en España (agosto, CEST = UTC+2). ⚠️ Son las 3:00 en Argentina,
-// que es el 27% del público: si algún día se quiere que ambos lo pillen despiertos, subir a 10:00Z.
+// ⏰ 10:00 UTC = 12:00 en España (agosto, CEST = UTC+2) y 7:00 en Argentina: los dos públicos
+// despiertos, que son el 28% y el 27%. Si se cambia la hora, revisar que siga cuadrando en ambos husos.
 const RELEASES = {
-  dec2000: { at:"2026-08-10T06:00:00Z" },   // 🕰️ la década de 2000 en el modo retro
-  retos:   { at:"2026-08-17T06:00:00Z" },   // 📅 el modo Reto semanal
+  dec2000: { at:"2026-08-10T10:00:00Z" },   // 🕰️ la década de 2000 en el modo retro
+  retos:   { at:"2026-08-17T10:00:00Z" },   // 📅 el modo Reto semanal
 };
 const NEW_DAYS = 14;                        // cuánto dura la pegatina de ¡NUEVO! tras salir
 function relInfo(key){
@@ -1793,20 +1800,30 @@ function paintBadge(el, key){
 }
 let _relTimer=null;
 function refreshReleases(){
-  const a=paintBadge(document.getElementById("badgeRetro"), "dec2000");
-  const b=paintBadge(document.getElementById("badgeReto"),  "retos");
-  // el cronómetro solo late si de verdad hay una cuenta atrás por debajo de 24 h
-  if((a||b) && !_relTimer) _relTimer=setInterval(refreshReleases,1000);
-  if(!a && !b && _relTimer){ clearInterval(_relTimer); _relTimer=null; }
-  // la década de 2000 se desbloquea sola en su fecha
+  // 🕰️ la cuenta atrás va DENTRO del botón de la década (petición de Carlos), no en la tarjeta del retro
   const d=document.getElementById("dec2000");
+  let a=false;
   if(d && ERAS["2000"]){
-    const ok=relOpen("dec2000");
+    const i=relInfo("dec2000"), ok=relOpen("dec2000");
     d.disabled=!ok; d.classList.toggle("locked",!ok);
     d.onclick = ok ? (()=>startCareerFlow("2000")) : null;
-    d.title = ok ? (relInfo("dec2000").live?"":"🔒 En pruebas — solo tú")
-                 : L("Disponible el 10 de agosto","Available on 10 August");
+    let pie="";
+    if(!i.live){
+      if(PREVIEW) pie=L("🔒 solo tú","🔒 you only");
+      else if(i.dias<=0){ pie=L("en ","in ")+hms(i.ms); a=true; }
+      else if(i.dias===1) pie=L("¡mañana!","tomorrow!");
+      else pie=L(`en ${i.dias} días`,`in ${i.dias} days`);
+    } else if(i.fresco) pie=L("¡nuevo!","new!");
+    d.innerHTML = pie ? `2000<small class="dec-sub">${pie}</small>` : "2000";
+    d.classList.toggle("dec-count", !!pie && !i.live);
+    d.title = ok ? "" : L("Disponible el 10 de agosto a las 12:00","Available 10 August at 12:00 CEST");
   }
+  // la tarjeta del Modo Retro se queda SIN pegatina: la novedad la anuncia el propio botón de 2000
+  const bR=document.getElementById("badgeRetro"); if(bR) bR.style.display="none";
+  const b=paintBadge(document.getElementById("badgeReto"), "retos");
+  // el cronómetro solo late si de verdad hay una cuenta atrás el mismo día
+  if((a||b) && !_relTimer) _relTimer=setInterval(refreshReleases,1000);
+  if(!a && !b && _relTimer){ clearInterval(_relTimer); _relTimer=null; }
 }
 function initSecretDecades(){ refreshReleases(); }
 // 🔒 barra fija inconfundible cuando el modo pruebas está activo: esto NO lo ve el público, y de aquí se sale con un clic
