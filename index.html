@@ -2002,19 +2002,24 @@ function npcSeason(){
         : (d.age>=33 && d.skill<75)?.30
         : (d.age>=28 && d.skill<71)?.07
         : .008;
-      if(ch(pRet)){ slots[i]=mkRookie(isRB, teamName); }
+      // al retirarse NO se pone un novato de oficio: el asiento queda LIBRE y lo cubre el mercado
+      // (si se retira un piloto de un top, ese volante lo pelea la parrilla; el novato acaba abajo)
+      if(ch(pRet)){ slots[i]=null; }
     });
   });
-  // mercado: los mejores coches pescan talento de abajo
+  // 1º el mercado por huecos y fichajes (cubre las retiradas y las no-renovaciones): a partir de aquí
+  //    la parrilla vuelve a estar llena, que es lo que da por hecho el bloque de abajo
+  npcMercadoOrdinario();
+  // 2º y además, los mejores coches pescan talento de abajo
   const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]).map(t=>t.name);
   for(let i=0;i<4;i++){
-    const top=S.seats[order[i]]; if(!top) continue;
+    const top=S.seats[order[i]]; if(!top||!top[0]||!top[1]) continue;
     const wIdx = top[0]==="PLAYER"?1: top[1]==="PLAYER"?0: (top[0].skill<=top[1].skill?0:1);
     const weak = top[wIdx]; if(weak==="PLAYER"||!weak) continue;
     let best=null,bTeam=null,bIdx=0;
     for(let j=i+3;j<order.length;j++){
       const lower=S.seats[order[j]]; if(!lower) continue;
-      lower.forEach((d,k)=>{ if(d!=="PLAYER"&&(!best||d.skill>best.skill)){best=d;bTeam=order[j];bIdx=k;} });
+      lower.forEach((d,k)=>{ if(d&&d!=="PLAYER"&&(!best||d.skill>best.skill)){best=d;bTeam=order[j];bIdx=k;} });
     }
     // los pilotos NO siempre aciertan el cambio de coche (como en la realidad): fichaje raro
     // y solo con una diferencia clara → el mejor no acaba siempre en el mejor coche
@@ -2025,37 +2030,65 @@ function npcSeason(){
       best.yrs=0; weak.yrs=0;
     }
   }
-  npcMercadoOrdinario();
 }
-/* 🔄 MERCADO ORDINARIO DE LOS NPC.
-   Antes SOLO fichaban los 4 mejores equipos y con un 20% de probabilidad → menos de un traspaso por
-   temporada en toda la parrilla, y el 25% de las estancias duraban 12+ años (Fisichella eternizado en
-   Benetton, que fue lo que lo destapó). En la F1 real cambian de equipo 4-8 pilotos cada año.
-   Ahora cada piloto acumula años en su equipo y, cuantos más lleva, más fácil es que se mueva.
-   Los cambios se hacen por INTERCAMBIO entre dos pilotos: la parrilla nunca cambia de tamaño y no se
-   crean ni se destruyen asientos, así que no puede romper la integridad. */
+/* 🔄 MERCADO DE PILOTOS DE LOS NPC — por HUECOS Y FICHAJES, no por intercambios.
+   Antes SOLO fichaban los 4 mejores equipos y con un 20% → menos de un traspaso por temporada en toda
+   la parrilla y pilotos eternizados (Fisichella en Benetton, que fue lo que lo destapó). Un primer
+   arreglo los intercambiaba por parejas, pero eso no es un mercado: nadie "cambia el cromo" en la F1.
+   AHORA funciona como en la realidad, en cascada:
+     1. Se abren HUECOS: retiradas (el asiento queda libre, no se tapa con un novato de oficio) y
+        pilotos a los que su equipo no renueva (pesa la antigüedad y rendir por debajo del coche).
+     2. Los equipos eligen POR ORDEN DE COCHE: el mejor coche tiene la primera opción de la bolsa.
+        · cabeza de parrilla → se lleva al mejor disponible
+        · media tabla       → uno de la mitad buena, sin garantías
+        · cola de parrilla  → ya no llega a los buenos: tira de JÓVENES y muy a menudo de un DEBUTANTE
+     3. Los huecos que queden se cubren con novatos (que por eso acaban abajo, como en la vida real),
+        y quien se queda sin asiento se cae de la F1.
+   Seguridad: al final SIEMPRE se rellena cualquier asiento vacío, así que no puede quedar un hueco. */
 function npcMercadoOrdinario(){
-  const mov=[];
+  const perf = t => (S.f1perf[t] ?? 75);
+  const bolsa=[], huecos=[];
   Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
-    sl.forEach((d,i)=>{ if(!d || d==="PLAYER") return;
+    sl.forEach((d,i)=>{
+      if(d===null || d===undefined){ huecos.push({tm,i}); return; }  // retirada de este año
+      if(d==="PLAYER") return;
       d.yrs=(d.yrs||0)+1;
-      // 3 primeros años tranquilos (contratos); a partir de ahí la probabilidad sube con la antigüedad
-      const p=Math.min(.30, .03 + Math.max(0, d.yrs-3)*.045);
-      if(ch(p)) mov.push({d, tm, i});
+      // ¿le renuevan? los 3 primeros años son tranquilos; luego pesa la antigüedad, y rendir por
+      // debajo de lo que da el coche te pone en la calle antes
+      const flojo=(d.skill||75) < perf(tm)-6;
+      const p=Math.min(.34, .02 + Math.max(0,d.yrs-3)*.04 + (flojo?.12:0));
+      if(ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
     });
   });
-  // barajar para que las parejas no salgan siempre entre equipos vecinos de la tabla
-  for(let k=mov.length-1;k>0;k--){ const j=irnd(0,k); const t=mov[k]; mov[k]=mov[j]; mov[j]=t; }
-  for(let k=0;k+1<mov.length;k+=2){
-    const a=mov[k], b=mov[k+1];
-    if(a.tm===b.tm) continue;
-    // el filial de Red Bull sigue sin aceptar veteranos ni campeones, tampoco por esta vía
-    if(isRBJr(b.tm) && (a.d.crossover || (a.d.age||0)>=32 || (a.d.titles||0)>0)) continue;
-    if(isRBJr(a.tm) && (b.d.crossover || (b.d.age||0)>=32 || (b.d.titles||0)>0)) continue;
-    if(S.seats[a.tm][a.i]!==a.d || S.seats[b.tm][b.i]!==b.d) continue; // por si algo lo movió antes
-    S.seats[a.tm][a.i]=b.d; S.seats[b.tm][b.i]=a.d;
-    a.d.yrs=0; b.d.yrs=0;
-  }
+  if(!huecos.length) return;
+  // el mejor coche elige primero
+  huecos.sort((a,b)=>perf(b.tm)-perf(a.tm));
+  const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
+  huecos.forEach(h=>{
+    const nuevo=()=>{ S.seats[h.tm][h.i]=mkRookie(isRBJr(h.tm), h.tm); };
+    // el filial de Red Bull no ficha veteranos ni campeones tampoco por esta vía
+    const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=32 || (d.titles||0)>0));
+    const cand=bolsa.filter(apto);
+    if(!cand.length){ nuevo(); return; }
+    const pos=Math.max(0,ord.indexOf(h.tm)), tramo=pos/Math.max(1,ord.length-1);
+    let eleg=null;
+    if(tramo<.34){                     // cabeza: el mejor que haya libre
+      eleg=cand.reduce((a,b)=>((b.skill||0)>(a.skill||0)?b:a));
+    } else if(tramo<.7){               // media tabla: de la mitad buena, al azar
+      const top=[...cand].sort((a,b)=>(b.skill||0)-(a.skill||0)).slice(0,Math.max(1,Math.ceil(cand.length/2)));
+      eleg=top[irnd(0,top.length-1)];
+    } else {                           // cola: jóvenes… y la mitad de las veces, un debutante
+      if(ch(.5)){ nuevo(); return; }
+      const jov=cand.filter(d=>(d.age||30)<=25);
+      eleg = jov.length ? jov[irnd(0,jov.length-1)] : cand.reduce((a,b)=>((b.skill||0)<(a.skill||0)?b:a));
+    }
+    if(!eleg){ nuevo(); return; }
+    bolsa.splice(bolsa.indexOf(eleg),1);
+    eleg.yrs=0; S.seats[h.tm][h.i]=eleg;
+  });
+  // 🔒 red de seguridad: ningún asiento puede quedarse vacío bajo ninguna circunstancia
+  Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
+    sl.forEach((d,i)=>{ if(d===null||d===undefined) sl[i]=mkRookie(isRBJr(tm), tm); }); });
 }
 function occupySeat(teamName){
   // BLINDADO: localiza TODOS los asientos con "PLAYER" (robusto ante duplicados o mySeatTeam desfasado)
