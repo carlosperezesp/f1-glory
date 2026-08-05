@@ -105,10 +105,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
   box-shadow:0 6px 18px rgba(225,6,0,.32), 0 2px 6px rgba(225,6,0,.22)}
 #challengeGrid .dec:hover{filter:brightness(1.06)}
 .decade-grid .dec.locked{background:var(--panel2);border-color:var(--line);color:var(--muted);opacity:.55;cursor:default}
-/* la década con cuenta atrás no se ve «apagada»: está a punto de llegar y tiene que llamar la atención */
-.decade-grid .dec .dec-sub{display:block;font-size:10px;font-weight:800;letter-spacing:.3px;opacity:.95;margin-top:1px;text-transform:uppercase;font-variant-numeric:tabular-nums}
-.decade-grid .dec.dec-count{opacity:1;background:linear-gradient(135deg,#8a6a10,#c9a227);border-color:#c9a227;color:#fff;
-  box-shadow:0 4px 12px rgba(201,162,39,.3)}
+/* la década con cuenta atrás va en ROJO como las jugables (está a punto de llegar, no «apagada» como
+   las décadas lejanas), solo que con la cuenta debajo. Sin dorado: llamaba demasiado la atención. */
+.decade-grid .dec .dec-sub{display:block;font-size:10px;font-weight:800;letter-spacing:.3px;opacity:.85;margin-top:1px;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.decade-grid .dec.dec-count{opacity:1;background:var(--accent);border-color:var(--accent);color:#fff}
 .dec-note{grid-column:1/-1;text-align:center;font-size:11.5px;color:var(--muted);margin-top:3px}
 
 /* ---------- identity ---------- */
@@ -821,6 +821,10 @@ function setLang(l){
   // así que hay que rehacerla o se queda en el idioma con el que entraste
   try{ const g=document.getElementById("challengeGrid");
        if(g){ const vis=g.style.display; initSecretChallenges(); g.style.display=vis; } }catch(e){}
+  // ⚠️ applyLang() acaba de reescribir TODO lo que tiene data-es/data-en, y eso incluye la pegatina del
+  // reto → le devolvía el «Próximamente» y se perdía la cuenta atrás (lo cazó Carlos). Hay que repintar
+  // los lanzamientos DESPUÉS de applyLang, siempre.
+  try{ refreshReleases(); }catch(e){}
   // re-render de lo que esté en pantalla (si hay partida)
   try{ if(typeof S!=="undefined" && S){
     refreshCard(); renderF1State(); renderTimeline();
@@ -5469,14 +5473,16 @@ function endCareer(){
   ls.style.background=legTier.bg; ls.style.borderColor="transparent"; ls.style.color=legTier.ink;
   ls.innerHTML=`<div><div class="ls-k">${L("🏅 Puntos de leyenda","🏅 Legacy points")}</div><div class="ls-tier">${legTier.name}</div></div><div class="ls-v">${score}</div>`;
   const [tier]=fameTier(fameScore());
+  // la cabecera de IMPRESIÓN estaba entera en español, sin par en inglés (lo destapó Carlos preguntando
+  // por «Constructors»): un jugador inglés que imprimiera su carrera se la encontraba en castellano
   $("printHeader").innerHTML=`<h2>${sel.flag} ${pName()} #${sel.num}</h2>
-    <div class="pl">${legacy} · Fama: ${tier}</div>
+    <div class="pl">${legacy} · ${L("Fama","Fame")}: ${tier}</div>
     <div class="ps">
-      <span><b>${S.gp}</b> GP</span><span><b>${S.wins}</b> victorias</span>
-      <span><b>${S.podiums}</b> podios</span><span><b>${S.poles}</b> poles</span>
-      <span><b>${S.titles.f1}</b> Mundiales</span><span><b>${S.titles.constr}</b> Constructores</span>
-      <span><b>${S.subcamp}</b> subcamp.</span><span><b>${S.ptsF1}</b> pts F1</span>
-      <span>${S.baseYear||2026}–${yearNow()} · retiro a los ${S.age}</span>
+      <span><b>${S.gp}</b> ${L("GP","Grands Prix")}</span><span><b>${S.wins}</b> ${L("victorias","wins")}</span>
+      <span><b>${S.podiums}</b> ${L("podios","podiums")}</span><span><b>${S.poles}</b> ${L("poles","poles")}</span>
+      <span><b>${S.titles.f1}</b> ${L("Mundiales","F1 titles")}</span><span><b>${S.titles.constr}</b> ${L("Constructores","Constructors")}</span>
+      <span><b>${S.subcamp}</b> ${L("subcamp.","runner-ups")}</span><span><b>${S.ptsF1}</b> ${L("pts F1","F1 points")}</span>
+      <span>${S.baseYear||2026}–${yearNow()} · ${L(`retiro a los ${S.age}`,`retired at ${S.age}`)}</span>
     </div>`;
 }
 
