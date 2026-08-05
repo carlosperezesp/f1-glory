@@ -572,7 +572,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <button class="btn" onclick="startCareerFlow('2026')" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
   <div class="mode-menu">
     <div class="mode-card soon" id="challengeCard">
-      <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
+      <span class="soon-badge" id="badgeReto" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico">📅</span>
       <span class="mode-txt"><b data-es="Reto semanal" data-en="Weekly challenge">Reto semanal</b><small data-es="Un escenario nuevo cada semana" data-en="A new scenario every week">Un escenario nuevo cada semana</small></span>
     </div>
@@ -583,7 +583,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <span class="mode-txt"><b data-es="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
     </div>
     <div class="mode-card retro-on" id="retroCard" onclick="toggleRetro()">
-      <span class="new-badge" data-es="¡Nuevo!" data-en="New!">¡Nuevo!</span>
+      <span class="new-badge" id="badgeRetro" data-es="¡Nuevo!" data-en="New!">¡Nuevo!</span>
       <span class="mode-ico">🕰️</span>
       <span class="mode-txt"><b data-es="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Empieza tu carrera en otra época" data-en="Start your career in another era">Empieza tu carrera en otra época</small></span>
       <span class="retro-caret" id="retroCaret">▾</span>
@@ -1733,12 +1733,13 @@ function setupChallenge(CH){
   // Un debutante de 19 años no llega de Nº1 ni en el peor coche: el reto fija el rol.
   renderOffers([{team, role:CH.role||roleFor(team.name), note:["Tu debut","Your debut"]}], false);
 }
-function initSecretChallenges(){ if(!PREVIEW) return;
+function initSecretChallenges(){
   const card=document.getElementById("challengeCard"), grid=document.getElementById("challengeGrid");
   if(!card||!grid) return;
+  if(!relOpen("retos")){ card.classList.add("soon"); card.classList.remove("retro-on","open");
+    card.onclick=null; grid.style.display="none"; grid.innerHTML=""; return; }
   card.classList.remove("soon"); card.classList.add("retro-on");
-  const sb=card.querySelector(".soon-badge"); if(sb) sb.remove();
-  card.title="🔒 En pruebas — solo tú";
+  card.title=relInfo("retos").live?"":"🔒 En pruebas — solo tú";
   grid.innerHTML=""; grid.style.gridTemplateColumns="1fr";  // los retos llevan texto: una columna
   Object.values(CHALLENGES).forEach(c=>{
     const b=document.createElement("button"); b.className="dec"; b.style.cssText="font-size:13px;line-height:1.35;padding:11px 14px";
@@ -1752,14 +1753,62 @@ function initSecretChallenges(){ if(!PREVIEW) return;
   card.onclick=()=>{ const open=grid.style.display!=="none";
     grid.style.display=open?"none":"grid"; card.classList.toggle("open",!open); };
 }
-function initSecretDecades(){ if(!PREVIEW) return;
-  [["dec2000","2000"]].forEach(([id,era])=>{
-    const b=document.getElementById(id); if(!b || !ERAS[era]) return;
-    b.disabled=false; b.classList.remove("locked");
-    b.onclick=()=>startCareerFlow(era);
-    b.title="🔒 En pruebas — solo tú";
-  });
+/* ═══ ⏳ LANZAMIENTOS PROGRAMADOS ═══
+   Cada novedad tiene su fecha en UTC y se ABRE SOLA al llegar: nadie tiene que tocar nada ni desplegar.
+   La pegatina escala con la urgencia:  «EN 5 DÍAS» → «¡MAÑANA!» → cronómetro en vivo (<24 h) → «¡NUEVO!»
+   (14 días) → nada.  Con el modo pruebas activo, todo está abierto desde ya.               */
+// ⏰ 06:00 UTC = 8:00 de la mañana en España (agosto, CEST = UTC+2). ⚠️ Son las 3:00 en Argentina,
+// que es el 27% del público: si algún día se quiere que ambos lo pillen despiertos, subir a 10:00Z.
+const RELEASES = {
+  dec2000: { at:"2026-08-10T06:00:00Z" },   // 🕰️ la década de 2000 en el modo retro
+  retos:   { at:"2026-08-17T06:00:00Z" },   // 📅 el modo Reto semanal
+};
+const NEW_DAYS = 14;                        // cuánto dura la pegatina de ¡NUEVO! tras salir
+function relInfo(key){
+  const r=RELEASES[key]; if(!r) return {live:true, ms:0, dias:0};
+  const t=Date.parse(r.at), ahora=Date.now(), ms=t-ahora;
+  // los días se cuentan por CALENDARIO local, no por duración: si sale mañana a las 6:00 y son las
+  // 23:00, «faltan 7 horas» pero para el jugador es MAÑANA. Así «En 2 días» = pasado mañana, siempre.
+  const d0=new Date(ahora), d1=new Date(t);
+  const dia = x => Math.floor(new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime()/86400000);
+  return {live: ms<=0, ms, dias: dia(d1)-dia(d0), fresco: ms<=0 && -ms < NEW_DAYS*86400000};
 }
+function relOpen(key){ return PREVIEW || relInfo(key).live; }   // el preview lo abre todo
+function hms(ms){ const s=Math.max(0,Math.floor(ms/1000));
+  return [Math.floor(s/3600), Math.floor(s/60)%60, s%60].map(n=>String(n).padStart(2,"0")).join(":"); }
+/* pinta UNA pegatina según cuánto falta. Devuelve true si hay que seguir refrescando cada segundo. */
+function paintBadge(el, key){
+  if(!el) return false;
+  const i=relInfo(key);
+  el.style.display="";
+  if(PREVIEW && !i.live){ el.className="soon-badge"; el.textContent=L("🔒 Solo tú","🔒 You only"); return false; }
+  if(i.live){
+    if(!i.fresco){ el.style.display="none"; return false; }
+    el.className="new-badge"; el.textContent=L("¡Nuevo!","New!"); return false;
+  }
+  // sale HOY (mismo día del calendario) → cronómetro en vivo, que es cuando de verdad crea urgencia
+  if(i.dias<=0){ el.className="new-badge"; el.textContent=L("En ","In ")+hms(i.ms); return true; }
+  if(i.dias===1){ el.className="new-badge"; el.textContent=L("¡Mañana!","Tomorrow!"); return false; }
+  el.className="soon-badge"; el.textContent=L(`En ${i.dias} días`,`In ${i.dias} days`); return false;
+}
+let _relTimer=null;
+function refreshReleases(){
+  const a=paintBadge(document.getElementById("badgeRetro"), "dec2000");
+  const b=paintBadge(document.getElementById("badgeReto"),  "retos");
+  // el cronómetro solo late si de verdad hay una cuenta atrás por debajo de 24 h
+  if((a||b) && !_relTimer) _relTimer=setInterval(refreshReleases,1000);
+  if(!a && !b && _relTimer){ clearInterval(_relTimer); _relTimer=null; }
+  // la década de 2000 se desbloquea sola en su fecha
+  const d=document.getElementById("dec2000");
+  if(d && ERAS["2000"]){
+    const ok=relOpen("dec2000");
+    d.disabled=!ok; d.classList.toggle("locked",!ok);
+    d.onclick = ok ? (()=>startCareerFlow("2000")) : null;
+    d.title = ok ? (relInfo("dec2000").live?"":"🔒 En pruebas — solo tú")
+                 : L("Disponible el 10 de agosto","Available on 10 August");
+  }
+}
+function initSecretDecades(){ refreshReleases(); }
 // 🔒 barra fija inconfundible cuando el modo pruebas está activo: esto NO lo ve el público, y de aquí se sale con un clic
 function initPreviewBar(){ if(!PREVIEW) return;
   const b=document.createElement("div"); b.id="previewBar";
@@ -5521,8 +5570,8 @@ function printCareer(){
 }
 applyLang(); // aplicar el idioma guardado al cargar
 applyTheme(); // aplicar el tema guardado al cargar
-initSecretDecades(); // décadas en pruebas (2000): jugables solo con el preview activo
-initSecretChallenges(); // 📅 retos en pruebas: solo con el preview activo
+initSecretDecades();    // ⏳ pegatinas y desbloqueo por fecha (la de 2000 se abre sola el 10-ago)
+initSecretChallenges(); // 📅 el modo Reto se abre solo el 17-ago (o ya, con el preview activo)
 initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
