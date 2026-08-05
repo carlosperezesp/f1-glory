@@ -1439,6 +1439,10 @@ function catName(cat){ if(cat==="KART") return "Karting"; if(cat==="TEST") retur
 let JUNIOR_OF = {"Racing Bulls":"Red Bull"}; // se resetea por partida según la era (Toro Rosso/AlphaTauri/Racing Bulls)
 // ¿es el equipo junior de Red Bull (bajo cualquiera de sus nombres de época)? Sobrevive a los rebrandings.
 function isRBJr(name){ return JUNIOR_OF[name]==="Red Bull"; }
+// 🚫 ¿es el equipo FILIAL de otro? Su coche está topado a (marca madre − 6) y a 83 por evolveF1(),
+// así que NUNCA puede ser el cochazo de la revolución técnica: le anunciarías un pelotazo y al año
+// siguiente el tope lo devolvería a mitad de tabla. Un equipo B no adelanta a su casa madre.
+function isJrTeam(name){ return JUNIOR_OF[name]!=null; }
 
 const STYLES = {
   agresivo:{label:"🔥 Agresivo", varza:5.5, dnf:.06, growth:.25, wet:0},
@@ -3217,7 +3221,8 @@ function ordCar(n){ // posición del coche en la parrilla, en cristiano
 function regBetTeam(){
   if(!S.team) return null;
   const c=F1_TEAMS.filter(t=> t.name!==S.team.name && (S.f1perf[t.name]??99)<=82 && gridRank(t.name)>=6
-    && !S.burned[t.name] && !S.neverHire[t.name] && !teamHasFeud(t.name) && rbOk(t));
+    && !S.burned[t.name] && !S.neverHire[t.name] && !teamHasFeud(t.name) && rbOk(t)
+    && !isJrTeam(t.name));  // un filial no puede prometerte que mandará: su coche está topado
   if(!c.length) return null;
   c.sort((a,b)=> a.name<b.name?-1:1);              // orden estable
   return c[(S.age+S.f1Seasons)%c.length];          // fijo dentro del año, variable entre partidas
@@ -4647,7 +4652,8 @@ function washedOut(){
 function regReset(){
   S.regDone=true; S.regUnknown=true; S.regYear=yearNow();
   const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]); // peor→mejor (antes del reset)
-  const badTeams=order.filter(rbOk).slice(0,4); // rbOk global: RB no ficha veteranos NI consagrados
+  // rbOk: RB no ficha veteranos NI consagrados · isJrTeam: un filial nunca puede ser el cochazo
+  const badTeams=order.filter(t=>rbOk(t) && !isJrTeam(t.name)).slice(0,4);
   // resetear la parrilla: nuevo pecking order aleatorio
   F1_TEAMS.forEach(t=>{ const v=Math.round(rnd(66,86)); S.f1perf[t.name]=v; S.f1target[t.name]=v; });
   // reglamento nuevo = conceptos de coche nuevos: TAMBIÉN se rebaraja el CARÁCTER de cada coche.
@@ -4661,14 +4667,22 @@ function regReset(){
   // 🎲 ¿apostaste por un equipo modesto dos años antes? Aquí se cobra la apuesta, en tres grados.
   if(S.regBet && F1_TEAMS.some(t=>t.name===S.regBet)){
     const r=Math.random();
-    if(r<.30){ // pelotazo: son ELLOS el coche a batir
-      if(brawn.name!==S.regBet){ const old=brawn; const v=Math.round(rnd(66,84));
-        S.f1perf[old.name]=v; S.f1target[old.name]=v; brawn=F1_TEAMS.find(t=>t.name===S.regBet); }
-      const v2=Math.round(rnd(90,94)); S.f1perf[S.regBet]=v2; S.f1target[S.regBet]=v2; S.regBetGrade="pleno";
-    } else if(r<.55){ // a medias: suben de verdad y pelean arriba, pero no arrasan
-      const v=Math.round(rnd(84,88)); S.f1perf[S.regBet]=v; S.f1target[S.regBet]=v; S.regBetGrade="medias";
-    } else { // el ridículo
-      const v=Math.round(rnd(68,78)); S.f1perf[S.regBet]=v; S.f1target[S.regBet]=v; S.regBetGrade="fallo";
+    S.regBetGrade = r<.30 ? "pleno" : r<.55 ? "medias" : "fallo";
+    if(S.regBetGrade==="pleno"){
+      // el pelotazo: son ELLOS el coche a batir → el "brawn" pasa a ser tu equipo
+      if(brawn.name!==S.regBet){ const v=Math.round(rnd(66,84));
+        S.f1perf[brawn.name]=v; S.f1target[brawn.name]=v; brawn=F1_TEAMS.find(t=>t.name===S.regBet); }
+      const v2=Math.round(rnd(90,94)); S.f1perf[S.regBet]=v2; S.f1target[S.regBet]=v2;
+    } else {
+      // ⚠️ si el azar había elegido a TU equipo como el cochazo pero la apuesta NO sale redonda, hay que
+      // buscar otro cochazo: si no, el destape diría a la vez que arrasan y que tu apuesta falló.
+      if(brawn.name===S.regBet){
+        const alt=badTeams.filter(t=>t.name!==S.regBet);
+        const nuevo=(alt.length?alt:F1_TEAMS.filter(t=>t.name!==S.regBet&&!isJrTeam(t.name)))[0];
+        if(nuevo){ brawn=nuevo; const v=Math.round(rnd(90,94)); S.f1perf[nuevo.name]=v; S.f1target[nuevo.name]=v; }
+      }
+      const v = S.regBetGrade==="medias" ? Math.round(rnd(84,88)) : Math.round(rnd(68,78));
+      S.f1perf[S.regBet]=v; S.f1target[S.regBet]=v;
     }
   }
   // rumor: acierta ~45% (X = Brawn); si no, otro equipo malo se lleva el foco… y falla
