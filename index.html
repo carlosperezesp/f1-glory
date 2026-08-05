@@ -1646,14 +1646,20 @@ const CHALLENGES = {
     drop:["F. Alonso"],
     t:["El Nano","El Nano"],   // el apodo funciona igual en los dos idiomas
     sub:["Alonso en Minardi · 2001 · 19 años","Alonso at Minardi · 2001 · aged 19"],
-    d:["Diecinueve años, el peor coche de la parrilla y un asiento que nadie envidia. Nadie sabe todavía quién eres y nadie apuesta un duro por ti. Tienes su talento y su punto de partida: lo que hagas con ellos ya no es cosa suya.",
-       "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business."],
+    d:["Diecinueve años, el peor coche de la parrilla y un asiento que nadie envidia. Nadie sabe todavía quién eres y nadie apuesta un duro por ti. Tienes su talento y su punto de partida: lo que hagas con ellos ya no es cosa suya. ¿Crees que puedes ganar más de 2 Mundiales?",
+       "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business. Do you think you can win more than 2 titles?"],
     // palmarés REAL de Alonso, para el veredicto
     bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:"Alonso",
   },
 };
 let CHALLENGE = null;
 function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
+// «Reto I · El Nano»: el número sale del orden en el registro, así los siguientes se numeran solos
+const ROMANOS=["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+function challengeLabel(c){
+  const i=Object.keys(CHALLENGES).indexOf(c.id)+1;
+  return L(`Reto ${ROMANOS[i]||i} · ${c.t[0]}`, `Challenge ${ROMANOS[i]||i} · ${c.t[1]}`);
+}
 function startChallengeFlow(id){
   if(!CHALLENGES[id]) return;
   CHALLENGE = id; SELECTED_ERA = CHALLENGES[id].era;
@@ -1706,7 +1712,7 @@ function setupChallenge(CH){
   S.cat="F1";
   $("identity").style.display="none"; $("career").style.display="block";
   refreshCard();
-  setDecision("📅 "+L(CH.t[0],CH.t[1])+" · "+L(CH.sub[0],CH.sub[1]), L(CH.d[0],CH.d[1]));
+  setDecision("📅 "+challengeLabel(CH)+" · "+L(CH.sub[0],CH.sub[1]), L(CH.d[0],CH.d[1]));
   $("decRecap").style.display="none";
   // se presenta como UNA sola oferta y el fichaje va por el camino de siempre (asiento, rol, compañero,
   // años en el equipo, evento de firma). Así hereda también estrellas, carácter del coche y encaje.
@@ -1722,7 +1728,7 @@ function initSecretChallenges(){ if(!PREVIEW) return;
   grid.innerHTML=""; grid.style.gridTemplateColumns="1fr";  // los retos llevan texto: una columna
   Object.values(CHALLENGES).forEach(c=>{
     const b=document.createElement("button"); b.className="dec"; b.style.cssText="font-size:13px;line-height:1.35;padding:11px 14px";
-    b.innerHTML=`${L(c.t[0],c.t[1])}<br><small style="opacity:.7;font-weight:600">${L(c.sub[0],c.sub[1])}</small>`;
+    b.innerHTML=`${challengeLabel(c)}<br><small style="opacity:.7;font-weight:600">${L(c.sub[0],c.sub[1])}</small>`;
     b.onclick=(ev)=>{ ev.stopPropagation(); startChallengeFlow(c.id); };
     grid.appendChild(b);
   });
@@ -1756,7 +1762,7 @@ function showIdentity(){
   document.querySelector(".id-grid").classList.toggle("duo", !!CH);
   $("identity").classList.toggle("challenge", !!CH);
   if(CH){
-    $("chTitle").textContent = "📅 "+L(CH.t[0],CH.t[1]);
+    $("chTitle").textContent = "📅 "+challengeLabel(CH);
     $("chDesc").textContent  = L(CH.d[0],CH.d[1]);
     const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:5px 9px">${x}</span>`;
     const cEnt=COUNTRIES.find(c=>c[0]===CH.who.country);  // el país del chip, en el idioma activo
@@ -4061,12 +4067,18 @@ function trackRanks(driverOrder, teamOrder){
 }
 
 /* escudo mini de una escudería + bandera de un piloto */
+// ⚠️ en una partida larga el historial nombra equipos que YA NO ESTÁN en la parrilla (murieron o se
+// renombraron): antes se devolvía vacío y esos pilotos salían sin escudo (lo cazó Carlos con Priaulx).
+// Orden: logo por nombre+año (funciona aunque el equipo haya desaparecido) → pastilla del equipo vivo →
+// pastilla neutra con las iniciales, para que NUNCA falte el distintivo.
 function teamBadge(name, year){
-  const T=F1_TEAMS.find(t=>t.name===name)||(name==="APXGP"?APXGP:null);
-  if(!T) return "";
+  if(!name) return "";
   const src=logoFor(name, year);
   if(src) return `<img class="tlogo mb" src="${src}" alt="${name}">`;
-  return `<span class="mini-badge" style="${badgeStyle(T)}">${T.abbr}</span>`;
+  const T=F1_TEAMS.find(t=>t.name===name)||(name==="APXGP"?APXGP:null);
+  if(T) return `<span class="mini-badge" style="${badgeStyle(T)}">${T.abbr}</span>`;
+  const ab=(name.match(/[A-Za-zÀ-ÿ]+/g)||[]).map(w=>w[0]).join("").slice(0,3).toUpperCase() || name.slice(0,3).toUpperCase();
+  return `<span class="mini-badge" style="background:#6f7078">${ab}</span>`;
 }
 const flg=f=>`<span class="fl">${f||"🏁"}</span>`;
 
@@ -5245,7 +5257,7 @@ function endCareer(){
   goldCell($("eT"),S.titles.f1); goldCell($("eC"),S.titles.constr);
   // 📅 en un reto, la pantalla final lleva su nombre (para que la trayectoria diga QUÉ jugaste)
   const _chEnd=S.challenge&&CHALLENGES[S.challenge];
-  const _chTag=_chEnd?("📅 "+L(_chEnd.t[0],_chEnd.t[1])+" · "):"";
+  const _chTag=_chEnd?("📅 "+challengeLabel(_chEnd)+" · "):"";
   $("endYears").textContent=_chTag+L(`Carrera: ${S.baseYear||2026} – ${yearNow()} · Retirado a los ${S.age} años`,`Career: ${S.baseYear||2026} – ${yearNow()} · Retired at ${S.age}`);
   const shelf=[];
   for(let i=0;i<S.titles.f1;i++)shelf.push("🏆");
@@ -5411,6 +5423,12 @@ function drawCareerCard(){
   x.fillStyle=bg; x.fillRect(0,0,W,380); checker(380,14);
   fit(`${sel.flag} ${sel.name} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
   fit(S.legacyTxt||"", 262, W-90, 46, "#ffce3a", "800");
+  // 📅 en un reto, la tarjeta compartible dice CUÁL es (si no, nadie sabe que jugabas un escenario fijo)
+  const _chC=S.challenge&&CHALLENGES[S.challenge];
+  if(_chC){
+    fit(L(`📅 Reto semanal · ${challengeLabel(_chC)}`,`📅 Weekly challenge · ${challengeLabel(_chC)}`), 314, W-90, 30, "#ffce3a", "800");
+    fit(L(`Carrera ${S.baseYear||2026}–${yearNow()}`,`Career ${S.baseYear||2026}–${yearNow()}`), 352, W-90, 26, "rgba(255,255,255,.7)", "500");
+  } else
   fit(L(`Carrera ${S.baseYear||2026}–${yearNow()}`,`Career ${S.baseYear||2026}–${yearNow()}`), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
   const cell=(cx,cy,w,h,val,lab,gold)=>{
     rr(cx,cy,w,h,18); x.fillStyle=gold?"#f3c866":"#262a34"; x.fill();
