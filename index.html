@@ -550,11 +550,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
   <button class="btn" onclick="startCareerFlow('2026')" data-es="Iniciar carrera" data-en="Start career">Iniciar carrera</button>
   <div class="mode-menu">
-    <div class="mode-card soon">
+    <div class="mode-card soon" id="challengeCard">
       <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico">📅</span>
       <span class="mode-txt"><b data-es="Reto semanal" data-en="Weekly challenge">Reto semanal</b><small data-es="Un escenario nuevo cada semana" data-en="A new scenario every week">Un escenario nuevo cada semana</small></span>
     </div>
+    <div class="decade-grid" id="challengeGrid" style="display:none"></div>
     <div class="mode-card soon">
       <span class="soon-badge" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico">🧑‍💼</span>
@@ -602,12 +603,17 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <div class="field"><label data-es="Apellido" data-en="Surname">Apellido</label><input id="inName" maxlength="14" placeholder="Apellido" data-esph="Apellido" data-enph="Surname" oninput="idChanged()"></div>
       <div class="field"><label data-es="Dorsal (1-99)" data-en="Number (1-99)">Dorsal (1-99)</label><input id="inNum" maxlength="2" placeholder="Nº" data-esph="Nº" data-enph="No." inputmode="numeric" oninput="idChanged()"></div>
     </div>
-    <div class="card">
+    <div class="card" id="cardChallenge" style="display:none">
+      <h3 id="chTitle"></h3>
+      <p id="chDesc" style="font-size:13px;line-height:1.5;color:var(--muted);margin-bottom:12px"></p>
+      <div id="chFixed" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+    </div>
+    <div class="card" id="cardCountry">
       <h3 data-es="Nacionalidad" data-en="Nationality">Nacionalidad</h3>
       <div class="field"><input id="inCountry" placeholder="Buscar país…" data-esph="Buscar país…" data-enph="Search country…" oninput="renderCountries()"></div>
       <div class="country-list" id="countryList"></div>
     </div>
-    <div class="card">
+    <div class="card" id="cardStyle">
       <h3 data-es="Estilo de pilotaje" data-en="Driving style">Estilo de pilotaje</h3>
       <div class="style-cards">
         <button id="st-agresivo" onclick="pickStyle('agresivo')">
@@ -1547,7 +1553,7 @@ function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el 
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
-function startCareerFlow(era){ SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
+function startCareerFlow(era){ CHALLENGE=null; SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
 // 🕰️ Modo Retro: la tarjeta despliega el selector de décadas (2010 y 2020 jugables; el resto, en camino)
 function toggleRetro(){
   const rc=document.getElementById("retroCard"), g=document.getElementById("decadeGrid");
@@ -1566,8 +1572,9 @@ function toggleRetro(){
    · El nombre del RANKING sigue siendo el tuyo: aquí heredas sus circunstancias, no su identidad. */
 const CHALLENGES = {
   alonso01: {
-    id:"alonso01", era:"2000", year:2001, team:"Minardi", secret:true,
-    who:{ born:1981, age:19, ovr:74, ceil:95, flag:"🇪🇸", country:"España", style:"agresivo", num:"14" },
+    id:"alonso01", era:"2000", year:2001, team:"Minardi", role:"2", secret:true,
+    // estilo "consistente": es el que el propio juego describe como «estilo Alonso»
+    who:{ born:1981, age:19, ovr:74, ceil:95, flag:"🇪🇸", country:"España", style:"consistente", num:"21" },
     drop:["F. Alonso"],
     t:["Eres Alonso","You are Alonso"],
     sub:["Minardi · 2001 · 19 años","Minardi · 2001 · aged 19"],
@@ -1585,47 +1592,77 @@ function startChallengeFlow(id){
   track("challenge_selected", {challenge:id});
   showIdentity();
 }
+/* ⏩ ADELANTAR LA ERA HASTA UN AÑO CONCRETO.
+   Pieza REUTILIZABLE: hoy la usan los retos, pero es exactamente lo que hará falta para que el
+   modo retro pueda arrancar en 2001, 2002… y algún día en cualquier temporada suelta.
+   Una era se define en su año base (2000, 2010, 2020) y todo cuelga de ahí; esto la mueve:
+     1. envejece a toda la parrilla los años transcurridos
+     2. resuelve los cambios de nombre de equipo que ya habrían ocurrido (Benetton→Renault…)
+     3. mete a los equipos que ya habrían entrado (Toyota…) y quita a los que ya habrían muerto
+     4. hace debutar a los pilotos que ya habrían llegado, en el equipo que les toca
+   No toca nada si el año pedido es el año base. */
+function advanceEraTo(year){
+  const desde = S.baseYear||year;
+  if(year<=desde){ S.baseYear=year; return; }
+  // los procesos anuales leen el año de yearNow(); movemos baseYear paso a paso para simularlo.
+  // Los sucesos del pasado NO se narran (van a una fila que se tira): ya han ocurrido.
+  const guardaEdad=S.age, guardaIni=S.startAge;
+  const papelera={events:[], year:desde};
+  for(let y=desde+1; y<=year; y++){
+    S.baseYear=y; S.age=guardaIni; S.startAge=guardaIni;   // → yearNow() === y
+    papelera.year=y; papelera.events.length=0;
+    S.dpool.forEach(d=>{ if(d && d.age!=null) d.age++; }); // la parrilla cumple años
+    try{ processLineage(papelera); }catch(e){}             // 🧬 Benetton→Renault, quiebras…
+    try{ processEntries(papelera); }catch(e){}             // 🆕 Toyota y compañía
+    try{ processArrivals(papelera); }catch(e){}            // 🎬 Räikkönen, Montoya…
+  }
+  S.baseYear=year; S.age=guardaEdad; S.startAge=guardaIni;
+}
 /* prepara la partida de un reto: te sienta en SU asiento, en SU año, y borra al piloto real */
 function setupChallenge(CH){
-  const dY = CH.year - (ERAS[CH.era]||{}).baseYear || 0;
-  S.baseYear = CH.year; S.challenge = CH.id;
-  S.age = CH.who.age; S.startAge = CH.who.age; S.peakAge = CH.who.age;
-  S.ovr = CH.who.ovr; S.ceil = CH.who.ceil;
-  // 1) la parrilla envejece los años que van de la base de la era al año del reto
-  if(dY>0) S.dpool.forEach(d=>{ if(d && d.age!=null) d.age += dY; });
-  // 2) fuera el piloto real: su asiento es el tuyo (y que no llegue después por ARRIVALS)
+  S.challenge = CH.id;
+  // 1) fuera el piloto real ANTES de adelantar la era: su asiento es el tuyo y no debe llegar
+  //    por su cuenta a través de las llegadas históricas (si no, saldríais los dos).
   (CH.drop||[]).forEach(n=>{
     S.arrivals = (S.arrivals||[]).filter(a=>a.n!==n);
-    Object.values(S.seats).forEach(sl=>{ if(Array.isArray(sl)) sl.forEach((d,i)=>{ if(d&&d!=="PLAYER"&&d.name===n) sl[i]=mkRookie(false); }); });
+    Object.values(S.seats).forEach(sl=>{ if(Array.isArray(sl)) sl.forEach((d,i)=>{ if(d&&d!=="PLAYER"&&d.name===n) sl[i]=mkRookie(false, null); }); });
     S.dpool = S.dpool.filter(d=>!(d&&d.name===n));
   });
-  // 3) los pasos de linaje y las entradas que ya habrían pasado antes de tu año no se pierden:
-  //    se recolocan al año del reto para que ocurran a partir de aquí, no en el pasado
-  (S.lineage||[]).forEach(c=>c.steps.forEach(st=>{ if(st.year<CH.year) st.year=CH.year+irnd(0,2); }));
-  (S.expansion||[]).forEach(e=>{ if(e.year!=null && e.year<CH.year) e.year=CH.year+irnd(0,2); });
-  // 4) a tu asiento de F1, sin pasar por el karting
-  const team=F1_TEAMS.find(t=>t.name===CH.team) || F1_TEAMS[F1_TEAMS.length-1];
-  S.cat="F1"; S.team=team; S.mySeatTeam=team.name;
-  occupySeat(team.name);
-  S.role=roleFor(team.name); S.roleTeam=team.name; S.roleMate=teammateOf(team.name).name;
-  S.yearsAtTeam=1;
+  // 2) mover el mundo hasta el año del reto
+  advanceEraTo(CH.year);
+  // 3) tu ficha: su edad, su nivel y su techo
+  S.age = CH.who.age; S.startAge = CH.who.age; S.peakAge = CH.who.age;
+  S.ovr = CH.who.ovr;
+  // 4) a su asiento de F1, sin pasar por el karting
+  const team = F1_TEAMS.find(t=>t.name===CH.team) || [...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name])[0];
+  S.cat="F1";
   $("identity").style.display="none"; $("career").style.display="block";
   refreshCard();
   setDecision("📅 "+L(CH.t[0],CH.t[1])+" · "+L(CH.sub[0],CH.sub[1]), L(CH.d[0],CH.d[1]));
   $("decRecap").style.display="none";
-  $("offerList").innerHTML="";
-  const b=document.createElement("button"); b.className="offer";
-  b.innerHTML=`${badge(team.name, "dot", CH.year)}<span class="info"><span class="name">${L("Empezar la temporada","Start the season")} ${CH.year}</span><span class="sub">${team.name}</span></span>`;
-  b.onclick=()=>{ const dl=pickDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); };
-  $("offerList").appendChild(b);
+  // se presenta como UNA sola oferta y el fichaje va por el camino de siempre (asiento, rol, compañero,
+  // años en el equipo, evento de firma). Así hereda también estrellas, carácter del coche y encaje.
+  // Un debutante de 19 años no llega de Nº1 ni en el peor coche: el reto fija el rol.
+  renderOffers([{team, role:CH.role||roleFor(team.name), note:L("Tu debut","Your debut")}], false);
 }
 function initSecretChallenges(){ if(!PREVIEW) return;
-  const card=document.getElementById("challengeCard"); if(!card) return;
+  const card=document.getElementById("challengeCard"), grid=document.getElementById("challengeGrid");
+  if(!card||!grid) return;
   card.classList.remove("soon"); card.classList.add("retro-on");
   const sb=card.querySelector(".soon-badge"); if(sb) sb.remove();
-  card.onclick=()=>{ const g=document.getElementById("challengeGrid"); if(!g) return;
-    const open=g.style.display!=="none"; g.style.display=open?"none":"grid"; card.classList.toggle("open",!open); };
   card.title="🔒 En pruebas — solo tú";
+  grid.innerHTML=""; grid.style.gridTemplateColumns="1fr";  // los retos llevan texto: una columna
+  Object.values(CHALLENGES).forEach(c=>{
+    const b=document.createElement("button"); b.className="dec"; b.style.cssText="font-size:13px;line-height:1.35;padding:11px 14px";
+    b.innerHTML=`${L(c.t[0],c.t[1])}<br><small style="opacity:.7;font-weight:600">${L(c.sub[0],c.sub[1])}</small>`;
+    b.onclick=(ev)=>{ ev.stopPropagation(); startChallengeFlow(c.id); };
+    grid.appendChild(b);
+  });
+  const n=document.createElement("div"); n.className="dec-note";
+  n.textContent=L("Más retos en camino 🏗️","More challenges on the way 🏗️");
+  grid.appendChild(n);
+  card.onclick=()=>{ const open=grid.style.display!=="none";
+    grid.style.display=open?"none":"grid"; card.classList.toggle("open",!open); };
 }
 function initSecretDecades(){ if(!PREVIEW) return;
   [["dec2000","2000"]].forEach(([id,era])=>{
@@ -1640,7 +1677,30 @@ function initPreviewBar(){ if(!PREVIEW) return;
   const b=document.createElement("div"); b.id="previewBar";
   b.innerHTML=`🔒 ${L("Modo pruebas: esto solo lo ves TÚ","Preview mode: only YOU can see this")} · <a href="?preview=off">${L("salir","exit")}</a>`;
   document.body.appendChild(b); }
-function showIdentity(){ $("intro").style.display="none"; $("identity").style.display="block"; renderCountries(); }
+function showIdentity(){
+  $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
+  // 📅 en un RETO no eliges país ni estilo: los heredas de él. Solo pones tu apellido (el del ranking).
+  const CH=challengeNow();
+  $("cardChallenge").style.display = CH?"block":"none";
+  $("cardCountry").style.display   = CH?"none":"block";
+  $("cardStyle").style.display     = CH?"none":"block";
+  if(CH){
+    $("chTitle").textContent = "📅 "+L(CH.t[0],CH.t[1]);
+    $("chDesc").textContent  = L(CH.d[0],CH.d[1]);
+    const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:4px 9px">${x}</span>`;
+    $("chFixed").innerHTML = [CH.who.flag+" "+CH.who.country, styleLabel(CH.who.style),
+      CH.team+" · "+CH.year, L(CH.who.age+" años", "aged "+CH.who.age)].map(chip).join("");
+    sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
+    $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
+    validateIdentity();
+  }
+  // el subtítulo miente en un reto: ahí no eliges ni bandera ni estilo, solo tu apellido
+  const st=document.querySelector("#identity > p");
+  if(st) st.textContent = CH ? L("Solo eliges tu apellido: es el que llevarás al ranking. Lo demás lo pone él.",
+                                 "You only choose your surname: that's the one you take to the leaderboard. The rest is his.")
+                            : L("Tu dorsal, tu bandera y tu forma de pilotar. El resto lo decide la pista.",
+                                "Your number, your flag and how you drive. The track decides the rest.");
+}
 function backToIntro(){ $("identity").style.display="none"; $("intro").style.display="flex"; }
 function idChanged(){
   let n = $("inNum").value.replace(/\D/g,"");
@@ -1682,6 +1742,10 @@ function track(name, data){ if(!TRACK_ON) return; try{ if(window.va) window.va("
 function startCareer(){
   sel.name = $("inName").value.trim().toUpperCase();
   sel.num = $("inNum").value;
+  // 📅 RETO: heredas SUS circunstancias (país, estilo, dorsal), pero el APELLIDO sigue siendo el tuyo
+  // — es el que va al ranking, y ahí compites como tú, no como él.
+  const _chSel = challengeNow();
+  if(_chSel){ sel.country=_chSel.who.country; sel.flag=_chSel.who.flag; sel.style=_chSel.who.style; sel.num=_chSel.who.num; }
   track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG, era: SELECTED_ERA});
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   const ERA = ERAS[SELECTED_ERA] || ERAS["2026"];  // 🕰️ era elegida: 2026 (actual) o retro 2010/2020
@@ -3420,6 +3484,11 @@ function checkExpansion(row){
   // 🦠 2020 en las líneas retro: el mundo se para (ambientación; el dilema aparte, si estás en F1)
   if(yearNow()===2020 && (S.baseYear||2026)<2026 && !S._covid){ S._covid=true;
     row.events.push(L("🦠 Una pandemia global sacude el mundo: temporada recortada, gradas vacías y carreras a puerta cerrada.","🦠 A global pandemic shakes the world: a shortened season, empty grandstands and races behind closed doors.")); }
+  processEntries(row);
+}
+// 🆕 entradas de equipos nuevos del año en curso. Separado de checkExpansion para que
+// advanceEraTo() (arrancar una era en un año posterior al suyo) pueda reutilizarlo.
+function processEntries(row){
   (S.expansion||[]).forEach(e=>{
     if(e.added || yearNow()<e.year) return;
     if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
@@ -3537,7 +3606,9 @@ function processArrivals(row){
       slots.forEach((d,i)=>{ if(d!=="PLAYER" && d && !d.alonsoCameo && d.skill<wsk){ wsk=d.skill; wi=i; } });
       if(wi<0) continue;
       const v=slots[wi];
-      if((v.age||30)<24 && (v.skill||0)>=78 && !(v.titles>0) && wait<3) continue;
+      // no se echa a un joven prometedor… salvo que el que llega sea de otra liga (Montoya por Button
+      // en Williams 2001: pasaba de verdad). Sin esta salvedad, los fichajes-bomba no ocurrían nunca.
+      if((v.age||30)<24 && (v.skill||0)>=78 && !(v.titles>0) && wait<3 && !(a.c >= (v.skill||0)+12)) continue;
       S.arrivals.splice(S.arrivals.indexOf(a),1);
       const rc=Math.round(Math.max(78, Math.min(97, a.c+gauss()*3)));
       const skill=a.sk!=null ? a.sk
@@ -4896,8 +4967,28 @@ function endCareer(){
   else if(S.adventures && S.adventures.length){ const s=serName(mainAdvSeries()); const mq=bestMarqueeWin(); legacy=L("PROFESIONAL DEL VOLANTE","A RACING PRO");verdict=L(`La F1 se te resistió, pero te ganaste la vida compitiendo al máximo nivel en ${s}. Una carrera de verdad, lejos de los focos.`,`F1 eluded you, but you earned your living racing at the top level in ${s}. A real career, away from the spotlight.`)+(mq?L(` Y hasta te llevaste una joya: ${mq}.`,` And you even grabbed a jewel: ${mq}.`):"");}
   else {legacy=L("PROMESA DEL AUTOMOVILISMO","MOTORSPORT PROSPECT");verdict=L("La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.","F1 stayed out of reach, but the track was your home. Not every dream ends in Monaco, and they're worth it all the same.");}
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=L(" Y sí: lo de APXGP fue tan de película como suena. 🎬"," And yes: the APXGP thing was as cinematic as it sounds. 🎬");
+  // 📅 RETO: el veredicto que de verdad importa — ¿lo has hecho mejor que él?
+  const _CHend = S.challenge && CHALLENGES[S.challenge];
+  if(_CHend && _CHend.bench){
+    const B=_CHend.bench, yo={titles:S.titles.f1, wins:S.wins, poles:S.poles, podiums:S.podiums};
+    const gano=["titles","wins","poles","podiums"].filter(k=>yo[k]> B[k]).length;
+    const igual=["titles","wins","poles","podiums"].filter(k=>yo[k]===B[k]).length;
+    const cab=gano>=3 ? L("🥇 LO HAS HECHO MEJOR QUE ÉL","🥇 YOU DID BETTER THAN HIM")
+             : gano+igual>=3 ? L("🤝 A SU ALTURA","🤝 YOU MATCHED HIM")
+             : L("📉 ÉL LLEGÓ MÁS LEJOS","📉 HE WENT FURTHER");
+    const fila=(et,a,b)=>`<div class="hrow"><span class="nm">${et}</span><span class="tt">${a} · <b style="color:${a>b?'#4ade80':a<b?'#f87171':'#ffce3a'}">${b}</b></span></div>`;
+    $("endVerdict").innerHTML =
+      `<div style="margin-bottom:12px">${verdict}</div>`+
+      `<div class="hall" style="margin:0"><h4>${cab}</h4>`+
+      `<div class="hrow" style="opacity:.65;font-size:11px"><span class="nm">${L("Él de verdad","Him, for real")}</span><span class="tt">${L("· TÚ","· YOU")}</span></div>`+
+      fila(L("Mundiales","Titles"), B.titles, yo.titles)+
+      fila(L("Victorias","Wins"), B.wins, yo.wins)+
+      fila(L("Poles","Poles"), B.poles, yo.poles)+
+      fila(L("Podios","Podiums"), B.podiums, yo.podiums)+
+      `</div>`;
+  }
   $("endLegacy").textContent=legacy; S.legacyTxt=legacy;
-  $("endVerdict").textContent=verdict;
+  if(!(_CHend && _CHend.bench)) $("endVerdict").textContent=verdict;
   // casilla "Puntos de leyenda": color según la magnitud del legado (máx real ~1650, techo ~2000+)
   const LEG_TIERS=[
     {min:0,    name:L("Aspirante","Aspirant"),    bg:"linear-gradient(135deg,#eef1f6,#e2e7ef)", ink:"#5a6373"},
@@ -5035,6 +5126,7 @@ function printCareer(){
 applyLang(); // aplicar el idioma guardado al cargar
 applyTheme(); // aplicar el tema guardado al cargar
 initSecretDecades(); // décadas en pruebas (2000): jugables solo con el preview activo
+initSecretChallenges(); // 📅 retos en pruebas: solo con el preview activo
 initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
