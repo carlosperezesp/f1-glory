@@ -3095,8 +3095,18 @@ const DILEMAS=[
        && S.ovr>=84 && gridRank(S.team.name)<=3 && !S.commitTeam && !!regBetTeam(),
   t:()=>L("La apuesta del reglamento","The rulebook gamble"),
   d:()=>{ const b=regBetTeam(); if(!b) return "";
-    return L(`Tienes el ${ordCar(gridRank(S.team.name))} coche de la parrilla. ${b.name} tiene el ${ordCar(gridRank(b.name))}. Y su director se planta delante de ti con los planos del reglamento que entra dentro de dos años: llevan desde el primer día construyendo para ese coche y te juran que cuando llegue mandarán ellos. Nadie podrá comprobarlo hasta que se apaguen los semáforos, dos temporadas más tarde.`,
-             `You have the ${ordCar(gridRank(S.team.name))} car on the grid. ${b.name} has the ${ordCar(gridRank(b.name))}. And their boss sits down in front of you with the blueprints of the rulebook that lands in two years: they've been building for that car since day one, and they swear that when it arrives they'll be the ones in charge. Nobody can check it until the lights go out, two seasons later.`); },
+    const mio=ordCar(gridRank(S.team.name)), suyo=ordCar(gridRank(b.name));
+    // ⚠️ el texto NO puede dar por hecho que llevas años arriba (lo cazó Carlos: venía de ser 7º y 8º
+    // con BAR y de repente el juego le decía «quedarte donde se gana»). Si tu última temporada fue de
+    // media tabla, es que tus ingenieros ACABAN de dar el salto, y eso se cuenta distinto.
+    const ult=(S.seasons.filter(s=>s.cat==="F1").at(-1)||{}).pos ?? 20;
+    const recien = ult>=5;
+    const cabeza = recien
+      ? L(`Tus ingenieros acaban de darle la vuelta a todo: después de años peleando en mitad de tabla, este año tienes el ${mio} coche de la parrilla.`,
+          `Your engineers have just turned everything around: after years scrapping in the midfield, this year you have the ${mio} car on the grid.`)
+      : L(`Tienes el ${mio} coche de la parrilla.`, `You have the ${mio} car on the grid.`);
+    return cabeza + L(` ${b.name} tiene el ${suyo}. Y su director se planta delante de ti con los planos del reglamento que entra dentro de dos años: llevan desde el primer día construyendo para ese coche y te juran que cuando llegue mandarán ellos. Nadie podrá comprobarlo hasta que se apaguen los semáforos, dos temporadas más tarde.`,
+                      ` ${b.name} has the ${suyo}. And their boss sits down in front of you with the blueprints of the rulebook that lands in two years: they've been building for that car since day one, and they swear that when it arrives they'll be the ones in charge. Nobody can check it until the lights go out, two seasons later.`); },
   opts:[
    {l:()=>L("Firmar por el proyecto 🎲","Sign for the project 🎲"),r:()=>{ const b=regBetTeam();
      if(!b) return L("La operación se cae en el último momento y te quedas donde estás.","The deal collapses at the last minute and you stay put.");
@@ -3106,7 +3116,7 @@ const DILEMAS=[
    {l:()=>L("Quedarte y no tocar nada","Stay and change nothing"),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
      return L(`Les das las gracias y te quedas. Tienes un coche que gana AHORA; lo demás son planos y palabras bonitas. Ya se verá dentro de dos años quién tenía razón.`,
               `You thank them and stay. You have a car that wins NOW; the rest is blueprints and pretty words. In two years we'll see who was right.`); }},
-   {l:()=>L("Quedarte… y encender a los tuyos 🔥","Stay… and light a fire under your own team 🔥"),r:()=>{ const t=S.team.name;
+   {l:()=>L("Quedarte, pero preparar YA el cambio 🛡️","Stay, but start preparing for the change NOW 🛡️"),r:()=>{ const t=S.team.name;
      // también los estás rechazando: se apunta igual que en la opción de quedarse sin más, para que
      // dos años después recibas el desenlace (la puñalada o la bala esquivada). Antes se perdía.
      const b=regBetTeam(); if(b) S.regBetRefused=b.name;
@@ -3115,11 +3125,11 @@ const DILEMAS=[
      // el castigo sí se aplicaba entero. El premio de verdad es un SEGURO para cuando llegue el cambio:
      // tu fábrica llega preparada y no se hunde en el reseteo (regReset le pone un suelo).
      return ch(.6) ? (S.regPrepared=t, S.f1target[t]=Math.min(93,(S.f1target[t]??S.f1perf[t])+rnd(2,5)),
-       L(`Enseñas la oferta en tu propia fábrica y montas el escándalo: si ellos van dos años por delante, ¿qué hacéis vosotros? Funciona: aparcan medio desarrollo del coche actual y se vuelcan en el reglamento que viene. Pase lo que pase, no os va a pillar en pañales. 🛡️`,
-         `You wave the offer around your own factory and make a scene: if they're two years ahead, what are you lot doing? It works: they shelve half of this year's development and throw themselves at the coming rules. Whatever happens, it won't catch you unprepared. 🛡️`))
+       L(`Llevas los planos a tu propia fábrica y pones el dedo en la llaga: tenemos el mejor coche de ESTE reglamento, ¿y del siguiente qué? Te escuchan. Aparcan medio desarrollo del coche actual y se vuelcan en el que viene: pase lo que pase, el cambio no os pillará en pañales. 🛡️`,
+         `You take the blueprints to your own factory and press where it hurts: we have the best car of THIS rulebook — what about the next one? They listen. They shelve half of this year's development and throw themselves at what's coming: whatever happens, the change won't catch you unprepared. 🛡️`))
       : (S.f1target[t]=Math.max(62,(S.f1target[t]??S.f1perf[t])-rnd(2,5)),
-       L(`Enseñas la oferta y te dan palmaditas en la espalda: llevan años ganando, ¿qué les vas a contar? Se quedan mirando el trofeo mientras otros miran los planos. 📉`,
-         `You wave the offer around and they pat you on the back: they've been winning for years, what could you possibly teach them? They keep staring at the trophy while others stare at blueprints. 📉`)); }}]},
+       L(`Llevas los planos a tu propia fábrica y te dan palmaditas en la espalda: mira la clasificación, ¿de qué te preocupas? Siguen exprimiendo el coche de hoy mientras otros dibujan el de pasado mañana. 📉`,
+         `You take the blueprints to your own factory and they pat you on the back: look at the standings — what are you worried about? They keep squeezing today's car while others sketch the one for the day after tomorrow. 📉`)); }}]},
 
  // 🤝 EL AÑO DEL COMPROMISO: has aguantado el año malo, el reglamento ya está aquí y nadie sabe nada
  // todavía. No puedes irte (contrato firmado), pero sí puedes envenenar el proyecto desde dentro.
