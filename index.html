@@ -578,7 +578,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     <div class="mode-card soon" id="challengeCard">
       <span class="soon-badge" id="badgeReto" data-es="Próximamente" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico">📅</span>
-      <span class="mode-txt"><b data-es="Reto semanal" data-en="Weekly challenge">Reto semanal</b><small data-es="Un escenario nuevo cada semana" data-en="A new scenario every week">Un escenario nuevo cada semana</small></span>
+      <span class="mode-txt"><b data-es="Reto semanal" data-en="Weekly challenge">Reto semanal</b><small id="retoSub" data-es="Un escenario nuevo cada semana" data-en="A new scenario every week">Un escenario nuevo cada semana</small></span>
     </div>
     <div class="decade-grid" id="challengeGrid" style="display:none"></div>
     <div class="mode-card soon">
@@ -1818,9 +1818,18 @@ function refreshReleases(){
     d.classList.toggle("dec-count", !!pie && !i.live);
     d.title = ok ? "" : L("Disponible el 10 de agosto a las 12:00","Available 10 August at 12:00 CEST");
   }
-  // la tarjeta del Modo Retro se queda SIN pegatina: la novedad la anuncia el propio botón de 2000
-  const bR=document.getElementById("badgeRetro"); if(bR) bR.style.display="none";
   const b=paintBadge(document.getElementById("badgeReto"), "retos");
+  // 🎬 ANTES de abrirse, la tarjeta del Reto ADELANTA cuál va a ser: «Reto semanal / Empieza con
+  // Reto I · El Nano». Sin esto solo decía «un escenario nuevo cada semana» y no enganchaba a nadie.
+  const sub=document.getElementById("retoSub");
+  if(sub){
+    const prox=Object.values(CHALLENGES)[0];
+    if(!relInfo("retos").live && prox){
+      sub.textContent=L(`Empieza con «${challengeLabel(prox)}»`,`Starts with «${challengeLabel(prox)}»`);
+    } else {
+      sub.textContent=L(sub.dataset.es, sub.dataset.en);
+    }
+  }
   // el cronómetro solo late si de verdad hay una cuenta atrás el mismo día
   if((a||b) && !_relTimer) _relTimer=setInterval(refreshReleases,1000);
   if(!a && !b && _relTimer){ clearInterval(_relTimer); _relTimer=null; }
