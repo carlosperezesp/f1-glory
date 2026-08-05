@@ -108,7 +108,13 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 #identity h2{font-size:32px;font-weight:900;margin-bottom:6px}
 #identity .lead{color:var(--muted);margin-bottom:24px}
 .id-grid{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:22px}
-@media(max-width:900px){.id-grid{grid-template-columns:1fr}}
+/* en un RETO solo hay dos tarjetas: se centran y se estrechan para que no queden descolgadas */
+.id-grid.duo{grid-template-columns:minmax(0,340px) minmax(0,420px);justify-content:center}
+#identity.challenge .actions{max-width:790px;margin-left:auto;margin-right:auto}
+@media(max-width:900px){.id-grid,.id-grid.duo{grid-template-columns:1fr}}
+/* etiquetas fijas del reto: 2×2 en vez de una fila que se desborda */
+#chFixed{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#chFixed .mini-badge{text-align:center}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,var(--accent),var(--accent2) 55%,transparent)}
@@ -159,11 +165,17 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .driver-meta{flex:1;min-width:0}
 .driver-meta .tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
 .tag{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700;white-space:nowrap}
-/* comparación del reto (tú contra el palmarés real): 3 columnas limpias */
-.cmp-row{display:grid;grid-template-columns:1fr 64px 64px;gap:8px;align-items:center;padding:5px 10px;font-size:14px;font-weight:700}
-.cmp-row span:nth-child(2),.cmp-row span:nth-child(3),.cmp-row b{text-align:center}
-.cmp-row:nth-child(even){background:var(--panel2);border-radius:8px}
-.cmp-head{font-size:11px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding-bottom:2px}
+/* comparación del reto (tú contra el palmarés real): duelo con barra de progreso */
+.cmp-row{display:grid;grid-template-columns:1fr 52px 52px;gap:10px;align-items:center;padding:7px 12px;font-size:14px;font-weight:700}
+.cmp-row .cmp-el,.cmp-row .cmp-yo{text-align:center;font-variant-numeric:tabular-nums}
+.cmp-row .cmp-el{color:var(--muted)}
+.cmp-head{font-size:10px;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase;font-weight:800;padding:0 12px 2px}
+.cmp-bar{grid-column:1/-1;height:5px;border-radius:99px;background:var(--panel2);overflow:hidden;margin-top:-2px}
+.cmp-bar i{display:block;height:100%;border-radius:99px;transition:width .6s ease}
+.cmp-item{border-radius:10px;padding:2px 0 6px}
+.cmp-item+.cmp-item{margin-top:3px}
+.cmp-item.win{background:linear-gradient(90deg,rgba(74,222,128,.13),transparent)}
+.cmp-item.lose{background:linear-gradient(90deg,rgba(248,113,113,.11),transparent)}
 .tag.red{background:linear-gradient(135deg,rgba(225,6,0,.12),rgba(255,122,0,.10));border-color:rgba(225,6,0,.3);color:#b30500}
 #teamLine{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:800;min-width:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 #teamLine .tname{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -611,7 +623,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     <div class="card" id="cardChallenge" style="display:none">
       <h3 id="chTitle"></h3>
       <p id="chDesc" style="font-size:13px;line-height:1.5;color:var(--muted);margin-bottom:12px"></p>
-      <div id="chFixed" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+      <div id="chFixed"></div>
     </div>
     <div class="card" id="cardCountry">
       <h3 data-es="Nacionalidad" data-en="Nationality">Nacionalidad</h3>
@@ -801,6 +813,16 @@ function setLang(l){
   // re-render de lo que esté en pantalla (si hay partida)
   try{ if(typeof S!=="undefined" && S){
     refreshCard(); renderF1State(); renderTimeline();
+    // 🌐 el DILEMA y las OFERTAS que tengas delante también se repintan (antes se quedaban en el idioma
+    // en el que se generaron). Los dilemas se regeneran desde su definición; las ofertas, desde la
+    // última lista memorizada. ⚠️ Lo que NO se puede retraducir es el HISTORIAL: los eventos de
+    // temporadas pasadas se guardan como texto ya escrito, no como datos.
+    if(S._curDilemma){ renderDilemma(S._curDilemma, true); }
+    else if(S._lastOffers && $("offerList") && $("offerList").children.length){
+      const d=S._lastDecision;
+      if(d) setDecision(d.t, d.s, d.p, d.o);
+      renderOffers(S._lastOffers.offers, S._lastOffers.withRetire);
+    }
     // si el resumen final está abierto, repintarlo en el nuevo idioma (endCareer es idempotente)
     if(S.retired && $("endModal") && $("endModal").style.display==="flex") endCareer();
   } }catch(e){}
@@ -1689,7 +1711,7 @@ function setupChallenge(CH){
   // se presenta como UNA sola oferta y el fichaje va por el camino de siempre (asiento, rol, compañero,
   // años en el equipo, evento de firma). Así hereda también estrellas, carácter del coche y encaje.
   // Un debutante de 19 años no llega de Nº1 ni en el peor coche: el reto fija el rol.
-  renderOffers([{team, role:CH.role||roleFor(team.name), note:L("Tu debut","Your debut")}], false);
+  renderOffers([{team, role:CH.role||roleFor(team.name), note:["Tu debut","Your debut"]}], false);
 }
 function initSecretChallenges(){ if(!PREVIEW) return;
   const card=document.getElementById("challengeCard"), grid=document.getElementById("challengeGrid");
@@ -1730,13 +1752,17 @@ function showIdentity(){
   $("cardChallenge").style.display = CH?"block":"none";
   $("cardCountry").style.display   = CH?"none":"block";
   $("cardStyle").style.display     = CH?"none":"block";
+  // con dos tarjetas la rejilla de tres columnas deja todo descolgado a la izquierda
+  document.querySelector(".id-grid").classList.toggle("duo", !!CH);
+  $("identity").classList.toggle("challenge", !!CH);
   if(CH){
     $("chTitle").textContent = "📅 "+L(CH.t[0],CH.t[1]);
     $("chDesc").textContent  = L(CH.d[0],CH.d[1]);
-    const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:4px 9px">${x}</span>`;
+    const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:5px 9px">${x}</span>`;
     const cEnt=COUNTRIES.find(c=>c[0]===CH.who.country);  // el país del chip, en el idioma activo
-    $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), styleLabel(CH.who.style),
-      CH.team+" · "+CH.year, L(CH.who.age+" años", "aged "+CH.who.age)].map(chip).join("");
+    // orden 2×2: país + edad arriba, estilo + equipo abajo (petición de Carlos)
+    $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), L(CH.who.age+" años","aged "+CH.who.age),
+      styleLabel(CH.who.style), CH.team+" · "+CH.year].map(chip).join("");
     sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
     $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
     validateIdentity();
@@ -2485,7 +2511,7 @@ function juniorOffers(teams, cat){
   const three = base.map(t=>({t, perf:perfOf(t)})).sort((a,b)=>b.perf-a.perf);
   return three.map((x,i)=>{
     const p = JR_PROFILES[i] || JR_PROFILES[1];
-    return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:L(p.label,p.labelEn), note:L(p.desc,p.descEn)};
+    return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:L(p.label,p.labelEn), note:[p.desc,p.descEn]};
   });
 }
 
@@ -2495,9 +2521,13 @@ function offerAcademies(){
   renderOffers(juniorOffers(KART_TEAMS,"KART"));
 }
 
+// title/sub aceptan texto YA resuelto o un par [es,en]. Con el par, el titular puede repintarse al
+// cambiar de idioma; con texto suelto se queda como estaba (degradación aceptable).
 function setDecision(title,sub,pulsing,outcome){
+  try{ if(typeof S!=="undefined" && S) S._lastDecision={t:title,s:sub,p:pulsing,o:outcome}; }catch(e){}
   const h=$("decTitle"), p=$("decSub");
-  h.textContent=title; p.textContent=sub;
+  h.textContent=Array.isArray(title)?L(title[0],title[1]):title;
+  p.textContent=Array.isArray(sub)?L(sub[0],sub[1]):sub;
   h.classList.toggle("pulsing",!!pulsing);
   p.classList.toggle("outcome",!!outcome);
 }
@@ -2512,6 +2542,7 @@ function scrollToDecision(){
 }
 
 function renderOffers(offers, withRetire){
+  S._lastOffers={offers, withRetire};   // 🌐 memorizadas para poder repintarlas al cambiar de idioma
   const box=$("offerList"); box.innerHTML="";
   offers.forEach(o=>{
     if(o.special){ box.appendChild(specialOfferBtn(o)); return; } // opción especial (aventura, volver, etc.)
@@ -2538,7 +2569,9 @@ function renderOffers(offers, withRetire){
       carLine=`<span class="carline">${L("Coche","Car")} ${charLabel(c)} · ${fit}</span>`;
     }
     if(o.profile) profileLine=`<span class="jprofile"><b>${o.profile}</b> · ${o.note}</span>`;
-    const subNote = (o.note && !o.profile) ? " · "+o.note : "";
+    // note/profile aceptan par [es,en] para poder repintarse al cambiar de idioma
+    const noteTxt = Array.isArray(o.note) ? L(o.note[0],o.note[1]) : o.note;
+    const subNote = (noteTxt && !o.profile) ? " · "+noteTxt : "";
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
       <span class="sub" style="display:block">${catLbl} · ${yearNow()}${mate}${subNote}</span>${trendLine}${carLine}${profileLine}</span>
@@ -3498,8 +3531,10 @@ function pickDilemma(){
   return pool[irnd(0,pool.length-1)];
 }
 
-function renderDilemma(dl){
-  S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age;
+// `repintar`=true cuando solo se está cambiando el idioma: no vuelve a contar como dilema nuevo
+function renderDilemma(dl, repintar){
+  if(!repintar){ S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age; }
+  S._curDilemma=dl;   // 🌐 para poder repintarlo si cambias de idioma con el dilema en pantalla
   // 🏆 los dilemas de pelea por el título se deciden ANTES de simar el año: son un PRONÓSTICO (vienes de
   // podio y tienes cochazo). Lo apuntamos para que, si luego el año se tuerce, la temporada lo explique.
   if(/^(muroRival|alianza|titlecrash)$/.test(dl.id)) S._titleTalk=yearNow();
@@ -3517,6 +3552,7 @@ function renderDilemma(dl){
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${String.fromCharCode(65+i)}</span>
       <span class="info"><span class="name">${typeof opt.l==="function"?opt.l():opt.l}</span></span>`;
     b.onclick=()=>{
+      S._curDilemma=null;              // ya decidido: deja de repintarse al cambiar de idioma
       const txt=opt.r();
       S.pendingEvents.push("⚡ "+ttl+": "+txt);
       box.innerHTML="";
@@ -4649,7 +4685,7 @@ function nextOffers(){
       title=L(`🌟 ¡La Fórmula 1 llama sin pasar por la ${C2}!`,`🌟 Formula 1 calls, skipping ${C2}!`);
       sub=L(`${dom}. Un equipo de F1 te ficha directo — o puedes esperar un año en la ${C2} y llegar más completo. Tú decides.`,`${dom}. An F1 team signs you straight away — or you can wait a year in ${C2} and arrive more complete. You decide.`);
       const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]);
-      pick(sorted.slice(2,9),2).forEach(t=>o.push({team:t, role:roleFor(t.name), note:L("Salto directo, llegas verde","Direct jump, you arrive raw")}));
+      pick(sorted.slice(2,9),2).forEach(t=>o.push({team:t, role:roleFor(t.name), note:["Salto directo, llegas verde","Direct jump, you arrive raw"]}));
       juniorOffers(F2_TEAMS,"F2").slice(0,1).forEach(x=>{ x.note=L("Esperar y llegar más fuerte","Wait and arrive stronger"); o.push(x); });
     } else if(S.ovr>=66||S.titles.f3>0){
       title=L(`Llaman de la ${catName("F2")}`,`${catName("F2")} comes calling`);
@@ -4696,7 +4732,7 @@ function nextOffers(){
       title=L("El banquillo de la F1","The F1 reserve bench");
       sub=L("Nadie te da un volante titular aún, pero los grandes te quieren de piloto probador: FP1, simulador y paciencia.","No race seat yet, but the big teams want you as a reserve: FP1, simulator and patience.");
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
-      pick(F1_TEAMS, stayOK2?2:3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
+      pick(F1_TEAMS, stayOK2?2:3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(` O quédate un año más en la ${catName("F2")} a por el título.`,` Or stay one more year in ${catName("F2")} to go for the title.`); }
     } else if(S.age>=26){ stuckDeadEnd(); return; }
     else {
@@ -4717,16 +4753,16 @@ function nextOffers(){
                    : L("Las horas de simulador (y de pista) dan fruto. Volantes de verdad sobre la mesa.","The simulator (and track) hours pay off. Real seats on the table.");
       const cands = proved ? sorted.slice(2,8) : sorted.slice(0,5);
       const others=pick(cands.filter(t=>t.name!==own.name),2);
-      if(proved || ch(.5)) o.push({team:own,note:L("Ascenso interno","Internal promotion"),role:roleFor(own.name)});
+      if(proved || ch(.5)) o.push({team:own,note:["Ascenso interno","Internal promotion"],role:roleFor(own.name)});
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       while(o.length<3){ const extra=(proved?sorted.slice(2,9):sorted).find(t=>!o.some(x=>x.team.name===t.name)); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
-      if(S.age<=24) o.push({team:{...own,cat:"TEST"},note:L("Seguir de probador un año más","Stay as reserve one more year")});
+      if(S.age<=24) o.push({team:{...own,cat:"TEST"},note:["Seguir de probador un año más","Stay as reserve one more year"]});
       S.testProved=0;
     } else if(S.age>=28){ if(S.f1Seasons>0){ endCareer(); } else { washedOut(); } return; }
     else {
       title=L("Otro año de probador","Another year as reserve");
       sub=L("El asiento titular se resiste. Sigues de reserva: FP1, simulador y alguna carrera si surge.","The race seat is elusive. You stay a reserve: FP1, simulator and the odd race if it comes up.");
-      pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
+      pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       if(S.age>=22&&S.age<=26&&ch(.45)){ o.push(youngEscapeOption()); sub+=L(" O cansado de esperar, vete a competir fuera y gánate el salto."," Or, tired of waiting, go race elsewhere and earn your leap."); }
     }
   }
@@ -4735,7 +4771,7 @@ function nextOffers(){
     if(S.demoteReserve){
       S.demoteReserve=false; S.forceMove=false;
       setDecision(L("De vuelta al banquillo","Back to the bench"),L("La lesión te costó el asiento. Solo hay sitio para ti como probador… por ahora.","The injury cost you your seat. There's only room for you as a reserve… for now."));
-      pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:L("Programa de pruebas","Test programme")}));
+      pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       renderRecap(); renderOffers(o, true); return;
     }
     // 🤝 COMPROMISO DE VARIOS AÑOS (apuesta del reglamento): firmaste por un proyecto y no eliges equipo.
@@ -4752,7 +4788,7 @@ function nextOffers(){
           L(`Diste tu palabra a ${ct.name} y el contrato sigue vivo: este año no hay mercado para ti.`,
             `You gave ${ct.name} your word and the contract still stands: there's no market for you this year.`));
         renderRecap();
-        renderOffers([{team:ct, note:L("🤝 Compromiso","🤝 Commitment"), role:roleFor(ct.name)}], S.age>=31);
+        renderOffers([{team:ct, note:["🤝 Compromiso","🤝 Commitment"], role:roleFor(ct.name)}], S.age>=31);
         return;
       }
       S.commitTeam=null; S.commitYears=0; // el equipo ya no existe: quedas libre
@@ -4834,7 +4870,7 @@ function nextOffers(){
         }
       }
       const cur=F1_TEAMS.find(t=>t.name===S.team.name)||S.team;
-      if(rbOk(cur)){ o.push({team:cur,note:L("✍️ Renovación","✍️ Contract renewal"),role:roleFor(cur.name)}); S.couldStay=true; }
+      if(rbOk(cur)){ o.push({team:cur,note:["✍️ Renovación","✍️ Contract renewal"],role:roleFor(cur.name)}); S.couldStay=true; }
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title=L("Mercado de fichajes ","Silly season ")+(yearNow());
       sub=(sub||"")+L("Silly season: los contratos están sobre la mesa.","Silly season: the contracts are on the table.");
@@ -4842,7 +4878,7 @@ function nextOffers(){
       if(S.age>=36 && rep<80 && ch(.5)){
         const grand=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name])[irnd(0,2)];
         if(grand && !o.some(x=>x.team.name===grand.name && x.team.cat==="TEST"))
-          o.push({team:{...grand,cat:"TEST"}, note:L("Probador y mentor: cerrar con los grandes","Reserve & mentor: bow out with the big boys")});
+          o.push({team:{...grand,cat:"TEST"}, note:["Probador y mentor: cerrar con los grandes","Reserve & mentor: bow out with the big boys"]});
       }
       // 🌎 aventura fuera de la F1: RARO — solo si mayor y atascado (coche malo o mala racha),
       // con probabilidad que sube con el "apetito aventurero". La mayoría de carreras nunca lo ven.
@@ -4892,7 +4928,7 @@ function nextOffers(){
       }
       // APXGP ocupa una plaza: dejamos como mucho 2 ofertas de equipo (renovación + otra) para que con APXGP sean 3, no 4
       while(o.filter(x=>x.team).length>2){ let done=false; for(let i=o.length-1;i>=0;i--){ if(o[i].team && !/Renovaci|Renewal/.test(o[i].note||"")){ o.splice(i,1); done=true; break; } } if(!done) break; }
-      o.push({team:APXGP,note:L("«Una última oportunidad» 🎬","«One last shot» 🎬"),role:"1"});
+      o.push({team:APXGP,note:["«Una última oportunidad» 🎬","«One last shot» 🎬"],role:"1"});
       sub+=L(" Y hay una llamada inesperada: un proyecto loco con olor a película."," And there's an unexpected call: a crazy project straight out of a movie.");
     }
   }
@@ -4991,10 +5027,10 @@ function regResetOffers(){
   const xWants = atRumor ? true : ch(Math.min(.85,pull));
   // ofertas SIN pistas de nivel: renovación + 2 al azar + X si te quiere
   const o=[];
-  if(cur && !S.burned[cur.name] && !S.neverHire[cur.name] && rbOk(cur)){ o.push({team:cur,note:L("✍️ Renovación","✍️ Renewal"),role:roleFor(cur.name)}); S.couldStay=true; }
+  if(cur && !S.burned[cur.name] && !S.neverHire[cur.name] && rbOk(cur)){ o.push({team:cur,note:["✍️ Renovación","✍️ Renewal"],role:roleFor(cur.name)}); S.couldStay=true; }
   const poolOthers=feudFilter(F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name] && rbOk(t)));
   pk(poolOthers,2).forEach(t=>o.push({team:t,role:roleFor(t.name)}));
-  if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name] && !teamHasFeud(rumor.name)) o.push({team:rumor,role:roleFor(rumor.name),note:L("🔮 El del rumor","🔮 The rumoured one")});
+  if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name] && !teamHasFeud(rumor.name)) o.push({team:rumor,role:roleFor(rumor.name),note:["🔮 El del rumor","🔮 The rumoured one"]});
   while(o.length<3){ const extra=F1_TEAMS.find(t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]&&rbOk(t)); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
   const title=L("🏁 Revolución técnica","🏁 Technical revolution");
   let sub=L(`El año que viene entra un reglamento radical y la parrilla se resetea. En el paddock se rumorea que ${rumor.name} ha entendido el nuevo coche antes que nadie… pero nadie lo sabrá hasta la primera carrera.`,`A radical new rulebook resets the grid next year. The paddock whispers that ${rumor.name} has cracked the new car… but nobody will know until race one.`);
@@ -5285,7 +5321,17 @@ function endCareer(){
     // tabla de TRES columnas de verdad (etiqueta · él · tú): la versión anterior apelotonaba
     // los números en una esquina y no se leía (lo cazó Carlos)
     const rname=_CHend.benchName||L("Él","Him");
-    const fila=(et,a,b)=>`<div class="cmp-row"><span>${et}</span><span class="cmp-el">${a}</span><b style="color:${b>a?'#4ade80':b<a?'#f87171':'#ffce3a'}">${b}</b></div>`;
+    // cada línea es un duelo: cifras + barra que muestra de un vistazo cuánto le sacas o te saca
+    const fila=(et,a,b)=>{
+      const tot=Math.max(a,b,1), pa=Math.round(100*a/tot), pb=Math.round(100*b/tot);
+      const col=b>a?"#4ade80":b<a?"#f87171":"#ffce3a";
+      const cls=b>a?"win":b<a?"lose":"";
+      return `<div class="cmp-item ${cls}">`+
+        `<div class="cmp-row"><span>${et}</span><span class="cmp-el">${a}</span><span class="cmp-yo" style="color:${col}">${b}</span></div>`+
+        `<div class="cmp-row" style="padding-top:0"><span class="cmp-bar"><i style="width:${pa}%;background:var(--muted);opacity:.45"></i></span></div>`+
+        `<div class="cmp-row" style="padding-top:3px"><span class="cmp-bar"><i style="width:${pb}%;background:${col}"></i></span></div>`+
+      `</div>`;
+    };
     $("endVerdict").innerHTML =
       `<div style="margin-bottom:12px">${verdict}</div>`+
       `<div class="hall" style="margin:0"><h4>${cab}</h4>`+
