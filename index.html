@@ -1788,7 +1788,7 @@ function startCareer(){
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
-    f1perf:{}, f1target:{}, f1char:{}, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
+    f1perf:{}, f1target:{}, f1char:{}, cache:{}, retiredPool:[], comebackDone:false, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
     bigInjuryDone:false, feuds:[], respects:[], _incRival:null, fiaTitleCount:0, fiaTitlePending:null, _fiaSc:null,
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, forceMove:false, apxShown:false,
     baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
@@ -1826,7 +1826,8 @@ function startCareer(){
     }
     else { const activeExp = irnd(0, EXP.length-1); EXP.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); }); }
   }
-  F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)]; });
+  F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)];
+    S.cache[t.name]=(CACHE_SEED[ERA.id]&&CACHE_SEED[ERA.id][t.name])??t.perf; });
   // nivel de cada equipo junior: aleatorio por partida. Prema (cuando existe en la era) es el superequipo fiable.
   [KART_TEAMS,F4_TEAMS,F3_TEAMS,FRECA_TEAMS,F2_TEAMS].forEach(pool=>pool.forEach(t=>{ S.jrPerf[t.name]=t.perf+(/Prema/.test(t.name)?irnd(2,6):irnd(-4,4)); }));
   // sembrar la parrilla de la era. El TECHO de cada piloto se sortea por partida (horquilla
@@ -1976,6 +1977,9 @@ function mkRookie(noCross, forTeam){
     : born
     ? {name, age:Math.max(18,Math.min(34,yearNow()-born)), skill:rnd(75,81), ceil:Math.round(rnd(82,88)), titles:0, flag}
     : {name, age:irnd(18,21), skill:rnd(74,81), ceil:Math.round(rnd(84,93)), titles:0, flag};
+  // 🎓 la cantera de los grandes: un equipo con caché alto accede a mejores promesas (Antonelli en
+  // Mercedes). Sutil a propósito: +2 de techo, no un fenómeno garantizado.
+  if(forTeam && !born && S.cache && (S.cache[forTeam]||0)>=85) d.ceil=Math.min(97, d.ceil+2);
   homeBuffOne(d);
   S.dpool.push(d);
   return d;
@@ -2004,7 +2008,13 @@ function npcSeason(){
         : .008;
       // al retirarse NO se pone un novato de oficio: el asiento queda LIBRE y lo cubre el mercado
       // (si se retira un piloto de un top, ese volante lo pelea la parrilla; el novato acaba abajo)
-      if(ch(pRet)){ slots[i]=null; }
+      if(ch(pRet)){
+        // 🔙 los retirados NOTABLES (título o nivel 86+, colgando el casco antes de los 38) van al
+        // bolsillo de posibles comebacks — el camino Schumacher'10 / Kimi'12
+        if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||99)<=38)
+          (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
+        slots[i]=null;
+      }
     });
   });
   // 1º el mercado por huecos y fichajes (cubre las retiradas y las no-renovaciones): a partir de aquí
@@ -2023,7 +2033,7 @@ function npcSeason(){
     }
     // los pilotos NO siempre aciertan el cambio de coche (como en la realidad): fichaje raro
     // y solo con una diferencia clara → el mejor no acaba siempre en el mejor coche
-    if(best && best.skill>weak.skill+4 && ch(.2)){
+    if(best && best.skill>weak.skill+4 && ch(.2) && canLureStar(order[i],best)){
       // Racing Bulls no acepta veteranos ni siquiera como descarte del mercado (crossover/mayor/campeón)
       if(isRBJr(bTeam) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) continue;
       top[wIdx]=best; S.seats[bTeam][bIdx]=weak;
@@ -2066,8 +2076,9 @@ function npcMercadoOrdinario(){
   const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
   huecos.forEach(h=>{
     const nuevo=()=>{ S.seats[h.tm][h.i]=mkRookie(isRBJr(h.tm), h.tm); };
-    // el filial de Red Bull no ficha veteranos ni campeones tampoco por esta vía
-    const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=32 || (d.titles||0)>0));
+    // el filial de Red Bull no ficha veteranos ni campeones tampoco por esta vía;
+    // y un galáctico en su prime solo firma donde hay CACHÉ (el crepuscular va donde quiera)
+    const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=32 || (d.titles||0)>0)) && canLureStar(h.tm,d);
     const cand=bolsa.filter(apto);
     if(!cand.length){ nuevo(); return; }
     const pos=Math.max(0,ord.indexOf(h.tm)), tramo=pos/Math.max(1,ord.length-1);
@@ -2089,6 +2100,40 @@ function npcMercadoOrdinario(){
   // 🔒 red de seguridad: ningún asiento puede quedarse vacío bajo ninguna circunstancia
   Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
     sl.forEach((d,i)=>{ if(d===null||d===undefined) sl[i]=mkRookie(isRBJr(tm), tm); }); });
+}
+/* 🔙 EL COMEBACK (Schumacher 2010, Räikkönen 2012, Alonso 2021): como mucho UNO por partida — que sea
+   un notición, no la norma. Un notable retirado joven puede volver 2-4 años después, con el óxido
+   descontado, y siempre a un equipo con caché o con cochazo: nadie vuelve del retiro para un HRT. */
+function maybeComeback(row){
+  if(S.comebackDone || !(S.retiredPool||[]).length || !ch(.07)) return;
+  const yr=yearNow();
+  const cands=S.retiredPool.filter(r=>{
+    const fuera=yr-r.retiredYear;
+    if(fuera<2 || fuera>4) return false;
+    if(r.age+fuera>42) return false;
+    if(NO_TAUNT[r.name]!=null && yr>=NO_TAUNT[r.name]) return false; // respeto (ver nota de NO_TAUNT)
+    return true;
+  });
+  if(!cands.length) return;
+  const r=cands[irnd(0,cands.length-1)];
+  const fuera=yr-r.retiredYear;
+  const skill=Math.max(74, Math.round(r.skill-2-fuera));   // el óxido del parón
+  const dest=F1_TEAMS.filter(t=>!isRBJr(t.name) && (((S.cache&&S.cache[t.name])||0)>=70 || (S.f1perf[t.name]||0)>=85))
+    .filter(t=>{ const sl=S.seats[t.name]; return sl && sl.some(x=>x && x!=="PLAYER" && (x.skill||0)<skill-2 && !(x.titles>0)); });
+  if(!dest.length) return;
+  const t=dest[irnd(0,dest.length-1)], sl=S.seats[t.name];
+  let wi=-1, ws=999;
+  sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && (x.skill||0)<ws && !(x.titles>0)){ ws=x.skill||0; wi=i; } });
+  if(wi<0) return;
+  const org=S.dpool.find(d=>d.name===r.name);
+  const back = org || {name:r.name, flag:r.flag, titles:r.titles};
+  back.age=r.age+fuera; back.skill=skill; back.ceil=Math.max(back.ceil||0, skill+1); back.yrs=0;
+  if(!org) S.dpool.push(back);
+  sl[wi]=back;
+  S.retiredPool=S.retiredPool.filter(x=>x!==r);
+  S.comebackDone=true;
+  row.events.push(L(`🔙 BOMBAZO: ${r.name} vuelve del retiro a los ${back.age} años y correrá con ${t.name}.`,
+                    `🔙 SHOCK: ${r.name} comes out of retirement at ${back.age} and will race for ${t.name}.`));
 }
 function occupySeat(teamName){
   // BLINDADO: localiza TODOS los asientos con "PLAYER" (robusto ante duplicados o mySeatTeam desfasado)
@@ -3520,6 +3565,7 @@ function simSeason(){
   if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
   evolveF1();
   npcSeason();
+  maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
   alphaClash(row); // 🐓 dos gallos no caben en el mismo corral
   // pico de carrera: mejor OVR alcanzado y a qué edad (define cuándo empieza tu declive)
   if(S.ovr > (S.peakOvr||0)){ S.peakOvr=S.ovr; S.peakAge=S.age; }
@@ -3580,6 +3626,10 @@ function evolveF1(){
     // el carácter del coche puede cambiar ~1-2 veces por partida, sobre todo tras tocar fondo
     const rebuilding = S.f1perf[t.name] < 69;
     if(S.f1char[t.name] && ch(rebuilding ? .11 : .035)) S.f1char[t.name]=CHARS[irnd(0,2)];
+    // 🏛️ el caché deriva DESPACIO hacia el nivel del coche (tasa .08 ≈ media vida de ~8 años):
+    // un gigante caído sigue siendo un grande una década; un Force India que gana se hace grande con los años
+    const ca = S.cache[t.name] ?? S.f1perf[t.name];
+    S.cache[t.name] = Math.max(30, Math.min(96, ca + (S.f1perf[t.name]-ca)*.08));
   });
   // equipo filial: claramente por debajo de la marca madre y con techo de midfield
   Object.entries(JUNIOR_OF).forEach(([junior,parent])=>{
@@ -3637,6 +3687,8 @@ function processEntries(row){
     S.f1perf[e.team.name]=perf;
     S.f1target[e.team.name]=perf+(brawn?rnd(-1,3):rnd(-2,7));
     S.f1char[e.team.name]=CHARS[irnd(0,2)];
+    // recién llegado = sin pedigrí, por rico que sea (el caché se lo tendrá que ganar en pista)
+    S.cache[e.team.name]=Math.min(60, e.team.perf);
     S.seats[e.team.name]=(e.drivers||[]).map(([name,age,skill,ceil,titles,flag])=>{
       const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d;
     });
@@ -3664,7 +3716,7 @@ function rebrandTeam(oldName, to, row){
   const t=F1_TEAMS.find(x=>x.name===oldName); if(!t) return;
   const nn=to.name;
   if(F1_TEAMS.some(x=>x.name===nn)) return; // colisión de nombres: no renombrar
-  ["f1perf","f1target","f1char"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
+  ["f1perf","f1target","f1char","cache"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
   if(S.seats[oldName]){ S.seats[nn]=S.seats[oldName]; delete S.seats[oldName]; }
   ["burned","neverHire"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
   if(S.roleTeam===oldName) S.roleTeam=nn;
@@ -3690,7 +3742,7 @@ function rebrandTeam(oldName, to, row){
 function killTeam(name, row){
   const i=F1_TEAMS.findIndex(t=>t.name===name); if(i<0) return;
   F1_TEAMS.splice(i,1);
-  delete S.seats[name]; delete S.f1perf[name]; delete S.f1target[name]; delete S.f1char[name];
+  delete S.seats[name]; delete S.f1perf[name]; delete S.f1target[name]; delete S.f1char[name]; if(S.cache) delete S.cache[name];
   delete S.burned[name]; delete S.neverHire[name];
   // si el equipo al que te habías comprometido desaparece, el compromiso muere con él
   if(S.commitTeam===name){ S.commitTeam=null; S.commitYears=0; }
@@ -3765,15 +3817,39 @@ function processArrivals(row){
    En la F1 real, cuando dos cracks comparten garaje la cosa dura poco: Hamilton y Alonso aguantaron
    UN año, Vettel se fue en cuanto Ricciardo empezó a ganarle, Hamilton y Rosberg explotaron en cuatro.
    Sin esta regla, dos pilotos de 95 podían compartir equipo una década repartiéndose los títulos. */
-function isElite(d){ return d && d!=="PLAYER" && ((d.skill||0)>=87 || (d.titles||0)>=1); }
+/* «Gallo» solo mientras sigues siendo un LEÓN: nivel 87+ a cualquier edad, o título siendo joven.
+   Un campeón en declive (34+, nivel bajo) deja de ser gallo y pasa a ser MAESTRO/ESCUDERO — por eso
+   Schumacher-Rosberg convivieron 3 años en Mercedes y Räikkönen-Vettel 4 en Ferrari. Antes, cualquier
+   título te hacía gallo PARA SIEMPRE y rompía esos dúos (lo cazó Carlos con el caso Alonso-escudero). */
+function isElite(d){ return d && d!=="PLAYER" && ((d.skill||0)>=87 || ((d.titles||0)>=1 && (d.age||30)<34)); }
+/* 💎 GALÁCTICO EN SU MEJOR MOMENTO: solo ficha por equipos con CACHÉ (prestigio+músculo). Schumacher
+   en su prime no se va a un Renault sin pedigrí aunque tenga cochazo. PERO el galáctico CREPUSCULAR
+   (34+ o en declive) queda EXENTO: Alonso→Aston Martin y Räikkönen→Alfa Romeo son movimientos reales. */
+function primeGalactico(d){ return d && d!=="PLAYER" && (d.age||30)<34 && ((d.skill||0)>=90 || ((d.titles||0)>=2 && (d.skill||0)>=87)); }
+function canLureStar(teamName, d){
+  if(window.__noGal) return true;              // interruptor de medición A/B
+  if(!primeGalactico(d)) return true;          // estrellas normales y crepusculares: mercado libre
+  return ((S.cache&&S.cache[teamName])||0)>=72;
+}
+/* 🏛️ CACHÉ de cada equipo (secreto): prestigio histórico + músculo. Nace de la semilla de la era,
+   deriva DESPACIO hacia el nivel del coche (un gigante caído conserva caché ~una década) y sube con
+   los títulos de constructores. NO lo toca la revolución técnica: el prestigio sobrevive al reglamento. */
+const CACHE_SEED = {
+  "2000": {"Ferrari":95,"McLaren":92,"Williams":88,"Benetton":80,"Jordan":62,"Jaguar":65,"BAR":58,"Sauber":55,"Arrows":48,"Minardi":40,"Prost":45},
+  "2010": {"Ferrari":95,"McLaren":92,"Mercedes GP":85,"Red Bull":80,"Renault":78,"Williams":72,"Force India":50,"Sauber":55,"Toro Rosso":48},
+  "2020": {"Mercedes":95,"Ferrari":94,"Red Bull":90,"McLaren":84,"Renault":72,"Williams":68,"Racing Point":58,"AlphaTauri":50,"Alfa Romeo":55,"Haas":45},
+  "2026": {"Ferrari":94,"Mercedes":92,"Red Bull":90,"McLaren":90,"Aston Martin":75,"Alpine":70,"Williams":75,"Racing Bulls":52,"Haas":48,"Audi":70,"Cadillac":60,"Sauber":55},
+};
 /* 💰 un equipo con un cochazo desaprovechado sale al mercado y se lleva a la mejor estrella disponible */
 function poachStar(tn, row){
   const slots=S.seats[tn]; if(!slots || slots.length<2) return;
   const wIdx = slots[0]==="PLAYER"?1 : slots[1]==="PLAYER"?0 : (((slots[0].skill||0)<=(slots[1].skill||0))?0:1);
   const weak=slots[wIdx]; if(!weak || weak==="PLAYER") return;
   let best=null,bT=null,bI=0;
+  // …la mejor estrella QUE PUEDA VENIR: si el cochazo no tiene caché, el galáctico en su prime no viene
+  // (ficha entonces al mejor 86-89 disponible, que es justo lo que hace que un underdog pueda ser campeón)
   Object.entries(S.seats).forEach(([t,s])=>{ if(t===tn) return;
-    (s||[]).forEach((d,i)=>{ if(d && d!=="PLAYER" && (!best || (d.skill||0)>(best.skill||0))){ best=d; bT=t; bI=i; } }); });
+    (s||[]).forEach((d,i)=>{ if(d && d!=="PLAYER" && (!best || (d.skill||0)>(best.skill||0)) && canLureStar(tn,d)){ best=d; bT=t; bI=i; } }); });
   if(!best || (best.skill||0) <= (weak.skill||0)+3) return;
   if(isRBJr(bT) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) return; // el filial no acepta veteranos
   S.seats[bT][bI]=weak; slots[wIdx]=best;
@@ -4152,6 +4228,8 @@ function simF1(row,st){
   const constrRank=Object.entries(teamPts).sort((a,b)=>b[1]-a[1]);
   const constrPos=1+constrRank.findIndex(e=>e[0]===myTeam);
   row.constrPos=constrPos;
+  // 🏛️ ganar el Mundial de constructores construye CACHÉ (así un underdog que gana se convierte en grande)
+  if(constrRank.length && S.cache) S.cache[constrRank[0][0]]=Math.min(96,(S.cache[constrRank[0][0]]??80)+4);
   // top 3 de ambos campeonatos, visible en la línea de tiempo y el panel
   // guardamos también EN QUÉ EQUIPO estaba cada uno: con los renombrados y las mariposas de una
   // partida larga, un nombre suelto no dice nada ("¿Coulthard en qué coche ganó ese año?")
