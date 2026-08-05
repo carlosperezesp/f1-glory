@@ -158,7 +158,12 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .ovr-badge .l{font-size:10px;letter-spacing:1.5px;opacity:.9}
 .driver-meta{flex:1;min-width:0}
 .driver-meta .tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
-.tag{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700}
+.tag{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+/* comparación del reto (tú contra el palmarés real): 3 columnas limpias */
+.cmp-row{display:grid;grid-template-columns:1fr 64px 64px;gap:8px;align-items:center;padding:5px 10px;font-size:14px;font-weight:700}
+.cmp-row span:nth-child(2),.cmp-row span:nth-child(3),.cmp-row b{text-align:center}
+.cmp-row:nth-child(even){background:var(--panel2);border-radius:8px}
+.cmp-head{font-size:11px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding-bottom:2px}
 .tag.red{background:linear-gradient(135deg,rgba(225,6,0,.12),rgba(255,122,0,.10));border-color:rgba(225,6,0,.3);color:#b30500}
 #teamLine{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:800;min-width:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 #teamLine .tname{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -785,8 +790,10 @@ function applyLang(){
 function setLang(l){
   LANG=l; try{localStorage.setItem("f1lang",l);}catch(e){}
   applyLang();
-  // la lista de países se ordena y se muestra en el idioma activo → reordenar y repintar al cambiarlo
-  try{ sortCountries(); if($("identity") && $("identity").style.display!=="none") renderCountries(); }catch(e){}
+  // la pantalla de identidad tiene contenido puesto por JS (tarjeta del reto, chips, subtítulo):
+  // los data-es/data-en no la cubren → se repinta ENTERA al cambiar de idioma (lo cazó Carlos: la
+  // tarjeta de «El Nano» se quedaba en el idioma con el que se abrió)
+  try{ sortCountries(); if($("identity") && $("identity").style.display!=="none") showIdentity(); }catch(e){}
   // la rejilla de retos se construye UNA vez al cargar (con data-es/data-en no vale: es dinámica),
   // así que hay que rehacerla o se queda en el idioma con el que entraste
   try{ const g=document.getElementById("challengeGrid");
@@ -1287,7 +1294,7 @@ const TEAMS_2000 = [
   {name:"Sauber",    abbr:"SAU", color:"#0A4EA2", color2:"#C00000", perf:70},
   {name:"Jaguar",    abbr:"JAG", color:"#00563F", color2:"#C0A062", perf:68},
   {name:"Minardi",   abbr:"MIN", color:"#111111", color2:"#F5D800", perf:63},
-  {name:"Prost",     abbr:"PRO", color:"#1A56A8", color2:"#F5F5F5", perf:62},
+  {name:"Prost GP",  abbr:"PRO", color:"#1A56A8", color2:"#F5F5F5", perf:62},
 ];
 // [nombre, edad, nivel, techo, títulos(antes de 2000), bandera]
 const GRID2000 = {
@@ -1301,7 +1308,7 @@ const GRID2000 = {
   "Sauber":[["M. Salo",34,78,81,0,"🇫🇮"],["P. Diniz",30,72,76,0,"🇧🇷"]],
   "Jaguar":[["E. Irvine",35,82,85,0,"🇬🇧"],["J. Herbert",36,77,80,0,"🇬🇧"]],
   "Minardi":[["M. Gené",26,74,78,0,"🇪🇸"],["G. Mazzacane",25,70,75,0,"🇦🇷"]],
-  "Prost":[["J. Alesi",36,80,83,0,"🇫🇷"],["N. Heidfeld",23,78,86,0,"🇩🇪"]],
+  "Prost GP":[["J. Alesi",36,80,83,0,"🇫🇷"],["N. Heidfeld",23,78,86,0,"🇩🇪"]],
 };
 // leyendas RETIRADAS conocidas en 2000. OJO: Schumacher (2), Häkkinen (2) y Villeneuve (1)
 // estaban EN ACTIVO ese año → no van aquí. El récord lo tenía Fangio con 5.
@@ -1377,7 +1384,7 @@ const LINEAGE_2000 = [
                        {to:{name:"Racing Point",abbr:"RP",color:"#F596C8",color2:"#2B2B2B"}, w:[2017,2021], p:.55},
                        {to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2020,2026], p:.7}]},
  {key:"Arrows", steps:[{die:true, w:[2002,2006], p:.7}]},
- {key:"Prost",  steps:[{die:true, w:[2002,2005], p:.75}]},
+ {key:"Prost GP", steps:[{die:true, w:[2002,2005], p:.75}]},
 ];
 // equipos NUEVOS entre 2000 y hoy (con su probabilidad y, los frágiles, su fecha de caducidad)
 const ENTRIES_2000 = [
@@ -1536,7 +1543,7 @@ const TEAM_LOGOS = {
   "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png",
   // 🕰️ era 2000 y sus transformaciones
   "Jordan":"Jordan.png","Jaguar":"Jaguar.png","Minardi":"Minardi.png","Benetton":"Benetton.png",
-  "BAR":"BAR.png","Arrows":"Arrows.png","Prost":"Prost.png","BMW Sauber":"BMW.png",
+  "BAR":"BAR.png","Arrows":"Arrows.png","Prost GP":"Prost.png","BMW Sauber":"BMW.png",
   "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png"
 };
 // 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
@@ -1580,6 +1587,15 @@ function posClass(p){
   return "rest";
 }
 function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el año base depende de la era (2010/2020/2026)
+// 🏟️ circuito al azar VÁLIDO para un año dado (2º campo = año de estreno): en 2001 no existe Abu Dabi
+// ni Singapur; Jeddah llega en 2021. Global para que cualquier dilema/evento pueda ambientar sin anacronismos.
+function gpAt(yr){
+  const cs=[["Mónaco"],["Silverstone"],["Spa"],["Monza"],["Suzuka"],["Interlagos"],["Hungaroring"],
+    ["Barcelona"],["Montreal"],["Melbourne"],["Singapur",2008],[L("Abu Dabi","Abu Dhabi"),2009],
+    ["Austin",2012],[L("Bakú","Baku"),2016],["Imola",2020],["Zandvoort",2021],[L("Yeda","Jeddah"),2021],
+    ["Las Vegas",2023]].filter(c=>!c[1]||yr>=c[1]);
+  return cs[irnd(0,cs.length-1)][0];
+}
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
@@ -1611,7 +1627,7 @@ const CHALLENGES = {
     d:["Diecinueve años, el peor coche de la parrilla y un asiento que nadie envidia. Nadie sabe todavía quién eres y nadie apuesta un duro por ti. Tienes su talento y su punto de partida: lo que hagas con ellos ya no es cosa suya.",
        "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business."],
     // palmarés REAL de Alonso, para el veredicto
-    bench:{ titles:2, wins:32, poles:22, podiums:106 },
+    bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:"Alonso",
   },
 };
 let CHALLENGE = null;
@@ -1718,7 +1734,8 @@ function showIdentity(){
     $("chTitle").textContent = "📅 "+L(CH.t[0],CH.t[1]);
     $("chDesc").textContent  = L(CH.d[0],CH.d[1]);
     const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:4px 9px">${x}</span>`;
-    $("chFixed").innerHTML = [CH.who.flag+" "+CH.who.country, styleLabel(CH.who.style),
+    const cEnt=COUNTRIES.find(c=>c[0]===CH.who.country);  // el país del chip, en el idioma activo
+    $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), styleLabel(CH.who.style),
       CH.team+" · "+CH.year, L(CH.who.age+" años", "aged "+CH.who.age)].map(chip).join("");
     sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
     $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
@@ -2556,9 +2573,14 @@ function signContract(o){
                 :            (champ?.15 : good?.4:.3);     // medio
     if(ch(burnP)){
       S.burned[prev.name]=S.age;
+      // el reproche tiene que cuadrar con CUÁNTO estuviste: «años grises» tras UNA temporada no cuela
+      // (lo cazó Carlos: novato, un año en Minardi, y le hablaban de años grises)
+      const yrsPrev=S.yearsAtTeam||1;
       S.pendingEvents.push(good
         ? L("🚪 En "+prev.name+" no perdonan tu marcha siendo su líder: puertas cerradas.","🚪 "+prev.name+" won't forgive their leader walking out: doors closed.")
-        : L("🚪 "+prev.name+" borra tu número tras años grises: no quieren verte más.","🚪 "+prev.name+" wipes your number after grey years: they don't want you around."));
+        : yrsPrev>=3
+        ? L("🚪 "+prev.name+" borra tu número tras años grises: no quieren verte más.","🚪 "+prev.name+" wipes your number after grey years: they don't want you around.")
+        : L("🚪 En "+prev.name+" se toman tu marcha tan pronto como un desprecio: no te guardan sitio.","🚪 "+prev.name+" takes you leaving so soon as a snub: no seat kept for you."));
     }
   }
   const sameSeat = prevCat==="F1" && o.team.cat==="F1" && prev && prev.name===o.team.name;
@@ -2895,10 +2917,14 @@ const DILEMAS=[
    {l:()=>L("Guardarte los trucos","Keep your tricks to yourself"),r:()=>{VAL(.95);return L("Mantienes tu ventaja, pero en el garaje te ven distante y calculador.","You keep your edge, but in the garage they see you as distant and calculating.");}}]},
  {id:"contrato",stage:"f1",cond:()=>{ if(!S.team||!F1_TEAMS.some(t=>t.name===S.team.name)||S.ovr<85) return false; const b=bestPoachTeam(); return b && (S.f1perf[b]-S.f1perf[S.team.name])>=6; },
   t:()=>L("Romper el contrato","Break the contract"),
-  d:()=>{ const b=bestPoachTeam(); return L(`${b||"El mejor equipo de la parrilla"} te quiere YA, pero tienes contrato con ${S.team?S.team.name:"tu equipo"}. Marcharte quemará ese puente para siempre.`,`${b||"The best team on the grid"} wants you NOW, but you're under contract with ${S.team?S.team.name:"your team"}. Leaving will burn that bridge forever.`); },opts:[
-   {l:()=>L("Romper y fichar por el mejor 💔","Break it and sign for the best 💔"),r:()=>{ const b=bestPoachTeam(), old=S.team.name;
+  // ⚠️ el fichaje se consuma AL ACABAR la temporada (forceMove + poachTeam actúan en el mercado
+  // siguiente). El texto lo dice explícito — antes prometía «te vas YA», el jugador corría el año
+  // entero con su equipo y parecía que la decisión no había hecho nada (lo cazó Carlos jugando).
+  // Y nada de «el mejor»: se nombra al equipo (puede no ser el campeón vigente, solo el mejor coche).
+  d:()=>{ const b=bestPoachTeam(); return L(`${b||"Un grande de la parrilla"} quiere cerrar tu fichaje YA para la próxima temporada, pero tienes contrato con ${S.team?S.team.name:"tu equipo"}. Marcharte quemará ese puente para siempre.`,`${b||"A giant of the grid"} wants to lock in your signing NOW for next season, but you're under contract with ${S.team?S.team.name:"your team"}. Leaving will burn that bridge forever.`); },opts:[
+   {l:()=>{ const b=bestPoachTeam(); return L(`Firmar con ${b||"ellos"} para el año que viene 💔`,`Sign with ${b||"them"} for next season 💔`); },r:()=>{ const b=bestPoachTeam(), old=S.team.name;
      S.neverHire[old]=true; S.forceMove=true; S.poachTeam=b;
-     return L(`Rompes el contrato y te vas a por ${b||"el top"}. ${old} te cierra la puerta PARA SIEMPRE, pero tendrás un cochazo bajo el culo.`,`You break the contract and go for ${b||"the top team"}. ${old} shuts the door FOREVER, but you'll have a rocket beneath you.`); }},
+     return L(`Firmas con ${b||"el grande"} para la PRÓXIMA temporada: esta la terminas en ${old}, con todo el box mirándote de reojo. ${old} te cierra la puerta PARA SIEMPRE, pero el año que viene tendrás uno de los mejores coches de la parrilla.`,`You sign with ${b||"the giant"} for NEXT season: you'll see this one out at ${old}, with the whole garage eyeing you sideways. ${old} shuts the door FOREVER, but next year you'll have one of the best cars on the grid.`); }},
    {l:()=>L("Cumplir tu palabra","Keep your word"),r:()=>{VAL(1.08);return L("Honras el contrato. El paddock respeta tu lealtad, aunque el coche de al lado corra más. +fama","You honour the contract. The paddock respects your loyalty, even if the car next door is faster. +fame");}}]},
  {id:"gesto",stage:"f1",from:2017,cond:()=>S.seasons.length>0 && (S.seasons.at(-1).pos??20)<=3,t:()=>L("El gesto en el podio","The podium statement"),
   d:()=>L("Subes al podio y quieres usar tu momento de gloria para un mensaje que te importa. El equipo teme el lío con los patrocinadores.","You climb the podium and want to use your moment of glory for a message that matters to you. The team fears trouble with the sponsors."),opts:[
@@ -3025,7 +3051,7 @@ const DILEMAS=[
      [4,()=>(VAL(1.08),L("Pasas página con clase: el paddock lo nota. +fama","You move on with class: the paddock notices. +fame"))],
      [3,()=>L("Te lo guardas. Sin cambios.","You bottle it up. No change.")])}]},
  {id:"toqueCulpable",stage:"f1",cond:()=>S.cat==="F1"&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El culpable","The culprit"),
-  d:()=>{const r=incidentRival();return L(`Un cierre tuyo manda a ${r} contra el muro: su carrera, acabada. ¿Vas a su box a disculparte?`,`A move of yours puts ${r} in the wall: his race is done. Do you go to his garage to apologize?`);},opts:[
+  d:()=>{const r=incidentRival();const c=gpAt(yearNow());return L(`Un cierre tuyo en ${c} manda a ${r} contra el muro: fuera en el acto, con el coche destrozado. ¿Vas a su box a disculparte?`,`A move of yours at ${c} puts ${r} in the wall: out on the spot, car destroyed. Do you go to his garage to apologize?`);},opts:[
    {l:()=>L("Ir a disculparte","Go and apologize"),r:()=>roll(
      [4,()=>(respectBuild(),VAL(1.1),L("Aceptan tus disculpas: quedas como un caballero. +fama","He accepts your apology: you come off as a gentleman. +fame"))],
      [3,()=>L("Te recibe frío pero lo deja estar. Sin cambios.","He's cold but lets it go. No change.")],
@@ -3224,8 +3250,10 @@ const DILEMAS=[
  // Ventana de UN año (dos antes de la revolución) → va en el bloque de prioridad de pickDilemma().
  // NO afirma ningún resultado: la apuesta la cobra regReset() dos temporadas después, en tres grados.
  {id:"apuestaReglamento",stage:"f1",
+  // yearsAtTeam≥2: acabas de FIRMAR por tu equipo — que otro te tiente en ese mismo instante quedaba
+  // absurdo (le pasó a Carlos: fichó por McLaren y en la misma pantalla le ofrecían comprometerse con Toyota)
   cond:()=>S.cat==="F1" && S.team && !S.regDone && S.regReg && yearNow()===S.regReg-2
-       && S.ovr>=84 && gridRank(S.team.name)<=3 && !S.commitTeam && !!regBetTeam(),
+       && S.ovr>=84 && gridRank(S.team.name)<=3 && !S.commitTeam && (S.yearsAtTeam||1)>=2 && !!regBetTeam(),
   t:()=>L("La apuesta del reglamento","The rulebook gamble"),
   d:()=>{ const b=regBetTeam(); if(!b) return "";
     const mio=ordCar(gridRank(S.team.name)), suyo=ordCar(gridRank(b.name));
@@ -3769,6 +3797,7 @@ function processLineage(row){
         const mine = (S.team && S.team.name===chn.cur) || ((S.seats[chn.cur]||[]).includes("PLAYER"));
         if(mine){
           if(!st.warned){ st.warned=true; S.forceMove=true;
+            S.forceReason="quiebra"; S.forceReasonTeam=chn.cur; // para que el mercado explique el motivo real
             row.events.push(L(`💸 ${chn.cur} está en quiebra: los sueldos no llegan y el barco se hunde. Busca asiento YA.`,`💸 ${chn.cur} is going under: wages are late and the ship is sinking. Find a seat NOW.`)); }
           st.year=yearNow()+1; return; // reintenta al año siguiente, cuando ya hayas salido
         }
@@ -3843,7 +3872,7 @@ function canLureStar(teamName, d){
    deriva DESPACIO hacia el nivel del coche (un gigante caído conserva caché ~una década) y sube con
    los títulos de constructores. NO lo toca la revolución técnica: el prestigio sobrevive al reglamento. */
 const CACHE_SEED = {
-  "2000": {"Ferrari":95,"McLaren":92,"Williams":88,"Benetton":80,"Jordan":62,"Jaguar":65,"BAR":58,"Sauber":55,"Arrows":48,"Minardi":40,"Prost":45},
+  "2000": {"Ferrari":95,"McLaren":92,"Williams":88,"Benetton":80,"Jordan":62,"Jaguar":65,"BAR":58,"Sauber":55,"Arrows":48,"Minardi":40,"Prost GP":45},
   "2010": {"Ferrari":95,"McLaren":92,"Mercedes GP":85,"Red Bull":80,"Renault":78,"Williams":72,"Force India":50,"Sauber":55,"Toro Rosso":48},
   "2020": {"Mercedes":95,"Ferrari":94,"Red Bull":90,"McLaren":84,"Renault":72,"Williams":68,"Racing Point":58,"AlphaTauri":50,"Alfa Romeo":55,"Haas":45},
   "2026": {"Ferrari":94,"Mercedes":92,"Red Bull":90,"McLaren":90,"Aston Martin":75,"Alpine":70,"Williams":75,"Racing Bulls":52,"Haas":48,"Audi":70,"Cadillac":60,"Sauber":55},
@@ -4305,12 +4334,7 @@ function maybeEvent(row,st){
   const inF1=S.cat==="F1";
   const pick=a=>a[irnd(0,a.length-1)];
   const rival = ()=>{ const m=(S.seats[S.team.name]||[]).find(d=>d!=="PLAYER"); return m?surname(m.name):L("tu compañero","your teammate"); };
-  // circuitos con AÑO DE ESTRENO (2º campo): en 2016 no existe Jeddah ni Las Vegas; Imola no volvió hasta 2020
-  const gp = ()=>{ const yr=yearNow();
-    const cs=[["Monaco"],["Silverstone"],["Spa"],["Monza"],["Suzuka"],["Interlagos"],["Singapur"],["Hungaroring"],
-      ["Barcelona"],["Montreal"],[L("Abu Dabi","Abu Dhabi")],["Melbourne"],["Austin",2012],["Baku",2016],
-      ["Imola",2020],["Zandvoort",2021],["Jeddah",2021],["Las Vegas",2023]].filter(c=>!c[1]||yr>=c[1]);
-    return pick(cs)[0]; };
+  const gp = ()=>gpAt(yearNow());
 
   // estilo del piloto
   if(sel.style==="tecnico") pool.push(
@@ -4748,7 +4772,13 @@ function nextOffers(){
       pick(cands.filter(t=>!picks.some(p=>p.name===t.name)),3-picks.length).forEach(t=>picks.push(t));
       picks.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title=L("Buscando equipo","Looking for a team");
-      sub=(sub||"")+L("Tras la ruptura, necesitas un volante nuevo. Estas puertas siguen abiertas.","After the split, you need a new seat. These doors are still open.");
+      // el motivo importa: si tu equipo QUEBRÓ no hubo «ruptura» — te quedaste sin trabajo (lo cazó Carlos)
+      if(S.forceReason==="quiebra"){
+        sub=(sub||"")+L(`${S.forceReasonTeam||"Tu equipo"} ha quebrado y desaparece de la F1: te quedas sin volante. Estas puertas siguen abiertas.`,`${S.forceReasonTeam||"Your team"} has gone bankrupt and leaves F1: you're out of a drive. These doors are still open.`);
+      } else {
+        sub=(sub||"")+L("Tras la ruptura, necesitas un volante nuevo. Estas puertas siguen abiertas.","After the split, you need a new seat. These doors are still open.");
+      }
+      S.forceReason=null; S.forceReasonTeam=null;
       S.forceMove=false;
     } else {
       const others=pick(cands.filter(t=>t.name!==S.team.name),2);
@@ -4958,7 +4988,7 @@ function renderTimeline(){
     div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
     const raced=r.cat==="TEST"&&r.subRaces;
     const catLbl=r.cat==="TEST"?L("Probador F1","F1 Reserve"):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series, r.year)||L("Aventura","Adventure")):catName(r.cat);
-    const constr=r.constrPos?` · 🏭 ${L("Constructores (equipo)","Constructors (team)")}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
+    const constr=r.constrPos?`🏭 ${L("Constructores","Constructors")}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best")} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs")}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator")):r.cat==="ADV"?"":`${r.pts} pts`;
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
@@ -4969,11 +4999,12 @@ function renderTimeline(){
     // cada campeón con el escudo del equipo con el que corrió ESE año (formato viejo = solo texto)
     const nameWithBadge=(x)=> (x && typeof x==="object")
       ? `${teamBadge(x.t, r.year)||""}&nbsp;${x.n}` : x;
-    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")} &nbsp;·&nbsp; 🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
+    // 👑 pilotos y 🏭 constructores en DOS líneas: juntos quedaba apelotonado (petición de Carlos)
+    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")}</span><span class="ev top3">🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
       <span class="club">${badge(r.team,"",r.year)}
-        <span><span class="nm">${teamDisp(r.team, r.year)}</span><br><span class="cat">${r.year} · ${catLbl}${ptsTxt?" · "+ptsTxt:""}${constr}</span></span></span>
+        <span><span class="nm">${teamDisp(r.team, r.year)} · ${r.year} · ${catLbl}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
       <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>
       <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>
@@ -5149,7 +5180,10 @@ function endCareer(){
   // dorado si ganaste algún título; shiny (brillo animado) si ganaste muchos (3+)
   const goldCell=(el,n)=>{ const c=el.parentElement; c.classList.toggle("gold",n>=1); c.classList.toggle("shiny",n>=3); };
   goldCell($("eT"),S.titles.f1); goldCell($("eC"),S.titles.constr);
-  $("endYears").textContent=L(`Carrera: ${S.baseYear||2026} – ${yearNow()} · Retirado a los ${S.age} años`,`Career: ${S.baseYear||2026} – ${yearNow()} · Retired at ${S.age}`);
+  // 📅 en un reto, la pantalla final lleva su nombre (para que la trayectoria diga QUÉ jugaste)
+  const _chEnd=S.challenge&&CHALLENGES[S.challenge];
+  const _chTag=_chEnd?("📅 "+L(_chEnd.t[0],_chEnd.t[1])+" · "):"";
+  $("endYears").textContent=_chTag+L(`Carrera: ${S.baseYear||2026} – ${yearNow()} · Retirado a los ${S.age} años`,`Career: ${S.baseYear||2026} – ${yearNow()} · Retired at ${S.age}`);
   const shelf=[];
   for(let i=0;i<S.titles.f1;i++)shelf.push("🏆");
   for(let i=0;i<S.titles.constr;i++)shelf.push("🏎️");
@@ -5221,11 +5255,14 @@ function endCareer(){
     const cab=gano>=3 ? L("🥇 LO HAS HECHO MEJOR QUE ÉL","🥇 YOU DID BETTER THAN HIM")
              : gano+igual>=3 ? L("🤝 A SU ALTURA","🤝 YOU MATCHED HIM")
              : L("📉 ÉL LLEGÓ MÁS LEJOS","📉 HE WENT FURTHER");
-    const fila=(et,a,b)=>`<div class="hrow"><span class="nm">${et}</span><span class="tt">${a} · <b style="color:${a>b?'#4ade80':a<b?'#f87171':'#ffce3a'}">${b}</b></span></div>`;
+    // tabla de TRES columnas de verdad (etiqueta · él · tú): la versión anterior apelotonaba
+    // los números en una esquina y no se leía (lo cazó Carlos)
+    const rname=_CHend.benchName||L("Él","Him");
+    const fila=(et,a,b)=>`<div class="cmp-row"><span>${et}</span><span class="cmp-el">${a}</span><b style="color:${b>a?'#4ade80':b<a?'#f87171':'#ffce3a'}">${b}</b></div>`;
     $("endVerdict").innerHTML =
       `<div style="margin-bottom:12px">${verdict}</div>`+
       `<div class="hall" style="margin:0"><h4>${cab}</h4>`+
-      `<div class="hrow" style="opacity:.65;font-size:11px"><span class="nm">${L("Él de verdad","Him, for real")}</span><span class="tt">${L("· TÚ","· YOU")}</span></div>`+
+      `<div class="cmp-row cmp-head"><span></span><span>${rname.toUpperCase()}</span><span>${L("TÚ","YOU")}</span></div>`+
       fila(L("Mundiales","Titles"), B.titles, yo.titles)+
       fila(L("Victorias","Wins"), B.wins, yo.wins)+
       fila(L("Poles","Poles"), B.poles, yo.poles)+
