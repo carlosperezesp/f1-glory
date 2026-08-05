@@ -1558,6 +1558,75 @@ function toggleRetro(){
   if(open) track("retro_opened");
 }
 // 🚧 DÉCADAS EN PRUEBAS: jugables solo con ?preview=glory26 mientras se testean. El público las ve bloqueadas.
+/* ═══ 📅 RETOS — empiezas en la CASILLA DE SALIDA de un piloto real ═══
+   Se copia su punto de partida (año, equipo, edad, nivel, techo, nacionalidad y estilo), NO su
+   trayectoria: desde el primer semáforo el juego es el juego y la historia es alternativa.
+   · `drop`  → a quién hay que borrar de las llegadas y de la parrilla (ocupas SU sitio; si no,
+               saldrían dos). · `bench` → lo que hizo ÉL de verdad, para el veredicto final.
+   · El nombre del RANKING sigue siendo el tuyo: aquí heredas sus circunstancias, no su identidad. */
+const CHALLENGES = {
+  alonso01: {
+    id:"alonso01", era:"2000", year:2001, team:"Minardi", secret:true,
+    who:{ born:1981, age:19, ovr:74, ceil:95, flag:"🇪🇸", country:"España", style:"agresivo", num:"14" },
+    drop:["F. Alonso"],
+    t:["Eres Alonso","You are Alonso"],
+    sub:["Minardi · 2001 · 19 años","Minardi · 2001 · aged 19"],
+    d:["Diecinueve años, el peor coche de la parrilla y un asiento que nadie envidia. Nadie sabe todavía quién eres y nadie apuesta un duro por ti. Tienes su talento y su punto de partida: lo que hagas con ellos ya no es cosa suya.",
+       "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business."],
+    // palmarés REAL de Alonso, para el veredicto
+    bench:{ titles:2, wins:32, poles:22, podiums:106 },
+  },
+};
+let CHALLENGE = null;
+function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
+function startChallengeFlow(id){
+  if(!CHALLENGES[id]) return;
+  CHALLENGE = id; SELECTED_ERA = CHALLENGES[id].era;
+  track("challenge_selected", {challenge:id});
+  showIdentity();
+}
+/* prepara la partida de un reto: te sienta en SU asiento, en SU año, y borra al piloto real */
+function setupChallenge(CH){
+  const dY = CH.year - (ERAS[CH.era]||{}).baseYear || 0;
+  S.baseYear = CH.year; S.challenge = CH.id;
+  S.age = CH.who.age; S.startAge = CH.who.age; S.peakAge = CH.who.age;
+  S.ovr = CH.who.ovr; S.ceil = CH.who.ceil;
+  // 1) la parrilla envejece los años que van de la base de la era al año del reto
+  if(dY>0) S.dpool.forEach(d=>{ if(d && d.age!=null) d.age += dY; });
+  // 2) fuera el piloto real: su asiento es el tuyo (y que no llegue después por ARRIVALS)
+  (CH.drop||[]).forEach(n=>{
+    S.arrivals = (S.arrivals||[]).filter(a=>a.n!==n);
+    Object.values(S.seats).forEach(sl=>{ if(Array.isArray(sl)) sl.forEach((d,i)=>{ if(d&&d!=="PLAYER"&&d.name===n) sl[i]=mkRookie(false); }); });
+    S.dpool = S.dpool.filter(d=>!(d&&d.name===n));
+  });
+  // 3) los pasos de linaje y las entradas que ya habrían pasado antes de tu año no se pierden:
+  //    se recolocan al año del reto para que ocurran a partir de aquí, no en el pasado
+  (S.lineage||[]).forEach(c=>c.steps.forEach(st=>{ if(st.year<CH.year) st.year=CH.year+irnd(0,2); }));
+  (S.expansion||[]).forEach(e=>{ if(e.year!=null && e.year<CH.year) e.year=CH.year+irnd(0,2); });
+  // 4) a tu asiento de F1, sin pasar por el karting
+  const team=F1_TEAMS.find(t=>t.name===CH.team) || F1_TEAMS[F1_TEAMS.length-1];
+  S.cat="F1"; S.team=team; S.mySeatTeam=team.name;
+  occupySeat(team.name);
+  S.role=roleFor(team.name); S.roleTeam=team.name; S.roleMate=teammateOf(team.name).name;
+  S.yearsAtTeam=1;
+  $("identity").style.display="none"; $("career").style.display="block";
+  refreshCard();
+  setDecision("📅 "+L(CH.t[0],CH.t[1])+" · "+L(CH.sub[0],CH.sub[1]), L(CH.d[0],CH.d[1]));
+  $("decRecap").style.display="none";
+  $("offerList").innerHTML="";
+  const b=document.createElement("button"); b.className="offer";
+  b.innerHTML=`${badge(team.name, "dot", CH.year)}<span class="info"><span class="name">${L("Empezar la temporada","Start the season")} ${CH.year}</span><span class="sub">${team.name}</span></span>`;
+  b.onclick=()=>{ const dl=pickDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); };
+  $("offerList").appendChild(b);
+}
+function initSecretChallenges(){ if(!PREVIEW) return;
+  const card=document.getElementById("challengeCard"); if(!card) return;
+  card.classList.remove("soon"); card.classList.add("retro-on");
+  const sb=card.querySelector(".soon-badge"); if(sb) sb.remove();
+  card.onclick=()=>{ const g=document.getElementById("challengeGrid"); if(!g) return;
+    const open=g.style.display!=="none"; g.style.display=open?"none":"grid"; card.classList.toggle("open",!open); };
+  card.title="🔒 En pruebas — solo tú";
+}
 function initSecretDecades(){ if(!PREVIEW) return;
   [["dec2000","2000"]].forEach(([id,era])=>{
     const b=document.getElementById(id); if(!b || !ERAS[era]) return;
@@ -1602,7 +1671,14 @@ function validateIdentity(){
 
 /* ================= NÚCLEO ================= */
 // Vercel Web Analytics — evento personalizado (solo strings/números/booleanos; seguro si va no está)
-function track(name, data){ try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){} }
+/* 📊 ANALÍTICA — INTERRUPTOR GENERAL (apagado el 5-ago-2026).
+   Cada evento personalizado se FACTURA en Vercel: 1,39M eventos = 41,56 $, la mayor parte de la
+   factura del mes. Y `title_won` se dispara UNA VEZ POR TÍTULO, así que una carrera larga manda
+   quince o veinte eventos ella sola. Ya sabemos a qué juega la gente; volveremos a medir cuando
+   haya modos nuevos que valga la pena instrumentar.
+   👉 Para volver a medir: poner TRACK_ON en true. Las llamadas a track() siguen todas en su sitio. */
+const TRACK_ON = false;
+function track(name, data){ if(!TRACK_ON) return; try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){} }
 function startCareer(){
   sel.name = $("inName").value.trim().toUpperCase();
   sel.num = $("inNum").value;
@@ -1674,6 +1750,9 @@ function startCareer(){
   $("tagNum").textContent = "#"+sel.num;
   $("tagStyle").textContent = styleLabel(sel.style);
   S._t0 = Date.now(); // marca de inicio real (para el filtro anti-trampa de tiempo de juego)
+  // 📅 RETO: en vez del karting, arrancas directamente en el asiento del piloto real
+  const _CH = challengeNow();
+  if(_CH){ setupChallenge(_CH); return; }
   refreshCard();
   offerAcademies();
 }
@@ -4438,7 +4517,9 @@ function nextOffers(){
       setTimeout(endCareer,1500);
       return;
     }
-    if(!S.apxShown && S.age>=34 && ch(.35)){
+    // 🎬 el cameo de APXGP es de la PELÍCULA de 2025: no puede aparecer antes en las eras retro
+    // (en la era 2000 se colaba en 2018 con solo cumplir la edad).
+    if(!S.apxShown && S.age>=34 && yearNow()>=2025 && ch(.35)){
       S.apxShown=true;
       S.f1perf.APXGP=rnd(73,80); S.f1target.APXGP=S.f1perf.APXGP; S.f1char.APXGP=CHARS[irnd(0,2)];
       // sembramos APXGP como una escudería normal. Tu compañero es uno de los dos protagonistas
