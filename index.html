@@ -2191,11 +2191,20 @@ function roleFor(teamName){
   const formBonus = lp===1?9 : lp<=3?4 : lp<=6?1 : 0;
   const myRep = S.ovr + S.titles.f1*6 + formBonus;
   const earned = myRep >= (mate.skill||75) ? "1":"2";
+  // ¿te ganó tu compañero el campeonato el año pasado? Entonces el rol NO está blindado.
+  const ls = S.seasons.at(-1)||{};
+  const mismoCompa = ls.mateName===mate.name && ls.matePos!=null;
+  const mateCampeon = mismoCompa && ls.matePos===1 && (ls.pos??99)!==1;
+  const mateMeGano  = mismoCompa && (ls.pos??99) > ls.matePos;
   // rol pegajoso… salvo que te hayas ganado el ascenso a Nº1 (no te degrada por un mal año)
   if(S.cat==="F1" && S.roleTeam===teamName && S.roleMate===mate.name && S.role){
-    return (S.role==="2" && earned==="1") ? "1" : S.role;
+    if(S.role==="2" && earned==="1" && !mateCampeon) return "1";
+    // pero el blindaje del Nº1 se cae si te batió en el campeonato: ahí se recalcula de verdad
+    if(S.role==="1" && mateCampeon) return "2";
+    if(S.role==="1" && mateMeGano)  return earned;
+    return S.role;
   }
-  return earned;
+  return mateCampeon ? "2" : earned;
 }
 
 /* tendencia del coche (hacia dónde apunta el proyecto): flecha + color */
@@ -3108,11 +3117,13 @@ const DILEMAS=[
     return cabeza + L(` ${b.name} tiene el ${suyo}. Y su director se planta delante de ti con los planos del reglamento que entra dentro de dos años: llevan desde el primer día construyendo para ese coche y te juran que cuando llegue mandarán ellos. Nadie podrá comprobarlo hasta que se apaguen los semáforos, dos temporadas más tarde.`,
                       ` ${b.name} has the ${suyo}. And their boss sits down in front of you with the blueprints of the rulebook that lands in two years: they've been building for that car since day one, and they swear that when it arrives they'll be the ones in charge. Nobody can check it until the lights go out, two seasons later.`); },
   opts:[
-   {l:()=>L("Firmar por el proyecto 🎲","Sign for the project 🎲"),r:()=>{ const b=regBetTeam();
+   {l:()=>L("Firmar por ellos para el año que viene 🎲","Sign with them for next season 🎲"),r:()=>{ const b=regBetTeam();
      if(!b) return L("La operación se cae en el último momento y te quedas donde estás.","The deal collapses at the last minute and you stay put.");
      S.regBet=b.name; S.commitTeam=b.name; S.commitYears=2; VAL(.93);
-     return L(`Firmas por ${b.name} y medio paddock te llama loco. Dos temporadas comprometido y sin puerta de salida: te bajas de un coche que gana hoy para subirte a unos planos. Ahora toca esperar al reglamento. −fama`,
-              `You sign for ${b.name} and half the paddock calls you mad. Two seasons committed, no way out: you step off a car that wins today onto a set of blueprints. Now you wait for the new rules. −fame`); }},
+     // ⚠️ la firma es para la temporada SIGUIENTE: esta la terminas donde estás. Decirlo o el jugador
+     // cree que se cambia de mono a mitad de año (lo cazó Carlos: gana el Mundial y luego "firmas por X").
+     return L(`Firmas por ${b.name} A PARTIR DEL AÑO QUE VIENE: esta temporada la terminas donde estás. Medio paddock te llama loco. Dos temporadas comprometido y sin puerta de salida: te bajarás de un coche que gana hoy para subirte a unos planos. −fama`,
+              `You sign with ${b.name} FROM NEXT SEASON: you'll see out this year where you are. Half the paddock calls you mad. Two seasons committed, no way out: you'll step off a car that wins today onto a set of blueprints. −fame`); }},
    {l:()=>L("Quedarte y no tocar nada","Stay and change nothing"),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
      return L(`Les das las gracias y te quedas. Tienes un coche que gana AHORA; lo demás son planos y palabras bonitas. Ya se verá dentro de dos años quién tenía razón.`,
               `You thank them and stay. You have a car that wins NOW; the rest is blueprints and pretty words. In two years we'll see who was right.`); }},
@@ -3407,8 +3418,16 @@ function simSeason(){
       // ganaste el pulso de poder: el compañero se larga (no te degradamos a Nº2 bajo él)
       oustTeammate(row); S.oustMate=false;
     } else {
+      // 🥇 LOS RESULTADOS MANDAN SOBRE EL OVR: si tu compañero acaba de ser CAMPEÓN DEL MUNDO y tú no,
+      // ningún equipo te mantiene de Nº1 por encima de él. Antes solo se miraba el OVR, así que se daba
+      // el caso absurdo de un Nº2 campeón vigente con el Nº1 por delante en la jerarquía.
+      const mateCampeon = row.matePos===1 && row.mateName===mate.name && (row.pos??99)!==1;
       const gap=(S.ovr+S.titles.f1*2)-(mate.skill||75);
-      if(S.role==="2" && gap>4){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".")); }
+      if(mateCampeon && S.role==="1"){
+        S.role="2";
+        row.events.push(L("⬇️ "+surname(mate.name)+" se proclama campeón del mundo: el equipo le entrega el estatus de Nº1.","⬇️ "+surname(mate.name)+" is crowned world champion: the team hands him No.1 status."));
+      }
+      else if(S.role==="2" && gap>4 && !mateCampeon){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".")); }
       else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push(L("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1.","⬇️ "+surname(mate.name)+" takes the No.1 driver status from you.")); }
     }
   }
@@ -4066,6 +4085,10 @@ function simF1(row,st){
   // guardamos también EN QUÉ EQUIPO estaba cada uno: con los renombrados y las mariposas de una
   // partida larga, un nombre suelto no dice nada ("¿Coulthard en qué coche ganó ese año?")
   row.top3d=standings.slice(0,3).map(d=>({n:d.isP?L("TÚ","YOU"):surname(d.name), t:d.isP?myTeam:d.team}));
+  // 🥇 posición de TU COMPAÑERO en el campeonato. La jerarquía del año siguiente tiene que mirar
+  // RESULTADOS y no solo el OVR: un Nº2 que gana el Mundial no puede seguir siendo Nº2.
+  const _mIdx=standings.findIndex(d=>!d.isP && d.team===myTeam);
+  if(_mIdx>=0){ row.matePos=_mIdx+1; row.mateName=standings[_mIdx].name; }
   row.top3c=constrRank.slice(0,3).map(e=>e[0]);
   const {mvD,mvC}=trackRanks(standings.map(d=>d.isP?"__ME__":d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
