@@ -825,7 +825,14 @@ const COUNTRIES = [
   ["Reino Unido","🇬🇧"],["Rep. Dominicana","🇩🇴"],["Rumanía","🇷🇴"],["Rusia","🇷🇺"],["Senegal","🇸🇳"],
   ["Serbia","🇷🇸"],["Singapur","🇸🇬"],["Sudáfrica","🇿🇦"],["Suecia","🇸🇪"],["Suiza","🇨🇭"],
   ["Tailandia","🇹🇭"],["Taiwán","🇹🇼"],["Túnez","🇹🇳"],["Turquía","🇹🇷"],["Ucrania","🇺🇦"],
-  ["Uruguay","🇺🇾"],["Uzbekistán","🇺🇿"],["Venezuela","🇻🇪"],["Vietnam","🇻🇳"]
+  ["Uruguay","🇺🇾"],["Uzbekistán","🇺🇿"],["Venezuela","🇻🇪"],["Vietnam","🇻🇳"],
+  // ampliación ago-2026 (+28)
+  ["Afganistán","🇦🇫"],["Albania","🇦🇱"],["Andorra","🇦🇩"],["Bahréin","🇧🇭"],["Bangladés","🇧🇩"],
+  ["Barbados","🇧🇧"],["Haití","🇭🇹"],["Hong Kong","🇭🇰"],["Irak","🇮🇶"],["Jordania","🇯🇴"],
+  ["Kosovo","🇽🇰"],["Liechtenstein","🇱🇮"],["Macao","🇲🇴"],["Macedonia del Norte","🇲🇰"],["Moldavia","🇲🇩"],
+  ["Mongolia","🇲🇳"],["Mozambique","🇲🇿"],["Namibia","🇳🇦"],["Nepal","🇳🇵"],["Omán","🇴🇲"],
+  ["Ruanda","🇷🇼"],["San Marino","🇸🇲"],["Sri Lanka","🇱🇰"],["Tanzania","🇹🇿"],["Trinidad y Tobago","🇹🇹"],
+  ["Uganda","🇺🇬"],["Zambia","🇿🇲"],["Zimbabue","🇿🇼"]
 ].sort((a,b)=>a[0].localeCompare(b[0],"es"));
 
 // código de nacionalidad de 3 letras (estándar IOC/F1, igual en todos los idiomas),
@@ -841,7 +848,11 @@ const NAT_CODE={
   ME:"MNE",NI:"NCA",NG:"NGR",NO:"NOR",NZ:"NZL",NL:"NED",PK:"PAK",PA:"PAN",PY:"PAR",PE:"PER",
   PL:"POL",PT:"POR",PR:"PUR",GB:"GBR",DO:"DOM",RO:"ROU",RU:"RUS",SN:"SEN",RS:"SRB",SG:"SGP",
   ZA:"RSA",SE:"SWE",CH:"SUI",TH:"THA",TW:"TPE",TN:"TUN",TR:"TUR",UA:"UKR",UY:"URU",UZ:"UZB",
-  VE:"VEN",VN:"VIE"
+  VE:"VEN",VN:"VIE",
+  // ampliación ago-2026 (códigos IOC; Kosovo y Macao usan el de sus comités olímpicos)
+  AF:"AFG",AL:"ALB",AD:"AND",BH:"BRN",BD:"BAN",BB:"BAR",HT:"HAI",HK:"HKG",IQ:"IRQ",JO:"JOR",
+  XK:"KOS",LI:"LIE",MO:"MAC",MK:"MKD",MD:"MDA",MN:"MGL",MZ:"MOZ",NA:"NAM",NP:"NEP",OM:"OMA",
+  RW:"RWA",SM:"SMR",LK:"SRI",TZ:"TAN",TT:"TTO",UG:"UGA",ZM:"ZAM",ZW:"ZIM"
 };
 function isoFromFlag(flag){
   if(!flag) return "";
