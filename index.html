@@ -3981,9 +3981,18 @@ function maybeInjury(row){
   if(establecido){
     row.events.push(L("El equipo te guarda el asiento: te esperan para tu vuelta.","The team keeps your seat: they'll wait for your return."));
   } else {
-    S.forceMove=true;
-    row.events.push(L("⚠️ Sin galones, el equipo no te espera: pierdes el asiento y tocará pelear la vuelta.","⚠️ Without status, the team won't wait: you lose the seat and must fight your way back."));
+    // ⚠️ SIEMPRE por aquí al quitarle el asiento al jugador desde un EVENTO: así el motivo viaja a la
+    // pantalla de ofertas y no hay que buscarlo en el resumen del año (2ª vez que lo cazó Carlos).
+    perderAsiento(row,
+      "⚠️ Sin galones, el equipo no te espera: pierdes el asiento y tocará pelear la vuelta.",
+      "⚠️ Without status, the team won't wait: you lose the seat and must fight your way back.");
   }
+}
+/* pierdes el asiento por un suceso (no por un dilema): apunta el motivo Y lo narra, de una vez */
+function perderAsiento(row, es, en){
+  S.forceMove=true;
+  S.forceReasonTxt=[es.replace(/^[^\s]*\s/,""), en.replace(/^[^\s]*\s/,"")]; // sin el emoji inicial
+  if(row && row.events) row.events.push(L(es,en));
 }
 function simSeason(){
   const st=STYLES[sel.style];
