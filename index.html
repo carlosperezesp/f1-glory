@@ -3856,7 +3856,10 @@ function renderDilemma(dl, repintar){
       <span class="info"><span class="name">${typeof opt.l==="function"?opt.l():opt.l}</span></span>`;
     b.onclick=()=>{
       S._curDilemma=null;              // ya decidido: deja de repintarse al cambiar de idioma
+      const _fmAntes=!!S.forceMove;
       const txt=opt.r();
+      // si ESTA decisión te deja sin asiento, su desenlace es el motivo que verá la pantalla de ofertas
+      if(!_fmAntes && S.forceMove) S.forceReasonTxt=[txt,txt];
       S.pendingEvents.push("⚡ "+ttl+": "+txt);
       box.innerHTML="";
       setDecision("⚡ "+ttl, txt, false, true);
@@ -3957,7 +3960,7 @@ function simSeason(){
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
   beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
   maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
-  alphaClash(row); // 🐓 dos gallos no caben en el mismo corral
+  alphaClash(row); // 🥊 dos gallos no caben en el mismo corral
   // pico de carrera: mejor OVR alcanzado y a qué edad (define cuándo empieza tu declive)
   if(S.ovr > (S.peakOvr||0)){ S.peakOvr=S.ovr; S.peakAge=S.age; }
   // crecimiento con rendimientos decrecientes: cuanto más alto, más cuesta.
@@ -4209,7 +4212,7 @@ function processArrivals(row){
     }
   }
 }
-/* 🐓 DOS GALLOS NO CABEN EN EL MISMO CORRAL.
+/* 🥊 DOS GALLOS NO CABEN EN EL MISMO CORRAL.
    En la F1 real, cuando dos cracks comparten garaje la cosa dura poco: Hamilton y Alonso aguantaron
    UN año, Vettel se fue en cuanto Ricciardo empezó a ganarle, Hamilton y Rosberg explotaron en cuatro.
    Sin esta regla, dos pilotos de 95 podían compartir equipo una década repartiéndose los títulos. */
@@ -4293,15 +4296,20 @@ function alphaClash(row){
     // sales al mercado (como ya hacen otros dilemas). Con el motivo bien explicado.
     if(leaver==="PLAYER"){
       S.forceMove=true; S.alphaYears[tn]=0;
-      row.events.push(L(
-        modo==="peor"     ? `🐓 ${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
-      : modo==="mejor"    ? `🐓 Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
-      : modo==="veterano" ? `🐓 ${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
-                          : `🐓 ${tn} quiere el título YA y prefiere la veteranía de ${stayName}: tu asiento se acaba.`,
-        modo==="peor"     ? `🐓 ${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
-      : modo==="mejor"    ? `🐓 You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
-      : modo==="veterano" ? `🐓 ${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
-                          : `🐓 ${tn} wants the title NOW and prefers ${stayName}'s experience: your seat is gone.`));
+      const esTxt =
+        modo==="peor"     ? `${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
+      : modo==="mejor"    ? `Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
+      : modo==="veterano" ? `${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
+                          : `${tn} quiere el título YA y prefiere la veteranía de ${stayName}: tu asiento se acaba.`;
+      const enTxt =
+        modo==="peor"     ? `${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
+      : modo==="mejor"    ? `You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
+      : modo==="veterano" ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
+                          : `${tn} wants the title NOW and prefers ${stayName}'s experience: your seat is gone.`;
+      row.events.push(L("🥊 "+esTxt, "🥊 "+enTxt));
+      // el MOTIVO viaja a la pantalla de ofertas: «Tras la ruptura…» a secas no decía POR QUÉ estabas
+      // en la calle y había que ir a buscarlo a los eventos de la temporada (lo cazó Carlos)
+      S.forceReasonTxt=[esTxt, enTxt];
       return;
     }
     // destino: el mejor equipo que NO tenga ya su propia pareja de gallos (y nunca el filial de RB)
@@ -4323,14 +4331,14 @@ function alphaClash(row){
     // o «para acompañar a TÚ» no son español (lo cazó Carlos). Cada variante tiene su forma propia.
     const yo = stays==="PLAYER";
     row.events.push(L(
-      modo==="peor"     ? `🐓 ${tn} construye ${yo?"sobre ti":"sobre "+stayName} y deja marchar a ${va}, que ficha por ${dest.name}. ${vuelve} ocupa su asiento.`
-    : modo==="mejor"    ? `🐓 Bombazo: ${va} anuncia que se va a ${dest.name} buscando ser el número uno. ${vuelve} llega a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
-    : modo==="veterano" ? `🐓 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hace las maletas rumbo a ${dest.name} y llega ${vuelve}.`
-                        : `🐓 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marcha a ${dest.name} y entra ${vuelve}.`,
-      modo==="peor"     ? `🐓 ${tn} builds around ${yo?"you":stayName} and lets ${va} go: he signs for ${dest.name}. ${vuelve} takes the seat.`
-    : modo==="mejor"    ? `🐓 Bombshell: ${va} announces a move to ${dest.name} to be the undisputed No.1. ${vuelve} arrives at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
-    : modo==="veterano" ? `🐓 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} comes in.`
-                        : `🐓 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives.`));
+      modo==="peor"     ? `🥊 ${tn} construye ${yo?"sobre ti":"sobre "+stayName} y deja marchar a ${va}, que ficha por ${dest.name}. ${vuelve} ocupa su asiento.`
+    : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se va a ${dest.name} buscando ser el número uno. ${vuelve} llega a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
+    : modo==="veterano" ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hace las maletas rumbo a ${dest.name} y llega ${vuelve}.`
+                        : `🥊 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marcha a ${dest.name} y entra ${vuelve}.`,
+      modo==="peor"     ? `🥊 ${tn} builds around ${yo?"you":stayName} and lets ${va} go: he signs for ${dest.name}. ${vuelve} takes the seat.`
+    : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a move to ${dest.name} to be the undisputed No.1. ${vuelve} arrives at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
+    : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} comes in.`
+                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives.`));
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
@@ -5157,10 +5165,13 @@ function nextOffers(){
       // el motivo importa: si tu equipo QUEBRÓ no hubo «ruptura» — te quedaste sin trabajo (lo cazó Carlos)
       if(S.forceReason==="quiebra"){
         sub=(sub||"")+L(`${S.forceReasonTeam||"Tu equipo"} ha quebrado y desaparece de la F1: te quedas sin volante. Estas puertas siguen abiertas.`,`${S.forceReasonTeam||"Your team"} has gone bankrupt and leaves F1: you're out of a drive. These doors are still open.`);
+      } else if(S.forceReasonTxt){
+        // el porqué concreto (la ruptura de gallos, etc.) en vez del genérico «tras la ruptura»
+        sub=(sub||"")+L(S.forceReasonTxt[0],S.forceReasonTxt[1])+L(" Estas puertas siguen abiertas."," These doors are still open.");
       } else {
         sub=(sub||"")+L("Tras la ruptura, necesitas un volante nuevo. Estas puertas siguen abiertas.","After the split, you need a new seat. These doors are still open.");
       }
-      S.forceReason=null; S.forceReasonTeam=null;
+      S.forceReason=null; S.forceReasonTeam=null; S.forceReasonTxt=null;
       S.forceMove=false;
     } else {
       const others=pick(cands.filter(t=>t.name!==S.team.name),2);
