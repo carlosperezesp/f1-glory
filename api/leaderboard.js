@@ -30,14 +30,27 @@ function isoWeekKey(d) {
   return dt.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
 }
 
+const ERAS_OK = ["2000", "2010", "2020", "2026"];
+function scopeKey(scope) {
+  if (scope === "g") return "lb:global";
+  if (scope === "w") return "lb:w:" + isoWeekKey(new Date());
+  const m = /^e:(.+)$/.exec(scope);
+  if (m) return ERAS_OK.indexOf(m[1]) >= 0 ? "lb:era:" + m[1] : null;
+  const c = /^c:([a-z0-9]{3,16})$/.exec(scope);
+  if (c) return "lb:ch:" + c[1];
+  return null;
+}
+
 module.exports = async (req, res) => {
   if (!URL || !TOKEN) { res.status(500).json({ error: "KV no configurado" }); return; }
   try {
-    const scope = req.query.scope === "g" ? "g" : "w";
+    // Ámbitos: g = global histórica · w = semanal · e:<época> = por época · c:<reto> = por reto.
+    // Las claves se construyen SOLO desde listas blancas: nada del cliente llega crudo a Redis.
+    const scope = String(req.query.scope || "w");
+    const key = scopeKey(scope);
+    if (!key) { res.status(400).json({ error: "scope inválido" }); return; }
     const limit = Math.max(1, Math.min(500, parseInt(req.query.limit) || 100));
     const id = req.query.id ? String(req.query.id).slice(0, 64) : null;
-    const now = new Date();
-    const key = scope === "g" ? "lb:global" : "lb:w:" + isoWeekKey(now);
 
     const top = (await redis(["ZREVRANGE", key, 0, limit - 1, "WITHSCORES"])) || [];
     const rows = [], ids = [];

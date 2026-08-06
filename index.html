@@ -377,6 +377,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .rank-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;background:linear-gradient(135deg,#15151e,#2b0a08 130%);color:#fff}
 .rank-head h2{font-size:18px;margin:0}
 .rank-x{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer}
+.rank-tabs.sub{margin-top:-4px}
+.rank-tabs.sub button{font-size:11px;padding:5px 11px}
 .rank-tabs{display:flex;gap:8px;padding:12px 16px 4px}
 .rank-tabs button{flex:1;padding:9px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:11px;font-weight:800;font-size:13px;cursor:pointer}
 .rank-tabs button.on{background:var(--accent);color:#fff;border-color:transparent}
@@ -774,10 +776,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <h2>🏆 <span data-es="Ranking de leyendas" data-en="Legends ranking">Ranking de leyendas</span></h2>
       <button class="rank-x" onclick="closeRanking()">✕</button>
     </div>
-    <div class="rank-tabs" id="rankTabs">
-      <button class="on" data-s="w" onclick="loadRanking('w')" data-es="Semanal" data-en="Weekly">Semanal</button>
-      <button data-s="g" onclick="loadRanking('g')" data-es="Global" data-en="All-time">Global</button>
-    </div>
+    <div class="rank-tabs" id="rankTabs"></div>
+    <div class="rank-tabs sub" id="rankEras" style="display:none"></div>
     <div class="rank-me" id="rankMe"></div>
     <div class="rank-list" id="rankList"></div>
   </div>
@@ -5643,13 +5643,25 @@ function submitScore(){
     const score=gloriaScore();
     _myGloria=score;  // tu marca de ESTA carrera: la fila "TÚ" nunca mostrará menos que esto aunque la lectura llegue tarde
     // 💾 AHORRO: el servidor solo guarda tu MEJOR marca (ZADD GT), así que enviar una peor no cambia
-    // nada y solo gasta cuota. Nos saltamos el envío si no puede mejorar NI la global NI la de esta semana.
+    // nada y solo gasta cuota. Nos saltamos el envío si no puede mejorar NINGUNA de tus tablas.
+    // ⚠️ Desde que hay tablas por ÉPOCA y por RETO hay que mirarlas TAMBIÉN: una carrera que no mejora
+    // tu global puede ser perfectamente tu primera marca en el retro de 2000 o en un reto, y saltársela
+    // te dejaría fuera de esa tabla para siempre.
     let best={}; try{ best=JSON.parse(localStorage.getItem("f1g_best")||"{}"); }catch(e){}
     const wk=isoWeekNow();
+    const era=S.era||"2026", ch=S.challenge||null;
+    const kEra="e"+era, kCh=ch?("c"+ch):null;
     const gBest=best.g||0, wBest=(best.w===wk)?(best.wg||0):0;
-    if(score<=gBest && score<=wBest){ _rankSubmit=null; return Promise.resolve(null); }
-    try{ localStorage.setItem("f1g_best",JSON.stringify({g:Math.max(gBest,score), w:wk, wg:Math.max(wBest,score)})); }catch(e){}
+    const eBest=best[kEra]||0, cBest=kCh?(best[kCh]||0):0;
+    const mejora = score>gBest || score>wBest || (kCh ? score>cBest : score>eBest);
+    if(!mejora){ _rankSubmit=null; return Promise.resolve(null); }
+    try{
+      const nb={...best, g:Math.max(gBest,score), w:wk, wg:Math.max(wBest,score)};
+      if(kCh) nb[kCh]=Math.max(cBest,score); else nb[kEra]=Math.max(eBest,score);
+      localStorage.setItem("f1g_best",JSON.stringify(nb));
+    }catch(e){}
     const body={ id:f1gPid(), name:pName(), flag:sel.flag, country:sel.country,
+      era: S.era||"2026", ch: S.challenge||null,   // 🏆 para las tablas por época y por reto
       secs: S._t0 ? Math.round((Date.now()-S._t0)/1000) : 0,   // tiempo real jugando esta carrera
       ns: (S.seasons||[]).length,                              // nº total de temporadas (junior+F1)
       b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons } };
@@ -5657,11 +5669,19 @@ function submitScore(){
     return _rankSubmit;
   }catch(e){ return Promise.resolve(null); }
 }
-let rankScope="w", _rankSubmit=null, _myGloria=0;
+// por defecto se abre en la GLOBAL (la que tiene historia). El ámbito "w" (semanal) ya no tiene pestaña
+// propia: su relevo natural es la tabla del RETO de la semana, que es justa por construcción.
+let rankScope="g", _rankSubmit=null, _myGloria=0, _rankCache={};
 function openRanking(){
   $("rankModal").style.display="flex";
   $("rankMe").innerHTML=""; $("rankList").innerHTML=`<div class="rank-note">${L("Cargando…","Loading…")}</div>`;
   // espera a que termine el ENVÍO de esta carrera antes de leer, para no ver tu marca vieja por caché/carrera de datos
+  // tras terminar una carrera, se abre en la tabla que le corresponde: la del reto si jugabas un reto,
+  // si no la de su época — es donde el jugador quiere verse a sí mismo.
+  if(typeof S!=="undefined" && S){
+    if(S.challenge) rankScope="c:"+S.challenge;
+    else if(S.era) rankScope="e:"+S.era;
+  }
   const go=()=>loadRanking(rankScope);
   if(_rankSubmit){ Promise.race([_rankSubmit, new Promise(r=>setTimeout(r,2500))]).then(go); }
   else go();
@@ -5688,18 +5708,70 @@ function renderPatrons(){
   html+=`<div class="pt-empty">${L("Gracias por mantener esto en marcha. 🧡","Thanks for keeping this running. 🧡")}</div>`;
   el.innerHTML=html;
 }
+/* 🏆 PESTAÑAS DEL RANKING. Tres ámbitos:
+   · 🌍 Global — la tabla histórica de siempre. NO se toca: nadie pierde el puesto que ya tenía.
+   · 🕰️ Época — una tabla por era, y arrancan limpias. Hacen falta porque el retro puntúa 2-3× más que
+     el clásico (medido: mediana 245 en 2010 contra 90 en 2026), así que mezclarlo no era justo.
+   · 📅 Reto — una por reto; ahí todos juegan el MISMO escenario, así que es justa por construcción.
+   La de reto solo aparece cuando hay algún reto abierto. */
+function rankTabDefs(){
+  const t=[{s:"g", lab:L("🌍 Global","🌍 All-time")},
+           {s:"e", lab:L("🕰️ Por época","🕰️ By era")}];
+  const vivos=(typeof chLive==="function")?chLive():[];
+  if(vivos.length) t.push({s:"c:"+vivos[0].id, lab:L("📅 Reto","📅 Challenge")});
+  return t;
+}
+function renderRankTabs(scope){
+  const box=$("rankTabs"); if(!box) return;
+  box.innerHTML=rankTabDefs().map(t=>
+    `<button data-s="${t.s}" class="${(scope===t.s||(t.s==="e"&&scope.indexOf("e:")===0))?"on":""}">${t.lab}</button>`).join("");
+  [...box.querySelectorAll("button")].forEach(b=>b.onclick=()=>{
+    loadRanking(b.dataset.s==="e" ? "e:"+(S&&S.era||"2026") : b.dataset.s);
+  });
+  // sub-pestañas de época, solo cuando estás en «Por época»
+  const sub=$("rankEras"); if(!sub) return;
+  if(scope.indexOf("e:")===0){
+    sub.style.display="";
+    const eras=[["2026",L("Clásico","Classic")],["2000","2000"],["2010","2010"],["2020","2020"]];
+    sub.innerHTML=eras.map(([k,lab])=>`<button data-s="e:${k}" class="${scope==="e:"+k?"on":""}">${lab}</button>`).join("");
+    [...sub.querySelectorAll("button")].forEach(b=>b.onclick=()=>loadRanking(b.dataset.s));
+  } else sub.style.display="none";
+}
 function loadRanking(scope){
   rankScope=scope;
-  document.querySelectorAll("#rankTabs button").forEach(b=>b.classList.toggle("on", b.dataset.s===scope));
+  renderRankTabs(scope);
   $("rankMe").innerHTML=""; $("rankList").innerHTML=`<div class="rank-note">${L("Cargando…","Loading…")}</div>`;
   // ⚠️ SIN rompe-caché y SIN `id` en la URL: así la lista es idéntica para todos y el CDN la cachea UNA
   // vez para todo el mundo (con `id` cada jugador tenía su propia copia y casi nunca había acierto de
   // caché → todas las visitas iban a la base de datos, que fue lo que agotó la cuota el 4-ago-2026).
   // Tu puesto se pide aparte a /api/me, que es barato (2 comandos) y no se cachea.
+  // 💸 CACHÉ EN EL NAVEGADOR, 60 s por ámbito. Con varias pestañas es fácil ir y volver entre ellas, y
+  // sin esto cada clic serían 4 comandos de Redis (2 de la lista + 2 de /api/me, que NO se cachea en el
+  // CDN a propósito). Cambiar de pestaña dentro del minuto ya no cuesta ni una petición.
+  const cacheado=_rankCache[scope];
+  if(cacheado && Date.now()-cacheado.t < 60000){
+    if(cacheado.d && cacheado.d.rows && cacheado.d.rows.length) renderRankRows(cacheado.d.rows, (cacheado.m&&cacheado.m.me)||cacheado.d.me, false);
+    else renderLocal();
+    return;
+  }
+  // 💸 Y el ahorro que de verdad importa: /api/me NO se cachea en el CDN (es por jugador), así que son
+  // 2 comandos de Redis por pestaña y por persona. Pero si NO tienes marca local en ese ámbito es que
+  // nunca lo has jugado → no puedes estar en esa tabla, y la petición sobra. Con esto solo se pregunta
+  // por las tablas que el jugador ha tocado de verdad, normalmente una o dos de las seis.
+  const jugado=(()=>{ try{
+    const b=JSON.parse(localStorage.getItem("f1g_best")||"{}");
+    if(scope==="g") return (b.g||0)>0;
+    if(scope==="w") return (b.wg||0)>0;
+    const m=/^e:(.+)$/.exec(scope); if(m) return (b["e"+m[1]]||0)>0;
+    const c=/^c:(.+)$/.exec(scope); if(c) return (b["c"+c[1]]||0)>0;
+    return true;
+  }catch(e){ return true; } })();
   Promise.all([
     fetch("/api/leaderboard?scope="+scope+"&limit=100").then(r=>r.json()).catch(()=>null),
-    fetch("/api/me?scope="+scope+"&id="+encodeURIComponent(f1gPid())).then(r=>r.json()).catch(()=>null)
+    jugado ? fetch("/api/me?scope="+scope+"&id="+encodeURIComponent(f1gPid())).then(r=>r.json()).catch(()=>null)
+           : Promise.resolve(null)
   ]).then(([d,m])=>{
+    _rankCache[scope]={t:Date.now(), d, m};
     if(d && Array.isArray(d.rows) && d.rows.length) renderRankRows(d.rows, (m&&m.me)||d.me, false);
     else renderLocal();
   }).catch(()=>renderLocal());

@@ -99,16 +99,29 @@ module.exports = async (req, res) => {
     if (rl === 1) await redis(["EXPIRE", "rl:" + ip, 3600]);
     if (rl > 40) { res.status(429).json({ error: "demasiados envíos, prueba más tarde" }); return; }
 
+    // 🕰️ ÉPOCA y 📅 RETO en los que se jugó la carrera. Se miden en el servidor contra listas blancas:
+    // nada que llegue del cliente entra como clave de Redis sin filtrar.
+    const ERAS_OK = ["2000", "2010", "2020", "2026"];
+    const era = ERAS_OK.indexOf(String(body.era || "")) >= 0 ? String(body.era) : null;
+    const ch = /^[a-z0-9]{3,16}$/.test(String(body.ch || "")) ? String(body.ch) : null;
+
     const now = new Date();
     const wk = "lb:w:" + isoWeekKey(now);
     const GL = "lb:global";
-    const disp = JSON.stringify({ n: nm, f: fl, c: co, g: gloria, ts: Date.now() });
-    await pipe([
+    const disp = JSON.stringify({ n: nm, f: fl, c: co, g: gloria, ts: Date.now(), e: era || undefined });
+    // Tablas: la GLOBAL histórica no se toca (nadie pierde su puesto) y se añaden las de época y reto,
+    // que arrancan limpias. Todo en UN pipeline → sigue siendo un solo viaje a la base de datos.
+    const cmds = [
       ["ZADD", wk, "GT", gloria, id],
       ["ZADD", GL, "GT", gloria, id],
       ["EXPIRE", wk, 60 * 60 * 24 * 21], // la semanal se renueva; la global NO caduca
       ["SET", "pl:" + id, disp],         // display permanente (para el histórico global)
-    ]);
+    ];
+    // ⚖️ una carrera de RETO no entra en la tabla de su época: el escenario está fijado y no es
+    // comparable con una carrera libre. Va SOLO a la del reto (y a la global, como todas).
+    if (ch) cmds.push(["ZADD", "lb:ch:" + ch, "GT", gloria, id]);
+    else if (era) cmds.push(["ZADD", "lb:era:" + era, "GT", gloria, id]);
+    await pipe(cmds);
     // (antes se devolvía aquí el puesto con 2 ZREVRANK más; el cliente no los usaba y costaban
     //  2 comandos por envío → fuera. El puesto se ve al abrir el ranking.)
     res.status(200).json({ ok: true, gloria });

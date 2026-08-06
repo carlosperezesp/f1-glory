@@ -21,12 +21,25 @@ function isoWeekKey(d) {
   return dt.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
 }
 
+const ERAS_OK = ["2000", "2010", "2020", "2026"];
+function scopeKey(scope) {
+  if (scope === "g") return "lb:global";
+  if (scope === "w") return "lb:w:" + isoWeekKey(new Date());
+  const m = /^e:(.+)$/.exec(scope);
+  if (m) return ERAS_OK.indexOf(m[1]) >= 0 ? "lb:era:" + m[1] : null;
+  const c = /^c:([a-z0-9]{3,16})$/.exec(scope);
+  if (c) return "lb:ch:" + c[1];
+  return null;
+}
+
 module.exports = async (req, res) => {
   if (!URL || !TOKEN) { res.status(500).json({ error: "KV no configurado" }); return; }
   try {
     const id = req.query.id ? String(req.query.id).slice(0, 64) : null;
     if (!id) { res.status(400).json({ error: "falta id" }); return; }
-    const key = req.query.scope === "g" ? "lb:global" : "lb:w:" + isoWeekKey(new Date());
+    // mismos ámbitos que /api/leaderboard: g · w · e:<época> · c:<reto>
+    const key = scopeKey(String(req.query.scope || "w"));
+    if (!key) { res.status(400).json({ error: "scope inválido" }); return; }
     const r = await pipe([["ZREVRANK", key, id], ["ZSCORE", key, id]]);
     const rk = r[0] && r[0].result;
     res.setHeader("Cache-Control", "no-store");
