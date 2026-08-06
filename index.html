@@ -120,8 +120,11 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .id-grid{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:22px}
 /* en un RETO solo hay dos tarjetas: se centran y se estrechan para que no queden descolgadas */
 .id-grid.duo{grid-template-columns:minmax(0,340px) minmax(0,420px);justify-content:center}
+/* retos de REGLAS (La Bestia): son CUATRO tarjetas y con 3 columnas la última caía suelta y feo.
+   En 2×2 quedan equilibradas y centradas. */
+.id-grid.cuatro{grid-template-columns:repeat(2,minmax(0,420px));justify-content:center;align-items:start}
 #identity.challenge .actions{max-width:790px;margin-left:auto;margin-right:auto}
-@media(max-width:900px){.id-grid,.id-grid.duo{grid-template-columns:1fr}}
+@media(max-width:900px){.id-grid,.id-grid.duo,.id-grid.cuatro{grid-template-columns:1fr}}
 /* etiquetas fijas del reto: 2×2 en vez de una fila que se desborda */
 #chFixed{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 #chFixed .mini-badge{text-align:center}
@@ -1593,7 +1596,7 @@ const TEAM_LOGOS = {
   "Mercedes GP":"mercedes.png", // era 2010: mismo escudo que el Mercedes actual
   // 🕰️ escudos de las eras retro (2010/2020) y sus transformaciones de linaje
   "Renault":"renault.png","Force India":"ForceIndia.png","Toro Rosso":"ToroRosso.png","Sauber":"Sauber.png",
-  "Virgin":"virgin-new.png","Spyker":"Spyker.png","HRT":"HRTnew.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
+  "Virgin":"virgin-new.png","Spyker":"Spyker.png","HRT":"HRTnew.png","Campos Meta":"camposmeta.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
   "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png",
   // equipos de expansión retro/actual
   "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png",
@@ -1708,16 +1711,17 @@ function beastName(){ return L("La Bestia","The Beast"); }
 const TESTS = {
   quiebra: {
     t:["Quiebra de tu equipo","Your team goes bankrupt"],
-    d:["Te sienta en el peor equipo de la parrilla y programa su quiebra para el final de esta temporada. Juega el año y verás el aviso, la pantalla de mercado y la puerta de «esperar sin firmar».",
-       "Puts you in the worst team on the grid and schedules its collapse for the end of this season. Play the year and you'll see the warning, the market screen and the «wait» door."],
+    d:["Te sienta en un equipo modesto. Corre DOS temporadas normales y a la tercera llegará la quiebra: verás el aviso, la pantalla de mercado y la puerta de «esperar sin firmar».",
+       "Puts you in a modest team. Race TWO normal seasons and the collapse arrives in the third: you'll see the warning, the market screen and the «wait» door."],
     era:"2026",
     run(){
       const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]||0)-(S.f1perf[b.name]||0))
         .find(x=>!isRBJr(x.name) && S.seats[x.name]) || F1_TEAMS[0];
       S.age=26; S.startAge=26; S.ovr=84; S.peakAge=26; S.cat="F1"; S.f1Seasons=0;
       S.lineage=S.lineage||[];
+      // +2 años: da tiempo a coger el ritmo antes de que se hunda el barco (petición de Carlos)
       S.lineage.push({key:t.name, cur:t.name,
-        steps:[{die:true, year:yearNow(), go:true, done:false, warned:false}]});
+        steps:[{die:true, year:yearNow()+2, go:true, done:false, warned:false}]});
       return t;
     }
   },
@@ -1990,7 +1994,9 @@ function showIdentity(){
   $("cardCountry").style.display   = suplanta?"none":"block";
   $("cardStyle").style.display     = suplanta?"none":"block";
   // con dos tarjetas la rejilla de tres columnas deja todo descolgado a la izquierda
-  document.querySelector(".id-grid").classList.toggle("duo", suplanta);
+  const _g=document.querySelector(".id-grid");
+  _g.classList.toggle("duo", suplanta);        // 2 tarjetas: identidad + reto
+  _g.classList.toggle("cuatro", !!CH && !suplanta); // 4 tarjetas: + país y estilo → 2×2
   $("identity").classList.toggle("challenge", !!CH);
   if(CH){
     $("chTitle").textContent = "📅 "+challengeLabel(CH);
