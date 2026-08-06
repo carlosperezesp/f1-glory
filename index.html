@@ -2275,6 +2275,70 @@ function npcSeason(){
      3. Los huecos que queden se cubren con novatos (que por eso acaban abajo, como en la vida real),
         y quien se queda sin asiento se cae de la F1.
    Seguridad: al final SIEMPRE se rellena cualquier asiento vacío, así que no puede quedar un hueco. */
+/* 🆘 MERCADO DE RESCATE. Auditando el mercado salió que un PILOTAZO podía pudrirse años en un coche de
+   cola: Tsunoda 13 temporadas seguidas, Hamilton 10, y el Alonso de 90 que Carlos vio tres años en un
+   Minardi. Faltaba la vía más obvia del mercado real: que un equipo de ARRIBA vaya activamente a por un
+   talento desaprovechado, aunque tenga que echar a alguien. No es automático — a veces uno se queda
+   atascado de verdad (Hülkenberg existe) — pero deja de ser eterno. */
+function npcRescateTalento(row){
+  const perf = t => (S.f1perf[t] ?? 75);
+  const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
+  if(ord.length<6) return;
+  const cola=new Set(ord.slice(-3)), cabeza=ord.slice(0,4);
+  S.rotYears=S.rotYears||{};
+  const candidatos=[];
+  Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
+    sl.forEach((d,i)=>{
+      if(!d || d==="PLAYER") return;
+      if(!cola.has(tm) || (d.skill||0)<87){ S.rotYears[d.name]=0; return; }
+      S.rotYears[d.name]=(S.rotYears[d.name]||0)+1;
+      if(S.rotYears[d.name]>=2) candidatos.push({d,tm,i});
+    });
+  });
+  if(!candidatos.length) return;
+  candidatos.sort((a,b)=>(b.d.skill||0)-(a.d.skill||0));
+  const c=candidatos[0];
+  if(!ch(.55)) return;                       // no siempre: el rescate cuesta y a veces no llega
+  for(const tn of cabeza){
+    const sl=S.seats[tn]; if(!Array.isArray(sl)) continue;
+    if(isRBJr(tn) && ((c.d.age||0)>=32 || (c.d.titles||0)>0 || c.d.crossover)) continue;
+    if(!canLureStar(tn, c.d)) continue;      // el caché sigue mandando con los galácticos
+    let wi=-1, ws=999;
+    sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && !x.beast && (x.skill||0)<ws){ ws=x.skill||0; wi=i; } });
+    if(wi<0 || ws >= (c.d.skill||0)-2) continue;   // solo si de verdad es un salto de nivel
+    const sale=sl[wi];
+    sl[wi]=c.d; S.seats[c.tm][c.i]=sale;           // intercambio: la parrilla no cambia de tamaño
+    c.d.yrs=0; sale.yrs=0; S.rotYears[c.d.name]=0;
+    row.events.push(L(`🆘 ${tn} rescata a ${surname(c.d.name)} de ${c.tm}: demasiado talento para un coche así. ${surname(sale.name)} hace el camino inverso.`,
+                      `🆘 ${tn} rescues ${surname(c.d.name)} from ${c.tm}: too much talent for that car. ${surname(sale.name)} goes the other way.`));
+    return;
+  }
+}
+/* 🐲 LA BESTIA NO SE QUEDA EN UN COCHE MALO. El reto promete «estará ahí cada domingo, en uno de los
+   mejores coches», pero al medir salía en un coche de cola en 20 de cada 30 partidas: entonces tiene un
+   año horrible, sube 20 puestos al siguiente y el reto se desinfla (lo cazó Carlos viendo un ▲20).
+   Si su coche se cae del top-3, se muda al mejor sitio disponible. El monstruo tiene que ser un muro. */
+function beastKeepTop(row){
+  const bes=S.dpool && S.dpool.find(d=>d&&d.beast); if(!bes) return;
+  const perf=t=>(S.f1perf[t]??75);
+  const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
+  const suyo=Object.entries(S.seats).find(([t,sl])=>Array.isArray(sl)&&sl.includes(bes));
+  if(!suyo) return;
+  if(ord.indexOf(suyo[0])<3) return;                       // ya está entre los tres mejores
+  for(const tn of ord.slice(0,3)){
+    const sl=S.seats[tn]; if(!Array.isArray(sl)) continue;
+    if(isRBJr(tn)) continue;
+    let wi=-1, ws=999;
+    sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && !x.beast && (x.skill||0)<ws){ ws=x.skill||0; wi=i; } });
+    if(wi<0) continue;
+    const sale=sl[wi], i0=S.seats[suyo[0]].indexOf(bes);
+    sl[wi]=bes; S.seats[suyo[0]][i0]=sale;                 // intercambio: la parrilla no cambia
+    bes.yrs=0; sale.yrs=0;
+    row.events.push(L(`🐲 ${tn} ficha a ${bes.name}: nadie deja un talento así en un coche que no gana. ${surname(sale.name)} hace el camino inverso.`,
+                      `🐲 ${tn} signs ${bes.name}: nobody leaves that kind of talent in a car that can't win. ${surname(sale.name)} goes the other way.`));
+    return;
+  }
+}
 function npcMercadoOrdinario(){
   const perf = t => (S.f1perf[t] ?? 75);
   const bolsa=[], huecos=[];
@@ -3882,6 +3946,8 @@ function simSeason(){
   if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
   evolveF1();
   npcSeason();
+  npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
+  beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
   maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
   alphaClash(row); // 🐓 dos gallos no caben en el mismo corral
   // pico de carrera: mejor OVR alcanzado y a qué edad (define cuándo empieza tu declive)
