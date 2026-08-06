@@ -802,6 +802,14 @@ const PREVIEW = (function(){ try{
   if(p==="glory26"){ localStorage.setItem("f1g_preview","1"); return true; }
   return localStorage.getItem("f1g_preview")==="1";
 }catch(e){ return false; } })();
+/* 🧪 BANCO DE PRUEBAS DE ESCENARIOS (idea de Carlos: probar un dilema a base de repetir partidas es
+   carísimo — la quiebra sale en el 5% de las carreras). Con ?preview=glory26&test=<id> se arranca una
+   partida ya colocada donde ese escenario ocurre SÍ O SÍ. Solo con el preview activo; el público no lo ve.
+   Para añadir escenarios nuevos, basta con una entrada más en TESTS. */
+const TEST_MODE = (function(){ try{
+  const t=new URLSearchParams(location.search).get("test");
+  return (t && PREVIEW) ? t : null;
+}catch(e){ return null; } })();
 const L = (es,en)=> LANG==="en" ? en : es;
 function applyLang(){
   document.querySelectorAll("[data-es]").forEach(el=>{ el.innerHTML = (LANG==="en"&&el.dataset.en!=null)? el.dataset.en : el.dataset.es; });
@@ -1647,7 +1655,8 @@ function gpAt(yr){
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
-function startCareerFlow(era){ CHALLENGE=null; SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
+function startCareerFlow(era){ CHALLENGE=null;
+  if(TEST_MODE && TESTS[TEST_MODE] && TESTS[TEST_MODE].era) era=TESTS[TEST_MODE].era; SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
 // 🕰️ Modo Retro: la tarjeta despliega el selector de décadas (2010 y 2020 jugables; el resto, en camino)
 function toggleRetro(){
   const rc=document.getElementById("retroCard"), g=document.getElementById("decadeGrid");
@@ -1694,6 +1703,60 @@ const CHALLENGES = {
 };
 // el nombre del monstruo se fija AL CREARLO, en el idioma de la partida (como los eventos del historial)
 function beastName(){ return L("La Bestia","The Beast"); }
+/* 🧪 ESCENARIOS DE PRUEBA. Cada uno te coloca en la situación exacta y la dispara SÍ O SÍ, para poder
+   revisar textos y consecuencias sin jugar 300 partidas. Se abren con ?preview=glory26&test=<id>. */
+const TESTS = {
+  quiebra: {
+    t:["Quiebra de tu equipo","Your team goes bankrupt"],
+    d:["Te sienta en el peor equipo de la parrilla y programa su quiebra para el final de esta temporada. Juega el año y verás el aviso, la pantalla de mercado y la puerta de «esperar sin firmar».",
+       "Puts you in the worst team on the grid and schedules its collapse for the end of this season. Play the year and you'll see the warning, the market screen and the «wait» door."],
+    era:"2026",
+    run(){
+      const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]||0)-(S.f1perf[b.name]||0))
+        .find(x=>!isRBJr(x.name) && S.seats[x.name]) || F1_TEAMS[0];
+      S.age=26; S.startAge=26; S.ovr=84; S.peakAge=26; S.cat="F1"; S.f1Seasons=0;
+      S.lineage=S.lineage||[];
+      S.lineage.push({key:t.name, cur:t.name,
+        steps:[{die:true, year:yearNow(), go:true, done:false, warned:false}]});
+      return t;
+    }
+  },
+};
+function testNow(){ return TEST_MODE ? TESTS[TEST_MODE] : null; }
+/* arranca la partida de prueba: coloca al jugador y le da un botón para simular el año */
+function setupTest(T){
+  const t=T.run();
+  $("identity").style.display="none"; $("career").style.display="block";
+  S.cat="F1";
+  refreshCard();
+  setDecision("🧪 "+L(T.t[0],T.t[1]), L(T.d[0],T.d[1]));
+  $("decRecap").style.display="none";
+  renderOffers([{team:t, role:roleFor(t.name), note:L("Empezar la prueba","Start the test")}], false);
+}
+/* 🇪🇸 ¿Y SI CAMPOS NO HUBIERA VENDIDO? (historia alternativa, idea de Carlos)
+   En la realidad, Adrián Campos montó el proyecto «Campos Meta 1» para 2010 pero no llegó al inicio de
+   temporada: vendió a José Ramón Carabante y el equipo corrió como Hispania (HRT), que murió en 2012.
+   Si hubiera aguantado, habría sido el «Campos Meta F1 Team». Se sortea POR PARTIDA (45%), y cuando sale,
+   el equipo lleva su nombre y sus colores desde el minuto uno — mismos pilotos, mismo coche flojo.
+   Se renombra en TODOS los sitios donde vive el nombre: parrilla, asientos, linaje, entradas y llegadas. */
+function maybeCampos(){
+  const HAY = F1_TEAMS.some(t=>t.name==="HRT") || (S.expansion||[]).some(e=>e.team&&e.team.name==="HRT");
+  if(!HAY || !ch(.45)) return;
+  const NUEVO={name:"Campos Meta", abbr:"CAM", color:"#f2c500", color2:"#8a740f"};
+  const ren=t=>{ if(t && t.name==="HRT"){ t.name=NUEVO.name; t.abbr=NUEVO.abbr; t.color=NUEVO.color; t.color2=NUEVO.color2; } };
+  F1_TEAMS.forEach(ren);
+  if(S.seats && S.seats.HRT){ S.seats[NUEVO.name]=S.seats.HRT; delete S.seats.HRT; }
+  ["f1perf","f1target","f1char","cache"].forEach(k=>{ if(S[k] && S[k].HRT!=null){ S[k][NUEVO.name]=S[k].HRT; delete S[k].HRT; } });
+  (S.lineage||[]).forEach(c=>{ if(c.key==="HRT") c.key=NUEVO.name; if(c.cur==="HRT") c.cur=NUEVO.name;
+    (c.steps||[]).forEach(st=>{ if(st.to) ren(st.to); }); });
+  // ⚠️ S.expansion apunta a los datos COMPARTIDOS de la era: si renombro ahí dentro, el cambio se queda
+  // pegado para todas las partidas siguientes (medido: Campos salía el 72% en vez del 45%). Se clona la
+  // entrada afectada antes de tocarla.
+  if(S.expansion) S.expansion=S.expansion.map(e=>(e.team&&e.team.name==="HRT")?{...e, team:{...e.team}}:e);
+  (S.expansion||[]).forEach(e=>{ ren(e.team); });
+  (S.arrivals||[]).forEach(a=>{ if(a.pref==="HRT") a.pref=NUEVO.name; });
+  S.camposVive=true;
+}
 let CHALLENGE = null;
 function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
 // «Reto I · El Nano»: el número sale del orden en el registro, así los siguientes se numeran solos
@@ -1908,7 +1971,13 @@ function initSecretDecades(){ refreshReleases(); }
 // 🔒 barra fija inconfundible cuando el modo pruebas está activo: esto NO lo ve el público, y de aquí se sale con un clic
 function initPreviewBar(){ if(!PREVIEW) return;
   const b=document.createElement("div"); b.id="previewBar";
-  b.innerHTML=`🔒 ${L("Modo pruebas: esto solo lo ves TÚ","Preview mode: only YOU can see this")} · <a href="?preview=off">${L("salir","exit")}</a>`;
+  // 🧪 accesos directos a los escenarios de prueba, para no tener que recordar las URLs
+  const tests=Object.keys(TESTS).map(k=>
+    `<a href="?preview=glory26&test=${k}" title="${L(TESTS[k].d[0],TESTS[k].d[1])}">🧪 ${L(TESTS[k].t[0],TESTS[k].t[1])}</a>`).join(" · ");
+  b.innerHTML=(TEST_MODE?`🧪 ${L("PRUEBA","TEST")}: ${L(TESTS[TEST_MODE].t[0],TESTS[TEST_MODE].t[1])} · `:"")
+    +`🔒 ${L("Modo pruebas: esto solo lo ves TÚ","Preview mode: only YOU can see this")}`
+    +(tests?` · ${tests}`:"")
+    +` · <a href="?preview=off">${L("salir","exit")}</a>`;
   document.body.appendChild(b); }
 function showIdentity(){
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
@@ -2055,6 +2124,7 @@ function startCareer(){
       S.dpool.push(d); return d;
     });
   });
+  maybeCampos();   // 🇪🇸 ¿y si Adrián Campos no hubiera tenido que vender? (tras sembrar los asientos)
   // 💛💙 «GENERACIÓN DORADA» (raro, ~15%): los pilotos de TU nacionalidad reciben un empujón de por vida →
   // de vez en cuando ves a un compatriota (Sainz, Colapinto, Bortoleto…) pelear e incluso GANAR mundiales.
   // Raro a propósito: que sea un notición, no la norma. Aplica también a novatos/crossover de tu país (mkRookie).
@@ -2070,6 +2140,9 @@ function startCareer(){
   const _CH = challengeNow();
   if(_CH && _CH.who){ setupChallenge(_CH); return; }
   if(_CH) S.challenge=_CH.id;
+  // 🧪 escenario de prueba: coloca la situación exacta y salta el karting
+  const _T = testNow();
+  if(_T){ setupTest(_T); return; }
   refreshCard();
   offerAcademies();
 }
