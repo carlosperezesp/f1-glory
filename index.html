@@ -2013,6 +2013,7 @@ function startCareer(){
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
     regReg:ERA.baseYear+20+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
     regYear:null, regBet:null, regBetGrade:null, regBetRefused:null, regPrepared:null, commitTeam:null, commitYears:0,
+    esperaQuiebra:false,   // 🕰️ la apuesta de Button: una sola vez por partida
   };
   // 🧬 filial de época + plan de linaje sorteado POR PARTIDA (cada transformación: ¿ocurre? ¿qué año?)
   JUNIOR_OF = {...ERA.juniorOf};
@@ -4783,6 +4784,63 @@ function maybeEvent(row,st){
 /* ---------- mercado del jugador ---------- */
 /* ================= AVENTURAS (años sabáticos fuera de la F1) ================= */
 function pickN(arr,n){ const c=[...arr],out=[]; while(out.length<n&&c.length) out.push(c.splice(irnd(0,c.length-1),1)[0]); return out; }
+/* 🕰️ ESPERAR TRAS LA QUIEBRA — la decisión de Button en diciembre de 2008.
+   Su equipo (Honda) cerró; le ofrecieron un Toro Rosso: asiento seguro, coche malo. Dijo que no, esperó
+   meses sin ninguna garantía, en marzo Brawn compró el equipo por UNA LIBRA, él se bajó el sueldo… y
+   ganó el Mundial. Aquí es una puerta más en la pantalla de la quiebra: puedes no firmar nada y esperar.
+   Tres desenlaces, y el malo es MALO de verdad — si no, no sería una apuesta.                        */
+function esperarTrasQuiebraOption(exEquipo){
+  return { special:true, color:"#8a6a10", em:"⏳",
+    name:L("Esperar sin firmar nada","Wait and sign nothing"),
+    sub:L("Rechazas lo que hay y confías en que aparezca algo mejor. Sin garantías.",
+          "You turn down what's on the table and trust something better appears. No guarantees."),
+    onClick:()=>{
+      S.esperaQuiebra=true;
+      const libres=t=>!S.burned[t.name] && !S.neverHire[t.name] && rbOk(t) && !teamHasFeud(t.name);
+      const orden=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+      const r=Math.random();
+      // ── 1) EL MILAGRO (40%): alguien compra un equipo hundido y aparece con un cochazo ──
+      if(r<.40){
+        const cola=orden.slice(-4).filter(libres);
+        const t=cola[irnd(0,Math.max(0,cola.length-1))];
+        if(t){
+          const v=Math.round(rnd(88,92));
+          S.f1perf[t.name]=v; S.f1target[t.name]=v;
+          S.cache[t.name]=Math.max(S.cache[t.name]||50, 62);
+          S.pendingEvents.push(L(`🕰️ Tu apuesta sale REDONDA: unos inversores rescatan a ${t.name} y el coche que sale del túnel de viento es un misil. Y tú estabas libre.`,
+                                 `🕰️ Your gamble PAYS OFF: investors rescue ${t.name} and the car that comes out of the wind tunnel is a missile. And you were available.`));
+          setDecision(L("⏳ La espera valió la pena","⏳ The wait paid off"),
+            L(`Meses sin firmar, aguantando las llamadas de tu representante. Y entonces ${t.name} renace con dinero nuevo… y con un coche que nadie esperaba. Te quieren a ti.`,
+              `Months without signing, dodging your agent's calls. And then ${t.name} is reborn with new money… and a car nobody saw coming. And they want you.`), false, true);
+          renderOffers([{team:t, role:"1", note:L("El milagro","The miracle")}], false);
+          return;
+        }
+      }
+      // ── 2) TARDE Y REGULAR (35%): encuentras asiento, pero de los de siempre ──
+      if(r<.75){
+        const medios=orden.slice(Math.floor(orden.length/2)).filter(libres);
+        const tomar=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
+        const dos=tomar(medios.length?medios:orden.filter(libres),2);
+        if(dos.length){
+          S.pendingEvents.push(L("🕰️ La espera no trajo ningún milagro, pero encontraste asiento.","🕰️ The wait brought no miracle, but you found a seat."));
+          setDecision(L("⏳ Sin milagro, pero con volante","⏳ No miracle, but a seat"),
+            L("El invierno se hace largo y el milagro no llega. A última hora aparece algo: no es lo que soñabas, pero es la Fórmula 1.",
+              "Winter drags on and the miracle never comes. At the last minute something turns up: not what you dreamed of, but it's Formula 1."), false, true);
+          renderOffers(dos.map(t=>({team:t, role:roleFor(t.name)})), false);
+          return;
+        }
+      }
+      // ── 3) TE QUEDAS FUERA (25%): el mercado se cierra y solo hay banquillo ──
+      S.pendingEvents.push(L("🕰️ Esperaste demasiado: el mercado se cerró y te quedaste sin volante titular.",
+                             "🕰️ You waited too long: the market closed and you were left without a race seat."));
+      setDecision(L("⏳ Te quedaste fuera","⏳ You were left out"),
+        L("Los asientos se fueron llenando uno a uno mientras tú esperabas. Cuando quisiste reaccionar, no quedaba ninguno. Solo el simulador y los viernes.",
+          "The seats filled up one by one while you waited. By the time you reacted, there were none left. Just the simulator and Fridays."), false, true);
+      const tomar3=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
+      const test=tomar3(F1_TEAMS.filter(libres),3).map(t=>({team:{...t,cat:"TEST"}, note:L("Programa de pruebas","Test programme")}));
+      renderOffers(test, S.age>=31);
+    }};
+}
 function specialOfferBtn(o){
   const b=document.createElement("button"); b.className="offer";
   b.style.border="2px solid "+(o.color||"#888"); b.style.borderLeftWidth="6px";
@@ -5165,6 +5223,10 @@ function nextOffers(){
       // el motivo importa: si tu equipo QUEBRÓ no hubo «ruptura» — te quedaste sin trabajo (lo cazó Carlos)
       if(S.forceReason==="quiebra"){
         sub=(sub||"")+L(`${S.forceReasonTeam||"Tu equipo"} ha quebrado y desaparece de la F1: te quedas sin volante. Estas puertas siguen abiertas.`,`${S.forceReasonTeam||"Your team"} has gone bankrupt and leaves F1: you're out of a drive. These doors are still open.`);
+        // 🕰️ LA APUESTA DE BUTTON (Honda, diciembre de 2008): rechazó un asiento seguro pero malo,
+        //    esperó meses sin garantías, en marzo Brawn compró el equipo por una libra… y fue campeón.
+        //    Aquí las puertas de arriba son una opción MÁS: puedes no firmar ninguna y esperar.
+        if(!S.esperaQuiebra) o.push(esperarTrasQuiebraOption(S.forceReasonTeam));
       } else if(S.forceReasonTxt){
         // el porqué concreto (la ruptura de gallos, etc.) en vez del genérico «tras la ruptura»
         sub=(sub||"")+L(S.forceReasonTxt[0],S.forceReasonTxt[1])+L(" Estas puertas siguen abiertas."," These doors are still open.");
