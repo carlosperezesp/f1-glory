@@ -2275,6 +2275,12 @@ function npcSeason(){
      3. Los huecos que queden se cubren con novatos (que por eso acaban abajo, como en la vida real),
         y quien se queda sin asiento se cae de la F1.
    Seguridad: al final SIEMPRE se rellena cualquier asiento vacío, así que no puede quedar un hueco. */
+// 🔄 mandos de la rotación del mercado (no-renovaciones), calibrados A/B el 6-ago:
+// con los viejos (.02/.04/gracia 3) la parrilla cambiaba un ~15% al año (2,3 traspasos) frente al
+// 25-30% real. Con estos: 3,2 traspasos + 1,8 debuts ≈ 23%, manteniendo estancias largas (4,9% de 8+
+// años, los Massa/Button existen) y la diversidad de campeones. Si algún día se quiere MÁS movimiento,
+// el siguiente escalón medido fue base .13 → 3,5 traspasos, a costa de bajar las estancias largas a 3,9%.
+const ROT={ base:.09, porAno:.06, gracia:1, flojo:.20, tope:.5 };
 /* 🆘 MERCADO DE RESCATE. Auditando el mercado salió que un PILOTAZO podía pudrirse años en un coche de
    cola: Tsunoda 13 temporadas seguidas, Hamilton 10, y el Alonso de 90 que Carlos vio tres años en un
    Minardi. Faltaba la vía más obvia del mercado real: que un equipo de ARRIBA vaya activamente a por un
@@ -2351,7 +2357,9 @@ function npcMercadoOrdinario(){
       // ¿le renuevan? los 3 primeros años son tranquilos; luego pesa la antigüedad, y rendir por
       // debajo de lo que da el coche te pone en la calle antes
       const flojo=(d.skill||75) < perf(tm)-6;
-      const p=Math.min(.34, .02 + Math.max(0,d.yrs-3)*.04 + (flojo?.12:0));
+      // 🔄 ROTACIÓN calibrada como parámetros para poder medirla A/B: la parrilla real cambia un 25-30%
+      // al año y la nuestra iba al ~15% (2,2 traspasos/temporada). Base más alta, gracia de 2 años.
+      const p=Math.min(ROT.tope, ROT.base + Math.max(0,d.yrs-ROT.gracia)*ROT.porAno + (flojo?ROT.flojo:0));
       // a un galáctico en su prime NO lo echa su propio equipo (y con el caché activo, echarlo podía
       // hacerlo desaparecer de la F1 si ningún equipo con pedigrí tenía hueco ese año)
       if(!primeGalactico(d) && ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
