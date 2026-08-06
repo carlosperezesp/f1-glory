@@ -109,6 +109,8 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
    las décadas lejanas), solo que con la cuenta debajo. Sin dorado: llamaba demasiado la atención. */
 .decade-grid .dec .dec-sub{display:block;font-size:10px;font-weight:800;letter-spacing:.3px;opacity:.85;margin-top:1px;text-transform:uppercase;font-variant-numeric:tabular-nums}
 .decade-grid .dec.dec-count{opacity:1;background:#ff8168;border-color:#ff8168;color:#fff}
+/* 📚 archivo de retos: siguen jugables, pero en discreto para que destaque el actual */
+.decade-grid .dec.dec-arch{background:var(--panel2);border-color:var(--line);color:var(--ink);opacity:.8}
 .dec-note{grid-column:1/-1;text-align:center;font-size:11.5px;color:var(--muted);margin-top:3px}
 
 /* ---------- identity ---------- */
@@ -1667,8 +1669,22 @@ const CHALLENGES = {
     persona:"ALONSO",   // en el ranking y la tarjeta saldrás como ALONSO (TU APODO)
     // par [es,en]: L() aquí se resolvería al CARGAR la página, no al mostrarla
     bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:["El Alonso real","The real Alonso"],
+    at:"2026-08-17T10:00:00Z",
+  },
+  // 🐲 RETO II · LA BESTIA (idea de Carlos). Familia «reglas», no «revivir a alguien»: partida NORMAL
+  // desde el karting, pero el año que pisas la F1 debuta un piloto ficticio de OVR 99 que NO envejece,
+  // NO declina y NO se retira. Sin comparativa: el listón es cuántos Mundiales le arrancas.
+  bestia: {
+    id:"bestia", era:"2026", secret:true, rules:{ beast:true },
+    t:["La Bestia","The Beast"],
+    sub:["Un rival de 99 para toda tu carrera","A 99-rated rival for your whole career"],
+    d:["El año que pises la Fórmula 1, debutará contigo alguien que no debería existir: un piloto de 99 que no envejece, no baja y no se retira jamás. Estará ahí cada domingo de tu carrera, en uno de los mejores coches. No hay trucos ni atajos. ¿Cuántos Mundiales eres capaz de arrancarle?",
+       "The year you reach Formula 1, someone who shouldn't exist will debut alongside you: a 99-rated driver who never ages, never declines and never retires. He'll be there every Sunday of your career, in one of the best cars. No tricks, no shortcuts. How many titles can you tear away from him?"],
+    at:"2026-08-24T10:00:00Z",
   },
 };
+// el nombre del monstruo se fija AL CREARLO, en el idioma de la partida (como los eventos del historial)
+function beastName(){ return L("La Bestia","The Beast"); }
 let CHALLENGE = null;
 function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
 // «Reto I · El Nano»: el número sale del orden en el registro, así los siguientes se numeran solos
@@ -1752,14 +1768,32 @@ function initSecretChallenges(){
   card.classList.remove("soon"); card.classList.add("retro-on");
   card.title=relInfo("retos").live?"":"🔒 En pruebas — solo tú";
   grid.innerHTML=""; grid.style.gridTemplateColumns="1fr";  // los retos llevan texto: una columna
-  Object.values(CHALLENGES).forEach(c=>{
-    const b=document.createElement("button"); b.className="dec"; b.style.cssText="font-size:13px;line-height:1.35;padding:11px 14px";
+  const btn=(c,archivo)=>{
+    const b=document.createElement("button"); b.className="dec"+(archivo?" dec-arch":"");
+    b.style.cssText="font-size:13px;line-height:1.35;padding:11px 14px";
     b.innerHTML=`${challengeLabel(c)}<br><small style="opacity:.7;font-weight:600">${L(c.sub[0],c.sub[1])}</small>`;
     b.onclick=(ev)=>{ ev.stopPropagation(); startChallengeFlow(c.id); };
-    grid.appendChild(b);
-  });
+    return b;
+  };
+  // 📚 solo se ve EL ACTUAL; los anteriores quedan en un archivo plegado y se pueden seguir jugando
+  const vivos=chLive(), actual=vivos[0], viejos=vivos.slice(1);
+  if(actual) grid.appendChild(btn(actual,false));
+  if(viejos.length){
+    const arch=document.createElement("div"); arch.style.display="none";
+    viejos.forEach(c=>arch.appendChild(btn(c,true)));
+    const link=document.createElement("div"); link.className="dec-note";
+    link.style.cssText="cursor:pointer;text-decoration:underline;font-weight:700";
+    const pinta=()=>link.textContent = arch.style.display==="none"
+      ? L(`📚 Ver retos pasados (${viejos.length})`,`📚 See past challenges (${viejos.length})`)
+      : L("Ocultar retos pasados","Hide past challenges");
+    pinta();
+    link.onclick=(ev)=>{ ev.stopPropagation(); arch.style.display=arch.style.display==="none"?"grid":"none"; pinta(); };
+    grid.appendChild(link); grid.appendChild(arch);
+  }
+  const prox=chNext();
   const n=document.createElement("div"); n.className="dec-note";
-  n.textContent=L("Más retos en camino 🏗️","More challenges on the way 🏗️");
+  n.textContent = prox ? L(`Siguiente: ${challengeLabel(prox)} 🏗️`,`Next: ${challengeLabel(prox)} 🏗️`)
+                       : L("Más retos en camino 🏗️","More challenges on the way 🏗️");
   grid.appendChild(n);
   card.onclick=()=>{ const open=grid.style.display!=="none";
     grid.style.display=open?"none":"grid"; card.classList.toggle("open",!open); };
@@ -1772,8 +1806,22 @@ function initSecretChallenges(){
 // despiertos, que son el 28% y el 27%. Si se cambia la hora, revisar que siga cuadrando en ambos husos.
 const RELEASES = {
   dec2000: { at:"2026-08-10T10:00:00Z" },   // 🕰️ la década de 2000 en el modo retro
-  retos:   { at:"2026-08-17T10:00:00Z" },   // 📅 el modo Reto semanal
+  // 📅 el modo Reto semanal abre con el PRIMER reto: su fecha sale del propio registro CHALLENGES,
+  //    así añadir un reto nuevo no obliga a tocar esto (cada reto trae su `at`).
+  get retos(){ const f=Object.values(CHALLENGES).map(c=>c.at).filter(Boolean).sort();
+               return { at: f[0] || "2026-08-17T10:00:00Z" }; },
 };
+function chOpen(c){ return PREVIEW || !c.at || Date.parse(c.at)<=Date.now(); }
+/* retos ya abiertos, del más nuevo al más viejo. El primero es EL ACTUAL; los demás, el archivo. */
+function chLive(){
+  return Object.values(CHALLENGES).filter(chOpen)
+    .sort((a,b)=> (Date.parse(b.at||0)) - (Date.parse(a.at||0)));
+}
+/* el próximo por salir (para el escaparate de la tarjeta) */
+function chNext(){
+  return Object.values(CHALLENGES).filter(c=>c.at && Date.parse(c.at)>Date.now())
+    .sort((a,b)=>Date.parse(a.at)-Date.parse(b.at))[0] || null;
+}
 const NEW_DAYS = 14;                        // cuánto dura la pegatina de ¡NUEVO! tras salir
 function relInfo(key){
   const r=RELEASES[key]; if(!r) return {live:true, ms:0, dias:0};
@@ -1822,17 +1870,26 @@ function refreshReleases(){
     d.classList.toggle("dec-count", !!pie && !i.live);
     d.title = ok ? "" : L("Disponible el 10 de agosto a las 12:00","Available 10 August at 12:00 CEST");
   }
-  const b=paintBadge(document.getElementById("badgeReto"), "retos");
+  let b=paintBadge(document.getElementById("badgeReto"), "retos");
+  // ⚠️ el ¡NUEVO! del modo Reto NO puede caducar 14 días después del PRIMER reto: cada reto que entra
+  // es una novedad. Si el más reciente ya publicado es fresco, se vuelve a encender la pegatina.
+  const ult=chLive()[0], be=document.getElementById("badgeReto");
+  if(be && ult && ult.at && relInfo("retos").live){
+    const desde=Date.now()-Date.parse(ult.at);
+    if(desde>=0 && desde<NEW_DAYS*86400000){
+      be.style.display=""; be.className="new-badge"; be.textContent=L("¡Nuevo!","New!");
+    }
+  }
   // 🎬 ANTES de abrirse, la tarjeta del Reto ADELANTA cuál va a ser: «Reto semanal / Empieza con
   // Reto I · El Nano». Sin esto solo decía «un escenario nuevo cada semana» y no enganchaba a nadie.
+  // Y una vez abierto, la tarjeta anuncia EL RETO ACTUAL (no un genérico), que es lo que hay que jugar.
   const sub=document.getElementById("retoSub");
   if(sub){
-    const prox=Object.values(CHALLENGES)[0];
-    if(!relInfo("retos").live && prox){
-      sub.textContent=L(`Empieza con «${challengeLabel(prox)}»`,`Starts with «${challengeLabel(prox)}»`);
-    } else {
-      sub.textContent=L(sub.dataset.es, sub.dataset.en);
-    }
+    const abierto=relInfo("retos").live || PREVIEW;
+    const prox=chNext(), act=chLive()[0];
+    if(!abierto && prox) sub.textContent=L(`Empieza con «${challengeLabel(prox)}»`,`Starts with «${challengeLabel(prox)}»`);
+    else if(abierto && act) sub.textContent=L(`Ahora: ${challengeLabel(act)}`,`Now: ${challengeLabel(act)}`);
+    else sub.textContent=L(sub.dataset.es, sub.dataset.en);
   }
   // el cronómetro solo late si de verdad hay una cuenta atrás el mismo día
   if((a||b) && !_relTimer) _relTimer=setInterval(refreshReleases,1000);
@@ -1846,29 +1903,36 @@ function initPreviewBar(){ if(!PREVIEW) return;
   document.body.appendChild(b); }
 function showIdentity(){
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
-  // 📅 en un RETO no eliges país ni estilo: los heredas de él. Solo pones tu apellido (el del ranking).
+  // 📅 hay DOS clases de reto:
+  //   · los que REVIVEN a alguien (traen `who`) → heredas país, estilo, dorsal y edad: no eliges nada.
+  //   · los de REGLAS, como La Bestia → juegas siendo TÚ, así que los selectores siguen a la vista.
   const CH=challengeNow();
+  const suplanta = !!(CH && CH.who);
   $("cardChallenge").style.display = CH?"block":"none";
-  $("cardCountry").style.display   = CH?"none":"block";
-  $("cardStyle").style.display     = CH?"none":"block";
+  $("cardCountry").style.display   = suplanta?"none":"block";
+  $("cardStyle").style.display     = suplanta?"none":"block";
   // con dos tarjetas la rejilla de tres columnas deja todo descolgado a la izquierda
-  document.querySelector(".id-grid").classList.toggle("duo", !!CH);
+  document.querySelector(".id-grid").classList.toggle("duo", suplanta);
   $("identity").classList.toggle("challenge", !!CH);
   if(CH){
     $("chTitle").textContent = "📅 "+challengeLabel(CH);
     $("chDesc").textContent  = L(CH.d[0],CH.d[1]);
     const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:5px 9px">${x}</span>`;
-    const cEnt=COUNTRIES.find(c=>c[0]===CH.who.country);  // el país del chip, en el idioma activo
-    // orden 2×2: país + edad arriba, estilo + equipo abajo (petición de Carlos)
-    $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), L(CH.who.age+" años","aged "+CH.who.age),
-      styleLabel(CH.who.style), CH.team+" · "+CH.year].map(chip).join("");
-    sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
-    $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
+    if(suplanta){
+      const cEnt=COUNTRIES.find(c=>c[0]===CH.who.country);  // el país del chip, en el idioma activo
+      // orden 2×2: país + edad arriba, estilo + equipo abajo (petición de Carlos)
+      $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), L(CH.who.age+" años","aged "+CH.who.age),
+        styleLabel(CH.who.style), CH.team+" · "+CH.year].map(chip).join("");
+      sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
+      $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
+    } else {
+      $("chFixed").innerHTML = [L("Desde el karting","From karting"), L("Tú eliges quién eres","You choose who you are")].map(chip).join("");
+    }
     validateIdentity();
   }
   // el subtítulo miente en un reto: ahí no eliges ni bandera ni estilo, solo tu apellido
   const st=document.querySelector("#identity > p");
-  if(st) st.textContent = CH ? L("Solo eliges tu apellido: es el que llevarás al ranking. Lo demás lo pone él.",
+  if(st) st.textContent = suplanta ? L("Solo eliges tu apellido: es el que llevarás al ranking. Lo demás lo pone él.",
                                  "You only choose your surname: that's the one you take to the leaderboard. The rest is his.")
                             : L("Tu dorsal, tu bandera y tu forma de pilotar. El resto lo decide la pista.",
                                 "Your number, your flag and how you drive. The track decides the rest.");
@@ -1920,7 +1984,7 @@ function startCareer(){
   // 📅 RETO: heredas SUS circunstancias (país, estilo, dorsal), pero el APELLIDO sigue siendo el tuyo
   // — es el que va al ranking, y ahí compites como tú, no como él.
   const _chSel = challengeNow();
-  if(_chSel){ sel.country=_chSel.who.country; sel.flag=_chSel.who.flag; sel.style=_chSel.who.style; sel.num=_chSel.who.num; }
+  if(_chSel && _chSel.who){ sel.country=_chSel.who.country; sel.flag=_chSel.who.flag; sel.style=_chSel.who.style; sel.num=_chSel.who.num; }
   track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG, era: SELECTED_ERA});
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   const ERA = ERAS[SELECTED_ERA] || ERAS["2026"];  // 🕰️ era elegida: 2026 (actual) o retro 2010/2020
@@ -1990,9 +2054,12 @@ function startCareer(){
   $("tagNum").textContent = "#"+sel.num;
   $("tagStyle").textContent = styleLabel(sel.style);
   S._t0 = Date.now(); // marca de inicio real (para el filtro anti-trampa de tiempo de juego)
-  // 📅 RETO: en vez del karting, arrancas directamente en el asiento del piloto real
+  // 📅 RETO que revive a alguien: en vez del karting, arrancas directamente en su asiento.
+  //    Los retos de REGLAS (La Bestia) no tienen `who`: se juegan como una carrera normal desde el
+  //    karting, y su regla se aplica sola cuando toca (spawnBeast al llegar a la F1).
   const _CH = challengeNow();
-  if(_CH){ setupChallenge(_CH); return; }
+  if(_CH && _CH.who){ setupChallenge(_CH); return; }
+  if(_CH) S.challenge=_CH.id;
   refreshCard();
   offerAcademies();
 }
@@ -2134,6 +2201,8 @@ function npcSeason(){
       if(d==="PLAYER") return;
       // 🇪🇸 cameo de Alonso: alargó su carrera para tu debut → al terminar esa, su última temporada, se retira
       if(d.alonsoCameo){ slots[i]=mkRookie(isRB, teamName); return; }
+      // 🐲 la Bestia no envejece, no baja de nivel y no se retira: es el muro fijo de todo el reto
+      if(d.beast){ d.skill=99; d.ceil=99; return; }
       let g;
       if(d.age<=22) g=rnd(1,3);
       else if(d.age<=26) g=rnd(.3,1.6);
@@ -2205,6 +2274,7 @@ function npcMercadoOrdinario(){
       if(d===null || d===undefined){ huecos.push({tm,i}); return; }  // retirada de este año
       if(d==="PLAYER") return;
       d.yrs=(d.yrs||0)+1;
+      if(d.beast) return;   // 🐲 a la Bestia no la echa nadie: su asiento es suyo mientras quiera
       // ¿le renuevan? los 3 primeros años son tranquilos; luego pesa la antigüedad, y rendir por
       // debajo de lo que da el coche te pone en la calle antes
       const flojo=(d.skill||75) < perf(tm)-6;
@@ -2284,6 +2354,25 @@ function maybeComeback(row){
   S.comebackDone=true;
   row.events.push(L(`🔙 BOMBAZO: ${r.name} vuelve del retiro a los ${back.age} años y correrá con ${t.name}.`,
                     `🔙 SHOCK: ${r.name} comes out of retirement at ${back.age} and will race for ${t.name}.`));
+}
+/* 🐲 RETO II · LA BESTIA. Un piloto de 99 que debuta contigo y ya no se va nunca: no envejece, no baja
+   de nivel y no se retira. Entra en uno de los mejores coches (es un galáctico: el caché ya lo empuja
+   ahí solo) desplazando al más flojo. No toca nada más del motor — compite como cualquier NPC. */
+function spawnBeast(row){
+  const C=S.challenge&&CHALLENGES[S.challenge];
+  if(!C || !(C.rules&&C.rules.beast) || S.beastDone) return;
+  const cand=[...F1_TEAMS].filter(t=>!isRBJr(t.name) && S.seats[t.name])
+    .sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))
+    .filter(t=>(S.seats[t.name]||[]).some(d=>d&&d!=="PLAYER"));
+  if(!cand.length) return;
+  const t=cand[0], sl=S.seats[t.name];
+  let wi=-1, ws=999;
+  sl.forEach((d,i)=>{ if(d&&d!=="PLAYER"&&(d.skill||0)<ws){ ws=d.skill||0; wi=i; } });
+  if(wi<0) return;
+  const d={ name:beastName(), age:20, skill:99, ceil:99, titles:0, flag:"🐲", beast:true, gen:true, yrs:0 };
+  S.dpool.push(d); sl[wi]=d; S.beastDone=true;
+  row.events.push(L(`🐲 Debuta ${d.name}: 99 de nivel, en ${t.name}, el mismo año que tú. El paddock no había visto nada igual.`,
+                    `🐲 ${d.name} debuts: rated 99, at ${t.name}, the same year as you. The paddock has never seen anything like it.`));
 }
 function occupySeat(teamName){
   // BLINDADO: localiza TODOS los asientos con "PLAYER" (robusto ante duplicados o mySeatTeam desfasado)
@@ -3809,7 +3898,7 @@ function simSeason(){
 function evolveF1(){
   F1_TEAMS.forEach(t=>{
     // los proyectos cambian de rumbo pocas veces → eras que duran varios años.
-    // el nuevo objetivo se fija respecto al nivel actual, creando arcos sostenidos.
+    // (evolveF1) el nuevo objetivo se fija respecto al nivel actual, creando arcos sostenidos.
     if(Math.random()<.17) S.f1target[t.name]=Math.max(61,Math.min(95, S.f1perf[t.name]+rnd(-17,17)));
     const cur=S.f1perf[t.name], tgt=S.f1target[t.name];
     // deriva (0.28) y poco ruido (±1) → la parrilla se reordena y ningún coche domina eternamente
@@ -4422,6 +4511,7 @@ function simF1(row,st){
   if(S.f1Seasons===0){
     S.eraStartT={}; S.dpool.forEach(d=>{ if(d.name!=="TÚ") S.eraStartT[d.name]=d.titles; });
     track("reached_f1", {debut_age: S.age, pedigree: Math.round(juniorPedigree()), era: S.era||"2026"});
+    spawnBeast(row);   // 🐲 Reto II: el monstruo de 99 debuta EL MISMO AÑO que tú
     // la revolución técnica (efecto Brawn): ~70% de carreras, RELATIVA a tu debut (mitad de carrera,
     // con tiempo de aprovecharla) — antes caía en año absoluto tardío → salía siempre en tu última temporada
     S.regReg = ch(.7) ? yearNow() + irnd(5,10) : 9999;
