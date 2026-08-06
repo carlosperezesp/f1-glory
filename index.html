@@ -5537,7 +5537,15 @@ function renderTimeline(){
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
     // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
     const advR=r.advResult;
-    const posLab=r.cat==="ADV"?(advR?(advR.win?"🏆":(advR.champPos===1?"🥇 1º":advR.champPos+"º")):"—"):r.cat==="TEST"?reservePos(r):(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
+    // ⚠️ el 🏆 tiene que significar LO MISMO en todas partes: CAMPEÓN. Antes, en las aventuras marcaba
+    // «ganaste la carrera mítica» y el título de la serie salía como «1º» a secas, así que un campeón de
+    // Super Fórmula se veía peor que un ganador del Dakar (lo cazó Carlos). Ahora: 🏆 = campeón;
+    // 🥇 = ganaste la joya de la serie (Le Mans, Indy 500, Dakar…) sin ser campeón.
+    const advLab = !advR ? "—"
+      : advR.champPos===1 ? "🏆 1º"
+      : advR.win ? (advR.champPos?"🥇 "+advR.champPos+"º":"🥇")
+      : (advR.champPos?advR.champPos+"º":"—");
+    const posLab=r.cat==="ADV"?advLab:r.cat==="TEST"?reservePos(r):(r.pos!=null?(r.pos===1?"🏆 1º":r.pos+"º"):"—");
     const posCls=r.cat==="ADV"?(advR&&(advR.win||advR.champPos===1)?"p1":advR&&advR.champPos<=3?"top":"rest"):r.cat==="TEST"?"rest":posClass(r.pos);
     // cada campeón con el escudo del equipo con el que corrió ESE año (formato viejo = solo texto)
     const nameWithBadge=(x)=> (x && typeof x==="object")
@@ -5591,7 +5599,8 @@ function renderCareerMap(){
       if(isAdv){
         const ar=r.advResult||{}, sr=SERIES[ar.series]||{};
         const cls = (ar.win||ar.champPos===1)?"p1" : ar.champPos<=3?"top" : "rest";
-        const lab = ar.win?"🏆" : (ar.champPos?ar.champPos+"º":"—");
+        // mismo criterio que en la línea de tiempo: 🏆 campeón · 🥇 joya de la serie
+        const lab = ar.champPos===1 ? "🏆" : ar.win ? "🥇" : (ar.champPos?ar.champPos+"º":"—");
         return `<span class="cmcell ${cls}" title="${r.year} · ${ar.series?serName(ar.series, r.year):L("aventura","adventure")}${ar.win?" · ¡"+serMarquee(ar.series)+"!":""} · OVR ${r.ovr}">${lab}</span>`;
       }
       const cls=isTest?"rest":posClass(r.pos);
