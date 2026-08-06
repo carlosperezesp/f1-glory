@@ -1556,7 +1556,16 @@ const rnd = (a,b)=>a+Math.random()*(b-a);
 const irnd = (a,b)=>Math.floor(rnd(a,b+1));
 const ch = p=>Math.random()<p;
 const gauss = ()=> (Math.random()+Math.random()+Math.random()-1.5)*2;
-const surname = n=>n.replace(/^[A-ZÁÉÍÓÚÑ]\.\s*/,"");
+/* Normalmente basta el apellido («M. Schumacher» → «Schumacher»), pero hay SIETE apellidos que comparten
+   dos o tres pilotos en los datos del juego: sin la inicial no hay forma de saber de quién hablas
+   (lo cazó Carlos con los hermanos Schumacher). En esos, se conserva el nombre entero.
+   «Mick Schumacher» ya viene con nombre completo y la expresión no lo toca. */
+const AMBIG_SURNAMES = new Set(["Schumacher","Hill","Fittipaldi","Rossi","Senna","Verstappen","Monteiro"]);
+const surname = n=>{
+  if(!n) return n;
+  const base = n.replace(/^[A-ZÁÉÍÓÚÑ]\.\s*/,"");
+  return AMBIG_SURNAMES.has(base) ? n : base;
+};
 function fmtMoney(v){
   if(v>=1e6) return "€"+(v/1e6).toFixed(1).replace(".0","")+"M";
   return "€"+Math.round(v/1e3)+"K";
@@ -2536,8 +2545,34 @@ function pedigreeLabel(){
   if(S.titles.f4)p.push(L(`campeón de ${catName("F4")}`,`${catName("F4")} champion`));
   return p.slice(0,2).join(L(" y "," and "));
 }
+/* ⚠️ ¿QUIÉN SERÁ TU COMPAÑERO si fichas por este equipo? Al entrar, occupySeat desplaza al MÁS FLOJO,
+   pero teammateOf() devuelve el PRIMERO de la lista. Si el primero era el flojo, la oferta prometía un
+   compañero y al simular aparecía el otro (lo cazó Carlos: le ofrecían Glock y le salía Räikkönen, y con
+   él también cambiaba el rol de Nº1 a Nº2). Mismo criterio que occupySeat, así no pueden discrepar. */
+function mateIfJoin(teamName){
+  const sl=S.seats[teamName];
+  if(!Array.isArray(sl) || sl.length<2) return teammateOf(teamName);
+  if(sl.some(x=>x==="PLAYER")) return teammateOf(teamName);   // ya estás dentro: es una renovación
+  const a=sl[0], b=sl[1];
+  if(!a || !b) return teammateOf(teamName);
+  const wIdx=((a.skill||0)<=(b.skill||0))?0:1;                // occupySeat echa a este…
+  return sl[1-wIdx] || teammateOf(teamName);                  // …así que el que se queda es el otro
+}
+/* 🔢 SISTEMA DE PUNTOS DE LA ÉPOCA. El juego usaba SIEMPRE el actual (25-18-15…), y en el retro salían
+   marcadores imposibles: 319 puntos en la F3000 de 2005, cuando aquel año se daban 10 al ganador
+   (lo cazó Carlos). Estos son los repartos reales de la F1, que las categorías inferiores copiaban:
+     …-1990: 9-6-4-3-2-1   ·   1991-2002: 10-6-4-3-2-1
+     2003-2009: 10-8-6-5-4-3-2-1   ·   2010-: 25-18-15-12-10-8-6-4-2-1                              */
+function ptsTable(y){
+  const yr = y || yearNow();
+  if(yr>=2010) return [25,18,15,12,10,8,6,4,2,1];
+  if(yr>=2003) return [10,8,6,5,4,3,2,1];
+  if(yr>=1991) return [10,6,4,3,2,1];
+  return [9,6,4,3,2,1];
+}
+function ptsFor(pos, y){ const t=ptsTable(y); return (pos>=1 && pos<=t.length) ? t[pos-1] : 0; }
 function roleFor(teamName){
-  const mate=teammateOf(teamName);
+  const mate=mateIfJoin(teamName);
   const last=S.seasons.length?S.seasons.at(-1).pos:null;
   const lp=last==null?99:last;
   // ser campeón o venir en gran forma te da estatus de Nº1
@@ -2753,7 +2788,7 @@ function renderOffers(offers, withRetire){
     let roleChip="";
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.")}${o.role}</span>`;
     if(o.team.cat==="TEST") roleChip=`<span class="role rt">${L("PROBADOR","RESERVE")}</span>`;
-    const mate = o.team.cat==="F1"&&S.seats[o.team.name] ? ` · ${L("Compañero","Teammate")}: `+teammateOf(o.team.name).name : "";
+    const mate = o.team.cat==="F1"&&S.seats[o.team.name] ? ` · ${L("Compañero","Teammate")}: `+mateIfJoin(o.team.name).name : "";
     let trendLine="", carLine="", profileLine="";
     if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">${L("TENDENCIA","TREND")}: ${ti.a} ${ti.t}</span>`; }
     if(o.team.cat==="F1"){
@@ -2762,7 +2797,9 @@ function renderOffers(offers, withRetire){
       const fit = aff>0.8?`<span class="fit good">${L("✓ encaja con tu pilotaje","✓ suits your driving")}</span>`:aff<-0.5?`<span class="fit bad">${L("✗ choca con tu estilo","✗ clashes with your style")}</span>`:`<span class="fit neu">${L("neutral","neutral")}</span>`;
       carLine=`<span class="carline">${L("Coche","Car")} ${charLabel(c)} · ${fit}</span>`;
     }
-    if(o.profile) profileLine=`<span class="jprofile"><b>${o.profile}</b> · ${o.note}</span>`;
+    // ⚠️ o.note es un PAR [es,en]: interpolarlo directo imprimía los dos idiomas pegados con una coma
+    // («…en tierra de nadie,Good car: if you WIN titles…»). Lo cazó Carlos en las academias de karting.
+    if(o.profile) profileLine=`<span class="jprofile"><b>${o.profile}</b> · ${Array.isArray(o.note)?L(o.note[0],o.note[1]):o.note}</span>`;
     // note/profile aceptan par [es,en] para poder repintarse al cambiar de idioma
     const noteTxt = Array.isArray(o.note) ? L(o.note[0],o.note[1]) : o.note;
     const subNote = (noteTxt && !o.profile) ? " · "+noteTxt : "";
@@ -4072,6 +4109,10 @@ function processArrivals(row){
       .forEach(t=>{ if(!cands.includes(t.name)) cands.push(t.name); });
     for(const tn of cands){
       const slots=S.seats[tn]; if(!slots) continue;
+      // ⚠️ si ACABAS de firmar por este equipo, el debut no puede llevarse a tu compañero antes de que
+      // ruede una vuelta: la oferta te prometió correr con él (lo cazó Carlos con Antonelli en Mercedes).
+      // A partir de tu segundo año en el equipo, el mercado vuelve a poder moverlo con normalidad.
+      if(tn===(S.team&&S.team.name) && (S.yearsAtTeam||1)<=1) continue;
       const age=Math.max(17, yr-a.b);
       if(isRBJr(tn) && (age>=32 || (a.ti||0)>0)) continue; // el filial de RB no ficha veteranos/campeones
       let wi=-1, wsk=999;
@@ -4324,7 +4365,7 @@ function simTest(row,st){
       if(qAhead===0) poles++;
       const dnf = Math.random()<st.dnf;
       const pos = dnf?20 : 1+rivals.filter(x=>x>mine).length;
-      if(!dnf){ if(pos===1)wins++; if(pos<=3)pods++; pts+=pos<=10?[25,18,15,12,10,8,6,4,2,1][pos-1]:0; best=Math.min(best,pos); }
+      if(!dnf){ if(pos===1)wins++; if(pos<=3)pods++; pts+=ptsFor(pos); best=Math.min(best,pos); }
       S.gp++;
     }
     S.wins+=wins; S.podiums+=pods; S.poles+=poles; S.ptsF1+=pts;
@@ -4382,9 +4423,9 @@ function simJunior(row,st){
     if(!dnf){
       if(pos===1)wins++;
       if(pos<=3)pods++;
-      pts+=pos<=10?[25,18,15,12,10,8,6,4,2,1][pos-1]:0;
+      pts+=ptsFor(pos);
     }
-    scores.forEach((s,i)=>{const p=1+scores.filter(z=>z>s).length - (s>mine||dnf?0:1); if(p<=10) seasonScores[i].pts+=[25,18,15,12,10,8,6,4,2,1][p-1]||0;});
+    scores.forEach((s,i)=>{const p=1+scores.filter(z=>z>s).length - (s>mine||dnf?0:1); seasonScores[i].pts+=ptsFor(p);});
   }
   // los totales de la tarjeta son SOLO F1: karting/F3/F2 no suman aquí (se ven por temporada en la trayectoria)
   const beaten=seasonScores.filter(x=>x.pts>pts).length;
@@ -4464,7 +4505,7 @@ function simF1(row,st){
       S.gp++;
     }
     const alive=scores.filter(x=>!x.dnf).sort((a,b)=>b.s-a.s);
-    alive.forEach((x,i)=>{ if(i<10) x.d.pts+=[25,18,15,12,10,8,6,4,2,1][i]; });
+    alive.forEach((x,i)=>{ x.d.pts+=ptsFor(i+1); });
     const myAlive=alive.findIndex(x=>x.d.isP);
     if(myAlive>=0){
       const p=myAlive+1;
