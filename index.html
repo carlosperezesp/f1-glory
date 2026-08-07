@@ -1725,6 +1725,38 @@ const TESTS = {
       return t;
     }
   },
+  gomas: {
+    t:["Las gomas no perdonan","The tyres don't forgive"],
+    d:["Te sienta en un buen coche cuyo carácter CHOCA con tu pilotaje y con dos años de antigüedad, que es lo que pide el dilema. Empieza la temporada y saldrá.",
+       "Puts you in a good car whose character CLASHES with your driving, with two years at the team, which is what the dilemma needs. Start the season and it will fire."],
+    era:"2026",
+    run(){
+      const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))
+        .find(x=>!isRBJr(x.name) && S.seats[x.name]) || F1_TEAMS[0];
+      S.age=27; S.startAge=27; S.ovr=86; S.peakAge=27; S.cat="F1"; S.f1Seasons=3;
+      // el carácter del coche tiene que CHOCAR con tu estilo: se le pone el que peor encaja
+      const malo=CHARS.find(c=>((CAR_AFFINITY[c]||{})[sel.style]||0)<0) || CHARS[0];
+      S.f1char[t.name]=malo; S._testTeam=t.name;
+      return t;
+    },
+    after(){ S.yearsAtTeam=2; }
+    ,dilema:'gomas'
+  },
+  toque: {
+    t:["Toque con tu compañero","Collision with your teammate"],
+    d:["Te sienta de Nº1 en un top con un compañero de nivel. Empieza la temporada y saltará el toque, con sus tres salidas y sus consecuencias.",
+       "Puts you as No.1 at a top team with a solid teammate. Start the season and the collision fires, with its three routes and consequences."],
+    era:"2026",
+    run(){
+      const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))
+        .find(x=>!isRBJr(x.name) && S.seats[x.name]) || F1_TEAMS[0];
+      S.age=29; S.startAge=29; S.ovr=90; S.peakAge=29; S.cat="F1"; S.f1Seasons=6;
+      S.titles.f1=1;   // con un título: así se ve el efecto del palmarés en la probabilidad
+      return t;
+    },
+    after(){ S.yearsAtTeam=3; S.role="1"; }
+    ,dilema:'toqueMate'
+  },
 };
 function testNow(){ return TEST_MODE ? TESTS[TEST_MODE] : null; }
 /* arranca la partida de prueba: coloca al jugador y le da un botón para simular el año */
@@ -2089,6 +2121,9 @@ function startCareer(){
     regReg:ERA.baseYear+20+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
     regYear:null, regBet:null, regBetGrade:null, regBetRefused:null, regPrepared:null, commitTeam:null, commitYears:0,
     esperaQuiebra:false,   // 🕰️ la apuesta de Button: una sola vez por partida
+    roleLock:null,         // 🔒 galones quitados por disciplina: {team, until} — sin ascenso automático
+    oxido:0,               // 🛞 reinvención fallida: temporadas que quedan para recuperar el OVR perdido
+    oxidoTeam:null,
   };
   // 🧬 filial de época + plan de linaje sorteado POR PARTIDA (cada transformación: ¿ocurre? ¿qué año?)
   JUNIOR_OF = {...ERA.juniorOf};
@@ -2680,7 +2715,8 @@ function oustTeammate(row){
     row.events.push(L("💥 "+surname(mate.name)+", humillado, deja el equipo.","💥 "+surname(mate.name)+", humiliated, leaves the team."));
   }
   slots[mi]=mkRookie(isRBJr(teamName), teamName);
-  S.role="1"; S.roleTeam=teamName; S.roleMate=teammateOf(teamName).name;
+  // echar al compañero ES ganarte los galones: levanta también el castigo disciplinario
+  darGalones(); S.roleTeam=teamName; S.roleMate=teammateOf(teamName).name;
 }
 /* rol pegajoso: si sigues en el mismo equipo con el mismo compañero, NO cambia
    por ruido; solo se recalcula al fichar por otro equipo o si cambia el compañero */
@@ -2723,6 +2759,64 @@ function ptsTable(y){
   return [9,6,4,3,2,1];
 }
 function ptsFor(pos, y){ const t=ptsTable(y); return (pos>=1 && pos<=t.length) ? t[pos-1] : 0; }
+/* 🔒 GALONES QUITADOS POR DISCIPLINA. Si el equipo te degrada tras un incidente, no puede devolverte el
+   Nº1 al año siguiente solo porque tengas más OVR (lo cazó Carlos: «si me lo quitan en Red Bull, que
+   luego no venga Red Bull a ofrecérmelo»). Dura 3 temporadas EN ESE EQUIPO. Se recupera ganándotelo en
+   pista, no en el despacho. */
+function roleLocked(teamName){
+  const L0=S.roleLock;
+  return !!(L0 && L0.team===teamName && yearNow() < L0.until);
+}
+function lockRole(teamName, years){ S.roleLock={team:teamName, until:yearNow()+(years||3)}; }
+/* si te GANAS los galones (plantándote, o pasándole por encima en pista), el castigo se levanta: el
+   bloqueo solo impide el ascenso AUTOMÁTICO por tener más OVR, no que te los ganes tú. */
+function darGalones(){ S.role="1"; S.roleLock=null; }
+/* 👑 ¿QUÉ PROBABILIDAD HAY DE QUE TE QUITEN LOS GALONES? Depende de tu PESO en el equipo (matiz de
+   Carlos: «es difícil que a Schumacher le llevaran la contraria»). Nunca llega a cero a propósito,
+   porque el caso Alonso-McLaren 2007 existió: campeón vigente y el equipo no le respaldó.
+     Nº2 sin nada con un compañero mejor 30% · Nº1 sin títulos 17% · Nº1 con 1 título 11%
+     Nº1 multicampeón 5% (suelo)                                                                    */
+function pPerderGalones(){
+  const m=teammateOf(S.team.name)||{};
+  let p = .22 - .06*(S.titles.f1||0) - (S.role==="1" ? .05 : 0);
+  if((m.skill||0) > S.ovr) p += .08;
+  return Math.max(.05, Math.min(.35, p));
+}
+/* te bajan a Nº2 Y se bloquea el ascenso automático 3 años: si no, el mismo equipo te devolvía al año
+   siguiente lo que acababa de quitarte. Si eras alguien, el texto lo subraya. */
+function quitarGalones(prefijo){
+  const eraN1 = S.role==="1", tit = S.titles.f1||0;
+  S.role="2"; lockRole(S.team.name, 3);
+  const duro = eraN1 && tit>0;
+  const es = (prefijo||"") + (duro
+    ? "Ni tu palmarés te salva. Por primera vez desde que llegaste, el equipo te pone por detrás."
+    : "Pierdes el estatus de Nº1: a partir de ahora el equipo construye sobre él.");
+  const en = (prefijo||"") + (duro
+    ? "Not even your record saves you. For the first time since you arrived, the team puts you second."
+    : "You lose No.1 status: from now on the team builds around him.");
+  return L(es,en);
+}
+/* 🚪 el compañero que sale mal parado de la bronca pide salida… salvo que sea joven, que se traga el
+   sapo y se queda a aprender (matiz de Carlos). Se marcha al final de temporada, sin dilema aparte. */
+function echarMateTocado(){
+  const tn=S.team&&S.team.name, sl=tn&&S.seats[tn];
+  if(!Array.isArray(sl)) return "";
+  const i=sl.findIndex(d=>d&&d!=="PLAYER");
+  const m=i>=0?sl[i]:null;
+  if(!m) return "";
+  if((m.age||30)<24) return L(`${surname(m.name)}, con su edad, se traga el sapo y se queda a aprender.`,
+                              `${surname(m.name)}, at his age, swallows it and stays to learn.`);
+  const destinos=F1_TEAMS.filter(t=>t.name!==tn && !isRBJr(t.name) && Array.isArray(S.seats[t.name])
+    && S.seats[t.name].some(d=>d && d!=="PLAYER" && !d.beast && (d.skill||0) < (m.skill||0)));
+  if(!destinos.length) return "";
+  const d0=destinos[irnd(0,destinos.length-1)], ds=S.seats[d0.name];
+  let wi=-1, ws=999;
+  ds.forEach((x,k)=>{ if(x && x!=="PLAYER" && !x.beast && (x.skill||0)<ws){ ws=x.skill||0; wi=k; } });
+  if(wi<0) return "";
+  const vuelve=ds[wi]; ds[wi]=m; sl[i]=vuelve; m.yrs=0; vuelve.yrs=0;
+  return L(`${surname(m.name)} no aguanta el ambiente y se marcha a ${d0.name}; llega ${surname(vuelve.name)}.`,
+           `${surname(m.name)} can't stand the atmosphere and leaves for ${d0.name}; ${surname(vuelve.name)} arrives.`);
+}
 function roleFor(teamName){
   const mate=mateIfJoin(teamName);
   const last=S.seasons.length?S.seasons.at(-1).pos:null;
@@ -2744,7 +2838,7 @@ function roleFor(teamName){
   const mateMeGano  = mismoCompa && (ls.pos??99) > ls.matePos;
   // rol pegajoso… salvo que te hayas ganado el ascenso a Nº1 (no te degrada por un mal año)
   if(S.cat==="F1" && S.roleTeam===teamName && S.roleMate===mate.name && S.role){
-    if(S.role==="2" && earned==="1" && !mateCampeon) return "1";
+    if(S.role==="2" && earned==="1" && !mateCampeon && !roleLocked(teamName)) return "1";
     // pero el blindaje del Nº1 se cae si te batió en el campeonato: ahí se recalcula de verdad
     if(S.role==="1" && mateCampeon) return "2";
     if(S.role==="1" && mateMeGano)  return earned;
@@ -3015,6 +3109,10 @@ function signContract(o){
     S.roleTeam=o.team.name; S.roleMate=mateName;
   } else { S.role=null; S.roleTeam=null; S.roleMate=null; }
   refreshCard();
+  // 🧪 los escenarios de prueba ajustan aquí lo que chooseOffer acaba de reiniciar (años en el equipo,
+  //    rol…), justo antes de que se elija el dilema
+  const _T=testNow();
+  if(_T && _T.after && !S._testAfter){ S._testAfter=true; try{ _T.after(); }catch(e){} }
   const dl=pickDilemma();
   if(dl) renderDilemma(dl);
   else startSeasonRun();
@@ -3225,7 +3323,7 @@ const DILEMAS=[
      [3,()=>(OVR(1),L("Frescura absoluta el domingo. +1 OVR","Completely fresh on Sunday. +1 OVR"))],
      [2,()=>(VAL(.95),L("En redes te llaman soso. Fama -5%","They call you dull online. Fame -5%"))])}]},
  {id:"jerarquia",stage:"f1",t:()=>L("Guerra por el Nº1","Fight for No.1"),d:()=>L("Tu compañero exige al equipo ser el piloto Nº1. Los ingenieros esperan tu reacción.","Your teammate demands to be No.1 driver. The engineers await your reaction."),opts:[
-   {l:()=>L("Plantarte: «el Nº1 soy yo»","Stand firm: «I'm the No.1»"),r:()=>ch(.5)?(S.role="1",S.oustMate=true,L("El equipo te respalda como Nº1. Tu compañero, humillado, no lo acepta y hará las maletas.","The team backs you as No.1. Your teammate, humiliated, won't accept it and will pack his bags.")):(CAR(-1),L("La guerra interna pasa factura al desarrollo. -1 coche","The internal war takes its toll on development. -1 car"))},
+   {l:()=>L("Plantarte: «el Nº1 soy yo»","Stand firm: «I'm the No.1»"),r:()=>ch(.5)?(darGalones(),S.oustMate=true,L("El equipo te respalda como Nº1. Tu compañero, humillado, no lo acepta y hará las maletas.","The team backs you as No.1. Your teammate, humiliated, won't accept it and will pack his bags.")):(CAR(-1),L("La guerra interna pasa factura al desarrollo. -1 coche","The internal war takes its toll on development. -1 car"))},
    {l:()=>L("Ceder el estatus","Concede the status"),r:()=>{S.role="2";return ch(.6)?(VAL(1.1),L("Juegas en equipo y tu fama crece. +10% fama","You play as a team and your fame grows. +10% fame")):(OVR(-1),L("Ver sus piezas nuevas cada carrera te quema. -1 OVR","Watching his new parts every race eats at you. -1 OVR"));}}]},
  {id:"novato",stage:"vet",t:()=>L("El novato prodigio","The wonderkid rookie"),d:()=>L("Tu nuevo compañero tiene 19 años, es rapidísimo y quiere tu corona. El equipo os deja pelear.","Your new teammate is 19, blindingly fast and wants your crown. The team lets you fight it out."),opts:[
    {l:()=>L("Ser su mentor","Be his mentor"),r:()=>roll(
@@ -3310,7 +3408,7 @@ const DILEMAS=[
    {l:()=>L("No ceder ni un milímetro","Don't give an inch"),r:()=>roll(
      [4,()=>(OVR(1),L("Le ganas la partida psicológica. Eres el gallo del gallinero. +1 OVR","You win the mind games. You're the top dog. +1 OVR"))],
      [3,()=>(CAR(-1),L("Otro toque: el equipo os castiga a los dos. -1 coche","Another clash: the team punishes you both. -1 car"))],
-     [3,()=>(S.role="1",L("El equipo se cansa de él y te nombra líder.","The team tires of him and names you the leader."))])},
+     [3,()=>(darGalones(),L("El equipo se cansa de él y te nombra líder.","The team tires of him and names you the leader."))])},
    {l:()=>L("Rebajar la tensión","Ease the tension"),r:()=>roll(
      [4,()=>(VAL(1.1),CAR(.5),L("El equipo rema unido de nuevo. +fama, +0.5 coche","The team pulls together again. +fame, +0.5 car"))],
      [3,()=>L("Frágil paz técnica. Sin cambios.","A fragile technical peace. No change.")],
@@ -3388,7 +3486,7 @@ const DILEMAS=[
  {id:"cuentas",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&(S.yearsAtTeam||1)>=3,t:()=>L("Cuentas pendientes","Unfinished business"),
   d:()=>{const m=teammateOf(S.team.name);return L(`Llevas años picándote con ${surname(m.name)} en el mismo garaje. El equipo os deja claro: quien acabe por delante manda la próxima temporada. Se decide en la pista.`,`Years of needling ${surname(m.name)} in the same garage. The team is clear: whoever finishes ahead calls the shots next season. Settle it on track.`);},opts:[
    {l:()=>L("Guerra abierta","All-out war"),r:()=>roll(
-     [4,()=>(OVR(1),S.role="1",L("Le pasas por encima toda la temporada. Nº1 indiscutible. +1 OVR","You dominate him all season. Undisputed No.1. +1 OVR"))],
+     [4,()=>(OVR(1),darGalones(),L("Le pasas por encima toda la temporada. Nº1 indiscutible. +1 OVR","You dominate him all season. Undisputed No.1. +1 OVR"))],
      [3,()=>L("Os matáis, pero acabáis empatados. La guerra sigue.","You go at it, but finish level. The war continues.")],
      [3,()=>(OVR(-1),S.role="2",L("Él saca lo mejor de sí y te gana el pulso. −1 OVR","He raises his game and beats you. −1 OVR"))])},
    {l:()=>L("Bajar el pistón, foco en el título","Ease off, focus on the title"),r:()=>roll(
@@ -3776,6 +3874,72 @@ const DILEMAS=[
      S.neverHire[old]=true; S.forceMove=true; VAL(.92);
      return L(`Te vas un año antes de que acabe tu contrato. ${old} te cierra la puerta para siempre y en la prensa te llaman desertor, pero no piensas quemar tus mejores años peleándote con un coche que no es el tuyo. −fama`,
               `You leave a year before your contract ends. ${old} shuts the door on you forever and the press calls you a deserter, but you won't burn your best years fighting a car that isn't yours. −fame`); }}]},
+
+ // 🛞 LAS GOMAS NO PERDONAN (Button, 2011-12): su pilotaje suave era oro con unos Pirelli y veneno con
+ // otros. NO es «El reglamento que te hunde» (aquello lo dispara la revolución técnica): aquí no hay
+ // cambio de reglas, es que el compuesto nuevo deja tu estilo obsoleto. Se excluyen por condición.
+ {id:"gomas",stage:"f1",
+  cond:()=>S.cat==="F1" && S.team && !S.regDone && (S.yearsAtTeam||1)>=2 && S.age>=22
+       && S.f1char[S.team.name] && S.f1char[S.team.name]!==sel.style && carAffinity(S.team.name)<0,
+  t:()=>L("Las gomas no perdonan","The tyres don't forgive"),
+  d:()=>{ const m=teammateOf(S.team.name);
+    const rival = m&&m.name ? L(`${surname(m.name)} le ha encontrado el truco en dos carreras.`,`${surname(m.name)} cracked it in two races.`) : "";
+    return L(`Llega un compuesto nuevo y el mundo se ha puesto del revés. Tu forma de pilotar, la que te trajo hasta aquí, ya no calienta el tren delantero: el coche se te va largo en cada entrada y pierdes tres décimas por vuelta que no aparecen en ningún dato. ${rival} Los ingenieros esperan que decidas por dónde vais a tirar.`,
+             `A new compound arrives and the world is upside down. The way you drive, the one that brought you here, no longer gets heat into the front axle: the car washes out on every entry and you're losing three tenths a lap that show up in no data. ${rival} The engineers are waiting for you to decide which way to go.`); },
+  opts:[
+   {l:()=>{ const c=S.f1char[S.team.name]; return L("Cambiar mi forma de pilotar: "+styleLabel(c),"Change how I drive: "+styleLabel(c)); },
+    r:()=>{ const c=S.f1char[S.team.name];
+      if(!c || c===sel.style) return L("Lo intentas, pero resulta que ya pilotas como pide el coche.","You try, but it turns out you already drive the way the car wants.");
+      sel.style=c; S.reinvented=true; try{ $("tagStyle").textContent=STYLES[c].label; }catch(e){}
+      if(ch(probReinvencion())){ OVR(2);
+        return L(`Te encierras en el simulador y sales siendo otro piloto. Dominas el estilo ${styleLabel(c)} y el coche por fin te obedece. +2 OVR`,
+                 `You lock yourself in the simulator and come out a different driver. You master the ${styleLabel(c)} style and the car finally obeys. +2 OVR`); }
+      OVR(-2); S.oxido=2; S.oxidoTeam=S.team.name;
+      return L(`Cambias de piel, pero tus automatismos se rebelan: frenas donde ya no toca y el cronómetro lo nota. −2 OVR. Tendrás un par de temporadas para recuperarlo.`,
+               `You shed your skin, but your instincts rebel: you brake where you no longer should and the stopwatch notices. −2 OVR. You'll have a couple of seasons to win it back.`); }},
+   {l:()=>L("Que el coche venga a mí","Make the car come to me"),r:()=>{ const t=S.team.name;
+     return ch(.55)
+      ? (S.f1target[t]=Math.min(93,(S.f1target[t]??S.f1perf[t])+rnd(5,9)), CAR(-1),
+         L("Los ingenieros aparcan el desarrollo y rehacen frenos y reglaje a tu medida. Este año lo vas a pagar, pero el coche MEJORARÁ: cuando termine la obra, será tuyo. −1 coche ahora 📈",
+           "The engineers park development and rebuild brakes and setup around you. You'll pay for it this year, but the car WILL improve: when the work is done, it'll be yours. −1 car now 📈"))
+      : (CAR(-1),
+         L("Se pasan el año probando materiales de freno sin encontrar la tecla. Año perdido y sigues igual de incómodo. −1 coche",
+           "They spend the year trying brake materials without finding the answer. A wasted year and you're just as uncomfortable. −1 car")); }},
+   {l:()=>L("Apretar los dientes y correr","Grit your teeth and race"),r:()=>roll(
+     [5,()=>L("Ni te reinventas ni tocas el coche: a sumar puntos con lo que hay.","You neither reinvent yourself nor touch the car: just bank points with what you've got.")],
+     [3,()=>(OVR(1),L("A base de kilómetros le acabas cogiendo el punto sin cambiar quién eres. +1 OVR","Mile after mile you find the knack without changing who you are. +1 OVR"))],
+     [2,()=>(VAL(.94),L("Tu compañero se adapta antes y en el paddock se comenta. −fama","Your teammate adapts first and the paddock notices. −fame"))])}]},
+
+ // 💥 TOQUE CON TU COMPAÑERO (Rosberg/Spa 2014). Hueco real: el juego tiene toques con RIVALES pero los
+ // excluye expresamente con el compañero. Lo importante son las CONSECUENCIAS: los galones se pierden de
+ // verdad (con bloqueo de 3 años), la enemistad acelera la ruptura y el que sale mal parado se larga.
+ {id:"toqueMate",stage:"f1",
+  // solo con un compañero que DE VERDAD te discute el sitio: no te tocas con quien no te pelea
+  cond:()=>{ if(S.cat!=="F1"||!S.team||!S.seats[S.team.name]||(S.yearsAtTeam||1)<1||S.f1Seasons<2) return false;
+    const m=teammateOf(S.team.name)||{};
+    return !!m.name && Math.abs((m.skill||0)-S.ovr)<=5; },
+  t:()=>L("Os habéis tocado","You've collided"),
+  d:()=>{ const m=surname(teammateOf(S.team.name).name);
+    return L(`Vuelta 31, curva 5. ${m} y tú ibais rueda con rueda por el mismo trozo de asfalto y ninguno levantó. Los dos coches del equipo, fuera. En el box no se oye una palabra y el jefe ya ha pedido veros por separado. Mañana hay rueda de prensa y todos van a preguntar lo mismo.`,
+             `Lap 31, turn 5. ${m} and you went wheel to wheel for the same piece of tarmac and neither lifted. Both team cars, out. Nobody says a word in the garage and the boss has already asked to see you separately. There's a press conference tomorrow and everyone will ask the same thing.`); },
+  opts:[
+   {l:()=>L("Dar la cara: fue culpa mía","Own it: it was my fault"),r:()=>{
+     if(ch(pPerderGalones())) return quitarGalones();
+     return ch(.62)
+      ? (CAR(1), respectMate(), L("El garaje te lo agradece: nadie escurre el bulto así. Los mecánicos se dejan la piel contigo y tu compañero lo respeta. +1 coche","The garage is grateful: nobody owns up like that. The mechanics go the extra mile for you and your teammate respects it. +1 car"))
+      : (VAL(1.12), L("«Fue mío». Punto. El paddock valora al que no se esconde. +fama","«It was mine.» Full stop. The paddock values those who don't hide. +fame")); }},
+   {l:()=>L("Fue suyo, y lo digo","It was his, and I'll say so"),r:()=>{
+     const m=surname(teammateOf(S.team.name).name);
+     return roll(
+      [45,()=>(VAL(1.12), feudMate(), L(`La afición se pone de tu lado, pero ${m} no te lo va a perdonar: a partir de hoy sois enemigos dentro del mismo garaje. +fama`,`The fans take your side, but ${m} won't forgive it: from today you're enemies inside the same garage. +fame`))],
+      [35,()=>(CAR(-1), feudMate(), L("El equipo os castiga a los dos por sacar los trapos fuera: menos recursos y un compañero que ya no te habla. −1 coche","The team punishes you both for airing it publicly: fewer resources and a teammate who no longer speaks to you. −1 car"))],
+      [20,()=>{ VAL(1.15); const salio=echarMateTocado();
+        return L(`El vídeo de a bordo te da la razón y el equipo lo asume. +fama${salio?" "+salio:""}`,`The onboard footage proves you right and the team accepts it. +fame${salio?" "+salio:""}`); }]); }},
+   {l:()=>L("Al despacho: que no me frenen","To the office: don't hold me back"),r:()=>roll(
+     [30,()=>{ darGalones();
+       return L("Entras, pones las cartas sobre la mesa y sales con lo que querías: libertad para pelear y los galones de Nº1.","You walk in, lay it all out and come out with what you wanted: freedom to race and No.1 status."); }],
+     [40,()=>L("Salís los dos con unas normas de convivencia bajo el brazo. Ni ganas ni pierdes, pero la sangre no llega al río.","You both leave with a set of ground rules. You neither win nor lose, but it doesn't boil over.")],
+     [30,()=>{ CAR(-1); return quitarGalones(L("Te ven como un problema y deciden zanjarlo por la vía rápida: órdenes de equipo el resto del año. −1 coche. ","They see you as a problem and settle it the quick way: team orders for the rest of the year. −1 car. ")); }])}]},
 ];
 
 /* ¿atascado? dos años seguidos a media-baja tabla */
@@ -3785,6 +3949,31 @@ function isStruggling(){
   return f1.slice(-2).every(s=>s.pos>=9);
 }
 /* cambiar de estilo de pilotaje a mitad de carrera: puede salir bien o mal */
+/* 🛞 ¿ERES CAPAZ DE REINVENTARTE? Lo deciden TALENTO y EDAD, como pedía Carlos: un joven mediocre se
+   adapta mejor que un veterano mediocre, pero un veterano BUENO gana a los dos jóvenes flojos.
+   Base 30% + hasta 35 por talento + hasta 25 por plasticidad → de 30% a 90%.
+     22 años: 57% (OVR 80) · 74% (86) · 86% (92)
+     34 años: 40% (OVR 80) · 57% (86) · 69% (92)                                                     */
+function probReinvencion(){
+  const talento = Math.max(0, Math.min(1, (S.ovr-78)/12));
+  const plastic = Math.max(0, Math.min(1, (32-S.age)/12));
+  return Math.max(.30, Math.min(.90, .30 + .35*talento + .25*plastic));
+}
+/* 🛞 el fallo NO es permanente: pierdes 2 de OVR y cada una de las 2 temporadas siguientes vuelves a
+   intentar recuperar 1 con esa misma probabilidad. Si eres bueno o joven lo recuperas casi seguro;
+   si eres viejo y flojo te puedes quedar con el lastre para siempre. */
+function tickOxido(row){
+  if(!S.oxido) return;
+  S.oxido--;
+  if(ch(probReinvencion())){
+    OVR(1);
+    row.events.push(S.oxido>0
+      ? L("🛞 Empiezas a encontrarle el punto al estilo nuevo. +1 OVR","🛞 You start finding the sweet spot in the new style. +1 OVR")
+      : L("🛞 Ya pilotas el estilo nuevo como si fuera tuyo de siempre. +1 OVR","🛞 You now drive the new style as if it had always been yours. +1 OVR"));
+  } else if(S.oxido<=0){
+    row.events.push(L("🛞 Nunca llegaste a recuperar del todo lo que perdiste con el cambio.","🛞 You never fully recovered what the change cost you."));
+  }
+}
 function reinventTo(newStyle){
   const setTag=()=>{ sel.style=newStyle; S.reinvented=true; $("tagStyle").textContent=STYLES[newStyle].label; };
   const sl=styleLabel(newStyle);
@@ -3864,6 +4053,13 @@ function regBetOn(){ return S.cat==="F1" && S.team && S.regBet===S.team.name; }
 
 function pickDilemma(){
   if(S.age<18) return null;
+  // 🧪 en un escenario de prueba manda EL dilema que se quiere revisar: si no, compite con los ~45 del
+  // catálogo y hacen falta muchos intentos para verlo
+  const _T=testNow();
+  if(_T && _T.dilema && !S.usedDilemmas[_T.dilema]){
+    const d=DILEMAS.find(x=>x.id===_T.dilema);
+    if(d && (!d.cond || d.cond())) return d;
+  }
   // 🎲 ARCO DEL REGLAMENTO — ventanas de UN solo año: si no van con prioridad, no se ven nunca.
   // Por eso no se les aplica el descanso de 1 año entre dilemas: o salen ahora o no salen jamás.
   const regArc=["apuestaReglamento","aguantarApuesta","reglamentoHunde"];
@@ -3871,6 +4067,13 @@ function pickDilemma(){
     if(S.usedDilemmas[id]) continue;
     const d=DILEMAS.find(x=>x.id===id);
     if(d && d.cond() && ch(id==="aguantarApuesta"?.9:.85)) return d;
+  }
+  // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
+  //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
+  for(const [id,pr] of [["gomas",.5],["toqueMate",.12]]){
+    if(S.usedDilemmas[id] || (S.age-S.lastDilemmaAge<1)) continue;
+    const d=DILEMAS.find(x=>x.id===id);
+    if(d && d.cond() && ch(pr)) return d;
   }
   // reinvención: 28-36, atascado en equipos malos, no en todas las partidas, una vez por carrera
   if(S.cat==="F1" && S.age>=28 && S.age<=36 && !S.usedDilemmas.reinvencion && (S.age-S.lastDilemmaAge>=1) && isStruggling() && ch(.5)){
@@ -4024,8 +4227,26 @@ function simSeason(){
         S.role="2";
         row.events.push(L("⬇️ "+surname(mate.name)+" se proclama campeón del mundo: el equipo le entrega el estatus de Nº1.","⬇️ "+surname(mate.name)+" is crowned world champion: the team hands him No.1 status."));
       }
-      else if(S.role==="2" && gap>4 && !mateCampeon){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".")); }
+      // 🔒 si te quitaron los galones por DISCIPLINA, el ascenso automático no vale durante 3 años:
+      //    sin esto, al año siguiente el mismo equipo te devolvía lo que acababa de quitarte.
+      else if(S.role==="2" && gap>4 && !mateCampeon && !roleLocked(S.team.name)){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".")); }
       else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push(L("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1.","⬇️ "+surname(mate.name)+" takes the No.1 driver status from you.")); }
+      // 🏆 REDENCIÓN: ganas el Mundial con los galones quitados. Ganar ABRE la puerta, no la cruza por ti
+      // (matiz de Carlos: Alonso acabó a un punto del título en 2007 y se fue igual). Quién decide es
+      // cómo le fue a tu compañero: si él también hizo temporadón, el equipo tiene argumentos para
+      // sostenerle; si fue mediocre, no hay excusa.
+      if(row.pos===1 && roleLocked(S.team.name)){
+        const mateFuerte = row.matePos!=null && row.matePos<=5;
+        if(ch(mateFuerte ? .35 : .70)){
+          darGalones();
+          row.events.push(L(`👑 Campeón del mundo: ${S.team.name} se rinde a la evidencia y te devuelve el estatus de Nº1.`,
+                            `👑 World champion: ${S.team.name} bows to the evidence and gives you back No.1 status.`));
+        } else {
+          perderAsiento(row,
+            `👑 Has ganado el Mundial y el equipo sigue prefiriéndole a él. Quieren empezar un nuevo proyecto, aquí ya no hay sitio para ti.`,
+            `👑 You've won the title and the team still prefers him. They want to start a new project — there's no room for you here.`);
+        }
+      }
     }
   }
   // 🏁 revolución técnica: al terminar el año del reset, se destapa quién entendió el reglamento
@@ -4045,6 +4266,7 @@ function simSeason(){
   }
   if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
   evolveF1();
+  tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
   npcSeason();
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
   beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
