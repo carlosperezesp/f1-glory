@@ -1742,6 +1742,15 @@ const TESTS = {
       return t;
     }
   },
+  // 🧪 los CINCO dilemas de formación y nada más: el resto del catálogo queda apagado para poder
+  // recorrer una carrera entera desde el karting viéndolos salir uno detrás de otro.
+  formacion: {
+    t:["Dilemas de formación","Formation-years dilemmas"],
+    d:["Empiezas en el karting con TODOS los demás dilemas apagados: solo pueden salir los cinco de los años de formación. Juega la carrera entera y míralos aparecer — y al final, cómo queda la trayectoria.",
+       "You start in karting with every other dilemma switched off: only the five formation-years ones can fire. Play the whole career and watch them come — and at the end, how the timeline looks."],
+    era:"2026", jr:true,
+    run(){ S.lluviaOK=true; S.patronNo=false; return null; }
+  },
   gomas: {
     t:["Las gomas no perdonan","The tyres don't forgive"],
     d:["Empiezas con dos años ya en un buen coche cuyo carácter CHOCA con tu pilotaje: las dos cosas que pide el dilema. Simula la temporada y saldrá.",
@@ -1780,12 +1789,23 @@ function testNow(){ return TEST_MODE ? TESTS[TEST_MODE] : null; }
 function setupTest(T){
   const t=T.run();
   $("identity").style.display="none"; $("career").style.display="block";
+  // 🧪 los escenarios de FORMACIÓN arrancan donde arranca todo el mundo: en el karting.
+  if(T.jr){
+    refreshCard();
+    setDecision("🧪 "+L(T.t[0],T.t[1]), L(T.d[0],T.d[1]));
+    $("decRecap").style.display="none";
+    renderOffers(juniorOffers(KART_TEAMS,"KART").slice(0,3), false);
+    return;
+  }
   S.cat="F1";
   refreshCard();
   setDecision("🧪 "+L(T.t[0],T.t[1]), L(T.d[0],T.d[1]));
   $("decRecap").style.display="none";
   renderOffers([{team:t, role:roleFor(t.name), note:L("Empezar la prueba","Start the test")}], false);
 }
+// 🧪 en el escenario de formación, el catálogo se reduce a los cinco nuevos
+const DIL_FORMACION=["patronContrato","gomasLluvia","licencia","caminoRaro","debutGrande"];
+function dilAllowed(id){ return TEST_MODE!=="formacion" || DIL_FORMACION.indexOf(id)>=0; }
 /* 🇪🇸 ¿Y SI CAMPOS NO HUBIERA VENDIDO? (historia alternativa, idea de Carlos)
    En la realidad, Adrián Campos montó el proyecto «Campos Meta 1» para 2010 pero no llegó al inicio de
    temporada: vendió a José Ramón Carabante y el equipo corrió como Hispania (HRT), que murió en 2012.
@@ -3145,6 +3165,8 @@ function signContract(o){
         : L("🚪 En "+prev.name+" se toman tu marcha tan pronto como un desprecio: no te guardan sitio.","🚪 "+prev.name+" takes you leaving so soon as a snub: no seat kept for you."));
     }
   }
+  const _trai = patronCheck(o.team.name, o.team.cat);
+  if(_trai) S.pendingEvents.push(_trai);
   const sameSeat = prevCat==="F1" && o.team.cat==="F1" && prev && prev.name===o.team.name;
   S.team=o.team; S.cat=o.team.cat;
   // rastro imborrable: al CAMBIAR de equipo en F1, la temporada arranca dejando constancia de la firma
@@ -3932,6 +3954,85 @@ const DILEMAS=[
               `You leave a year before your contract ends. ${old} shuts the door on you forever and the press calls you a deserter, but you won't burn your best years fighting a car that isn't yours. −fame`); }}]},
 
  // ═══ 🎓 DILEMAS DE LOS AÑOS DE FORMACIÓN (ago-2026) ═══
+ // 📜 TE QUIEREN ATAR [McLaren-Hamilton, 1998]. La opción «pedir tiempo» vuelve a preguntar al año
+ // siguiente: se borra de usedDilemmas a propósito.
+ {id:"patronContrato",stage:"jr",minAge:15,
+  // pedía acabar 1º o 2º el año justo anterior y salía en el 2% de las carreras. Ahora vale con haber
+  // estado entre los tres mejores EN ALGÚN momento: los ojeadores no fichan por una sola temporada.
+  cond:()=>S.cat!=="F1" && S.cat!=="TEST" && !S.patron && !S.patronNo && S.age<=19
+       && (S.seasons||[]).some(x=>x.cat!=="F1" && (x.pos??20)<=3),
+  t:()=>L("Te quieren atar","They want you tied down"),
+  d:()=>{ const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))[irnd(0,2)];
+    S._patronCand=t?t.name:F1_TEAMS[0].name;
+    return L(`Un grande de la Fórmula 1 se ha fijado en ti. No quieren ficharte para correr: quieren pagarte la escalera entera —coches, motores, test, todo— hasta que estés listo. A cambio se quedan una opción sobre tu futuro: cuando llegues, llegas con ${S._patronCand} o no llegas. Tienes ${S.age} años y te están ofreciendo no volver a preocuparte por el dinero nunca más.`,
+             `A Formula 1 giant has noticed you. They don't want to sign you to race: they want to pay for your entire ladder — cars, engines, testing, everything — until you're ready. In exchange they keep an option on your future: when you arrive, you arrive with ${S._patronCand} or you don't arrive. You're ${S.age} and they're offering you never to worry about money again.`); },
+  opts:[
+   {l:()=>L("Firmar","Sign"),r:()=>{ S.patron=S._patronCand; S.patronBoost=true;
+     return L(`Firmas con ${S.patron}. A partir de hoy no te falta de nada y su nombre te abre puertas. Pero tu futuro tiene dueño: hasta que no corras para ellos, nadie más puede ficharte sin que eso sea una traición.`,
+              `You sign with ${S.patron}. From today you want for nothing and their name opens doors. But your future has an owner: until you race for them, nobody else can sign you without it being a betrayal.`); }},
+   {l:()=>L("Pedir tiempo","Ask for time"),r:()=>{ delete S.usedDilemmas.patronContrato; S.dilemmaCount--;
+     return ch(.5)
+      ? L(`Aceptas su ayuda este año sin firmar la opción. En ${S._patronCand} lo entienden… de momento.`,`You take their help this year without signing the option. At ${S._patronCand} they understand… for now.`)
+      : (S.patronNo=true, L(`Aceptas su ayuda este año sin firmar la opción. No les gusta: se van a buscar a otro chaval y no vuelven.`,`You take their help this year without signing the option. They don't like it: they go looking for another kid and they don't come back.`)); }},
+   {l:()=>L("Ni hablar: mi futuro es mío","No chance: my future is mine"),r:()=>{ S.patronNo=true; VAL(1.05);
+     return L("Dices que no a la seguridad y te quedas con la libertad. Subirás solo, con lo que haya, y cuando llegues no le deberás nada a nadie. +fama","You say no to security and keep your freedom. You'll climb alone, with whatever you've got, and when you arrive you'll owe nobody anything. +fame"); }}]},
+
+ // 🤝 EL QUE TE DESCUBRIÓ Y EL QUE TE QUIERE [Schumacher, 1991, con el diseño de Carlos]. Debutas en un
+ // equipo pequeño, deslumbras en tus primeras carreras y llama un grande. Ese año NO hay mercado: la
+ // decisión te coloca, y la trayectoria enseña la temporada PARTIDA EN DOS (como la tabla de 1991:
+ // Jordan arriba, Benetton abajo, un solo puesto final). El motivo del debut varía para que no sea
+ // siempre el mismo cuento.
+ {id:"debutGrande",stage:"f1",minAge:17,
+  cond:()=>{ if(S.cat!=="F1"||!S.team||(S.f1Seasons||0)>1||S.patronLock) return false;
+    const mio=S.f1perf[S.team.name]??75;
+    return mio<=76 && F1_TEAMS.some(t=>(S.f1perf[t.name]??70)>=87 && !S.neverHire[t.name] && !isRBJr(t.name)); },
+  t:()=>L("El que te descubrió y el que te quiere","The one who found you and the one who wants you"),
+  d:()=>{ const g=[...F1_TEAMS].filter(t=>(S.f1perf[t.name]??70)>=87 && !S.neverHire[t.name] && !isRBJr(t.name))
+      .sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))[0];
+    S._debutBig=g?g.name:null;
+    const motivo=[L("una lesión de última hora","a last-minute injury"),
+                  L("una sanción a su titular","a ban for their regular"),
+                  L("un patrocinador que se cayó y se llevó al piloto","a sponsor who pulled out and took the driver with him"),
+                  L("un titular que se largó a mitad de año","a regular who walked out mid-season")][dilVar("motivo",()=>irnd(0,3))];
+    const n=dilVar("carreras",()=>irnd(1,4));
+    return L(`Te subieron al coche por ${motivo} y llevas ${n} ${n===1?"carrera":"carreras"} dejando con la boca abierta a todo el paddock. En ${S.team.name} ya te han dicho que el asiento es tuyo, pero el contrato aún no está firmado. Y esta mañana ha llamado ${S._debutBig||"uno de los grandes"}.`,
+             `They put you in the car because of ${motivo} and you've spent ${n} ${n===1?"race":"races"} leaving the whole paddock open-mouthed. At ${S.team.name} they've already told you the seat is yours, but the contract isn't signed. And this morning ${S._debutBig||"one of the giants"} called.`); },
+  opts:[
+   {l:()=>L("Cumplir tu palabra","Keep your word"),r:()=>{ S.lockTeam=S.team.name; VAL(1.15);
+     return L(`Te quedas donde te dieron la oportunidad. El paddock entero toma nota: en este circo, el que cumple su palabra es noticia. Sigues en ${S.team.name}. +fama`,
+              `You stay where they gave you the chance. The whole paddock takes note: in this circus, a man who keeps his word is news. You stay at ${S.team.name}. +fame`); }},
+   {l:()=>{ return L(`Firmar con ${S._debutBig||"el grande"} ya`,`Sign with ${S._debutBig||"the giant"} now`); },
+    r:()=>{ const big=S._debutBig, small=S.team.name;
+      if(!big) return L("La llamada se enfría y se queda en nada.","The call goes cold and comes to nothing.");
+      S.midMove=big; S.lockTeam=big; S.neverHire[small]=true; VAL(.9);
+      return L(`Te vas a mitad de temporada. ${small} te lleva a los tribunales y en el paddock se habla de otra cosa durante meses. Pero te subes al coche bueno con ${S.f1Seasons<1?"el casco todavía sin estrenar":"apenas un puñado de carreras"}. Puerta cerrada en ${small} para siempre. −fama`,
+               `You leave mid-season. ${small} takes you to court and the paddock talks about nothing else for months. But you get into the good car with ${S.f1Seasons<1?"your helmet barely broken in":"barely a handful of races behind you"}. ${small}'s door is shut forever. −fame`); }},
+   {l:()=>L("Que se peleen ellos","Let them fight it out"),r:()=>{ const big=S._debutBig, small=S.team.name;
+     return roll(
+      [50,()=>{ S.midMove=big; S.lockTeam=big;
+        return L(`Te apartas y dejas que lo resuelvan los abogados. Sale bien: acabas en ${big} y sin quedar mal con nadie.`,`You step aside and let the lawyers sort it out. It works: you end up at ${big} and nobody has a bad word for you.`); }],
+      [50,()=>{ S.forceMove=true; S.forceReasonTxt=[
+          `El pleito entre ${small} y ${big} se alarga tanto que la temporada se acaba sin que nadie te siente en ningún sitio.`,
+          `The lawsuit between ${small} and ${big} drags on so long that the season ends without anyone putting you in a car.`];
+        return L(`El pleito se eterniza, los dos se cansan y te quedas sin los dos. A buscar asiento donde sea.`,`The lawsuit drags on, both sides get tired and you lose them both. Time to find a seat anywhere.`); }]); }}]},
+
+ // 🛣️ EL CAMINO RARO [Schumacher, 1990]: programa de FÁBRICA en resistencia en vez de la escalera.
+ {id:"caminoRaro",stage:"jr",minAge:17,
+  cond:()=>(S.cat==="F3"||S.cat==="FR"||S.cat==="F2") && S.age>=17 && S.age<=22 && !S.advYears,
+  t:()=>L("El camino raro","The strange road"),
+  d:()=>L("Una marca te ofrece algo que no hace nadie de tu edad: un volante de fábrica en resistencia. Sueldo de verdad, coches de verdad y kilómetros a espuertas contra pilotos hechos. Todo el mundo te dice que es un desvío y que la escalera es la escalera.",
+          "A manufacturer offers you something nobody your age does: a factory drive in endurance racing. A real salary, real cars and mileage by the bucketload against grown men. Everyone tells you it's a detour and that the ladder is the ladder."),
+  opts:[
+   {l:()=>L("Aceptar el volante de fábrica","Take the factory drive"),r:()=>{ S.youngDetour=true;
+     const txt=L("Te subes a un coche de resistencia con 18 años y aprendes cosas que en la escalera no se aprenden: gestionar, convivir con el coche, no romperlo. El escaparate es peor, pero el oficio es mejor.","You get into an endurance car at 18 and learn things the ladder never teaches: managing, living with the car, not breaking it. The shop window is worse, but the craft is better.");
+     setTimeout(()=>{ try{ startAdventure("lemans"); }catch(e){} }, 0);
+     return txt; }},
+   {l:()=>L("Seguir la escalera","Stay on the ladder"),r:()=>L("Dices que no. La escalera es la escalera y tú vas a subirla como todo el mundo.","You say no. The ladder is the ladder and you're going to climb it like everyone else.")},
+   {l:()=>L("Las dos cosas a la vez","Both at once"),r:()=>roll(
+     [45,()=>(OVR(2),L("Un calendario imposible, pero sales del año con doble bagaje y una madurez que no tiene nadie de tu edad. +2 OVR","An impossible calendar, but you come out of the year with double the experience and a maturity nobody your age has. +2 OVR"))],
+     [55,()=>(OVR(-1),VAL(.95),L("Demasiados frentes: llegas fundido a los fines de semana importantes y no rindes en ninguno de los dos sitios. −1 OVR, −fama","Too many fronts: you arrive drained at the weekends that matter and underperform in both. −1 OVR, −fame"))])}]},
+
+
  // Traen `minAge` propio: sin él jamás se verían, porque pickDilemma corta por debajo de los 18 y el
  // 84% de los dilemas cae en F1. Medido antes de esto: en karting, CERO.
 
@@ -4048,6 +4149,33 @@ const DILEMAS=[
      [30,()=>{ CAR(-1); return quitarGalones(L("Te ven como un problema y deciden zanjarlo por la vía rápida: órdenes de equipo el resto del año. −1 coche. ","They see you as a problem and settle it the quick way: team orders for the rest of the year. −1 car. ")); }])}]},
 ];
 
+/* 📜 EL CONTRATO DE WONDERKID. Un grande te paga la escalera entera a cambio de una opción sobre tu
+   futuro. Lo que compras es un SUELO (no te quedas fuera) y lo que vendes es tu primer año de libertad.
+   · Mientras subes, ese equipo NO puede quebrar: te lo han prometido por contrato.
+   · Al llegar arriba te deben sitio: banquillo seguro, y asiento titular si has arrasado.
+   · Firmar con OTRO equipo de F1 antes de haber corrido para ellos es una TRAICIÓN: puerta cerrada
+     para siempre y −fama.
+   · Y la gracia (idea de Carlos): firmas a ciegas. Para cuando llegues pueden ser un equipo mediocre. */
+function patronDoor(o, titular){
+  if(!S.patron || S.patronDone) return;
+  const t=F1_TEAMS.find(x=>x.name===S.patron); if(!t) return;
+  const arrasado = (S.titles.f2||0)>0 || (S.titles.f3||0)>0;
+  if(titular || arrasado){
+    if(!o.some(x=>x.team && x.team.name===t.name && x.team.cat!=="TEST"))
+      o.unshift({team:t, role:roleFor(t.name), note:["📜 Te lo deben por contrato","📜 They owe you by contract"]});
+  } else {
+    if(!o.some(x=>x.team && x.team.name===t.name))
+      o.unshift({team:{...t,cat:"TEST"}, note:["📜 Te lo deben por contrato","📜 They owe you by contract"]});
+  }
+}
+// ¿te vas con otro estando atado? Traición: puerta cerrada para siempre.
+function patronCheck(teamName, cat){
+  if(!S.patron || S.patronDone || cat!=="F1") return null;
+  if(teamName===S.patron){ S.patronDone=true; return null; }
+  const old=S.patron; S.neverHire[old]=true; S.patronDone=true; VAL(.85);
+  return L(`💔 Firmas con otro estando atado a ${old}: rompes la opción que pagó tu carrera entera. Te cierran la puerta para siempre y en la prensa te llaman desagradecido. −fama`,
+           `💔 You sign elsewhere while tied to ${old}: you break the option that paid for your whole career. Their door shuts forever and the press calls you ungrateful. −fame`);
+}
 /* ¿atascado? dos años seguidos a media-baja tabla */
 function isStruggling(){
   const f1=S.seasons.filter(s=>s.cat==="F1");
@@ -4163,6 +4291,9 @@ function regBetOn(){ return S.cat==="F1" && S.team && S.regBet===S.team.name; }
 // Con .06 baja al 29%, en la misma banda que gomas y reinvención. Sin prioridad ninguna caería al 4,8%,
 // que es como no tenerlo. (Medido, 250-300 partidas por punto.)
 let P_GOMAS=.5, P_TOQUE=.06;
+// ventanas de UN par de años: el del debut solo cabe en tus dos primeras temporadas de F1 y el del
+// padrino antes de los 20. Sin prioridad salían en el 1% y el 2% (medido).
+let P_DEBUT=.2, P_PATRON=.5;   // .55 lo dejaba en el 48% de las carreras: demasiado para un suceso así
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
   // `minAge` pueden saltar antes (los de formación, que sin esto jamás se verían en karting).
@@ -4185,10 +4316,11 @@ function pickDilemma(){
   }
   // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
   //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
-  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE]]){
-    if(S.usedDilemmas[id] || (S.age-S.lastDilemmaAge<1)) continue;
+  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON]]){
+    if(S.usedDilemmas[id]) continue;
+    if((S.age-S.lastDilemmaAge<1) && id!=="debutGrande" && id!=="patronContrato") continue;
     const d=DILEMAS.find(x=>x.id===id);
-    if(d && d.cond() && ch(pr)) return d;
+    if(d && dilAllowed(id) && d.cond() && ch(pr)) return d;
   }
   // reinvención: 28-36, atascado en equipos malos, no en todas las partidas, una vez por carrera
   if(S.cat==="F1" && S.age>=28 && S.age<=36 && !S.usedDilemmas.reinvencion && (S.age-S.lastDilemmaAge>=1) && isStruggling() && ch(.5)){
@@ -4222,6 +4354,7 @@ function pickDilemma(){
   if(S.age-S.lastDilemmaAge<2) return null;
   if(!ch(.30)) return null;
   const pool=DILEMAS.filter(d=>{
+    if(!dilAllowed(d.id)) return false;
     if(S.usedDilemmas[d.id]) return false;
     if(S.age < (d.minAge!=null ? d.minAge : 18)) return false;   // cada dilema, su edad mínima
     if(d.from && yearNow()<d.from) return false; // ⏳ filtro de ÉPOCA: en 2012 no hay documentales de plataforma ni activismo de podio
@@ -4338,6 +4471,17 @@ function simSeason(){
   // Aston Martin), tu historial conserva el nombre y colores DE LA ÉPOCA en que corriste ahí
   let row = {age:S.age, year:yearNow(), team:S.team?{...S.team}:S.team, cat:S.cat, events:[]};
   if(S.pendingEvents.length){ row.events.push(...S.pendingEvents); S.pendingEvents=[]; }
+  // 🤝 traspaso a MITAD DE TEMPORADA (dilema del debut): corres el arranque con el pequeño y el resto
+  // con el grande. La fila guarda los DOS equipos para pintarlos partidos, como la tabla de 1991.
+  if(S.midMove){
+    const dest=F1_TEAMS.find(t=>t.name===S.midMove); S.midMove=null;
+    if(dest && S.team && dest.name!==S.team.name){
+      row.team2={...dest}; S.team=dest; occupySeat(dest.name);
+      S.roleTeam=dest.name; S.roleMate=(teammateOf(dest.name)||{}).name; S.role=roleFor(dest.name);
+      S.yearsAtTeam=1;
+      row.events.push(L(`✍️ Te sientas en el ${dest.name} con la temporada empezada.`,`✍️ You get into the ${dest.name} with the season already under way.`));
+    }
+  }
   checkExpansion(row);
   maybeInjury(row); // lesión grave rara (1 año fuera, asiento en peligro) antes de simular la temporada
   let result;
@@ -4601,6 +4745,8 @@ function processLineage(row){
       if(st.from && chn.cur!==st.from){ st.done=true; return; }
       const t=F1_TEAMS.find(x=>x.name===chn.cur);
       if(!t){ st.done=true; return; } // el equipo ya no existe (murió antes)
+      // 📜 el padrino te prometió pagarte la escalera: no puede hundirse mientras la subes
+      if(st.die && S.patron===chn.cur && !S.patronDone){ st.year=yearNow()+2; return; }
       if(st.die){
         // nunca muere con el JUGADOR dentro (titular o probador): agoniza un año, te avisa y te obliga a salir
         const mine = (S.team && S.team.name===chn.cur) || ((S.seats[chn.cur]||[]).includes("PLAYER"));
@@ -5467,6 +5613,18 @@ function returnF1Offers(){
 // Racing Bulls es el equipo-cantera: solo ficha PROMESAS. No persigue a veteranos NI a consagrados (campeones/élite).
 function rbOk(t){ return !(t && isRBJr(t.name) && (S.age>=32 || (S.titles.f1||0)>0 || S.ovr>=87)); }
 function nextOffers(){
+  // 🤝 el dilema del debut YA decidió dónde corres: ese invierno no hay mercado, solo la confirmación.
+  if(S.lockTeam && !S.forceMove && !S.retired){
+    const t=F1_TEAMS.find(x=>x.name===S.lockTeam); S.lockTeam=null;
+    if(t){
+      setDecision(L("Contrato cerrado","Contract settled"),
+        L(`Lo de este verano ya está firmado: tu sitio para el año que viene es ${t.name}. Este invierno no hay nada que negociar.`,
+          `This summer's business is done: your seat for next year is ${t.name}. There's nothing to negotiate this winter.`));
+      $("decRecap").style.display="none";
+      renderOffers([{team:t, role:roleFor(t.name), note:["✍️ Lo firmado en verano","✍️ Signed back in the summer"]}], false);
+      scrollToDecision(); return;
+    }
+  }
   S.regUnknown=false; // por defecto las tendencias se ven; la revolución técnica lo reactiva puntualmente
   S.couldStay=false;  // ¿tu equipo te ofreció renovar? (si NO, es que te echaron → al irte no te "queman" por traidor)
   if(S.age>=44){ endCareer(); return; } // tope duro: solo los excepcionales llegan tan lejos
@@ -5570,11 +5728,13 @@ function nextOffers(){
       const hi = ped>=5?11 : ped>=4?8 : 6;
       if(ped>=4) sub+=L(` Tu palmarés (${pedigreeLabel()}) te abre las puertas de los mejores.`,` Your record (${pedigreeLabel()}) opens the doors of the best.`);
       pick(sorted.slice(lo,hi),3).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
+      patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio
     } else if(S.ovr>=72){
       title=L("El banquillo de la F1","The F1 reserve bench");
       sub=L("Nadie te da un volante titular aún, pero los grandes te quieren de piloto probador: FP1, simulador y paciencia.","No race seat yet, but the big teams want you as a reserve: FP1, simulator and patience.");
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
       pick(F1_TEAMS, stayOK2?2:3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
+      patronDoor(o, false);  // 📜 aquí el padrino te da el banquillo, que es lo que prometió
       if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(` O quédate un año más en la ${catName("F2")} a por el título.`,` Or stay one more year in ${catName("F2")} to go for the title.`); }
     } else if(S.age>=26){ stuckDeadEnd(); return; }
     else {
@@ -5923,8 +6083,10 @@ function renderTimeline(){
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")}<br>🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
-      <span class="club">${badge(r.team,"",r.year)}
-        <span><span class="nm">${teamDisp(r.team, r.year)} · ${r.year} · ${catLbl}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
+      <span class="club">${badge(r.team2||r.team,"",r.year)}
+        <span><span class="nm">${r.team2
+            ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
+            : `${teamDisp(r.team, r.year)} · ${r.year} · ${catLbl}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
       <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
       <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>
       <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>
