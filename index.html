@@ -4055,7 +4055,7 @@ const DILEMAS=[
              `It's pouring and your team hasn't brought wet tyres: they weren't in the budget. Everyone else is already out. You have four slicks, a track like a mirror, and ${paga}.`); },
   opts:[
    {l:()=>L("Salir con lo que hay","Go out on what you've got"),r:()=>roll(
-     [6,()=>{ S.wetMaster=.6; return L("Sales a rodar con gomas de seco sobre un espejo y no te queda otra que aprender a leer el agua: dónde agarra, dónde no, cuánto puedes pedirle. De ahí sales sabiendo algo que no se enseña. 🌧️ Maestría en mojado, para siempre.","You go out on slicks over a mirror and you have no choice but to learn to read the water: where it grips, where it doesn't, how much you can ask of it. You come out knowing something nobody teaches. 🌧️ Wet mastery, for good."); }],
+     [6,()=>{ S.wetMaster=.6; return L("Sales a rodar con gomas de seco sobre un espejo y no te queda otra que aprender a leer el agua: dónde agarra, dónde no, cuánto puedes pedirle. De ahí sales sabiendo algo que no se enseña. 🌧️ Te vuelves un experto en mojado, y eso ya no se te olvida.","You go out on slicks over a mirror and you have no choice but to learn to read the water: where it grips, where it doesn't, how much you can ask of it. You come out knowing something nobody teaches. 🌧️ You become a wet-weather expert, and that never leaves you."); }],
      [4,()=>(OVR(-1),L("Te vas fuera en la tercera vuelta y rompes el morro. El equipo paga la reparación y te lo va a recordar todo el año. −1 OVR","You go off on lap three and break the nose. The team pays for it and will remind you all year. −1 OVR"))])},
    {l:()=>L("Quedarte en el box","Stay in the garage"),r:()=>L("Ves llover desde el muro. Sensato, aburrido y sin consecuencias: otro día será.","You watch the rain from the pit wall. Sensible, dull and harmless: another day.")},
    {l:()=>S.patron ? L("Que las pague el equipo","Let the team pay for them") : L("Que las pague tu familia","Let your family pay for them"),
@@ -4415,7 +4415,7 @@ function renderDilemma(dl, repintar){
       const seguir=()=>{ if(ido) return; ido=true; clearTimeout(tmr); startSeasonRun(); };
       tmr=setTimeout(seguir, espera);
       const cont=document.createElement("button"); cont.className="offer dilemma";
-      cont.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3f8f4f,#256030)">▸</span>
+      cont.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3f8f4f,#256030);font-size:20px;line-height:1;text-indent:2px">▶</span>
         <span class="info"><span class="name">${L("Continuar","Continue")}</span></span>`;
       cont.onclick=seguir;
       box.appendChild(cont);
@@ -4938,12 +4938,12 @@ function alphaClash(row){
     row.events.push(L(
       modo==="peor"     ? `🥊 ${tn} construirá ${yo?"sobre ti":"sobre "+stayName} y dejará marchar a ${va}, que firma por ${dest.name} para ${yN}. ${vuelve} ocupará su asiento.`
     : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se irá a ${dest.name} en ${yN} buscando ser el número uno. ${vuelve} llegará a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
-    : modo==="veterano" ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve}.`
-                        : `🥊 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marchará a ${dest.name} y en ${yN} entrará ${vuelve}.`,
+    : modo==="veterano" ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`
+                        : `🥊 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marchará a ${dest.name} y en ${yN} entrará ${vuelve} en ${tn}.`,
       modo==="peor"     ? `🥊 ${tn} will build around ${yo?"you":stayName} and let ${va} go: he signs for ${dest.name} for ${yN}. ${vuelve} takes the seat.`
     : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a ${yN} move to ${dest.name} to be the undisputed No.1. ${vuelve} will arrive at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
-    : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} comes in for ${yN}.`
-                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives for ${yN}.`));
+    : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`
+                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives at ${tn} for ${yN}.`));
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
