@@ -1648,13 +1648,16 @@ function posClass(p){
 function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el año base depende de la era (2010/2020/2026)
 // 🏟️ circuito al azar VÁLIDO para un año dado (2º campo = año de estreno): en 2001 no existe Abu Dabi
 // ni Singapur; Jeddah llega en 2021. Global para que cualquier dilema/evento pueda ambientar sin anacronismos.
-function gpAt(yr){
-  const cs=[["Mónaco"],["Silverstone"],["Spa"],["Monza"],["Suzuka"],["Interlagos"],["Hungaroring"],
-    ["Barcelona"],["Montreal"],["Melbourne"],["Singapur",2008],[L("Abu Dabi","Abu Dhabi"),2009],
-    ["Austin",2012],[L("Bakú","Baku"),2016],["Imola",2020],["Zandvoort",2021],[L("Yeda","Jeddah"),2021],
-    ["Las Vegas",2023]].filter(c=>!c[1]||yr>=c[1]);
-  return cs[irnd(0,cs.length-1)][0];
+// [nombre, año de estreno, vueltas de carrera, nº de curvas] — las vueltas y las curvas son las reales,
+// para que un «vuelta 31, curva 5» inventado nunca pida una curva que ese circuito no tiene.
+function gpList(yr){
+  return [[L("Mónaco","Monaco"),0,78,19],["Silverstone",0,52,18],["Spa",0,44,19],["Monza",0,53,11],["Suzuka",0,53,18],
+    ["Interlagos",0,71,15],["Hungaroring",0,70,14],["Barcelona",0,66,14],["Montreal",0,70,14],["Melbourne",0,58,14],
+    [L("Singapur","Singapore"),2008,62,19],[L("Abu Dabi","Abu Dhabi"),2009,58,16],["Austin",2012,56,20],[L("Bakú","Baku"),2016,51,20],
+    ["Imola",2020,63,19],["Zandvoort",2021,72,14],[L("Yeda","Jeddah"),2021,50,27],["Las Vegas",2023,50,17]]
+    .filter(c=>!c[1]||yr>=c[1]).map(c=>({n:c[0], laps:c[2], turns:c[3]}));
 }
+function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
@@ -1711,8 +1714,8 @@ function beastName(){ return L("La Bestia","The Beast"); }
 const TESTS = {
   quiebra: {
     t:["Quiebra de tu equipo","Your team goes bankrupt"],
-    d:["Te sienta en un equipo modesto. Corre DOS temporadas normales y a la tercera llegará la quiebra: verás el aviso, la pantalla de mercado y la puerta de «esperar sin firmar».",
-       "Puts you in a modest team. Race TWO normal seasons and the collapse arrives in the third: you'll see the warning, the market screen and the «wait» door."],
+    d:["Empiezas en un equipo modesto. Corre DOS temporadas normales y a la tercera llegará la quiebra: verás el aviso, la pantalla de mercado y la puerta de «esperar sin firmar».",
+       "You start at a modest team. Race TWO normal seasons and the collapse arrives in the third: you'll see the warning, the market screen and the «wait» door."],
     era:"2026",
     run(){
       const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]||0)-(S.f1perf[b.name]||0))
@@ -1727,8 +1730,8 @@ const TESTS = {
   },
   gomas: {
     t:["Las gomas no perdonan","The tyres don't forgive"],
-    d:["Te sienta en un buen coche cuyo carácter CHOCA con tu pilotaje y con dos años de antigüedad, que es lo que pide el dilema. Empieza la temporada y saldrá.",
-       "Puts you in a good car whose character CLASHES with your driving, with two years at the team, which is what the dilemma needs. Start the season and it will fire."],
+    d:["Empiezas con dos años ya en un buen coche cuyo carácter CHOCA con tu pilotaje: las dos cosas que pide el dilema. Simula la temporada y saldrá.",
+       "You start with two years already at a good car whose character CLASHES with your driving: the two things the dilemma needs. Simulate the season and it will fire."],
     era:"2026",
     run(){
       const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))
@@ -1744,8 +1747,8 @@ const TESTS = {
   },
   toque: {
     t:["Toque con tu compañero","Collision with your teammate"],
-    d:["Te sienta de Nº1 en un top con un compañero de nivel. Empieza la temporada y saltará el toque, con sus tres salidas y sus consecuencias.",
-       "Puts you as No.1 at a top team with a solid teammate. Start the season and the collision fires, with its three routes and consequences."],
+    d:["Empiezas de Nº1 en un top, campeón, y con un compañero que te iguala. Simula la temporada y saltará el toque, con sus tres salidas y sus consecuencias.",
+       "You start as No.1 at a top team, a champion, with a teammate who matches you. Simulate the season and the collision fires, with its three routes and consequences."],
     era:"2026",
     run(){
       const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))
@@ -2343,10 +2346,11 @@ function npcSeason(){
         : .008;
       // al retirarse NO se pone un novato de oficio: el asiento queda LIBRE y lo cubre el mercado
       // (si se retira un piloto de un top, ese volante lo pelea la parrilla; el novato acaba abajo)
+      if(mktMoved(d)) return;   // acaba de firmar un traspaso anunciado: no se retira el mismo invierno
       if(ch(pRet)){
         // 🔙 los retirados NOTABLES (título o nivel 86+, colgando el casco antes de los 38) van al
         // bolsillo de posibles comebacks — el camino Schumacher'10 / Kimi'12
-        if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||99)<=38)
+        if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||99)<=38 && (d.age||0)>=27)
           (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
         slots[i]=null;
       }
@@ -2401,6 +2405,19 @@ const ROT={ base:.09, porAno:.06, gracia:1, flojo:.20, tope:.5 };
    Minardi. Faltaba la vía más obvia del mercado real: que un equipo de ARRIBA vaya activamente a por un
    talento desaprovechado, aunque tenga que echar a alguien. No es automático — a veces uno se queda
    atascado de verdad (Hülkenberg existe) — pero deja de ser eterno. */
+/* 🗓️ EL MERCADO SE JUEGA AL TERMINAR LA TEMPORADA: todo lo que se narra aquí ya no cambia el año que
+   acaba, se ve en la parrilla del AÑO SIGUIENTE. Por eso estos textos van en futuro y con el año dicho.
+   Sin eso, el resumen anunciaba «Hamilton llega a McLaren» y la oferta de al lado te seguía poniendo a
+   Norris de compañero — parecía un fallo del juego y era solo el tiempo verbal (lo cazó Carlos). */
+function nextY(row){ return ((row && row.year) || yearNow()) + 1; }
+/* 🔒 UN MOVIMIENTO POR EQUIPO Y POR PILOTO CADA INVIERNO. Las cuatro funciones de mercado corren
+   seguidas sobre la MISMA parrilla, así que un intercambio podía deshacerse en el siguiente: Norris se
+   iba a Ferrari, Ferrari veía dos gallos y lo devolvía a McLaren, y el resumen contaba las dos cosas
+   mientras la parrilla se quedaba igual. Quien ya se ha movido este año, no se vuelve a mover. */
+function mktReset(){ S._mkt=[]; }
+function mktName(x){ return (!x || x==="PLAYER") ? null : (typeof x==="string" ? x : x.name); }
+function mktMoved(x){ const n=mktName(x); return !!n && (S._mkt||[]).indexOf(n)>=0; }
+function mktMark(...xs){ S._mkt=S._mkt||[]; xs.forEach(x=>{ const n=mktName(x); if(n) S._mkt.push(n); }); }
 function npcRescateTalento(row){
   const perf = t => (S.f1perf[t] ?? 75);
   const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
@@ -2428,10 +2445,12 @@ function npcRescateTalento(row){
     sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && !x.beast && (x.skill||0)<ws){ ws=x.skill||0; wi=i; } });
     if(wi<0 || ws >= (c.d.skill||0)-2) continue;   // solo si de verdad es un salto de nivel
     const sale=sl[wi];
+    if(mktMoved(c.d) || mktMoved(sale) || mktMoved(tn) || mktMoved(c.tm)) continue;
+    mktMark(tn, c.tm, c.d, sale);
     sl[wi]=c.d; S.seats[c.tm][c.i]=sale;           // intercambio: la parrilla no cambia de tamaño
     c.d.yrs=0; sale.yrs=0; S.rotYears[c.d.name]=0;
-    row.events.push(L(`🆘 ${tn} rescata a ${surname(c.d.name)} de ${c.tm}: demasiado talento para un coche así. ${surname(sale.name)} hace el camino inverso.`,
-                      `🆘 ${tn} rescues ${surname(c.d.name)} from ${c.tm}: too much talent for that car. ${surname(sale.name)} goes the other way.`));
+    row.events.push(L(`🆘 ${tn} rescatará a ${surname(c.d.name)} de ${c.tm} para ${nextY(row)}: demasiado talento para un coche así. ${surname(sale.name)} hará el camino inverso.`,
+                      `🆘 ${tn} will rescue ${surname(c.d.name)} from ${c.tm} for ${nextY(row)}: too much talent for that car. ${surname(sale.name)} goes the other way.`));
     return;
   }
 }
@@ -2450,13 +2469,15 @@ function beastKeepTop(row){
     const sl=S.seats[tn]; if(!Array.isArray(sl)) continue;
     if(isRBJr(tn)) continue;
     let wi=-1, ws=999;
-    sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && !x.beast && (x.skill||0)<ws){ ws=x.skill||0; wi=i; } });
+    // …sin llevarse por delante a quien ya se ha mudado este invierno (si no, el resumen se contradice)
+    sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && !x.beast && !mktMoved(x) && (x.skill||0)<ws){ ws=x.skill||0; wi=i; } });
     if(wi<0) continue;
     const sale=sl[wi], i0=S.seats[suyo[0]].indexOf(bes);
+    mktMark(tn, suyo[0], bes, sale);
     sl[wi]=bes; S.seats[suyo[0]][i0]=sale;                 // intercambio: la parrilla no cambia
     bes.yrs=0; sale.yrs=0;
-    row.events.push(L(`🐲 ${tn} ficha a ${bes.name}: nadie deja un talento así en un coche que no gana. ${surname(sale.name)} hace el camino inverso.`,
-                      `🐲 ${tn} signs ${bes.name}: nobody leaves that kind of talent in a car that can't win. ${surname(sale.name)} goes the other way.`));
+    row.events.push(L(`🐲 ${tn} ficha a ${bes.name} para ${nextY(row)}: nadie deja un talento así en un coche que no gana. ${surname(sale.name)} hará el camino inverso.`,
+                      `🐲 ${tn} sign ${bes.name} for ${nextY(row)}: nobody leaves that kind of talent in a car that can't win. ${surname(sale.name)} goes the other way.`));
     return;
   }
 }
@@ -2477,7 +2498,7 @@ function npcMercadoOrdinario(){
       const p=Math.min(ROT.tope, ROT.base + Math.max(0,d.yrs-ROT.gracia)*ROT.porAno + (flojo?ROT.flojo:0));
       // a un galáctico en su prime NO lo echa su propio equipo (y con el caché activo, echarlo podía
       // hacerlo desaparecer de la F1 si ningún equipo con pedigrí tenía hueco ese año)
-      if(!primeGalactico(d) && ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
+      if(!primeGalactico(d) && !mktMoved(d) && ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
     });
   });
   // 🔁 vía Albon: los agentes libres del año pasado (buenos que se quedaron sin asiento) reentran en la bolsa
@@ -2548,8 +2569,8 @@ function maybeComeback(row){
   sl[wi]=back;
   S.retiredPool=S.retiredPool.filter(x=>x!==r);
   S.comebackDone=true;
-  row.events.push(L(`🔙 BOMBAZO: ${r.name} vuelve del retiro a los ${back.age} años y correrá con ${t.name}.`,
-                    `🔙 SHOCK: ${r.name} comes out of retirement at ${back.age} and will race for ${t.name}.`));
+  row.events.push(L(`🔙 BOMBAZO: ${r.name} vuelve del retiro a los ${back.age} años y correrá con ${t.name} en ${nextY(row)}.`,
+                    `🔙 SHOCK: ${r.name} comes out of retirement at ${back.age} and will race for ${t.name} in ${nextY(row)}.`));
 }
 /* 🐲 RETO II · LA BESTIA. Un piloto de 99 que debuta contigo y ya no se va nunca: no envejece, no baja
    de nivel y no se retira. Entra en uno de los mejores coches (es un galáctico: el caché ya lo empuja
@@ -3884,8 +3905,10 @@ const DILEMAS=[
   t:()=>L("Las gomas no perdonan","The tyres don't forgive"),
   d:()=>{ const m=teammateOf(S.team.name);
     const rival = m&&m.name ? L(`${surname(m.name)} le ha encontrado el truco en dos carreras.`,`${surname(m.name)} cracked it in two races.`) : "";
-    return L(`Llega un compuesto nuevo y el mundo se ha puesto del revés. Tu forma de pilotar, la que te trajo hasta aquí, ya no calienta el tren delantero: el coche se te va largo en cada entrada y pierdes tres décimas por vuelta que no aparecen en ningún dato. ${rival} Los ingenieros esperan que decidas por dónde vais a tirar.`,
-             `A new compound arrives and the world is upside down. The way you drive, the one that brought you here, no longer gets heat into the front axle: the car washes out on every entry and you're losing three tenths a lap that show up in no data. ${rival} The engineers are waiting for you to decide which way to go.`); },
+    // cuántas décimas te cuesta: variable, para que no sea siempre «tres» (lo pidió Carlos)
+    const dec=[L("dos","two"),L("tres","three"),L("cuatro","four"),L("varias","several")][dilVar("dec",()=>irnd(0,3))];
+    return L(`Llega un compuesto nuevo y el mundo se ha puesto del revés. Tu forma de pilotar, la que te trajo hasta aquí, ya no calienta el tren delantero: el coche se te va largo en cada entrada y pierdes ${dec} décimas por vuelta que no aparecen en ningún dato. ${rival} Los ingenieros esperan que decidas por dónde vais a tirar.`,
+             `A new compound arrives and the world is upside down. The way you drive, the one that brought you here, no longer gets heat into the front axle: the car washes out on every entry and you're losing ${dec} tenths a lap that show up in no data. ${rival} The engineers are waiting for you to decide which way to go.`); },
   opts:[
    {l:()=>{ const c=S.f1char[S.team.name]; return L("Cambiar mi forma de pilotar: "+styleLabel(c),"Change how I drive: "+styleLabel(c)); },
     r:()=>{ const c=S.f1char[S.team.name];
@@ -3920,8 +3943,11 @@ const DILEMAS=[
     return !!m.name && Math.abs((m.skill||0)-S.ovr)<=5; },
   t:()=>L("Os habéis tocado","You've collided"),
   d:()=>{ const m=surname(teammateOf(S.team.name).name);
-    return L(`Vuelta 31, curva 5. ${m} y tú ibais rueda con rueda por el mismo trozo de asfalto y ninguno levantó. Los dos coches del equipo, fuera. En el box no se oye una palabra y el jefe ya ha pedido veros por separado. Mañana hay rueda de prensa y todos van a preguntar lo mismo.`,
-             `Lap 31, turn 5. ${m} and you went wheel to wheel for the same piece of tarmac and neither lifted. Both team cars, out. Nobody says a word in the garage and the boss has already asked to see you separately. There's a press conference tomorrow and everyone will ask the same thing.`); },
+    // 🏟️ dónde y cuándo: circuito de la época (sin anacronismos) y una vuelta/curva que ESE trazado tiene
+    const gps=gpList(yearNow()), gp=gps[dilVar("gpI",()=>irnd(0,gps.length-1))];
+    const vta=dilVar("vta",()=>irnd(3,Math.max(4,gp.laps-2))), cur=dilVar("cur",()=>irnd(1,gp.turns));
+    return L(`Vuelta ${vta} en ${gp.n}, curva ${cur}. ${m} y tú ibais rueda con rueda por el mismo trozo de asfalto y ninguno levantó. Los dos coches del equipo, fuera. En el box no se oye una palabra y el jefe ya ha pedido veros por separado. Mañana hay rueda de prensa y todos van a preguntar lo mismo.`,
+             `Lap ${vta} at ${gp.n}, turn ${cur}. ${m} and you went wheel to wheel for the same piece of tarmac and neither lifted. Both team cars, out. Nobody says a word in the garage and the boss has already asked to see you separately. There's a press conference tomorrow and everyone will ask the same thing.`); },
   opts:[
    {l:()=>L("Dar la cara: fue culpa mía","Own it: it was my fault"),r:()=>{
      if(ch(pPerderGalones())) return quitarGalones();
@@ -4117,9 +4143,14 @@ function pickDilemma(){
   return pool[irnd(0,pool.length-1)];
 }
 
+/* 🎲 DETALLES DE AMBIENTACIÓN de un dilema (las décimas que pierdes, la vuelta y la curva del toque).
+   Se sortean UNA vez y se guardan: si se sortearan dentro del texto, cambiar de idioma con el dilema en
+   pantalla repinta d() y el accidente se mudaría de circuito a media lectura. */
+function dilVar(k, gen){ S._dilVars=S._dilVars||{}; if(S._dilVars[k]===undefined) S._dilVars[k]=gen(); return S._dilVars[k]; }
+
 // `repintar`=true cuando solo se está cambiando el idioma: no vuelve a contar como dilema nuevo
 function renderDilemma(dl, repintar){
-  if(!repintar){ S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age; }
+  if(!repintar){ S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age; S._dilVars={}; }
   S._curDilemma=dl;   // 🌐 para poder repintarlo si cambias de idioma con el dilema en pantalla
   // 🏆 los dilemas de pelea por el título se deciden ANTES de simar el año: son un PRONÓSTICO (vienes de
   // podio y tienes cochazo). Lo apuntamos para que, si luego el año se tuerce, la temporada lo explique.
@@ -4148,8 +4179,19 @@ function renderDilemma(dl, repintar){
       setDecision("⚡ "+ttl, txt, false, true);
       refreshCard();
       if(S.retired) return;
-      // en desktop la conclusión se muestra más tiempo (da tiempo a leerla); en móvil va bien más corto
-      setTimeout(startSeasonRun, window.innerWidth>980 ? 2400 : 1100);
+      // ⏱️ LA CONCLUSIÓN HAY QUE PODER LEERLA. Antes eran 2,4 s fijos (1,1 en móvil) valieran 80 o 300
+      // caracteres: los desenlaces largos se iban a media frase y unos dilemas parecían rápidos y otros
+      // lentos sin motivo (lo cazó Carlos). Ahora el tiempo sale de lo que hay que leer, con suelo de
+      // 3 s y techo de 7,5 s… y un botón para seguir ya, que quien lee rápido no tiene por qué esperar.
+      const espera=Math.min(7500, Math.max(3000, 1400+String(txt).length*28));
+      let ido=false, tmr=0;
+      const seguir=()=>{ if(ido) return; ido=true; clearTimeout(tmr); startSeasonRun(); };
+      tmr=setTimeout(seguir, espera);
+      const cont=document.createElement("button"); cont.className="offer dilemma";
+      cont.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3f8f4f,#256030)">▸</span>
+        <span class="info"><span class="name">${L("Continuar","Continue")}</span></span>`;
+      cont.onclick=seguir;
+      box.appendChild(cont);
     };
     box.appendChild(b);
   });
@@ -4265,6 +4307,7 @@ function simSeason(){
     S.regReveal=null;
   }
   if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
+  mktReset();             // 🔒 nadie se ha movido todavía en el mercado de este invierno
   evolveF1();
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
   npcSeason();
@@ -4562,14 +4605,19 @@ function poachStar(tn, row){
     (s||[]).forEach((d,i)=>{ if(d && d!=="PLAYER" && (!best || (d.skill||0)>(best.skill||0)) && canLureStar(tn,d)){ best=d; bT=t; bI=i; } }); });
   if(!best || (best.skill||0) <= (weak.skill||0)+3) return;
   if(isRBJr(bT) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) return; // el filial no acepta veteranos
+  if(mktMoved(best) || mktMoved(weak) || mktMoved(tn) || mktMoved(bT)) return;
+  mktMark(tn, bT, best, weak);
   S.seats[bT][bI]=weak; slots[wIdx]=best;
-  row.events.push(L(`💰 ${tn} mueve ficha y se lleva a ${surname(best.name)} de ${bT}.`,
-                    `💰 ${tn} makes its move and signs ${surname(best.name)} from ${bT}.`));
+  row.events.push(L(`💰 ${tn} mueve ficha y firma a ${surname(best.name)}, que dejará ${bT} en ${nextY(row)}.`,
+                    `💰 ${tn} make their move and sign ${surname(best.name)}, who leaves ${bT} for ${nextY(row)}.`));
 }
 function alphaClash(row){
   S.alphaYears = S.alphaYears || {};
   Object.keys(S.seats).forEach(tn=>{
     const slots=S.seats[tn]; if(!slots || slots.length<2) return;
+    // 🔒 este equipo (o alguno de sus pilotos) ya se ha movido este invierno: no se toca otra vez, o el
+    // intercambio anterior se deshace y el resumen cuenta dos fichajes contrarios (lo cazó Carlos)
+    if(mktMoved(tn) || slots.some(d=>mktMoved(d))) return;
     // la MISMA regla que isElite: el jugador campeón pero crepuscular también puede ser escudero
     const playerElite = x => x==="PLAYER" && (S.ovr>=87 || ((S.titles.f1||0)>=1 && S.age<34));
     const aE = isElite(slots[0]) || playerElite(slots[0]);
@@ -4606,7 +4654,7 @@ function alphaClash(row){
     // 🫵 SI EL QUE SOBRA ERES TÚ: no te movemos a la fuerza de equipo, pero el asiento se acaba y
     // sales al mercado (como ya hacen otros dilemas). Con el motivo bien explicado.
     if(leaver==="PLAYER"){
-      S.forceMove=true; S.alphaYears[tn]=0;
+      S.forceMove=true; S.alphaYears[tn]=0; mktMark(tn, stays);
       const esTxt =
         modo==="peor"     ? `${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
       : modo==="mejor"    ? `Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
@@ -4626,7 +4674,7 @@ function alphaClash(row){
     // destino: el mejor equipo que NO tenga ya su propia pareja de gallos (y nunca el filial de RB)
     const posibles=F1_TEAMS
       .filter(t=>t.name!==tn && S.seats[t.name] && S.seats[t.name].length>=2 && !isRBJr(t.name)
-                 && S.seats[t.name].some(d=>d!=="PLAYER"))
+                 && !mktMoved(t.name) && S.seats[t.name].some(d=>d!=="PLAYER"))
       .sort((x,y)=>(S.f1perf[y.name]??70)-(S.f1perf[x.name]??70));
     // primero un equipo sin su propia pareja de gallos; si TODOS están llenos de estrellas,
     // se va igualmente al mejor sitio libre (en la vida real uno se acaba yendo sí o sí)
@@ -4634,22 +4682,24 @@ function alphaClash(row){
     if(!dest) return;
     const ds=S.seats[dest.name];
     let swapIdx = ds[0]==="PLAYER"?1 : ds[1]==="PLAYER"?0 : (((ds[0].skill||0)<=(ds[1].skill||0))?0:1);
-    const back=ds[swapIdx]; if(!back || back==="PLAYER") return;
+    const back=ds[swapIdx]; if(!back || back==="PLAYER" || mktMoved(back)) return;
     ds[swapIdx]=leaver; slots[goIdx]=back;   // intercambio
     S.alphaYears[tn]=0; S.alphaYears[dest.name]=0;
+    mktMark(tn, dest.name, leaver, back, stays);
     const va=surname(leaver.name), vuelve=surname(back.name);
     // ⚠️ cuando el que se queda eres TÚ, las frases tienen que ir en 2ª persona: «la veteranía de TÚ»
     // o «para acompañar a TÚ» no son español (lo cazó Carlos). Cada variante tiene su forma propia.
     const yo = stays==="PLAYER";
+    const yN=nextY(row);
     row.events.push(L(
-      modo==="peor"     ? `🥊 ${tn} construye ${yo?"sobre ti":"sobre "+stayName} y deja marchar a ${va}, que ficha por ${dest.name}. ${vuelve} ocupa su asiento.`
-    : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se va a ${dest.name} buscando ser el número uno. ${vuelve} llega a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
-    : modo==="veterano" ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hace las maletas rumbo a ${dest.name} y llega ${vuelve}.`
-                        : `🥊 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marcha a ${dest.name} y entra ${vuelve}.`,
-      modo==="peor"     ? `🥊 ${tn} builds around ${yo?"you":stayName} and lets ${va} go: he signs for ${dest.name}. ${vuelve} takes the seat.`
-    : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a move to ${dest.name} to be the undisputed No.1. ${vuelve} arrives at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
-    : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} comes in.`
-                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives.`));
+      modo==="peor"     ? `🥊 ${tn} construirá ${yo?"sobre ti":"sobre "+stayName} y dejará marchar a ${va}, que firma por ${dest.name} para ${yN}. ${vuelve} ocupará su asiento.`
+    : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se irá a ${dest.name} en ${yN} buscando ser el número uno. ${vuelve} llegará a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
+    : modo==="veterano" ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve}.`
+                        : `🥊 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marchará a ${dest.name} y en ${yN} entrará ${vuelve}.`,
+      modo==="peor"     ? `🥊 ${tn} will build around ${yo?"you":stayName} and let ${va} go: he signs for ${dest.name} for ${yN}. ${vuelve} takes the seat.`
+    : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a ${yN} move to ${dest.name} to be the undisputed No.1. ${vuelve} will arrive at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
+    : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} comes in for ${yN}.`
+                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives for ${yN}.`));
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
