@@ -1525,11 +1525,17 @@ function catName(cat){ if(cat==="KART") return "Karting"; if(cat==="TEST") retur
 // vínculos equipo A → equipo B: el filial nunca supera a la marca madre
 let JUNIOR_OF = {"Racing Bulls":"Red Bull"}; // se resetea por partida según la era (Toro Rosso/AlphaTauri/Racing Bulls)
 // ¿es el equipo junior de Red Bull (bajo cualquiera de sus nombres de época)? Sobrevive a los rebrandings.
-function isRBJr(name){ return JUNIOR_OF[name]==="Red Bull"; }
+/* 🦋 UN FILIAL SIN CASA MADRE NO ES UN FILIAL. En la era 2000, Red Bull solo existe si Jaguar se vende
+   (p .8): medido, en 57 de 200 partidas NO hay Red Bull en la parrilla. Ahí Toro Rosso se quedaba en
+   tierra de nadie — sin tope de coche (el tope necesita el rendimiento de la madre) pero rechazando
+   veteranos y campeones como si fuera un equipo B. Ahora, si la marca madre no está en la parrilla,
+   es un equipo independiente y punto: ficha a quien quiera y su coche puede llegar donde llegue. */
+function jrParentAlive(name){ const p=JUNIOR_OF[name]; return !!p && F1_TEAMS.some(t=>t.name===p); }
+function isRBJr(name){ return JUNIOR_OF[name]==="Red Bull" && jrParentAlive(name); }
 // 🚫 ¿es el equipo FILIAL de otro? Su coche está topado a (marca madre − 6) y a 83 por evolveF1(),
 // así que NUNCA puede ser el cochazo de la revolución técnica: le anunciarías un pelotazo y al año
 // siguiente el tope lo devolvería a mitad de tabla. Un equipo B no adelanta a su casa madre.
-function isJrTeam(name){ return JUNIOR_OF[name]!=null; }
+function isJrTeam(name){ return jrParentAlive(name); }
 
 const STYLES = {
   agresivo:{label:"🔥 Agresivo", varza:5.5, dnf:.06, growth:.25, wet:0},
@@ -2117,7 +2123,7 @@ function startCareer(){
     gp:0, wins:0, podiums:0, poles:0, ptsF1:0,
     titles:{kart:0, f4:0, f3:0, fr:0, f2:0, f1:0, constr:0}, subcamp:0,
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
-    f1perf:{}, f1target:{}, f1char:{}, cache:{}, retiredPool:[], comebackDone:false, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5),
+    f1perf:{}, f1target:{}, f1char:{}, cache:{}, retiredPool:[], comebackDone:false, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5), lluviaOK:ch(.42),
     bigInjuryDone:false, feuds:[], respects:[], _incRival:null, fiaTitleCount:0, fiaTitlePending:null, _fiaSc:null,
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, forceMove:false, apxShown:false,
     baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
@@ -3775,7 +3781,7 @@ const DILEMAS=[
    const my=S.f1perf[S.team.name]??75;
    return my>=85 && F1_TEAMS.filter(t=>(S.f1perf[t.name]??75)>my).length<=2; },
   t:()=>L("El muro se equivoca de rival","The pit wall marks the wrong man"),
-  d:()=>L("Recta final del campeonato y todavía tienes opciones. El muro decide marcar en carrera a tu rival mediático… pero tu instinto dice que la amenaza REAL es otro coche que vuela sin hacer ruido.","Closing stretch of the championship and you're still in it. The pit wall decides to shadow your headline rival… but your gut says the REAL threat is another car flying under the radar."),opts:[
+  d:()=>L("Últimas carreras del año. El muro decide marcar a tu rival mediático… pero tu instinto dice que la amenaza REAL es otro coche que vuela sin hacer ruido.","Final races of the year. The pit wall decides to shadow your headline rival… but your gut says the REAL threat is another car flying under the radar."),opts:[
    {l:()=>L("Imponer tu criterio por radio","Overrule them on the radio"),r:()=>roll(
      [5,()=>(S.dilWin=(S.dilWin||0)+1,OVR(1),VAL(1.12),L("Tenías razón: cubres al rival correcto y el paddock alucina con tu lectura de carrera. +1 OVR, +fama","You were right: you cover the real threat and the paddock marvels at your racecraft. +1 OVR, +fame"))],
      [3,()=>L("Ni tú ni ellos: la carrera se decide por otro lado. Sin cambios.","Neither call mattered: the race is decided elsewhere. No change.")],
@@ -3920,6 +3926,51 @@ const DILEMAS=[
      S.neverHire[old]=true; S.forceMove=true; VAL(.92);
      return L(`Te vas un año antes de que acabe tu contrato. ${old} te cierra la puerta para siempre y en la prensa te llaman desertor, pero no piensas quemar tus mejores años peleándote con un coche que no es el tuyo. −fama`,
               `You leave a year before your contract ends. ${old} shuts the door on you forever and the press calls you a deserter, but you won't burn your best years fighting a car that isn't yours. −fame`); }}]},
+
+ // ═══ 🎓 DILEMAS DE LOS AÑOS DE FORMACIÓN (ago-2026) ═══
+ // Traen `minAge` propio: sin él jamás se verían, porque pickDilemma corta por debajo de los 18 y el
+ // 84% de los dilemas cae en F1. Medido antes de esto: en karting, CERO.
+
+ // 🌧️ SIN GOMAS DE LLUVIA [Alonso, reformulado a profesional]. Matiz de Carlos: eres un chaval, así que
+ // pagarlas NO es cosa tuya — es un sacrificio de tu familia… salvo que ya tengas contrato de wonderkid,
+ // y entonces las paga el equipo y lo que gastas es crédito con ellos. Dos sabores según tu situación.
+ {id:"gomasLluvia",stage:"jr",minAge:14,
+  // 70% de las carreras era demasiado: a los 14-16 casi no hay dilemas con los que competir y se lo
+  // llevaba siempre. Ahora pide además un equipo MODESTO, que es de lo que va: un equipo con dinero
+  // lleva gomas de agua a un test. (Medido: del 70% al ~30%.)
+  cond:()=>{ if(!S.lluviaOK||S.cat==="F1"||S.cat==="TEST"||S.wetMaster||!S.team) return false;
+    const p=S.jrPerf[S.team.name]!=null?S.jrPerf[S.team.name]:(S.team.perf||60);
+    return p<=58; },
+  t:()=>L("Llueve y no hay gomas de agua","It's raining and there are no wets"),
+  d:()=>{ const paga = S.patron
+      ? L(`${S.patron} las pagaría con una llamada`,`${S.patron} would pay for them with one phone call`)
+      : L("en tu casa habría que rascar de donde no hay","at home the money would have to come from somewhere it isn't");
+    return L(`Diluvia sobre el circuito y tu equipo no ha traído neumáticos de agua: no entraban en el presupuesto. Los demás ya están rodando. Tú tienes cuatro gomas de seco, una pista que es un espejo y ${paga}.`,
+             `It's pouring and your team hasn't brought wet tyres: they weren't in the budget. Everyone else is already out. You have four slicks, a track like a mirror, and ${paga}.`); },
+  opts:[
+   {l:()=>L("Salir con lo que hay","Go out on what you've got"),r:()=>roll(
+     [6,()=>{ S.wetMaster=.6; return L("Sales a rodar con gomas de seco sobre un espejo y no te queda otra que aprender a leer el agua: dónde agarra, dónde no, cuánto puedes pedirle. De ahí sales sabiendo algo que no se enseña. 🌧️ Maestría en mojado, para siempre.","You go out on slicks over a mirror and you have no choice but to learn to read the water: where it grips, where it doesn't, how much you can ask of it. You come out knowing something nobody teaches. 🌧️ Wet mastery, for good."); }],
+     [4,()=>(OVR(-1),L("Te vas fuera en la tercera vuelta y rompes el morro. El equipo paga la reparación y te lo va a recordar todo el año. −1 OVR","You go off on lap three and break the nose. The team pays for it and will remind you all year. −1 OVR"))])},
+   {l:()=>L("Quedarte en el box","Stay in the garage"),r:()=>L("Ves llover desde el muro. Sensato, aburrido y sin consecuencias: otro día será.","You watch the rain from the pit wall. Sensible, dull and harmless: another day.")},
+   {l:()=>S.patron ? L("Que las pague el equipo","Let the team pay for them") : L("Que las pague tu familia","Let your family pay for them"),
+    r:()=>{ if(S.patron){ S.patronCredit=(S.patronCredit||0)-1; OVR(1);
+        return L(`Una llamada y aparecen cuatro juegos de agua. Ruedas todo el día y aprendes. En ${S.patron} lo apuntan en tu cuenta: no es un regalo, es una inversión que esperan recuperar. +1 OVR`,`One call and four sets of wets appear. You run all day and you learn. At ${S.patron} they write it down: it's not a gift, it's an investment they expect back. +1 OVR`); }
+      OVR(1); VAL(.96);
+      return L("Aparecen las gomas. Nadie te cuenta de dónde ha salido el dinero, pero en casa ese mes no sobra nada. Ruedas, aprendes… y te llevas puesto un peso que no te quitas. +1 OVR","The tyres appear. Nobody tells you where the money came from, but at home that month there's nothing to spare. You run, you learn… and you carry a weight you won't shake off. +1 OVR"); }}]},
+
+ // 🪪 LA LICENCIA EN DUDA [Räikkönen, 2001]: le subieron a la F1 con 23 carreras de coches y la
+ // federación no quería darle la superlicencia; su jefe salió de garante.
+ {id:"licencia",stage:"jr",minAge:17,
+  cond:()=>S.cat!=="F1" && S.cat!=="TEST" && S.ovr>=70 && (S.seasons||[]).filter(x=>x.cat!=="KART").length<=2,
+  t:()=>L("La licencia en duda","The licence in doubt"),
+  d:()=>L("Un equipo de Fórmula 1 te quiere para el año que viene. El problema es que apenas has corrido carreras de monoplaza y la federación no las ve suficientes para darte la superlicencia. Tu futuro jefe ha salido de garante: responde por ti personalmente delante de todos. Si te estrellas, se lo lleva puesto él.",
+             "A Formula 1 team wants you for next year. The problem is you've barely raced single-seaters and the federation doesn't think that's enough for a superlicence. Your future boss has vouched for you personally, in front of everyone. If you crash out, he goes down with you."),
+  opts:[
+   {l:()=>L("Aceptar y firmar ya","Accept and sign now"),r:()=>{ S.licPresion=true;
+     return L("Firmas. Te dan la licencia con condiciones y medio paddock esperando a que la líes. Llegas antes que nadie de tu generación… con lupa encima desde el primer día.","You sign. They grant the licence with conditions and half the paddock waiting for you to mess up. You arrive earlier than anyone of your generation… under a microscope from day one."); }},
+   {l:()=>L("Esperar un año más","Wait one more year"),r:()=>roll(
+     [65,()=>(OVR(2),L("Haces otra temporada, sumas kilómetros de verdad y llegas hecho un piloto en vez de una promesa. El asiento sigue ahí. +2 OVR","You do another season, bank real mileage and arrive as a driver instead of a prospect. The seat is still there. +2 OVR"))],
+     [35,()=>(OVR(1),L("Haces otra temporada y creces… pero cuando levantas la cabeza, el asiento se lo han dado a otro. La F1 no espera. +1 OVR","You do another season and you grow… but when you look up, the seat has gone to someone else. F1 doesn't wait. +1 OVR"))])}]},
 
  // 🛞 LAS GOMAS NO PERDONAN (Button, 2011-12): su pilotaje suave era oro con unos Pirelli y veneno con
  // otros. NO es «El reglamento que te hunde» (aquello lo dispara la revolución técnica): aquí no hay
@@ -4109,7 +4160,10 @@ function regBetOn(){ return S.cat==="F1" && S.team && S.regBet===S.team.name; }
 // que es como no tenerlo. (Medido, 250-300 partidas por punto.)
 let P_GOMAS=.5, P_TOQUE=.06;
 function pickDilemma(){
-  if(S.age<18) return null;
+  // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
+  // `minAge` pueden saltar antes (los de formación, que sin esto jamás se verían en karting).
+  // Aviso expreso de Carlos: bajarlo para todos era «cagarla».
+  if(S.age<18 && !DILEMAS.some(d=>d.minAge!=null && S.age>=d.minAge)) return null;
   // 🧪 en un escenario de prueba manda EL dilema que se quiere revisar: si no, compite con los ~45 del
   // catálogo y hacen falta muchos intentos para verlo
   const _T=testNow();
@@ -4165,6 +4219,7 @@ function pickDilemma(){
   if(!ch(.30)) return null;
   const pool=DILEMAS.filter(d=>{
     if(S.usedDilemmas[d.id]) return false;
+    if(S.age < (d.minAge!=null ? d.minAge : 18)) return false;   // cada dilema, su edad mínima
     if(d.from && yearNow()<d.from) return false; // ⏳ filtro de ÉPOCA: en 2012 no hay documentales de plataforma ni activismo de podio
     if(d.cond && !d.cond()) return false; // condición extra (año joven, Nº1 en equipo malo, edad del compañero…)
     if(d.stage==="test") return S.cat==="TEST" && S.reserveDilOK; // reserva: no en todas las partidas
@@ -4972,7 +5027,7 @@ function simF1(row,st){
     const scores=grid.map(d=>{
       let s=d.skill*.48+((perf[d.team]??75)-(d.isP?carDeficit:0))*.52+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
       if(d.isP) s+=roleBonus+affinity+(sel.style==="agresivo"?1.4:0); // agresivo: ritmo de carrera puro (y arriesgado)
-      if(wet && d.isP) s+=st.wet*6;
+      if(wet && d.isP) s+=(st.wet+(S.wetMaster||0))*6;   // 🌧️ + lo que aprendiste de chaval con gomas de seco
       return {d,s,dnf:(d.isP&&out)||Math.random()<((d.isP?st.dnf:.07)*(chaos?1.6:1))};
     });
     if(!out){
