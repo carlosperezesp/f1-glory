@@ -3329,10 +3329,10 @@ const DILEMAS=[
   d:()=>{ const m=teammateOf(S.team.name); S._mateName=m?surname(m.name):L("tu compañero","your teammate");
     S._papaya=ch(.5);
     return S._papaya
-      ? L(`El coche da para ganar y tu compañero ${S._mateName} y tú vais a pelear el título entre vosotros. El equipo os sienta en una sala y os impone sus normas: podéis competir, pero no tocaros. Ni un roce.`,
-          `The car is a winner and your teammate ${S._mateName} and you are going to fight for the title with each other. The team sits you both down and lays down the rules: you may race, but you will not touch. Not once.`)
-      : L(`El coche da para ganar y tu compañero ${S._mateName} y tú vais a pelear el título entre vosotros. Él te busca antes de la primera carrera: un pacto entre los dos, sin el equipo delante — corremos limpio y que gane el mejor.`,
-          `The car is a winner and your teammate ${S._mateName} and you are going to fight for the title with each other. He comes to you before the first race: a pact between the two of you, with the team out of the room — we race clean and may the best man win.`); },
+      ? L(`El coche da para ganar y en el paddock dan por hecho que el título se decidirá dentro de tu propio garaje. El equipo os sienta a ${S._mateName} y a ti en una sala y os impone sus normas: podéis competir, pero no tocaros. Ni un roce.`,
+          `The car is a winner and the paddock takes for granted that the title will be decided inside your own garage. The team sits you and ${S._mateName} down and lays down the rules: you may race, but you will not touch. Not once.`)
+      : L(`El coche da para ganar y en el paddock dan por hecho que el título se decidirá dentro de tu propio garaje. ${S._mateName} te busca antes de la primera carrera: un pacto entre los dos, sin el equipo delante — corremos limpio y que gane el mejor.`,
+          `The car is a winner and the paddock takes for granted that the title will be decided inside your own garage. ${S._mateName} comes to you before the first race: a pact between the two of you, with the team out of the room — we race clean and may the best man win.`); },
   opts:[
    {l:()=>L("Aceptar y correr limpio","Accept and race clean"),r:()=>{ const n=S._mateName; return roll(
      [5,()=>(CAR(1),respectMate(),L(`🤝 Ninguno de los dos se pasa de la raya en todo el año: sin guerra interna, el equipo empuja a tope y el coche mejora. +1 coche`,`🤝 Neither of you crosses the line all year: no internal war, the team pushes flat out and the car improves. +1 car`))],
@@ -3410,7 +3410,7 @@ const DILEMAS=[
      [3,()=>L("Nadie te lo agradece. Regalaste una victoria. Sin cambios.","Nobody thanks you. You gave away a win. No change.")])}]},
  // idem: te juegas el Mundial en la última carrera → solo si de verdad estás ahí arriba
  {id:"titlecrash",stage:"vet",cond:()=>S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=4,
-  t:()=>L("El duelo por el título","The title showdown"),d:()=>L("Última carrera del año, os jugáis el Mundial tú y tu rival. Se acerca por fuera y tienes la puerta para cerrarle de forma temeraria.","Final race of the year, you and your rival are fighting for the title. He comes up the outside and you have the chance to slam the door recklessly."),opts:[
+  t:()=>L("El duelo por el título","The title showdown"),d:()=>L("Última carrera del año, con el campeonato todavía abierto y tu rival directo al lado. Se acerca por fuera y tienes la puerta para cerrarle de forma temeraria.","Final race of the year, the championship still open and your closest rival alongside. He comes up the outside and you have the chance to slam the door recklessly."),opts:[
    {l:()=>L("Cerrarle sin piedad","Slam the door mercilessly"),r:()=>roll(
      [4,()=>(VAL(1.15),OVR(1),L("Le echas y sales impune: temido y respetado. +fama, +1 OVR","You run him off and get away with it: feared and respected. +fame, +1 OVR"))],
      [3,()=>(VAL(.75),L("Chocáis los dos: fama de tramposo y un año amargo. Fama -25%","You both crash: a cheat's reputation and a bitter year. Fame -25%"))],
@@ -3775,7 +3775,7 @@ const DILEMAS=[
    const my=S.f1perf[S.team.name]??75;
    return my>=85 && F1_TEAMS.filter(t=>(S.f1perf[t.name]??75)>my).length<=2; },
   t:()=>L("El muro se equivoca de rival","The pit wall marks the wrong man"),
-  d:()=>L("Final de temporada con el título en juego. El muro decide marcar en carrera a tu rival mediático… pero tu instinto dice que la amenaza REAL es otro coche que vuela sin hacer ruido.","Season finale with the title on the line. The pit wall decides to shadow your headline rival… but your gut says the REAL threat is another car flying under the radar."),opts:[
+  d:()=>L("Recta final del campeonato y todavía tienes opciones. El muro decide marcar en carrera a tu rival mediático… pero tu instinto dice que la amenaza REAL es otro coche que vuela sin hacer ruido.","Closing stretch of the championship and you're still in it. The pit wall decides to shadow your headline rival… but your gut says the REAL threat is another car flying under the radar."),opts:[
    {l:()=>L("Imponer tu criterio por radio","Overrule them on the radio"),r:()=>roll(
      [5,()=>(S.dilWin=(S.dilWin||0)+1,OVR(1),VAL(1.12),L("Tenías razón: cubres al rival correcto y el paddock alucina con tu lectura de carrera. +1 OVR, +fama","You were right: you cover the real threat and the paddock marvels at your racecraft. +1 OVR, +fame"))],
      [3,()=>L("Ni tú ni ellos: la carrera se decide por otro lado. Sin cambios.","Neither call mattered: the race is decided elsewhere. No change.")],
