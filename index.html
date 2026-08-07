@@ -1042,6 +1042,7 @@ const ROOKIE_POOL = [
    MODERACIÓN: solo apellido + bandera; nada de nombres ofensivos ni suplantaciones. */
 const SUPPORTERS = [
   {n:"Braisferso", t:1},   // ⭐ el primero de todos (sin bandera: no la sabemos)
+  {n:"Darkkk", t:2},       // 🏎️ tramo Piloto: su apellido entra en el pool y corre en la F1 (sin bandera)
 ];
 const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
@@ -3125,8 +3126,12 @@ function signContract(o){
     occupySeat(o.team.name);
     S.youngDetour=false; // llegaste a la F1: la vía joven de escape ya cumplió su papel
     const mateName=teammateOf(o.team.name).name;
-    // renovación con el mismo compañero → conservar el rol; si no, recalcular
-    if(!(sameSeat && S.roleMate===mateName && S.role)) S.role=o.role||roleFor(o.team.name);
+    // ⚠️ EL ROL QUE PONE LA TARJETA ES EL QUE VALE. Antes, al RENOVAR con el mismo compañero se
+    // conservaba el rol viejo y se ignoraba o.role: la oferta decía «PILOTO Nº1» —te habías ganado el
+    // ascenso— y firmabas para seguir de Nº2 (y al revés, si tu compañero era el campeón vigente).
+    // roleFor() ya lleva dentro la pegajosidad del rol, así que no hay que blindarlo otra vez aquí.
+    // Medido: 1,7% de las firmas, TODAS renovaciones.
+    S.role = o.role || (sameSeat && S.roleMate===mateName && S.role) || roleFor(o.team.name);
     S.roleTeam=o.team.name; S.roleMate=mateName;
   } else { S.role=null; S.roleTeam=null; S.roleMate=null; }
   refreshCard();
