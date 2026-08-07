@@ -1419,9 +1419,13 @@ const KART_2000 = [
 // 🧬 linaje desde 2000 (verificado). La cadena de Jordan es la más larga de la historia de la F1.
 const LINEAGE_2000 = [
  {key:"Jaguar", steps:[{to:{name:"Red Bull",abbr:"RBR",color:"#0A1E5E",color2:"#D4001A"}, w:[2004,2007], p:.8}]},
- {key:"Minardi", steps:[{to:{name:"Toro Rosso",abbr:"STR",color:"#153A72",color2:"#D00000"}, w:[2005,2008], p:.75},
-                        {to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2019,2022], p:.6},
-                        {to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2028], p:.6}]},
+ // 🦋 TORO ROSSO ES RED BULL COMPRANDO MINARDI: sin comprador no hay reventa (lo cazó Carlos). Los tres
+ // nombres son marcas de Red Bull, así que los tres EXIGEN que Red Bull esté en la parrilla (`needs`), y
+ // cada uno tiene que venir del anterior (`from`): nada de Minardi→AlphaTauri sin haber sido Toro Rosso.
+ // Si Jaguar no se vende, Minardi se queda siendo Minardi para siempre.
+ {key:"Minardi", steps:[{to:{name:"Toro Rosso",abbr:"STR",color:"#153A72",color2:"#D00000"}, w:[2005,2008], p:.75, needs:"Red Bull"},
+                        {to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2019,2022], p:.6, needs:"Red Bull", from:"Toro Rosso"},
+                        {to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2028], p:.6, needs:"Red Bull", from:"AlphaTauri"}]},
  {key:"BAR", steps:[{to:{name:"Honda",abbr:"HON",color:"#F5F5F5",color2:"#D0021B"}, w:[2005,2008], p:.7},
                     {to:{name:"Brawn",abbr:"BGP",color:"#C6E600",color2:"#111111"}, w:[2008,2011], p:.5},
                     {to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2010,2013], p:.8}]},
@@ -2141,7 +2145,7 @@ function startCareer(){
   // 🧬 filial de época + plan de linaje sorteado POR PARTIDA (cada transformación: ¿ocurre? ¿qué año?)
   JUNIOR_OF = {...ERA.juniorOf};
   S.lineage = (ERA.lineage||[]).map(c=>({key:c.key, cur:c.key,
-    steps:c.steps.map(st=>({to:st.to, die:st.die, year:irnd(st.w[0],st.w[1]), go:ch(st.p), done:false}))}));
+    steps:c.steps.map(st=>({to:st.to, die:st.die, needs:st.needs, from:st.from, year:irnd(st.w[0],st.w[1]), go:ch(st.p), done:false}))}));
   // 🎬 llegadas históricas con jitter ±1 año (Antonelli puede llegar en 2024, 2025 o 2026…)
   S.arrivals = (ERA.arrivals||[]).map(a=>({...a, y:a.y+irnd(-1,1)}));
   // 🏗️ RECONSTRUIR la parrilla F1 desde la era elegida (contenido reemplazado IN SITU → todas las
@@ -4591,6 +4595,10 @@ function processLineage(row){
   (S.lineage||[]).forEach(chn=>{
     chn.steps.forEach(st=>{
       if(st.done || !st.go || yearNow()<st.year) return;
+      // 🦋 ¿hace falta un comprador y no está en la parrilla? Entonces esta compra NO ocurre nunca.
+      if(st.needs && !F1_TEAMS.some(x=>x.name===st.needs)){ st.done=true; return; }
+      // 🔗 y cada rebautizo tiene que venir del anterior: sin Toro Rosso no hay AlphaTauri
+      if(st.from && chn.cur!==st.from){ st.done=true; return; }
       const t=F1_TEAMS.find(x=>x.name===chn.cur);
       if(!t){ st.done=true; return; } // el equipo ya no existe (murió antes)
       if(st.die){
