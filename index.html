@@ -2182,6 +2182,7 @@ function startCareer(){
   $("tagNum").textContent = "#"+sel.num;
   $("tagStyle").textContent = styleLabel(sel.style);
   S._t0 = Date.now(); // marca de inicio real (para el filtro anti-trampa de tiempo de juego)
+  S.supDriver = pickSupDriver();  // 🏎️ ¿corre el piloto de algún mecenas en esta partida?
   // 📅 RETO que revive a alguien: en vez del karting, arrancas directamente en su asiento.
   //    Los retos de REGLAS (La Bestia) no tienen `who`: se juegan como una carrera normal desde el
   //    karting, y su regla se aplica sola cuando toca (spawnBeast al llegar a la F1).
@@ -2238,8 +2239,17 @@ function refreshCard(){
 const GEN_INITIALS="ADEFGHJKLMNOPRSTV";
 // ☕ los mecenas de tramo Piloto o superior entran en el pool de apellidos: su nombre puede
 // correr (y ganar) en la partida de cualquier jugador del mundo
-SUPPORTERS.filter(s=>(s.t||0)>=2 && s.pool!==false).forEach(s=>{ const n=s.driver||s.n;
-  if(!GEN_NAMES.some(g=>g[0]===n)) GEN_NAMES.push([n, s.f||"🏁"]); });
+/* 🏎️ EL PILOTO DEL MECENAS. Metido a secas en el bote de nombres genéricos salía en 1 de cada 100
+   carreras, y darle más papeletas dentro del bote tampoco arreglaba nada: ese bote SOLO se usa cuando
+   se agota la cantera de promesas reales, y con ~24 novatos por partida casi nunca se agota (medido:
+   con 14 papeletas de 40 seguía saliendo en el 3%).
+   Así que se sortea aparte: AL EMPEZAR la partida, con probabilidad P_SUP, uno de los mecenas «tiene
+   ficha» para esa carrera y debuta como un novato más en algún momento. Uno por carrera como mucho:
+   es un guiño, no una invasión. */
+let P_SUP=.10;
+const SUP_DRIVERS=SUPPORTERS.filter(s=>(s.t||0)>=2 && s.pool!==false).map(s=>[s.driver||s.n, s.f||"🏁"]);
+SUP_DRIVERS.forEach(d=>{ if(!GEN_NAMES.some(g=>g[0]===d[0])) GEN_NAMES.push([d[0], d[1]]); }); // y además, en el bote
+function pickSupDriver(){ return (SUP_DRIVERS.length && ch(P_SUP)) ? SUP_DRIVERS[irnd(0,SUP_DRIVERS.length-1)] : null; }
 // 💛💙 «generación dorada»: si el buff tocó esta partida, empuja a un piloto de TU nacionalidad (grid o novato)
 function homeBuffOne(d){ if(S.homeBuff && d && d.flag===sel.flag){ d.skill=Math.min(96,d.skill+3); d.ceil=Math.min(97,Math.max(d.ceil+5,d.skill)); } return d; }
 // nombre ACTUAL del equipo preferido de una llegada (resuelve el linaje: "Sauber"→"Alfa Romeo"→"Audi")
@@ -2292,13 +2302,16 @@ function mkRookie(noCross, forTeam){
     }
   }
   let name, flag, born=null;
+  // 🏎️ si a esta partida le tocó el piloto de un mecenas, entra por aquí, como una promesa más
+  if(S.supDriver && ch(.15)){ name=S.supDriver[0]; flag=S.supDriver[1]; S.supDriver=null; }
   S.rookies=S.rookies.filter(r=>!S.dpool.some(d=>d.name===r[0])); // purga nombres que ya entraron por otra vía
   // ⏳ cada promesa puede llevar año de «disponible desde» (r[2]) → los Costoya de 2026 no aparecen en 2012:
   // en una partida retro, las promesas de cada década van entrando cuando la línea temporal llega a su época.
   // Y r[3] = año de NACIMIENTO (probadores tipo Wolff/López): debutan con su edad real, no como chavales.
   const _yr=yearNow();
   const _avail=S.rookies.map((r,i)=>i).filter(i=>!S.rookies[i][2] || _yr>=S.rookies[i][2]);
-  if(_avail.length){
+  if(name){ /* ya lo puso el bloque del mecenas */ }
+  else if(_avail.length){
     let _i=_avail[irnd(0,_avail.length-1)];
     // 🇪🇸 realismo: sin equipo español vivo (HRT), la parrilla no se llena de españoles (máx 3) → se elige otro.
     // (Los británicos no tienen freno: con tanto equipo británico, sí es realista.)
@@ -4089,6 +4102,12 @@ function regBetTeam(){
 }
 function regBetOn(){ return S.cat==="F1" && S.team && S.regBet===S.team.name; }
 
+// prioridad de los dos dilemas de ago-2026. El toque salía en el 54% de las carreras —el más frecuente
+// del juego con diferencia— y Carlos pidió bajarlo. Como constantes para poder medirlas A/B.
+// .12 dejaba el toque en el 55% de las carreras —el dilema más frecuente del juego con diferencia—.
+// Con .06 baja al 29%, en la misma banda que gomas y reinvención. Sin prioridad ninguna caería al 4,8%,
+// que es como no tenerlo. (Medido, 250-300 partidas por punto.)
+let P_GOMAS=.5, P_TOQUE=.06;
 function pickDilemma(){
   if(S.age<18) return null;
   // 🧪 en un escenario de prueba manda EL dilema que se quiere revisar: si no, compite con los ~45 del
@@ -4108,7 +4127,7 @@ function pickDilemma(){
   }
   // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
   //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
-  for(const [id,pr] of [["gomas",.5],["toqueMate",.12]]){
+  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE]]){
     if(S.usedDilemmas[id] || (S.age-S.lastDilemmaAge<1)) continue;
     const d=DILEMAS.find(x=>x.id===id);
     if(d && d.cond() && ch(pr)) return d;
