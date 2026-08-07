@@ -3990,24 +3990,25 @@ const DILEMAS=[
   d:()=>{ const g=[...F1_TEAMS].filter(t=>(S.f1perf[t.name]??70)>=87 && !S.neverHire[t.name] && !isRBJr(t.name))
       .sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))[0];
     S._debutBig=g?g.name:null;
-    const motivo=[L("una lesión de última hora","a last-minute injury"),
-                  L("una sanción a su titular","a ban for their regular"),
-                  L("un patrocinador que se cayó y se llevó al piloto","a sponsor who pulled out and took the driver with him"),
-                  L("un titular que se largó a mitad de año","a regular who walked out mid-season")][dilVar("motivo",()=>irnd(0,3))];
+    const motivo=[L("se lesionó su titular","their regular got injured"),
+                  L("sancionaron a su titular","their regular got banned"),
+                  L("un patrocinador se cayó y se llevó a su piloto","a sponsor pulled out and took their driver with him"),
+                  L("su titular se largó a mitad de año","their regular walked out mid-season")][dilVar("motivo",()=>irnd(0,3))];
     const n=dilVar("carreras",()=>irnd(1,4));
-    return L(`Te subieron al coche por ${motivo} y llevas ${n} ${n===1?"carrera":"carreras"} dejando con la boca abierta a todo el paddock. En ${S.team.name} ya te han dicho que el asiento es tuyo, pero el contrato aún no está firmado. Y esta mañana ha llamado ${S._debutBig||"uno de los grandes"}.`,
-             `They put you in the car because of ${motivo} and you've spent ${n} ${n===1?"race":"races"} leaving the whole paddock open-mouthed. At ${S.team.name} they've already told you the seat is yours, but the contract isn't signed. And this morning ${S._debutBig||"one of the giants"} called.`); },
+    const tn=S.team.name, big=S._debutBig||L("uno de los grandes","one of the giants");
+    return L(`Estabas de reserva en ${tn} hasta que ${motivo}: te dieron el volante y llevas ${n} ${n===1?"carrera":"carreras"} dejando con la boca abierta a todo el paddock. ${tn} quiere renovarte YA para toda la temporada que viene, pero todavía no has firmado nada. Y esta mañana ha llamado ${big}: te quieren a ti, y no el año que viene — quieren subirte a su coche AHORA MISMO, con la temporada a medias.`,
+             `You were ${tn}'s reserve until ${motivo}: they handed you the wheel and you've spent ${n} ${n===1?"race":"races"} leaving the whole paddock open-mouthed. ${tn} want to sign you NOW for the whole of next season, but nothing is on paper yet. And this morning ${big} called: they want you, and not next year — they want you in their car RIGHT NOW, with the season half run.`); },
   opts:[
-   {l:()=>L("Cumplir tu palabra","Keep your word"),r:()=>{ S.lockTeam=S.team.name; VAL(1.15);
+   {l:()=>L(`Cumplir tu palabra: seguir en ${S.team?S.team.name:""}`,`Keep your word: stay at ${S.team?S.team.name:""}`),r:()=>{ S.lockTeam=S.team.name; VAL(1.15);
      return L(`Te quedas donde te dieron la oportunidad. El paddock entero toma nota: en este circo, el que cumple su palabra es noticia. Sigues en ${S.team.name}. +fama`,
               `You stay where they gave you the chance. The whole paddock takes note: in this circus, a man who keeps his word is news. You stay at ${S.team.name}. +fame`); }},
-   {l:()=>{ return L(`Firmar con ${S._debutBig||"el grande"} ya`,`Sign with ${S._debutBig||"the giant"} now`); },
+   {l:()=>{ return L(`Irte a ${S._debutBig||"el grande"} ya, con el año empezado`,`Leave for ${S._debutBig||"the giant"} now, mid-season`); },
     r:()=>{ const big=S._debutBig, small=S.team.name;
       if(!big) return L("La llamada se enfría y se queda en nada.","The call goes cold and comes to nothing.");
       S.midMove=big; S.lockTeam=big; S.neverHire[small]=true; VAL(.9);
       return L(`Te vas a mitad de temporada. ${small} te lleva a los tribunales y en el paddock se habla de otra cosa durante meses. Pero te subes al coche bueno con ${S.f1Seasons<1?"el casco todavía sin estrenar":"apenas un puñado de carreras"}. Puerta cerrada en ${small} para siempre. −fama`,
                `You leave mid-season. ${small} takes you to court and the paddock talks about nothing else for months. But you get into the good car with ${S.f1Seasons<1?"your helmet barely broken in":"barely a handful of races behind you"}. ${small}'s door is shut forever. −fame`); }},
-   {l:()=>L("Que se peleen ellos","Let them fight it out"),r:()=>{ const big=S._debutBig, small=S.team.name;
+   {l:()=>L("Callarte y que lo peleen los abogados","Say nothing and let the lawyers fight it"),r:()=>{ const big=S._debutBig, small=S.team.name;
      return roll(
       [50,()=>{ S.midMove=big; S.lockTeam=big;
         return L(`Te apartas y dejas que lo resuelvan los abogados. Sale bien: acabas en ${big} y sin quedar mal con nadie.`,`You step aside and let the lawyers sort it out. It works: you end up at ${big} and nobody has a bad word for you.`); }],
@@ -4531,7 +4532,7 @@ function simSeason(){
   // 🏁 revolución técnica: al terminar el año del reset, se destapa quién entendió el reglamento
   if(S.regReveal && S.regReveal.year===row.year){
     const R=S.regReveal, b=R.brawn;
-    row.events.push(L(`🏁 Se estrena el reglamento: ${b} arrasa y se convierte en el nuevo coche a batir.`,`🏁 The new rulebook debuts: ${b} dominates and becomes the car to beat.`));
+    row.events.push(L(`🏁 Se estrena un reglamento nuevo: ${b} arrasa y se convierte en el coche a batir.`,`🏁 A new rulebook comes in: ${b} dominates and becomes the car to beat.`));
     if(R.rumorTrue) row.events.push(L(`🔮 ${R.rumor} acertó de pleno con el reglamento.`,`🔮 ${R.rumor} nailed the new rules completely.`));
     else row.events.push(L(`🔮 ${R.rumor} se estrelló con el nuevo reglamento; el verdadero triunfador fue ${b}.`,`🔮 ${R.rumor} flopped with the new rules; the real winner was ${b}.`));
     // 🎲 se cobra la apuesta: dejaste un coche ganador por unos planos. ¿Y ahora?
@@ -6083,7 +6084,7 @@ function renderTimeline(){
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")}<br>🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season")} ${r.year}">${r.age}</span>
-      <span class="club">${badge(r.team2||r.team,"",r.year)}
+      <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}
         <span><span class="nm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
             : `${teamDisp(r.team, r.year)} · ${r.year} · ${catLbl}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
@@ -6109,9 +6110,11 @@ function renderCareerMap(){
     const last=stints[stints.length-1];
     // agrupamos por el nombre QUE TENÍA ese año: así el resumen parte el tramo cuando la serie se
     // rebautiza (Formula Nippon → Super Fórmula), igual que ya hace con los equipos de F1
-    const key=teamDisp(s.team, s.year);
-    if(last && last.key===key && last.cat===s.cat) last.rows.push(s);
-    else stints.push({team:s.team, cat:s.cat, rows:[s], key});
+    // 🤝 un año PARTIDO (te traspasaron a mitad de temporada) no se agrupa con nadie: es su propio
+    // tramo y se lee «Racing Bulls → Red Bull '32», que si no el mapa se comía media historia.
+    const key=s.team2 ? teamDisp(s.team,s.year)+" → "+teamDisp(s.team2,s.year) : teamDisp(s.team, s.year);
+    if(!s.team2 && last && last.key===key && last.cat===s.cat && !last.split) last.rows.push(s);
+    else stints.push({team:s.team, team2:s.team2, split:!!s.team2, cat:s.cat, rows:[s], key});
   });
   // celdas más pequeñas cuando la carrera es larga, para que quepa en una pantalla
   const totalYears=f1s.length;
@@ -6140,8 +6143,10 @@ function renderCareerMap(){
       return `<span class="cmcell ${cls}" title="${tip}">${lab}</span>`;
     }).join("");
     html+=`<div class="cmstint">
-      <span class="cmmeta">${badge(st.team,"cmdot",y0)}
-        <span class="cmname">${teamDisp(st.team, y0)}${isTest?L(" ·prob"," ·res"):""}</span><span class="cmyears">${yrs}</span></span>
+      <span class="cmmeta">${st.split ? badge(st.team,"cmdot",y0)+badge(st.team2,"cmdot",y0) : badge(st.team,"cmdot",y0)}
+        <span class="cmname">${st.split
+          ? `${teamDisp(st.team, y0)} → ${teamDisp(st.team2, y0)}`
+          : `${teamDisp(st.team, y0)}${isTest?L(" ·prob"," ·res"):""}`}</span><span class="cmyears">${yrs}</span></span>
       <span class="cmcells">${cells}</span></div>`;
   });
   el.innerHTML=html;
