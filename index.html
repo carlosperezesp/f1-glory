@@ -5123,7 +5123,10 @@ function alphaClash(row){
     const campeonVigente = x => x==="PLAYER"
       ? ((S.seasons.at(-1)||{}).cat==="F1" && (S.seasons.at(-1)||{}).pos===1)
       : !!(x && S.lastChampName && x.name===S.lastChampName);
-    if(campeonVigente(slots[goIdx])) goIdx = 1-goIdx;
+    /* 👑 EL CAMPEÓN SÍ PUEDE IRSE — pero se va ÉL, no lo echan (matiz de Carlos: Rosberg se piró,
+       Alonso y Hamilton pudieron hacerlo). En «mejor» la decisión es del piloto, así que ahí no se
+       toca nada. En los otros tres modos manda el equipo, y ningún equipo echa a su campeón vigente. */
+    if(modo!=="mejor" && campeonVigente(slots[goIdx])) goIdx = 1-goIdx;
     const leaver=slots[goIdx], stays=slots[1-goIdx];
     const stayName = stays==="PLAYER" ? L("TÚ","YOU") : surname(stays.name);
     // 🫵 SI EL QUE SOBRA ERES TÚ: no te movemos a la fuerza de equipo, pero el asiento se acaba y
