@@ -1547,16 +1547,19 @@ const ARRIVALS_1990 = [
 ];
 // promesas del junior de los 90 (nombres reales de aquellas categorías, con su año de disponibilidad)
 const ROOKIE_1990 = [
-  ["D. Coulthard","🇬🇧"],["R. Barrichello","🇧🇷"],["G. Fisichella","🇮🇹"],["J. Trulli","🇮🇹",1994],
+  /* ⚠️ NO repetir aquí a nadie de ARRIVALS_1990: si el mismo nombre puede salir por las dos vías, un
+     Barrichello «promesa» podía nacer en 1992 y luego el debut histórico de 1993 se quedaba sin sitio.
+     Y nadie que ya estuviera corriendo en 1990 (Larini, Gugelmin) ni nacido demasiado atrás:
+     K. Hoshino (n. 1947) se coló como promesa juvenil y salía ganando mundiales en 2009 — lo cazó Carlos. */
   ["A. Montermini","🇮🇹"],["V. Sospiri","🇮🇹"],["E. Naspetti","🇮🇹"],["L. Badoer","🇮🇹"],
-  ["G. Lavaggi","🇮🇹"],["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹"],["N. Larini","🇮🇹"],
-  ["P. Lamy","🇵🇹"],["A. Couto","🇵🇹",1995],["M. Gené","🇪🇸",1995],["P. de la Rosa","🇪🇸"],
-  ["J. Magnussen","🇩🇰"],["T. Kristensen","🇩🇰"],["R. Schumacher","🇩🇪",1994],["A. Wurz","🇦🇹",1993],
-  ["N. Heidfeld","🇩🇪",1996],["J. Böhler","🇩🇪"],["M. Werner","🇩🇪"],["C. Albers","🇳🇱",1998],
-  ["J. Bourdais","🇫🇷"],["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],
-  ["D. Franchitti","🇬🇧",1993],["J. McDougall","🇬🇧"],["W. Firman","🇬🇧",1996],["J. Bytzek","🇨🇦"],
-  ["R. Rosset","🇧🇷"],["C. Fittipaldi","🇧🇷"],["A. Ribeiro","🇧🇷",1995],["M. Gugelmin","🇧🇷"],
-  ["T. Sato","🇯🇵",1998],["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵"],["K. Hoshino","🇯🇵"],
+  ["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹"],["S. Belloli","🇮🇹"],["M. Zadra","🇮🇹"],
+  ["A. Couto","🇵🇹",1995],["A. García","🇪🇸",1996],["J. Villamil","🇪🇸",1997],
+  ["T. Kristensen","🇩🇰",1993],["J. Böhler","🇩🇪"],["M. Werner","🇩🇪"],["S. Ratzenberger","🇦🇹"],
+  ["C. Albers","🇳🇱",1998],["T. Coronel","🇳🇱",1994],["D. Franchitti","🇬🇧",1993],
+  ["J. McDougall","🇬🇧"],["R. Firman","🇬🇧",1996],["G. Simoni","🇮🇹"],["P. Kox","🇳🇱"],
+  ["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],["S. Bourdais","🇫🇷",1999],
+  ["A. Ribeiro","🇧🇷",1995],["M. Salles","🇧🇷"],["G. Kelly","🇧🇷"],["T. Marques","🇧🇷",1996],
+  ["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵"],["N. Katayama","🇯🇵"],["H. Noda","🇯🇵",1994],
 ];
 const LEGENDS_1990 = [["J.M. Fangio",5,"🇦🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],["N. Lauda",3,"🇦🇹"],
   ["J. Clark",2,"🇬🇧"],["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["A. Jones",1,"🇦🇺"],
@@ -2247,6 +2250,15 @@ function initPreviewBar(){ if(!PREVIEW) return;
   document.body.appendChild(b); }
 function showIdentity(){
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
+  /* 🧪 EN MODO PRUEBAS NO SE RELLENA UNA FICHA: se entra a probar. Nombre TEST, bandera de Andorra
+     (que no es de nadie, así no se confunde con una partida de verdad) y estilo al azar, para que las
+     tandas de prueba no salgan siempre con el mismo pilotaje. Petición de Carlos. */
+  if(TEST_MODE){
+    sel.name="TEST"; sel.country="Andorra"; sel.flag="🇦🇩";
+    sel.style=["agresivo","tecnico","consistente"][irnd(0,2)];
+    try{ $("inName").value="TEST"; }catch(e){}
+    startCareer(); return;
+  }
   // 📅 hay DOS clases de reto:
   //   · los que REVIVEN a alguien (traen `who`) → heredas país, estilo, dorsal y edad: no eliges nada.
   //   · los de REGLAS, como La Bestia → juegas siendo TÚ, así que los selectores siguen a la vista.
@@ -3362,8 +3374,13 @@ function signContract(o){
       // el reproche tiene que cuadrar con CUÁNTO estuviste: «años grises» tras UNA temporada no cuela
       // (lo cazó Carlos: novato, un año en Minardi, y le hablaban de años grises)
       const yrsPrev=S.yearsAtTeam||1;
-      S.pendingEvents.push(good
+      // ⚠️ «siendo su líder» chirriaba cuando te ibas PRECISAMENTE porque te ofrecían ser el Nº2
+      // (lo cazó Carlos en Stewart). Ese reproche solo vale si de verdad mandabas allí.
+      const eraLider = good && S.role==="1";
+      S.pendingEvents.push(eraLider
         ? L("🚪 En "+prev.name+" no perdonan tu marcha siendo su líder: puertas cerradas.","🚪 "+prev.name+" won't forgive their leader walking out: doors closed.")
+        : good
+        ? L("🚪 En "+prev.name+" les duele que te vayas justo cuando ibas de menos a más: puertas cerradas.","🚪 "+prev.name+" resent you leaving just as you were hitting form: doors closed.")
         : yrsPrev>=3
         ? L("🚪 "+prev.name+" borra tu número tras años grises: no quieren verte más.","🚪 "+prev.name+" wipes your number after grey years: they don't want you around.")
         : L("🚪 En "+prev.name+" se toman tu marcha tan pronto como un desprecio: no te guardan sitio.","🚪 "+prev.name+" takes you leaving so soon as a snub: no seat kept for you."));
@@ -3754,7 +3771,9 @@ const DILEMAS=[
  {id:"radiocaliente",stage:"f1",t:()=>L("La radio caliente","The hot mic"),
   d:()=>L("El muro la ha liado con tu estrategia y adiós victoria. Tienes el pulgar sobre el botón de la radio y a media parrilla escuchando.","The pit wall botched your strategy and there goes the win. Your thumb hovers over the radio button, half the grid listening."),opts:[
    {l:()=>L("Estallar en directo","Blow up on air"),r:()=>roll(
-     [4,()=>(VAL(1.25),L("Tu bronca se hace viral: clips por todas partes. Fama +25%","Your rant goes viral: clips everywhere. Fame +25%"))],
+     [4,()=>(VAL(1.25),yearNow()>=2008
+       ? L("Tu bronca se hace viral: clips por todas partes. Fama +25%","Your rant goes viral: clips everywhere. Fame +25%")
+       : L("La bronca se cuela en la retransmisión y la repiten en todos los resúmenes. Fama +25%","The rant makes the broadcast and every highlights show replays it. Fame +25%"))],
      [3,()=>L("Suena mal, pero se entiende tu enfado. Sin cambios.","It sounds bad, but your anger is understood. No change.")],
      [3,()=>(CAR(-1),L("El muro se lo toma fatal. Ambiente enrarecido. −1 coche","The pit wall takes it badly. Sour mood. −1 car"))])},
    {l:()=>L("Tragar y ser profesional","Swallow it and stay pro"),r:()=>roll(
@@ -4307,7 +4326,7 @@ const DILEMAS=[
       if(!c || c===sel.style) return L("Lo intentas, pero resulta que ya pilotas como pide el coche.","You try, but it turns out you already drive the way the car wants.");
       sel.style=c; S.reinvented=true; try{ $("tagStyle").textContent=STYLES[c].label; }catch(e){}
       if(ch(probReinvencion())){ OVR(2);
-        return L(`Te encierras en el simulador y sales siendo otro piloto. Dominas el estilo ${styleLabel(c)} y el coche por fin te obedece. +2 OVR`,
+        return L(`${yearNow()>=2005?"Te encierras en el simulador":"Te encierras a hacer test privados"} y sales siendo otro piloto. Dominas el estilo ${styleLabel(c)} y el coche por fin te obedece. +2 OVR`,
                  `You lock yourself in the simulator and come out a different driver. You master the ${styleLabel(c)} style and the car finally obeys. +2 OVR`); }
       OVR(-2); S.oxido=2; S.oxidoTeam=S.team.name;
       return L(`Cambias de piel, pero tus automatismos se rebelan: frenas donde ya no toca y el cronómetro lo nota. −2 OVR. Tendrás un par de temporadas para recuperarlo.`,
@@ -5099,9 +5118,11 @@ function alphaClash(row){
     else if(modo==="veterano") goIdx = st(slots[0],"age") >= st(slots[1],"age") ? 0 : 1;
     else                   goIdx = st(slots[0],"age") <= st(slots[1],"age") ? 0 : 1;
     // a un campeón vigente no lo echa nadie: si le tocaba, se va el otro
+    // ⚠️ solo protegía al JUGADOR: un campeón NPC podía ser echado por «apostar por la juventud»
+    // el mismo invierno en que ganaba el título (lo cazó Carlos con Barrichello campeón y a la calle).
     const campeonVigente = x => x==="PLAYER"
       ? ((S.seasons.at(-1)||{}).cat==="F1" && (S.seasons.at(-1)||{}).pos===1)
-      : false;
+      : !!(x && S.lastChampName && x.name===S.lastChampName);
     if(campeonVigente(slots[goIdx])) goIdx = 1-goIdx;
     const leaver=slots[goIdx], stays=slots[1-goIdx];
     const stayName = stays==="PLAYER" ? L("TÚ","YOU") : surname(stays.name);
@@ -5166,6 +5187,7 @@ function bgF1Season(row){
   });
   rows.sort((a,b)=>b.score-a.score);
   const champ=rows[0];
+  S.lastChampName=champ.d.name;                    // 👑 idem cuando la F1 corre sin ti
   champ.d.titles=(champ.d.titles||0)+1;
   const teamScores={};
   rows.forEach(r=>{teamScores[r.team]=(teamScores[r.team]||0)+r.score;});
@@ -5281,7 +5303,9 @@ function simTest(row,st){
     else if(best<=10){ S.testProved=Math.max(S.testProved||0,1); }
     return {pos:champPos};
   } else {
-    const flavor=[L("🔬 Miles de vueltas en el simulador puliendo tu técnica.","🔬 Thousands of laps in the simulator polishing your craft."),
+    const flavor=[yearNow()>=2005
+        ? L("🔬 Miles de vueltas en el simulador puliendo tu técnica.","🔬 Thousands of laps in the simulator polishing your craft.")
+        : L("🔬 Kilómetros y kilómetros de test privado puliendo tu técnica.","🔬 Mile after mile of private testing polishing your craft."),
       L("🛞 FP1 en "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimas del titular.","🛞 FP1 at "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": 3 tenths off the regular."),
       L("🧰 Te conviertes en la referencia técnica del garaje.","🧰 You become the technical reference in the garage."),
       L("📋 Recorres el mundo con el equipo aprendiendo cada circuito.","📋 You travel the world with the team learning every circuit.")];
@@ -5485,9 +5509,10 @@ function simF1(row,st){
     c:row.top3c, cmv:constrRank.slice(0,3).map((e,i)=>mvC(e[0],i+1)),
     myPos:pos, myConstr:constrPos, myPosMv:mvD("__ME__",pos), myConstrMv:mvC(myTeam,constrPos)};
   if(row.apxWin) row.events.push(L("🎬 Victoria con APXGP: la remontada digna de Hollywood.","🎬 A win with APXGP: a comeback worthy of Hollywood."));
-  if(pos===1){ S.titles.f1++; track("title_won", {team: myTeam, age: S.age, era: S.era||"2026"}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️"):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
+  if(pos===1){ S.lastChampName=null; S.titles.f1++; track("title_won", {team: myTeam, age: S.age, era: S.era||"2026"}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️"):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!")); }
   else {
     const champ=standings[0];
+    S.lastChampName=champ.name;                    // 👑 para que nadie eche al campeón vigente
     if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
     if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️"):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory."));}
   }
@@ -5536,20 +5561,25 @@ function maybeEvent(row,st){
   const inF1=S.cat==="F1";
   const pick=a=>a[irnd(0,a.length-1)];
   const rival = ()=>{ const m=(S.seats[S.team.name]||[]).find(d=>d!=="PLAYER"); return m?surname(m.name):L("tu compañero","your teammate"); };
-  const gp = ()=>gpAt(yearNow());
+  // 🏟️ un chaval de karting no gana «el fin de semana de Hungaroring»: en karts, circuitos de karts.
+  const KARTPISTAS=["Lonato","Braga","Kerpen","La Conca","Genk","Jesolo","Ostende"];
+  const gp = ()=> S.cat==="KART" ? KARTPISTAS[irnd(0,KARTPISTAS.length-1)] : gpAt(yearNow());
+  // 🪑 DE PROBADOR NO SE CORRE: los eventos de pilotaje no tienen dónde pasar. Antes saltaban igual y
+  //    salía «11 carreras seguidas sin un solo error» en un año sin una sola carrera (lo cazó Carlos).
+  const corres = S.cat!=="TEST" || (row.subRaces||0)>0;
 
   // estilo del piloto
-  if(sel.style==="tecnico") pool.push(
+  if(corres && sel.style==="tecnico") pool.push(
     {id:"tec-lluvia",t:L(`🌧️ Masterclass bajo la lluvia en ${gp()} — el paddock habla de ti.`,`🌧️ Wet-weather masterclass at ${gp()} — the paddock is talking about you.`),fx:()=>OVR(1)},
     {id:"tec-setup",t:L("🧠 Clavas el reglaje que nadie encontró: el coche vuela en clasificación.","🧠 You nail the setup nobody else found: the car flies in qualifying."),fx:()=>OVR(.7)},
     {id:"tec-datos",t:L(`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,`🔬 Your data reading turns a shaky strategy into a masterstroke at ${gp()}.`),fx:()=>VAL(1.08)}
   );
-  if(sel.style==="agresivo") pool.push(
+  if(corres && sel.style==="agresivo") pool.push(
     {id:"agr-toque",t:L("💥 Toque polémico defendiendo posición. Los comisarios te vigilan.","💥 A controversial clash defending position. The stewards are watching you."),fx:()=>{}},
     {id:"agr-pass",t:L(`🔥 Adelantamiento imposible por fuera en ${gp()} que corta la respiración.`,`🔥 An impossible around-the-outside pass at ${gp()} that takes your breath away.`),fx:()=>VAL(1.1)},
     {id:"agr-quali",t:L("🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.","🅿️ A wild Q3 lap, inches from the wall: pole by thousandths."),fx:()=>{S.poles++;VAL(1.05);}}
   );
-  if(sel.style==="consistente") pool.push(
+  if(corres && sel.style==="consistente") pool.push(
     {id:"con-nofail",t:L(`🎯 ${irnd(9,14)} carreras seguidas sin un solo error: el paddock alucina.`,`🎯 ${irnd(9,14)} races in a row without a single mistake: the paddock is stunned.`),fx:()=>OVR(.7)},
     {id:"con-frio",t:L(`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,`🧊 Ice-cold under pressure on the last lap at ${gp()}.`),fx:()=>VAL(1.08)}
   );
@@ -5558,13 +5588,17 @@ function maybeEvent(row,st){
     {id:"f1-dev",t:L("🔧 Lideras el desarrollo del coche: mejoras para el año próximo.","🔧 You lead the car's development: upgrades for next year."),fx:()=>CAR(1.8)},
     {id:"f1-guerra",t:L(`🤝 Guerra fría con ${rival()} dentro del box.`,`🤝 A cold war with ${rival()} inside the garage.`),fx:()=>{}},
     {id:"f1-rumor",t:L("📰 La prensa te vincula con un asiento top para el próximo año.","📰 The press links you to a top seat for next year."),fx:()=>{}},
-    {id:"f1-remonta",t:L(`🏁 Remontada desde P${irnd(11,19)} en ${gp()} que entra en los documentales.`,`🏁 A charge from P${irnd(11,19)} at ${gp()} that belongs in the documentaries.`),fx:()=>VAL(1.1)},
+    // «que entra en los documentales» sonaba a gesta histórica en una temporada de 3 puntos, y además
+    // los documentales de plataforma no existen antes de 2019. Ahora es lo que es: una buena tarde.
+    {id:"f1-remonta",t:L(`🏁 Remontada desde P${irnd(11,19)} en ${gp()}: de las que se recuerdan al final del año.`,`🏁 A charge from P${irnd(11,19)} at ${gp()}: one of those you remember at the end of the year.`),fx:()=>VAL(1.1)},
     // ⏱️ el PUNTO por vuelta rápida solo existió de 2019 a 2024 (anacronismo cazado por Carlos en 2009)
     {id:"f1-vrapida",t:(yearNow()>=2019&&yearNow()<=2024)
       ? L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: an extra point and highlight of the day.`)
       : L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: el highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: the highlight of the day.`),
      fx:()=>{ if(yearNow()>=2019&&yearNow()<=2024) S.ptsF1++; VAL(1.05); }},
-    {id:"f1-viral",t:L("🎙️ Tu entrevista post-carrera se vuelve viral en redes.","🎙️ Your post-race interview goes viral online."),fx:()=>VAL(1)},
+    {id:"f1-viral",t:yearNow()>=2008
+      ? L("🎙️ Tu entrevista post-carrera se vuelve viral en redes.","🎙️ Your post-race interview goes viral online.")
+      : L("🎙️ Tu entrevista post-carrera da la vuelta a la prensa deportiva.","🎙️ Your post-race interview is quoted by the whole sports press."),fx:()=>VAL(1)},
     {id:"f1-estrat",t:L(`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,`🧊 A one-stop strategy nobody saw coming: you steal ${irnd(2,4)} places at ${gp()}.`),fx:()=>VAL(1.08)},
     {id:"f1-neumaticos",t:L("🛞 Gestionas unos neumáticos imposibles hasta la bandera a cuadros.","🛞 You nurse impossible tyres all the way to the chequered flag."),fx:()=>OVR(.6)},
     {id:"f1-elogio",t:L(`💬 Un excampeón te señala como el mejor en pista este fin de semana.`,`💬 A former champion names you the best on track this weekend.`),fx:()=>VAL(1)},
@@ -5572,16 +5606,23 @@ function maybeEvent(row,st){
     {id:"f1-curva1",t:L(`🏎️ Tu adelantamiento por fuera en la curva 1 de ${gp()} da la vuelta al mundo.`,`🏎️ Your around-the-outside move at turn 1 of ${gp()} goes around the world.`),fx:()=>VAL(1)},
     {id:"f1-fiab",t:L(`🔌 Un fallo de fiabilidad te deja sin puntos en un ${gp()} que dominabas.`,`🔌 A reliability failure leaves you pointless at a ${gp()} you were dominating.`),fx:()=>{}},
     {id:"f1-sancion",t:L(`🚧 Una sanción de ${pick([5,10])}s discutible te baja del podio en ${gp()}.`,`🚧 A questionable ${pick([5,10])}s penalty drops you off the podium at ${gp()}.`),fx:()=>{}},
-    {id:"f1-radio",t:L("🗣️ Tu bronca por radio con el muro se convierte en meme.","🗣️ Your radio rant at the pit wall becomes a meme."),fx:()=>{}}
+    {id:"f1-radio",t:yearNow()>=2010
+      ? L("🗣️ Tu bronca por radio con el muro se convierte en meme.","🗣️ Your radio rant at the pit wall becomes a meme.")
+      : L("🗣️ Tu bronca con el muro se cuela en la retransmisión y no se habla de otra cosa.","🗣️ Your row with the pit wall makes the broadcast and nobody talks about anything else."),fx:()=>{}}
   );
   else if(S.cat!=="TEST") pool.push(
     {id:"jr-programa",t:L("⭐ Un programa junior de F1 se fija en ti.","⭐ An F1 junior programme takes notice of you."),fx:()=>OVR(1)},
-    {id:"jr-sim",t:L("🛠️ Inviernos enteros en el simulador: progreso silencioso.","🛠️ Whole winters in the simulator: quiet progress."),fx:()=>OVR(1)},
+    // 🕰️ en 1992 no hay simulador de verdad: antes de mediados de los 2000 son inviernos de gimnasio y test
+    {id:"jr-sim",t:yearNow()>=2005
+      ? L("🛠️ Inviernos enteros en el simulador: progreso silencioso.","🛠️ Whole winters in the simulator: quiet progress.")
+      : L("🛠️ Inviernos enteros de gimnasio y kilómetros de test: progreso silencioso.","🛠️ Whole winters of gym work and testing miles: quiet progress."),fx:()=>OVR(1)},
     {id:"jr-domina",t:L(`🏆 Dominas el fin de semana de ${gp()} de principio a fin.`,`🏆 You dominate the ${gp()} weekend from start to finish.`),fx:()=>OVR(.8)},
     {id:"jr-test",t:L("📈 Un test con un equipo superior sale mejor de lo esperado.","📈 A test with a bigger team goes better than expected."),fx:()=>OVR(.8)},
     {id:"jr-pequeno",t:L("🧰 Tu equipo modesto le saca petróleo al coche: te haces notar.","🧰 Your modest team squeezes everything from the car: you get noticed."),fx:()=>OVR(.6)},
     {id:"jr-mentor",t:L("🎓 Un veterano del paddock te toma como pupilo.","🎓 A paddock veteran takes you under his wing."),fx:()=>OVR(.8)},
-    {id:"jr-clip",t:L(`📱 Un clip tuyo remontando en ${gp()} se hace viral.`,`📱 A clip of you charging through the field at ${gp()} goes viral.`),fx:()=>VAL(.6)}
+    {id:"jr-clip",t:yearNow()>=2008
+      ? L(`📱 Un clip tuyo remontando en ${gp()} se hace viral.`,`📱 A clip of you charging through the field at ${gp()} goes viral.`)
+      : L(`📼 Tu remontada en ${gp()} corre de mano en mano por el paddock.`,`📼 Your charge at ${gp()} gets passed around the paddock on tape.`),fx:()=>VAL(.6)}
   );
   pool.push(
     {id:"any-fisico",t:L("🩺 Molestias físicas a mitad de temporada.","🩺 Physical niggles mid-season."),fx:()=>{}},
