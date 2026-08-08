@@ -5197,7 +5197,12 @@ function processArrivals(row){
       // ⚠️ si ACABAS de firmar por este equipo, el debut no puede llevarse a tu compañero antes de que
       // ruede una vuelta: la oferta te prometió correr con él (lo cazó Carlos con Antonelli en Mercedes).
       // A partir de tu segundo año en el equipo, el mercado vuelve a poder moverlo con normalidad.
-      if(tn===(S.team&&S.team.name) && (S.yearsAtTeam||1)<=1) continue;
+      // ⚠️ y NO solo el primer año: la oferta te promete un compañero CADA invierno, renueves o no.
+      // Con el guardián limitado al debut, un debut historico se llevaba a tu companero recien
+      // prometido en el 4% de las firmas (Wehrlein→Haryanto, Russell→Antonelli, Glock→Pantano…).
+      // El debut se va a otro equipo: hay diez donde caer. Tu companero solo cambia en el mercado,
+      // que es lo que ves ANTES de firmar.
+      if(tn===(S.team&&S.team.name)) continue;
       const age=Math.max(17, yr-a.b);
       if(isRBJr(tn) && (age>=32 || (a.ti||0)>0)) continue; // el filial de RB no ficha veteranos/campeones
       let wi=-1, wsk=999;
