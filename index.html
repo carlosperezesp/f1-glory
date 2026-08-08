@@ -3167,6 +3167,12 @@ function signContract(o){
   }
   const _trai = patronCheck(o.team.name, o.team.cat);
   if(_trai) S.pendingEvents.push(_trai);
+  /* 🤝 y si aun así firmas donde ya se habia anunciado un fichaje (queda un 1,9% por vias de relleno),
+     la temporada lo EXPLICA en vez de dejar la noticia desmentida a secas: en la silly season los
+     acuerdos se caen. La segunda mitad de lo que pedia Carlos: cruzar oferta y texto. */
+  if(o.team.cat==="F1" && mktMoved(o.team.name) && !(S.team && S.team.name===o.team.name))
+    S.pendingEvents.push(L(`🔁 El fichaje que ${o.team.name} tenía anunciado se cae en el último momento: el asiento acaba siendo tuyo.`,
+                           `🔁 The signing ${o.team.name} had announced falls through at the last minute: the seat ends up being yours.`));
   const sameSeat = prevCat==="F1" && o.team.cat==="F1" && prev && prev.name===o.team.name;
   S.team=o.team; S.cat=o.team.cat;
   // rastro imborrable: al CAMBIAR de equipo en F1, la temporada arranca dejando constancia de la firma
@@ -5758,7 +5764,9 @@ function nextOffers(){
       const others=pick(cands.filter(t=>t.name!==own.name),2);
       if(proved || ch(.5)) o.push({team:own,note:["Ascenso interno","Internal promotion"],role:roleFor(own.name)});
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
-      while(o.length<3){ const extra=(proved?sorted.slice(2,9):sorted).find(t=>!o.some(x=>x.team.name===t.name)); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
+      while(o.length<3){ const _p=(proved?sorted.slice(2,9):sorted);
+        const extra=_p.find(t=>!o.some(x=>x.team.name===t.name)&&!mktMoved(t.name)) || _p.find(t=>!o.some(x=>x.team.name===t.name));
+        if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
       if(S.age<=24) o.push({team:{...own,cat:"TEST"},note:["Seguir de probador un año más","Stay as reserve one more year"]});
       S.testProved=0;
     } else if(S.age>=28){ if(S.f1Seasons>0){ endCareer(); } else { washedOut(); } return; }
@@ -5829,9 +5837,19 @@ function nextOffers(){
     else if(rep>=72) cands=sorted.slice(4,10);
     else cands=sorted.slice(7,10);
     cands=feudFilter(cands.filter(t=>!S.burned[t.name] && !S.neverHire[t.name] && rbOk(t)));
+    /* 🤝 UN EQUIPO QUE ACABA DE ANUNCIAR FICHAJE NO TE OFRECE ASIENTO. Si el resumen dice «en 2033
+       llegará Sainz a Red Bull» y acto seguido Red Bull te ofrece un volante, al firmar tú desplazas a
+       Sainz y la noticia queda desmentida (lo cazó Carlos con esa oferta exacta). Su parrilla ya está
+       cerrada: se quitan de la lista. Tu propio equipo NO se filtra —tu asiento es tuyo— y si el filtro
+       dejara la lista vacía, se ignora antes que dejarte sin ofertas. */
+    const _cerrados=cands.filter(t=>mktMoved(t.name) && !(S.team && t.name===S.team.name));
+    if(_cerrados.length && cands.length-_cerrados.length>=2)
+      cands=cands.filter(t=>!_cerrados.some(c=>c.name===t.name));
     if(S.forceMove){
       cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
-      if(!cands.length) cands=sorted.slice(6,10).filter(t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]&&rbOk(t));
+      if(!cands.length){ const _f=t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]&&rbOk(t);
+        cands=sorted.slice(6,10).filter(t=>_f(t)&&!mktMoved(t.name));
+        if(!cands.length) cands=sorted.slice(6,10).filter(_f); }
       // fichaje garantizado si vienes de romper contrato por un top (dilema "contrato")
       const picks=[];
       if(S.poachTeam){ const pt=F1_TEAMS.find(t=>t.name===S.poachTeam && !S.neverHire[t.name]); if(pt) picks.push(pt); S.poachTeam=null; }
@@ -6041,7 +6059,9 @@ function regResetOffers(){
   const poolOthers=feudFilter(F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name] && rbOk(t)));
   pk(poolOthers,2).forEach(t=>o.push({team:t,role:roleFor(t.name)}));
   if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name] && !teamHasFeud(rumor.name)) o.push({team:rumor,role:roleFor(rumor.name),note:["🔮 El del rumor","🔮 The rumoured one"]});
-  while(o.length<3){ const extra=F1_TEAMS.find(t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]&&rbOk(t)); if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
+  while(o.length<3){ const _lib=t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]&&rbOk(t);
+    const extra=F1_TEAMS.find(t=>_lib(t)&&!mktMoved(t.name)) || F1_TEAMS.find(_lib);
+    if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
   const title=L("🏁 Revolución técnica","🏁 Technical revolution");
   let sub=L(`El año que viene entra un reglamento radical y la parrilla se resetea. En el paddock se rumorea que ${rumor.name} ha entendido el nuevo coche antes que nadie… pero nadie lo sabrá hasta la primera carrera.`,`A radical new rulebook resets the grid next year. The paddock whispers that ${rumor.name} has cracked the new car… but nobody will know until race one.`);
   sub += atRumor ? L(` Y da la casualidad de que ya corres para ${rumor.name}: ¿te quedas y lo apuestas todo?`,` And as it happens you already race for ${rumor.name}: do you stay and bet it all?`)
