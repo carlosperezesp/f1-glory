@@ -2602,7 +2602,7 @@ function mkRookie(noCross, forTeam){
   S.dpool.push(d);
   return d;
 }
-function npcSeason(){
+function npcSeason(row){
   // los pilotos con nombre crecen, envejecen y se retiran
   Object.entries(S.seats).forEach(([teamName,slots])=>{
     const isRB = isRBJr(teamName); // el filial de RB no ficha veteranos → su relevo nunca es un crossover
@@ -2630,6 +2630,11 @@ function npcSeason(){
       // (si se retira un piloto de un top, ese volante lo pelea la parrilla; el novato acaba abajo)
       if(mktMoved(d)) return;   // acaba de firmar un traspaso anunciado: no se retira el mismo invierno
       if(ch(pRet)){
+        // 👋 un campeón del mundo no desaparece de la parrilla en silencio (lo pidió Carlos al perder
+        // a Senna de vista sin enterarse de por qué)
+        if((d.titles||0)>=1 && row) row.events.push(L(
+          `👋 ${surname(d.name)} cuelga el casco a los ${d.age}: se retira ${d.titles>1?d.titles+" veces campeón del mundo":"campeón del mundo"}.`,
+          `👋 ${surname(d.name)} hangs up his helmet at ${d.age}: he retires as ${d.titles>1?d.titles+"-time world champion":"world champion"}.`));
         // 🔙 los retirados NOTABLES (título o nivel 86+, colgando el casco antes de los 38) van al
         // bolsillo de posibles comebacks — el camino Schumacher'10 / Kimi'12
         if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||99)<=38 && (d.age||0)>=27)
@@ -3155,8 +3160,12 @@ function roleFor(teamName){
   // mejor momento (lo cazó Carlos con Rosberg). Y el peso del palmarés DECAE al pasar los 33: en la F1
   // real lo que manda a esa edad es el crono, no la vitrina.
   const pesoTit = a => a>=36 ? 2 : a>=34 ? 4 : 6;
-  const myRep   = S.ovr + (S.titles.f1||0)*pesoTit(S.age) + formBonus;
-  const mateRep = (mate.skill||75) + (mate.titles||0)*pesoTit(mate.age||28);
+  // 👑 y el CAMPEÓN VIGENTE manda en su garaje. Sin esto salía la escena absurda de que el que acaba
+  // de ganar el Mundial te viera llegar a ti de Nº1 (lo cazó Carlos con Frentzen y con Zanardi).
+  const mateCampVig = !!(S.lastChampName && mate.name===S.lastChampName);
+  const yoCampVig   = !S.lastChampName && lp===1;   // el campeón eres tú (lastChampName se limpia)
+  const myRep   = S.ovr + (S.titles.f1||0)*pesoTit(S.age) + formBonus + (yoCampVig?10:0);
+  const mateRep = (mate.skill||75) + (mate.titles||0)*pesoTit(mate.age||28) + (mateCampVig?10:0);
   const earned = myRep >= mateRep ? "1":"2";
   // ¿te ganó tu compañero el campeonato el año pasado? Entonces el rol NO está blindado.
   const ls = S.seasons.at(-1)||{};
@@ -4286,8 +4295,13 @@ const DILEMAS=[
                   L("su titular se largó a mitad de año","their regular walked out mid-season")][dilVar("motivo",()=>irnd(0,3))];
     const n=dilVar("carreras",()=>irnd(1,4));
     const tn=S.team.name, big=S._debutBig||L("uno de los grandes","one of the giants");
-    return L(`Estabas de reserva en ${tn} hasta que ${motivo}: te dieron el volante y llevas ${n} ${n===1?"carrera":"carreras"} dejando con la boca abierta a todo el paddock. ${tn} quiere renovarte YA para toda la temporada que viene, pero todavía no has firmado nada. Y esta mañana ha llamado ${big}: te quieren a ti, y no el año que viene — quieren subirte a su coche AHORA MISMO, con la temporada a medias.`,
-             `You were ${tn}'s reserve until ${motivo}: they handed you the wheel and you've spent ${n} ${n===1?"race":"races"} leaving the whole paddock open-mouthed. ${tn} want to sign you NOW for the whole of next season, but nothing is on paper yet. And this morning ${big} called: they want you, and not next year — they want you in their car RIGHT NOW, with the season half run.`); },
+    // ⚠️ no siempre eres reserva: puedes ser el titular de un equipo pequeño en tu primer año
+    // (lo cazó Carlos siendo Nº1 en Brabham y leyendo «estabas de reserva»)
+    const arranque = S.cat==="TEST"
+      ? L(`Estabas de reserva en ${tn} hasta que ${motivo}: te dieron el volante y`,`You were ${tn}'s reserve until ${motivo}: they handed you the wheel and`)
+      : L(`Nadie contaba contigo en ${tn} y`,`Nobody expected anything of you at ${tn} and`);
+    return L(`${arranque} llevas ${n} ${n===1?"carrera":"carreras"} dejando con la boca abierta a todo el paddock. ${tn} quiere renovarte YA para toda la temporada que viene, pero todavía no has firmado nada. Y esta mañana ha llamado ${big}: te quieren a ti, y no el año que viene — quieren subirte a su coche AHORA MISMO, con la temporada a medias.`,
+             `${arranque} you've spent ${n} ${n===1?"race":"races"} leaving the whole paddock open-mouthed. ${tn} want to sign you NOW for the whole of next season, but nothing is on paper yet. And this morning ${big} called: they want you, and not next year — they want you in their car RIGHT NOW, with the season half run.`); },
   opts:[
    {l:()=>L(`Cumplir tu palabra: seguir en ${S.team?S.team.name:""}`,`Keep your word: stay at ${S.team?S.team.name:""}`),r:()=>{ S.lockTeam=S.team.name; VAL(1.15);
      return L(`Te quedas donde te dieron la oportunidad. El paddock entero toma nota: en este circo, el que cumple su palabra es noticia. Sigues en ${S.team.name}. +fama`,
@@ -4928,7 +4942,7 @@ function simSeason(){
   mktReset();             // 🔒 nadie se ha movido todavía en el mercado de este invierno
   evolveF1();
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
-  npcSeason();
+  npcSeason(row);
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
   beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
   maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
