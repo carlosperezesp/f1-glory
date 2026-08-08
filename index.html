@@ -3478,6 +3478,18 @@ function signContract(o){
   }
   const _trai = patronCheck(o.team.name, o.team.cat);
   if(_trai) S.pendingEvents.push(_trai);
+  // 🤝 le diste tu palabra a un equipo siguiendo a tu ingeniero, y firmas en otro sitio
+  if(S.engPromise && o.team.cat==="F1"){
+    const ep=S.engPromise; S.engPromise=null;
+    if(o.team.name!==ep){
+      S.burned[ep]=S.age; VAL(.93);
+      S.pendingEvents.push(L(`🤝 Diste tu palabra de seguir a tu ingeniero a ${ep} y acabas firmando en otro sitio. Él no te lo dice, pero deja de cogerte el teléfono. −fama`,
+                             `🤝 You gave your word to follow your engineer to ${ep} and you sign somewhere else. He doesn't say a word, but he stops taking your calls. −fame`));
+    } else {
+      S.pendingEvents.push(L(`🤝 Cumples: te reúnes con tu ingeniero en ${ep} y la dupla vuelve a estar junta.`,
+                             `🤝 You keep your word: you rejoin your engineer at ${ep} and the duo is back together.`));
+    }
+  }
   /* 🤝 y si aun así firmas donde ya se habia anunciado un fichaje (queda un 1,9% por vias de relleno),
      la temporada lo EXPLICA en vez de dejar la noticia desmentida a secas: en la silly season los
      acuerdos se caen. La segunda mitad de lo que pedia Carlos: cruzar oferta y texto. */
@@ -3645,6 +3657,10 @@ const DILEMAS=[
   t:()=>L("Tu ingeniero se va","Your engineer leaves"),
   d:()=>L(`Tu ingeniero de confianza ficha por ${S._engTeam}. Te quiere llevar con él.`,`Your trusted race engineer signs for ${S._engTeam}. He wants to take you with him.`),opts:[
    {l:()=>L(`Irte con él a ${S._engTeam}`,`Follow him to ${S._engTeam}`),r:()=>{S.forceMove=true;S.poachTeam=S._engTeam;
+     // 🤝 esto ya no es solo texto: te has comprometido. Ese equipo APARECERÁ en tu mercado de invierno,
+     // y firmar con otro tiene consecuencia (lo cazó Carlos: le prometieron BAR y acabó en Arrows sin
+     // que pasara nada).
+     S.engPromise=S._engTeam;
      return ch(.6)?(OVR(1),L(`Al acabar la temporada te vas con él: la dupla seguirá haciendo magia en el garaje de ${S._engTeam}. +1 OVR`,`At season's end you follow him: the duo will keep working magic in ${S._engTeam}'s garage. +1 OVR`)):L(`Al acabar la temporada te vas con él a ${S._engTeam}… aunque el proyecto tardará en arrancar.`,`At season's end you follow him to ${S._engTeam}… though the project will take time to get going.`);}},
    {l:()=>L("Quedarte","Stay"),r:()=>ch(.55)?(CAR(.5),L("El nuevo ingeniero trae ideas frescas. +0.5 coche","The new engineer brings fresh ideas. +0.5 car")):(OVR(-1),L("Nada suena igual por la radio. -1 OVR","Nothing sounds the same on the radio. -1 OVR"))}]},
  {id:"docu",stage:"f1",from:2019,t:()=>L("Cámaras en el box","Cameras in the garage"),d:()=>L("Una plataforma quiere rodar tu documental durante la temporada. Fama mundial… con micrófonos hasta en la sopa.","A streaming platform wants to film your documentary all season. Global fame… with mics everywhere."),opts:[
@@ -6319,6 +6335,12 @@ function nextOffers(){
     const _cerrados=cands.filter(t=>mktMoved(t.name) && !(S.team && t.name===S.team.name));
     if(_cerrados.length && cands.length-_cerrados.length>=2)
       cands=cands.filter(t=>!_cerrados.some(c=>c.name===t.name));
+    // 🤝 el equipo al que te comprometiste siguiendo a tu ingeniero: te espera, así que ESTÁ.
+    if(S.engPromise){
+      const et=F1_TEAMS.find(t=>t.name===S.engPromise && !S.neverHire[t.name]);
+      if(et && !cands.some(t=>t.name===et.name)) cands=[et].concat(cands);
+      else if(!et) S.engPromise=null;   // ese equipo ya no existe: promesa disuelta
+    }
     if(S.forceMove){
       cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
       if(!cands.length){ const _f=t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]&&rbOk(t);
