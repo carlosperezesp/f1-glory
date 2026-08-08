@@ -3083,6 +3083,22 @@ function drvW(y){
   if(yr>=1994) return .54;
   return .58;              // hasta 1993 (y más atrás, cuando llegue)
 }
+/* 📅 CUÁNTAS CARRERAS TIENE LA TEMPORADA. Estaba clavado a 24 en todas las eras, así que en 1993 se
+   corrían 24 grandes premios cuando fueron 16 (lo cazó Carlos viendo «GP 24» en su primer año).
+   Afecta a puntos, victorias y podios de golpe, así que es de lo más delicado de tocar. Los tramos
+   siguen el calendario real: 16 hasta mediados de los 90, 17-18 en los 2000, 19-21 en los 2010 y 22-24
+   desde 2021. 2020 aparte: la pandemia lo dejó en 17. */
+function racesIn(y){
+  const yr=y||yearNow();
+  if(yr>=2024) return 24;
+  if(yr>=2021) return 22;
+  if(yr===2020) return 17;
+  if(yr>=2016) return 21;
+  if(yr>=2010) return 19;
+  if(yr>=2004) return 18;
+  if(yr>=1995) return 17;
+  return 16;
+}
 function ptsTable(y){
   const yr = y || yearNow();
   if(yr>=2010) return [25,18,15,12,10,8,6,4,2,1];
@@ -5594,7 +5610,7 @@ function simF1(row,st){
   const adaptPenalty = adaptBase * Math.max(0.12, Math.min(1.2, (91-S.ovr)/13)); // OVR90→~0.15 · OVR85→~0.46 · OVR78→~1
   const carDeficit = Math.min(8, (S.role==="2"?0.9:0) + adaptPenalty + Math.max(0,S.age-primeEnd)*0.85*(S.role==="1"?0.55:1.1));
   let wins=0,pods=0,poles=0,raced=0;
-  const races=24;
+  const races=racesIn(row.year);
   for(let r=0;r<races;r++){
     // fuera si: lesión de año completo fuera de pista (dnpSeason), accidentazo que corta el año (out desde crashRace),
     // o incorporación tardía / recuperación (out en las primeras missRaces)
