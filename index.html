@@ -4242,7 +4242,7 @@ const DILEMAS=[
     const mio=S.f1perf[S.team.name]??75;
     return mio<=76 && bigCallers().length>0; },
   t:()=>L("El que te descubrió y el que te quiere","The one who found you and the one who wants you"),
-  d:()=>{ const cands=bigCallers(); const g=cands.length?cands[irnd(0,cands.length-1)]:null;
+  d:()=>{ const g=pickBigCaller();
     S._debutBig=g?g.name:null;
     const motivo=[L("se lesionó su titular","their regular got injured"),
                   L("sancionaron a su titular","their regular got banned"),
@@ -4409,7 +4409,23 @@ const DILEMAS=[
 function bigCallers(){
   const ord=[...F1_TEAMS].filter(t=>!S.neverHire[t.name] && !isRBJr(t.name))
     .sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70));
-  return ord.slice(1,5).filter(t=>(S.f1perf[t.name]??70)>=82 && t.name!==(S.team&&S.team.name));
+  // el suelo de 82 dejaba fuera al 4º y al 5º casi siempre, así que la llamada se concentraba arriba
+  // (21/18/11/2 medido). Con 78 entran los cuatro y el reparto se aplana, que es lo que pidió Carlos.
+  return ord.slice(1,5).filter(t=>(S.f1perf[t.name]??70)>=78 && t.name!==(S.team&&S.team.name));
+}
+/* ⚖️ …y no se elige a ciegas entre los que quedan: el 2º, el 3º y el 4º pesan igual y el 5º pesa un
+   tercio. Objetivo de Carlos ≈ 17/16/15/5 sobre unas 53 llamadas. */
+function pickBigCaller(){
+  const ord=[...F1_TEAMS].filter(t=>!S.neverHire[t.name] && !isRBJr(t.name))
+    .sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70));
+  const cands=bigCallers();
+  if(!cands.length) return null;
+  // el 5º ya entra poco de por sí (rara vez pasa el suelo de 78), así que penalizarlo ADEMÁS con menos
+  // peso lo dejaba en el 3%. A la par con los otros queda en el ~9% que pedía Carlos.
+  const peso=t=>3;
+  let tot=cands.reduce((n,t)=>n+peso(t),0), x=Math.random()*tot;
+  for(const t of cands){ if((x-=peso(t))<0) return t; }
+  return cands[cands.length-1];
 }
 /* 📜 EL CONTRATO DE WONDERKID. Un grande te paga la escalera entera a cambio de una opción sobre tu
    futuro. Lo que compras es un SUELO (no te quedas fuera) y lo que vendes es tu primer año de libertad.
