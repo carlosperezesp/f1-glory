@@ -1067,6 +1067,21 @@ const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸
   ["Pereyra","🇦🇷"],["Benedetti","🇦🇷"]];
 // 🏆 estrellas reales de OTRAS categorías (IndyCar/WEC/FE) que pueden CRUZAR a la F1 a su EDAD REAL:
 // año de nacimiento → edad según el año de la partida, nivel de veterano (base) que decae con la edad.
+/* 🏆 CROSSOVERS DE LOS 90. Los de la lista general nacieron del 79 en adelante, así que en una partida
+   de 1990 la ventana de edad (27-37) los deja fuera a todos y la era se quedaba SIN un solo cruce.
+   Estos son los de aquella época: campeones de la CART y estrellas del turismo alemán que rondaron la
+   F1 o que, con otra mano de cartas, habrían podido dar el salto. */
+const CROSSOVERS_1990 = [
+  {name:"M. Andretti", flag:"🇺🇸", born:1962, base:86, ceil:89},   // campeón de la CART, llegó a McLaren
+  {name:"A. Unser Jr.", flag:"🇺🇸", born:1962, base:83, ceil:86},
+  {name:"P. Tracy", flag:"🇨🇦", born:1968, base:83, ceil:87},
+  {name:"B. Schneider", flag:"🇩🇪", born:1964, base:82, ceil:85},  // del DTM, ya había pisado la F1
+  // (fuera K. Ludwig: nacido en 1949, la ventana de edad 27-37 nunca le pilla dentro de la era.
+  //  Y fuera S. Johansson: ya corre en la parrilla de 1990, no puede «cruzar» a lo que ya está.)
+  {name:"C. da Matta", flag:"🇧🇷", born:1973, base:83, ceil:87},   // campeón de la CART → Toyota
+  {name:"J. Boesel", flag:"🇧🇷", born:1957, base:80, ceil:83},
+  {name:"M. Baldi", flag:"🇮🇹", born:1954, base:79, ceil:82},
+];
 const CROSSOVERS = [
   // llegan de veteranos: buen nivel de compañero/veterano competitivo, NO favoritos al título (aunque con un cochazo, podría darse)
   {name:"A. Palou", flag:"🇪🇸", born:1997, base:83, ceil:87},    // IndyCar
@@ -1575,8 +1590,9 @@ const ROOKIE_1990 = [
   ["J. Bailey","🇬🇧"],["A. Menu","🇨🇭"],["P. Belmondo","🇫🇷"],["J-M. Gounon","🇫🇷",1993],
   ["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],["S. Bourdais","🇫🇷",1999],
   ["A. Ribeiro","🇧🇷",1995],["M. Salles","🇧🇷"],["T. Marques","🇧🇷",1996],["G. Celso","🇧🇷"],
-  ["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵"],["N. Katayama","🇯🇵"],["H. Noda","🇯🇵",1994],
-  ["M. Sala","🇪🇸"],["T. Tsuchiya","🇯🇵"],
+  ["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵"],["U. Katayama","🇯🇵"],["H. Noda","🇯🇵",1994],
+  ["M. Sala","🇪🇸"],["T. Tsuchiya","🇯🇵"],["N. Fontana","🇦🇷",1994],["J. Müller","🇩🇪",1994],
+  ["C. Bouchut","🇫🇷"],["M. Goossens","🇧🇪",1993],["K. Bräck","🇸🇪",1992],["P. Lamy","🇵🇹"],
 ];
 const LEGENDS_1990 = [["J.M. Fangio",5,"🇦🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],["N. Lauda",3,"🇦🇹"],
   ["J. Clark",2,"🇬🇧"],["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["A. Jones",1,"🇦🇺"],
@@ -1716,10 +1732,11 @@ const ERAS = {
     // en 2000 no hay filial de Red Bull (compró Jaguar en 2005 y Minardi en 2006). La clave apunta al
     // nombre FUTURO: en cuanto Minardi pase a llamarse Toro Rosso, empieza a comportarse como filial.
     juniorOf:{"Toro Rosso":"Red Bull"} },
-  "1990":{ id:"1990", baseYear:1990, teams:TEAMS_1990, grid:GRID1990, rookies:ROOKIE_1990, crossovers:CROSSOVERS, legends:LEGENDS_1990, expansion:ENTRIES_1990,
+  "1990":{ id:"1990", baseYear:1990, teams:TEAMS_1990, grid:GRID1990, rookies:ROOKIE_1990, legends:LEGENDS_1990, expansion:ENTRIES_1990,
     cats:{F4:["Fórmula Ford","Formula Ford"],F3:["F3 Británica","British F3"],FR:["F3 Continental","Continental F3"],F2:"F3000"},
     jr:{F4:FFORD_1990,F3:F3BR_1990,FR:F3EU_1990,F2:F3000_1990}, kart:KART_1990,
     deadly:true, deathWindow:[1993,1995],   // ⚫ los años en los que puede pasar (uno por partida)
+    crossovers:CROSSOVERS_1990,
     lineage:LINEAGE_1990, arrivals:ARRIVALS_1990,
     // en 1990 no hay filial de Red Bull: la clave apunta al nombre FUTURO y solo cuenta si Red Bull llega
     juniorOf:{"Toro Rosso":"Red Bull"} },
