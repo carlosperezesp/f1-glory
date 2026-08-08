@@ -4940,7 +4940,7 @@ function simSeason(){
   if(S.retired) { S.seasons.push(row); renderTimeline(); renderF1State(); return; }
   if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
   mktReset();             // 🔒 nadie se ha movido todavía en el mercado de este invierno
-  evolveF1();
+  evolveF1(row);
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
   npcSeason(row);
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
@@ -4995,7 +4995,7 @@ function simSeason(){
   S.age++;
 }
 
-function evolveF1(){
+function evolveF1(row){
   F1_TEAMS.forEach(t=>{
     // los proyectos cambian de rumbo pocas veces → eras que duran varios años.
     // (evolveF1) el nuevo objetivo se fija respecto al nivel actual, creando arcos sostenidos.
@@ -5005,7 +5005,23 @@ function evolveF1(){
     S.f1perf[t.name]=Math.max(60,Math.min(96, cur+(tgt-cur)*.28+rnd(-1,1)));
     // el carácter del coche puede cambiar ~1-2 veces por partida, sobre todo tras tocar fondo
     const rebuilding = S.f1perf[t.name] < 69;
-    if(S.f1char[t.name] && ch(rebuilding ? .11 : .035)) S.f1char[t.name]=CHARS[irnd(0,2)];
+    /* 🔄 EL COCHE CAMBIA DE CARÁCTER. El mecanismo estaba bien: lo que faltaba era contarlo. Tras cinco
+       títulos con un coche hecho a tu medida, de repente choca con tu estilo y nadie te explicaba por
+       qué (lo cazó Carlos). Ahora, si le pasa a TU equipo, la temporada da la razón. */
+    if(S.f1char[t.name] && ch(rebuilding ? .11 : .035)){
+      const antes=S.f1char[t.name];
+      S.f1char[t.name]=CHARS[irnd(0,2)];
+      if(row && S.team && S.team.name===t.name && S.f1char[t.name]!==antes){
+        const nuevo=charLabel(S.f1char[t.name]);
+        row.events.push(roll(
+          [4,()=>L(`🔄 Los ingenieros se equivocan de camino con el coche nuevo: sale ${nuevo} y ya no responde como el que conocías.`,
+                   `🔄 The engineers take the wrong road with the new car: it comes out ${nuevo} and no longer responds like the one you knew.`)],
+          [3,()=>L(`🔄 La reglamentación nueva obliga a rehacer medio coche: el que llega es ${nuevo} y hay que aprenderlo de cero.`,
+                   `🔄 The new rulebook forces half the car to be redesigned: what arrives is ${nuevo} and you have to learn it from scratch.`)],
+          [3,()=>L(`🔄 Cambia el director técnico y con él la filosofía: el coche que llega es ${nuevo}, para bien o para mal.`,
+                   `🔄 The technical director changes and the philosophy with him: the car that arrives is ${nuevo}, for better or worse.`)]));
+      }
+    }
     // 🏛️ el caché deriva DESPACIO hacia el nivel del coche (tasa .08 ≈ media vida de ~8 años):
     // un gigante caído sigue siendo un grande una década; un Force India que gana se hace grande con los años
     const ca = S.cache[t.name] ?? S.f1perf[t.name];
