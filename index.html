@@ -2864,7 +2864,7 @@ function occupySeat(teamName){
   const slots=S.seats[teamName];
   const yaSentado = spots.some(([tn])=>tn===teamName);
   if(!yaSentado){
-    const wIdx = slots[0].skill<=slots[1].skill?0:1;
+    const wIdx = displaceIdx(slots);
     const displaced=slots[wIdx];
     slots[wIdx]="PLAYER";
     if(spots.length){
@@ -3023,13 +3023,26 @@ function pedigreeLabel(){
    pero teammateOf() devuelve el PRIMERO de la lista. Si el primero era el flojo, la oferta prometía un
    compañero y al simular aparecía el otro (lo cazó Carlos: le ofrecían Glock y le salía Räikkönen, y con
    él también cambiaba el rol de Nº1 a Nº2). Mismo criterio que occupySeat, así no pueden discrepar. */
+/* 🪑 ¿A QUIÉN DESPLAZAS AL FIRMAR? Hasta ahora, al más flojo a secas — y eso podía dejar en la calle
+   al CAMPEÓN VIGENTE para hacerte sitio a ti, que es raro de narices (lo cazó Carlos entrando en
+   McLaren y echando a Berger, campeón del 93). Ahora se busca al más flojo ENTRE LOS QUE NO SON
+   campeones vigentes; si los dos lo fueran, se cae al más flojo, como antes.
+   ⚠️ Lo usan mateIfJoin y occupySeat: TIENEN que decidir igual, o la oferta promete un compañero y te
+   sienta con otro (algo que ya costó una tanda de medición). */
+function displaceIdx(sl){
+  const camp = x => !!(x && x!=="PLAYER" && S.lastChampName && x.name===S.lastChampName);
+  const a=sl[0], b=sl[1];
+  if(camp(a) && !camp(b)) return 1;
+  if(camp(b) && !camp(a)) return 0;
+  return ((a&&a.skill||0)<=(b&&b.skill||0))?0:1;
+}
 function mateIfJoin(teamName){
   const sl=S.seats[teamName];
   if(!Array.isArray(sl) || sl.length<2) return teammateOf(teamName);
   if(sl.some(x=>x==="PLAYER")) return teammateOf(teamName);   // ya estás dentro: es una renovación
   const a=sl[0], b=sl[1];
   if(!a || !b) return teammateOf(teamName);
-  const wIdx=((a.skill||0)<=(b.skill||0))?0:1;                // occupySeat echa a este…
+  const wIdx=displaceIdx(sl);                                 // occupySeat echa a este…
   return sl[1-wIdx] || teammateOf(teamName);                  // …así que el que se queda es el otro
 }
 /* 🔢 SISTEMA DE PUNTOS DE LA ÉPOCA. El juego usaba SIEMPRE el actual (25-18-15…), y en el retro salían
