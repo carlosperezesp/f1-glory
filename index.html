@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<!--
+  F1 Glory · © 2026 Carlos Pérez. Todos los derechos reservados.
+  Código, textos, datos y diseño son obra original de su autor y están protegidos por derechos de autor.
+  Queda prohibida su copia, redistribución o publicación, total o parcial, sin autorización expresa.
+  Proyecto independiente, sin relación alguna con la FIA ni con Formula One Group.
+  Contacto: carlosrealmurcia@gmail.com · f1-glory.com
+-->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1560,7 +1567,7 @@ const ROOKIE_1990 = [
   ["A. Montermini","🇮🇹"],["V. Sospiri","🇮🇹"],["E. Naspetti","🇮🇹"],["L. Badoer","🇮🇹"],
   ["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹"],["S. Belloli","🇮🇹"],["M. Zadra","🇮🇹"],
   ["A. Couto","🇵🇹",1995],["A. García","🇪🇸",1996],["J. Villamil","🇪🇸",1997],
-  ["T. Kristensen","🇩🇰",1993],["J. Böhler","🇩🇪"],["M. Werner","🇩🇪"],["S. Ratzenberger","🇦🇹"],
+  ["T. Kristensen","🇩🇰",1993],["J. Böhler","🇩🇪"],["M. Werner","🇩🇪"],["K. Wendlinger","🇦🇹",1991],
   ["C. Albers","🇳🇱",1998],["T. Coronel","🇳🇱",1994],["D. Franchitti","🇬🇧",1993],
   ["J. McDougall","🇬🇧"],["R. Firman","🇬🇧",1996],["G. Simoni","🇮🇹"],["P. Kox","🇳🇱"],
   ["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],["S. Bourdais","🇫🇷",1999],
@@ -2632,9 +2639,13 @@ function npcSeason(row){
       if(ch(pRet)){
         // 👋 un campeón del mundo no desaparece de la parrilla en silencio (lo pidió Carlos al perder
         // a Senna de vista sin enterarse de por qué)
-        if((d.titles||0)>=1 && row) row.events.push(L(
-          `👋 ${surname(d.name)} cuelga el casco a los ${d.age}: se retira ${d.titles>1?d.titles+" veces campeón del mundo":"campeón del mundo"}.`,
-          `👋 ${surname(d.name)} hangs up his helmet at ${d.age}: he retires as ${d.titles>1?d.titles+"-time world champion":"world champion"}.`));
+        if((d.titles||0)>=1 && row){
+          // con UN solo título se dice el año: «el campeón del mundo de 1997» (matiz de Carlos)
+          const y1=(d.champYears&&d.champYears.length===1)?d.champYears[0]:null;
+          row.events.push(L(
+            `👋 ${surname(d.name)} cuelga el casco a los ${d.age}: se retira ${d.titles>1?"con "+d.titles+" Mundiales":(y1?"el campeón del mundo de "+y1:"campeón del mundo")}.`,
+            `👋 ${surname(d.name)} hangs up his helmet at ${d.age}: ${d.titles>1?"he retires with "+d.titles+" world titles":(y1?"the "+y1+" world champion retires":"he retires as world champion")}.`));
+        }
         // 🔙 los retirados NOTABLES (título o nivel 86+, colgando el casco antes de los 38) van al
         // bolsillo de posibles comebacks — el camino Schumacher'10 / Kimi'12
         if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||99)<=38 && (d.age||0)>=27)
@@ -4939,6 +4950,9 @@ function simSeason(){
   // 🏁 revolución técnica: al terminar el año del reset, se destapa quién entendió el reglamento
   if(S.regReveal && S.regReveal.year===row.year){
     const R=S.regReveal, b=R.brawn;
+    // ⚠️ el ganador del reglamento tiene que SEGUIR EN LA PARRILLA: salia «Prost GP cierra sus puertas»
+  // y dos lineas mas abajo «Prost GP arrasa y se convierte en el coche a batir» (lo cazo Carlos).
+  if(F1_TEAMS.some(t=>t.name===b))
     row.events.push(L(`🏁 Se estrena un reglamento nuevo: ${b} arrasa y se convierte en el coche a batir.`,`🏁 A new rulebook comes in: ${b} dominates and becomes the car to beat.`));
     if(R.rumorTrue) row.events.push(L(`🔮 ${R.rumor} acertó de pleno con el reglamento.`,`🔮 ${R.rumor} nailed the new rules completely.`));
     else row.events.push(L(`🔮 ${R.rumor} se estrelló con el nuevo reglamento; el verdadero triunfador fue ${b}.`,`🔮 ${R.rumor} flopped with the new rules; the real winner was ${b}.`));
@@ -5174,6 +5188,13 @@ function processLineage(row){
       if(!t){ st.done=true; return; } // el equipo ya no existe (murió antes)
       // 📜 el padrino te prometió pagarte la escalera: no puede hundirse mientras la subes
       if(st.die && S.patron===chn.cur && !S.patronDone){ st.year=yearNow()+2; return; }
+      /* 🏆 NI UN EQUIPO QUE ACABA DE GANAR. «Arrows en quiebra» el mismo invierno en que ganaba el
+         Mundial no se sostiene (lo cazo Carlos). Si va entre los tres mejores coches, la quiebra se
+         aplaza: los patrocinadores aparecen cuando ganas. */
+      if(st.die){
+        const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).map(t=>t.name);
+        if(ord.indexOf(chn.cur)<3){ st.year=yearNow()+2; return; }
+      }
       if(st.die){
         // nunca muere con el JUGADOR dentro (titular o probador): agoniza un año, te avisa y te obliga a salir
         const mine = (S.team && S.team.name===chn.cur) || ((S.seats[chn.cur]||[]).includes("PLAYER"));
@@ -5394,6 +5415,7 @@ function bgF1Season(row){
   const champ=rows[0];
   S.lastChampName=champ.d.name;                    // 👑 idem cuando la F1 corre sin ti
   champ.d.titles=(champ.d.titles||0)+1;
+  (champ.d.champYears=champ.d.champYears||[]).push(row.year);
   const teamScores={};
   rows.forEach(r=>{teamScores[r.team]=(teamScores[r.team]||0)+r.score;});
   const constrRank=Object.entries(teamScores).sort((a,b)=>b[1]-a[1]);
@@ -5718,7 +5740,8 @@ function simF1(row,st){
   else {
     const champ=standings[0];
     S.lastChampName=champ.name;                    // 👑 para que nadie eche al campeón vigente
-    if(champ.dref) champ.dref.titles=(champ.dref.titles||0)+1;
+    if(champ.dref){ champ.dref.titles=(champ.dref.titles||0)+1;
+      (champ.dref.champYears=champ.dref.champYears||[]).push(row.year); }
     if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️"):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory."));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship."));}
