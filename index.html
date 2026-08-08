@@ -3220,14 +3220,28 @@ function renderRecap(){
 // competiciones fuera de la F1 (años sabáticos / aventuras). perf = nivel del rival medio en esa serie;
 // marquee = carrera mítica que puedes GANAR (no garantizado); triple = cuenta para la Triple Corona;
 // decay = cuánto se oxida tu OVR de F1 por año fuera; fame = multiplicador de fama por buen año
+/* 🕰️ ¿existía esa competición ese año? `from` = año de nacimiento · `gap` = años en los que estuvo
+   muerta (el DTM se apagó en 1996 y no volvió hasta 2000). Sin esto, en una partida de 1993 te podías
+   ir a los V8 Supercars, que no existieron hasta el 97. */
+function serieOK(k){ const S0=SERIES[k], yr=yearNow();
+  if(!S0) return false;
+  if(S0.from && yr<S0.from) return false;
+  if(S0.gap && yr>=S0.gap[0] && yr<=S0.gap[1]) return false;
+  return true; }
 const SERIES={
-  indy:     {name:"IndyCar", em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500", triple:"indy", decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas.", subEn:"Ovals and road courses. The jewel: the Indy 500."},
+  // 🇺🇸 en los 90 esto era la CART: el nombre IndyCar como campeonato unificado es de 2008 en adelante
+  indy:     {eras:[[0,"CART"],[2008,"IndyCar"]],
+             name:"IndyCar", em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500", triple:"indy", decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas.", subEn:"Ovals and road courses. The jewel: the Indy 500."},
   // el WEC nace en 2012: antes, la resistencia europea era la Le Mans Series (las 24h siempre existieron)
-  lemans:   {eras:[[0,"Resistencia (Le Mans Series)","Endurance (Le Mans Series)"],[2012,"Resistencia (WEC)","Endurance (WEC)"]],
+  // 🕔 la Le Mans Series nace en 2004 y el WEC en 2012; antes, resistencia de sport prototipos a secas
+  lemans:   {eras:[[0,"Resistencia (Sport Prototipos)","Endurance (Sportscars)"],[2004,"Resistencia (Le Mans Series)","Endurance (Le Mans Series)"],[2012,"Resistencia (WEC)","Endurance (WEC)"]],
              name:"Resistencia (WEC)", nameEn:"Endurance (WEC)", em:"🕔", col:"#1d6a3c", perf:83, varza:5, marquee:"Le Mans 24h", triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans.", subEn:"Sportscars. The jewel: the Le Mans 24h."},
   nascar:   {name:"NASCAR", em:"🏁", col:"#ffd200", perf:80, varza:8, marquee:"Daytona 500", triple:null, decay:1.4, sub:"Stock cars. Otro mundo: puro contacto.", subEn:"Stock cars. Another world: pure contact."},
-  dtm:      {name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos GT3 alemanes, pura estrategia.", subEn:"German GT3 touring cars, pure strategy."},
-  supercars:{eras:[[0,"V8 Supercars"],[2016,"Supercars AUS"]],
+  // 🇩🇪 el DTM se muere en 1996 y no vuelve hasta 2000: en ese hueco no se puede fichar por él
+  dtm:      {from:1984, gap:[1997,1999],
+             name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos alemanes, pura estrategia.", subEn:"German touring cars, pure strategy."},
+  // 🇦🇺 los V8 Supercars arrancan en 1997; antes era el Australian Touring Car Championship
+  supercars:{eras:[[0,"Australian Touring Car"],[1997,"V8 Supercars"],[2016,"Supercars AUS"]],
              name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
   dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
   // ⚡ la Fórmula E NO EXISTE hasta 2014: en una partida que empieza en 2010, no aparece hasta entonces
@@ -3235,7 +3249,8 @@ const SERIES={
   brasil:   {eras:[[0,"Stock Car Brasil"],[2022,"Stock Car Pro Series"]],
              name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
   // «Super Fórmula» solo desde 2013: antes era la Formula Nippon
-  superformula:{eras:[[0,"Formula Nippon"],[2013,"Super Fórmula","Super Formula"]],
+  // 🇯🇵 F3000 japonesa hasta 1995, Formula Nippon desde 1996 y Super Fórmula desde 2013
+  superformula:{eras:[[0,"F3000 Japonesa","Japanese F3000"],[1996,"Formula Nippon"],[2013,"Super Fórmula","Super Formula"]],
              name:"Super Fórmula", nameEn:"Super Formula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1."},
 };
 // nombre de la serie EN SU ÉPOCA (Formula Nippon→Super Fórmula, Le Mans Series→WEC, V8 Supercars→Supercars…).
@@ -5815,7 +5830,7 @@ function youngEscapeOption(){
 function chooseYoungSeries(){
   setDecision(L("🌏 Buscarte la vida","🌏 Make your name elsewhere"),L("La escalera a la F1 se te ha atascado. En vez de esperar sentado, te vas a otra categoría a competir de verdad. Brilla —o al menos crece y rueda— y la F1 puede acabar llamándote. Pero es una apuesta: si no cuaja, tu sueño puede quedarse por el camino.","The ladder to F1 has stalled. Instead of waiting around, you head to another series to race for real. Shine —or at least grow and rack up laps— and F1 may end up calling. But it's a gamble: if it doesn't click, your dream may slip away."));
   $("decRecap").style.display="none";
-  const young=["superformula","indy","formulae"].filter(k=>!SERIES[k].from || yearNow()>=SERIES[k].from);
+  const young=["superformula","indy","formulae"].filter(serieOK);
   const fav=natAff().series.filter(k=>young.includes(k));
   const chosen=[];
   if(fav.length && ch(.7)) chosen.push(fav[irnd(0,fav.length-1)]);
@@ -5846,7 +5861,7 @@ function chooseAdventureSeries(){
   $("decRecap").style.display="none";
   // máximo 3 series (+ retirarse): semicableado por nacionalidad + azar (no todas de golpe).
   // ⏳ solo series que YA EXISTEN en el año de la partida (la Fórmula E, desde 2014)
-  const all=Object.keys(SERIES).filter(k=>!SERIES[k].from || yearNow()>=SERIES[k].from);
+  const all=Object.keys(SERIES).filter(serieOK);
   const chosen=[];
   const fav=natAff().series.filter(k=>all.includes(k));
   if(fav.length && ch(.75)) chosen.push(fav[irnd(0,fav.length-1)]); // tu país tira hacia una serie afín
