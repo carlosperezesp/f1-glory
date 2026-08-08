@@ -3616,7 +3616,9 @@ const DILEMAS=[
    {l:()=>L("Puerta cerrada","Closed doors"),r:()=>ch(.6)?(OVR(1),L("Misterio y foco. La pista habla por ti. +1 OVR","Mystery and focus. The track speaks for you. +1 OVR")):(VAL(.92),L("La prensa te pinta como antipático. Fama -8%","The press paints you as unfriendly. Fame -8%"))}]},
  {id:"lemans",stage:"f1",t:()=>L("La tentación de Le Mans","The Le Mans temptation"),d:()=>L("Te invitan a correr las 24h de Le Mans en tu semana libre. Gloria extra… o fatiga extra.","You're invited to race the Le Mans 24h on your week off. Extra glory… or extra fatigue."),opts:[
    {l:()=>L("Correrla","Race it"),r:()=>ch(.5)?(OVR(1),VAL(1.1),L("Podio en La Sarthe. Leyenda transversal. +1 OVR, +fama","Podium at La Sarthe. A crossover legend. +1 OVR, +fame")):(OVR(-1),L("Vuelves roto y con jet lag eterno. -1 OVR","You come back broken and jet-lagged forever. -1 OVR"))},
-   {l:()=>L("Declinar","Decline"),r:()=>ch(.8)?L("Foco total en la F1. Sin cambios.","Total focus on F1. No change."):(VAL(.95),L("Te llaman aburrido en redes. Fama -5%","They call you boring online. Fame -5%"))}]},
+   {l:()=>L("Declinar","Decline"),r:()=>ch(.8)?L("Foco total en la F1. Sin cambios.","Total focus on F1. No change."):(VAL(.95), yearNow()>=2008
+     ? L("Te llaman aburrido en redes. Fama -5%","They call you boring online. Fame -5%")
+     : L("En el paddock te cuelgan el cartel de aburrido. Fama -5%","The paddock pins the boring label on you. Fame -5%"))}]},
  {id:"metodo",stage:"f1",t:()=>L("El gurú del rendimiento","The performance guru"),d:()=>L("Un preparador revolucionario promete décimas con un método nunca visto: crioterapia, neurociencia y ayuno.","A revolutionary trainer promises tenths with a never-seen method: cryotherapy, neuroscience and fasting."),opts:[
    {l:()=>L("Probarlo","Try it"),r:()=>ch(.55)?(OVR(1),L("Reflejos de otro planeta. +1 OVR","Out-of-this-world reflexes. +1 OVR")):(OVR(-1),L("Tu cuerpo no responde al experimento. -1 OVR","Your body doesn't respond to the experiment. -1 OVR"))},
    {l:()=>L("Método clásico","Classic method"),r:()=>ch(.8)?L("Lo de siempre funciona. Sin cambios.","The usual works. No change."):(OVR(1),L("La constancia paga. +1 OVR","Consistency pays. +1 OVR"))}]},
@@ -3680,7 +3682,9 @@ const DILEMAS=[
    {l:()=>L("A la cama a las 22h","Bed at 10pm"),r:()=>roll(
      [5,()=>L("Profesional aburrido, piloto descansado. Sin cambios.","Boring pro, rested driver. No change.")],
      [3,()=>(OVR(1),L("Frescura absoluta el domingo. +1 OVR","Completely fresh on Sunday. +1 OVR"))],
-     [2,()=>(VAL(.95),L("En redes te llaman soso. Fama -5%","They call you dull online. Fame -5%"))])}]},
+     [2,()=>(VAL(.95), yearNow()>=2008
+       ? L("En redes te llaman soso. Fama -5%","They call you dull online. Fame -5%")
+       : L("En el paddock te llaman soso. Fama -5%","The paddock calls you dull. Fame -5%"))])}]},
  {id:"jerarquia",stage:"f1",t:()=>L("Guerra por el Nº1","Fight for No.1"),d:()=>L("Tu compañero exige al equipo ser el piloto Nº1. Los ingenieros esperan tu reacción.","Your teammate demands to be No.1 driver. The engineers await your reaction."),opts:[
    {l:()=>L("Plantarte: «el Nº1 soy yo»","Stand firm: «I'm the No.1»"),r:()=>ch(.5)?(darGalones(),S.oustMate=true,L("El equipo te respalda como Nº1. Tu compañero, humillado, no lo acepta y hará las maletas.","The team backs you as No.1. Your teammate, humiliated, won't accept it and will pack his bags.")):(CAR(-1),L("La guerra interna pasa factura al desarrollo. -1 coche","The internal war takes its toll on development. -1 car"))},
    {l:()=>L("Ceder el estatus","Concede the status"),r:()=>{S.role="2";return ch(.6)?(VAL(1.1),L("Juegas en equipo y tu fama crece. +10% fama","You play as a team and your fame grows. +10% fame")):(OVR(-1),L("Ver sus piezas nuevas cada carrera te quema. -1 OVR","Watching his new parts every race eats at you. -1 OVR"));}}]},
@@ -3901,7 +3905,7 @@ const DILEMAS=[
      [3,()=>L("Te obcecas en una vía muerta: pierdes el finde. Sin cambios.","You chase a dead end: the weekend's lost. No change.")])},
    {l:()=>L("Ir a lo tuyo","Do your own thing"),r:()=>L("Rodaje tranquilo. Sin cambios.","Quiet mileage. No change.")}]},
  {id:"resTec2",stage:"test",cond:()=>sel.style==="tecnico"&&S.age<=32,t:()=>L("Te has estudiado el circuito","You've done your homework"),
-  d:()=>L("Se corre en un trazado nuevo y raro. Tú te lo has estudiado hasta el último piano en el simulador. En la reunión técnica puedes soltar tu análisis… o guardártelo.","The race is at a new, tricky track. You've studied it to the last kerb in the sim. In the tech briefing you can lay out your read… or keep it to yourself."),opts:[
+  d:()=>L(`Se corre en un trazado nuevo y raro. Tú te lo has estudiado hasta el último piano ${yearNow()>=2005?"en el simulador":"en vídeo y sobre plano, curva por curva"}. En la reunión técnica puedes soltar tu análisis… o guardártelo.`,`The race is at a new, tricky track. You've studied it to the last kerb ${yearNow()>=2005?"in the sim":"on video and on paper, corner by corner"}. In the tech briefing you can lay out your read… or keep it to yourself.`),opts:[
    {l:()=>L("Compartir tu análisis","Share your homework"),r:()=>roll(
      [4,()=>(S.testProved=2,L("Tu lectura del circuito da en el clavo y el equipo brilla: te ganas su confianza y aceleras.","Your read on the track nails it and the team shines: you earn their trust and speed up."))],
      [3,()=>(OVR(1),L("Útil, sin más. +1 OVR","Useful, nothing more. +1 OVR"))],
