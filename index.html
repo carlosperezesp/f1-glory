@@ -665,6 +665,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   </div>
   <div class="actions">
     <button class="btn ghost" onclick="backToIntro()" data-es="Volver" data-en="Back">Volver</button>
+    <div id="deathOpt" style="display:none;margin:10px 0 14px;text-align:left;max-width:640px">
+      <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:14px;line-height:1.45">
+        <input type="checkbox" id="chkDeaths" checked style="margin-top:3px;flex-shrink:0;width:18px;height:18px;accent-color:#c8102e">
+        <span id="deathOptTxt"></span>
+      </label>
+    </div>
     <button class="btn" id="btnConfirm" disabled onclick="startCareer()" data-es="Confirmar identidad" data-en="Confirm identity">Confirmar identidad</button>
   </div>
 </section>
@@ -1702,6 +1708,7 @@ const ERAS = {
   "1990":{ id:"1990", baseYear:1990, teams:TEAMS_1990, grid:GRID1990, rookies:ROOKIE_1990, crossovers:CROSSOVERS, legends:LEGENDS_1990, expansion:ENTRIES_1990,
     cats:{F4:["Fórmula Ford","Formula Ford"],F3:["F3 Británica","British F3"],FR:["F3 Continental","Continental F3"],F2:"F3000"},
     jr:{F4:FFORD_1990,F3:F3BR_1990,FR:F3EU_1990,F2:F3000_1990}, kart:KART_1990,
+    deadly:true, deathWindow:[1993,1995],   // ⚫ los años en los que puede pasar (uno por partida)
     lineage:LINEAGE_1990, arrivals:ARRIVALS_1990,
     // en 1990 no hay filial de Red Bull: la clave apunta al nombre FUTURO y solo cuenta si Red Bull llega
     juniorOf:{"Toro Rosso":"Red Bull"} },
@@ -2259,6 +2266,15 @@ function initPreviewBar(){ if(!PREVIEW) return;
   document.body.appendChild(b); }
 function showIdentity(){
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
+  /* ⚫ ERAS EN LAS QUE SE PODÍA MORIR. En vez de decidir por el jugador, se le pregunta al entrar, con
+     el motivo por delante. Idea de Carlos: que sea suya la decisión y que sepa exactamente qué elige. */
+  const _era=ERAS[SELECTED_ERA]||ERAS["2026"], _dOpt=$("deathOpt");
+  if(_dOpt){
+    _dOpt.style.display = _era.deadly ? "block" : "none";
+    if(_era.deadly) $("deathOptTxt").innerHTML = L(
+      "<b>Accidentes mortales</b><br>En estos años morir corriendo era una posibilidad real, y de ahí salieron los grandes cambios de seguridad. Si dejas la casilla marcada, en alguna partida un piloto puede no volver — y puedes ser tú. Si la quitas, todos los accidentes se quedan en sustos y lesiones: los pilotos seguirán compitiendo y se retirarán por edad o por nivel, como en el resto del juego.",
+      "<b>Fatal accidents</b><br>In these years dying at the wheel was a real possibility, and it's where the great safety changes came from. Leave this ticked and in some careers a driver may not come back — and it could be you. Untick it and every accident stops at a scare or an injury: drivers keep racing and retire through age or form, like everywhere else in the game.");
+  }
   /* 🧪 EN MODO PRUEBAS NO SE RELLENA UNA FICHA: se entra a probar. Nombre TEST, bandera de Andorra
      (que no es de nadie, así no se confunde con una partida de verdad) y estilo al azar, para que las
      tandas de prueba no salgan siempre con el mismo pilotaje. Petición de Carlos. */
@@ -2426,6 +2442,7 @@ function startCareer(){
   $("tagNum").textContent = "#"+sel.num;
   $("tagStyle").textContent = styleLabel(sel.style);
   S._t0 = Date.now(); // marca de inicio real (para el filtro anti-trampa de tiempo de juego)
+  try{ const c=$("chkDeaths"); S.deathsOn = (ERAS[SELECTED_ERA]||{}).deadly ? !!(c&&c.checked) : false; }catch(e){ S.deathsOn=false; }
   S.supDriver = pickSupDriver();  // 🏎️ ¿corre el piloto de algún mecenas en esta partida?
   // 📅 RETO que revive a alguien: en vez del karting, arrancas directamente en su asiento.
   //    Los retos de REGLAS (La Bestia) no tienen `who`: se juegan como una carrera normal desde el
@@ -4752,6 +4769,70 @@ function maybeInjury(row){
       "⚠️ Without status, the team won't wait: you lose the seat and must fight your way back.");
   }
 }
+/* ⚫ EL ACCIDENTE QUE CAMBIÓ LA F1. Una vez por partida, dentro de la ventana de la era. No siempre
+   pasa, no siempre es en el mismo sitio y no siempre acaba igual. La víctima se sortea entre TODA la
+   parrilla —tú incluido, con menos papeletas— porque esto es historia alternativa, no una recreación.
+   Sin sangre y sin detalles: se dice qué pasó y punto. Y lo que de verdad importa es la consecuencia,
+   que es la que fue de verdad: al invierno siguiente la Fórmula 1 sale siendo otra. */
+function maybeAccidenteEra(row){
+  const E=curEra();
+  if(!E.deathWindow || S.eraCrashDone) return;
+  const yr=yearNow();
+  if(yr<E.deathWindow[0] || yr>E.deathWindow[1]) return;
+  if(!ch(.32)) return;
+  // candidatos: todos los que tienen asiento. Tú pesas menos: raro, pero no imposible (matiz de Carlos).
+  const pool=[]; Object.entries(S.seats||{}).forEach(([tn,sl])=>(sl||[]).forEach(d=>{
+    if(d==="PLAYER"){ if(S.cat==="F1") pool.push({p:true,w:.4,team:tn}); }
+    else if(d) pool.push({d,w:1,team:tn}); }));
+  if(!pool.length) return;
+  let tot=pool.reduce((n,x)=>n+x.w,0), r=Math.random()*tot, v=pool[pool.length-1];
+  for(const x of pool){ if((r-=x.w)<0){ v=x; break; } }
+  S.eraCrashDone=true;
+  const gps=gpList(yr), gp=gps[irnd(0,gps.length-1)].n;
+  const cuando = ch(.5) ? L("en la clasificación","in qualifying") : L("durante la carrera","during the race");
+  const nombre = v.p ? surname(sel.name)+L(" (TÚ)"," (YOU)") : surname(v.d.name);
+  // gravedad: sin la casilla marcada, lo mortal se convierte en retirada
+  const gr = roll([25,()=>"fatal"],[20,()=>"retira"],[30,()=>"lesion"],[25,()=>"susto"]);
+  const grave = (gr==="fatal" && !S.deathsOn) ? "retira" : gr;
+
+  if(grave==="fatal"){
+    row.events.push(L(`⚫ Fin de semana de luto en ${gp}. ${nombre} tiene un accidente gravísimo ${cuando} y el domingo se corre en silencio en medio de la polémica.`,
+                      `⚫ A weekend of mourning at ${gp}. ${nombre} has a terrible accident ${cuando} and Sunday's race runs in silence, amid the outcry.`));
+    if(v.p){ S.retired=true; S.retireReason="accidente"; }
+    else quitarDeLaParrilla(v.d);
+  } else if(grave==="retira"){
+    row.events.push(L(`🦴 Accidente gravísimo en ${gp}. ${nombre} sobrevive, pero no volverá a un coche de Fórmula 1. El paddock aprende a decir «por suerte» con la boca pequeña.`,
+                      `🦴 A terrible accident at ${gp}. ${nombre} survives, but will never race a Formula 1 car again. The paddock learns to say «luckily» through gritted teeth.`));
+    if(v.p){ S.retired=true; S.retireReason="accidente"; }
+    else quitarDeLaParrilla(v.d);
+  } else if(grave==="lesion"){
+    const meses=irnd(3,8);
+    row.events.push(L(`🏥 ${nombre} pasa ${meses} meses fuera. La FIA toma medidas para aumentar la seguridad de los pilotos.`,
+                      `🏥 ${nombre} is out for ${meses} months. The FIA moves to improve driver safety.`));
+    if(v.p){ OVR(-2); S.dnpSeason=true; }
+    else if(v.d) v.d.skill=Math.max(70,(v.d.skill||75)-2);
+  } else {
+    row.events.push(L(`😮‍💨 El coche de ${nombre} queda irreconocible en ${gp} y sale andando. Nadie se explica cómo. La FIA anuncia medidas de seguridad.`,
+                      `😮‍💨 ${nombre}'s car is left unrecognisable at ${gp} and he walks away. Nobody can explain it. The FIA announces safety measures.`));
+  }
+  S.eraCrashYear=yr;
+}
+// se lo lleva de la parrilla para siempre: nada de volver del retiro ni reaparecer en el mercado
+function quitarDeLaParrilla(d){
+  Object.keys(S.seats||{}).forEach(tn=>{ const sl=S.seats[tn]; if(!Array.isArray(sl)) return;
+    sl.forEach((x,i)=>{ if(x===d) sl[i]=mkRookie(isRBJr(tn), tn); }); });
+  S.dpool=(S.dpool||[]).filter(x=>x!==d);
+  S.retiredPool=(S.retiredPool||[]).filter(x=>x.name!==d.name);
+  S.arrivals=(S.arrivals||[]).filter(a=>a.n!==d.name);
+}
+// 🛡️ el invierno siguiente, la F1 sale siendo otra
+function tickSeguridadEra(row){
+  if(!S.eraCrashYear || S.eraSafetyDone) return;
+  if(yearNow()<=S.eraCrashYear) return;
+  S.eraSafetyDone=true;
+  row.events.push(L("🛡️ La Fórmula 1 sale del invierno siendo otra: nuevas reglas, cambios en el motor y tensión en el paddock.",
+                    "🛡️ Formula 1 comes out of the winter a different sport: new rules, engine changes and a tense paddock."));
+}
 /* pierdes el asiento por un suceso (no por un dilema): apunta el motivo Y lo narra, de una vez */
 function perderAsiento(row, es, en){
   S.forceMove=true;
@@ -4836,6 +4917,9 @@ function simSeason(){
     S.regBet=null; S.regBetGrade=null; S.regBetRefused=null;
     S.regReveal=null;
   }
+  maybeAccidenteEra(row);   // ⚫ el accidente que cambió la F1 (solo en las eras que lo permiten)
+  tickSeguridadEra(row);    // 🛡️ y el invierno siguiente, las reglas nuevas
+  if(S.retired) { S.seasons.push(row); renderTimeline(); renderF1State(); return; }
   if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
   mktReset();             // 🔒 nadie se ha movido todavía en el mercado de este invierno
   evolveF1();
