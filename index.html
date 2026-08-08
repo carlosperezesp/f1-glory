@@ -604,7 +604,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <button class="dec locked" disabled>1960</button>
       <button class="dec locked" disabled>1970</button>
       <button class="dec locked" disabled>1980</button>
-      <button class="dec locked" disabled>1990</button>
+      <button class="dec locked" id="dec1990" disabled>1990</button>
       <button class="dec locked" id="dec2000" disabled>2000</button>
       <button class="dec" onclick="startCareerFlow('2010')">2010</button>
       <button class="dec" onclick="startCareerFlow('2020')">2020</button>
@@ -1417,6 +1417,186 @@ const KART_2000 = [
   {name:"DAP", color:"#0a4ea2", color2:"#062f61", perf:47, sub:"La vieja escuela del karting"},
 ];
 // 🧬 linaje desde 2000 (verificado). La cadena de Jordan es la más larga de la historia de la F1.
+/* ═══════════════════════════════════════════════════════════════════════════
+   🕰️ ERA 1990 · la década más salvaje de la parrilla moderna.
+   Diecinueve equipos en 1990 y once en 1999: la mitad se muere por el camino. Se modelan TODOS —no
+   simulamos clasificaciones ni enseñamos la parrilla entera, así que el coste es cálculo, no pantalla—
+   y a los pequeños se les pone su fecha de caducidad real con probabilidad altísima.
+   La gracia (idea de Carlos): puedes fichar por un Simtek o un Coloni y hacerlos grandes… o quedarte
+   en la calle en dos años. El jugador llega a la F1 hacia el 93-94, cuando la sangría ya ha pasado.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TEAMS_1990 = [
+  {name:"McLaren",         abbr:"MCL", color:"#F5F5F5", color2:"#D0021B", perf:93},
+  {name:"Ferrari",         abbr:"FER", color:"#D40000", color2:"#7a0018", perf:91},
+  {name:"Benetton",        abbr:"BEN", color:"#3FB8CF", color2:"#F5D800", perf:84},
+  {name:"Williams",        abbr:"WIL", color:"#1E50C8", color2:"#F5F5F5", perf:83},
+  {name:"Tyrrell",         abbr:"TYR", color:"#0A1A6B", color2:"#F5F5F5", perf:78},
+  {name:"Leyton House",    abbr:"LEY", color:"#49C4B0", color2:"#0d5c52", perf:72},
+  {name:"Lotus",           abbr:"LOT", color:"#0B6E3B", color2:"#F5D800", perf:72},
+  {name:"Brabham",         abbr:"BRA", color:"#35578A", color2:"#F5F5F5", perf:70},
+  {name:"Arrows",          abbr:"ARR", color:"#8A7A2A", color2:"#111111", perf:70},
+  {name:"Larrousse",       abbr:"LAR", color:"#1B3A8A", color2:"#c0c0c8", perf:68},
+  {name:"Ligier",          abbr:"LIG", color:"#1F5FC0", color2:"#F5F5F5", perf:68},
+  {name:"Minardi",         abbr:"MIN", color:"#111111", color2:"#F5D800", perf:67},
+  {name:"Scuderia Italia", abbr:"SCI", color:"#9A1A1A", color2:"#f0e0c0", perf:66},
+  {name:"Osella",          abbr:"OSE", color:"#6B1A1A", color2:"#c0c0c8", perf:60},
+  {name:"Onyx",            abbr:"ONY", color:"#1A6B3A", color2:"#f5f5f5", perf:58},
+  {name:"AGS",             abbr:"AGS", color:"#1A5A9A", color2:"#f5f5f5", perf:57},
+  {name:"Coloni",          abbr:"COL", color:"#D0B04A", color2:"#6b5210", perf:55},
+  {name:"EuroBrun",        abbr:"EUB", color:"#6B6B6B", color2:"#2f2f2f", perf:54},
+  {name:"Life",            abbr:"LIF", color:"#8A3A3A", color2:"#3d1414", perf:45},
+];
+// [nombre, edad en 1990, nivel, techo, títulos ANTES de 1990, bandera]
+const GRID1990 = {
+  "McLaren":[["A. Senna",30,96,97,1,"🇧🇷"],["G. Berger",30,86,88,0,"🇦🇹"]],
+  "Ferrari":[["A. Prost",35,94,95,3,"🇫🇷"],["N. Mansell",36,90,92,0,"🇬🇧"]],
+  "Benetton":[["A. Nannini",27,84,87,0,"🇮🇹"],["N. Piquet",37,85,90,3,"🇧🇷"]],
+  "Williams":[["T. Boutsen",32,83,85,0,"🇧🇪"],["R. Patrese",36,83,86,0,"🇮🇹"]],
+  "Tyrrell":[["J. Alesi",25,87,91,0,"🇫🇷"],["S. Nakajima",37,73,75,0,"🇯🇵"]],
+  "Leyton House":[["I. Capelli",27,82,85,0,"🇮🇹"],["M. Gugelmin",27,79,82,0,"🇧🇷"]],
+  "Lotus":[["D. Warwick",35,80,82,0,"🇬🇧"],["M. Donnelly",26,78,84,0,"🇬🇧"]],
+  "Brabham":[["S. Modena",27,78,82,0,"🇮🇹"],["G. Foitek",24,70,74,0,"🇨🇭"]],
+  "Arrows":[["M. Alboreto",33,80,83,0,"🇮🇹"],["A. Caffi",26,76,80,0,"🇮🇹"]],
+  "Larrousse":[["É. Bernard",30,76,80,0,"🇫🇷"],["A. Suzuki",27,76,80,0,"🇯🇵"]],
+  "Ligier":[["N. Larini",25,77,82,0,"🇮🇹"],["P. Alliot",36,74,77,0,"🇫🇷"]],
+  "Minardi":[["P. Martini",29,78,82,0,"🇮🇹"],["P. Barilla",29,69,72,0,"🇮🇹"]],
+  "Scuderia Italia":[["A. de Cesaris",31,76,80,0,"🇮🇹"],["E. Pirro",28,76,80,0,"🇮🇹"]],
+  "Osella":[["O. Grouillard",30,72,76,0,"🇫🇷"],["G. Tarquini",28,75,79,0,"🇮🇹"]],
+  "Onyx":[["JJ. Lehto",24,78,84,0,"🇫🇮"],["S. Johansson",34,74,77,0,"🇸🇪"]],
+  "AGS":[["Y. Dalmas",33,70,73,0,"🇫🇷"],["G. Tarquini",28,75,79,0,"🇮🇹"]],
+  "Coloni":[["B. Gachot",27,76,80,0,"🇧🇪"],["P. Ghinzani",34,70,72,0,"🇮🇹"]],
+  "EuroBrun":[["R. Moreno",31,76,80,0,"🇧🇷"],["C. Langes",29,64,67,0,"🇮🇹"]],
+  "Life":[["B. Giacomelli",37,64,66,0,"🇮🇹"],["G. Bruno",30,62,65,0,"🇮🇹"]],
+};
+/* 🧬 LINAJE DE LOS 90 — de la carnicería de 1990-92 hasta enlazar con la parrilla de hoy.
+   Casi todas las compras son de FUERA (una tabacalera compra Tyrrell, Renault compra Benetton, Prost
+   compra Ligier, Ford compra Stewart): no necesitan `needs`. La única cadena con dependencia real es
+   Minardi→Toro Rosso, que exige Red Bull en pista. Y `from` obliga a que cada rebautizo venga del
+   anterior, para que nadie salte un escalón. */
+const LINEAGE_1990 = [
+ {key:"Life",     steps:[{die:true, w:[1990,1991], p:.97}]},
+ {key:"EuroBrun", steps:[{die:true, w:[1990,1991], p:.95}]},
+ {key:"Onyx",     steps:[{die:true, w:[1990,1992], p:.92}]},
+ {key:"AGS",      steps:[{die:true, w:[1991,1993], p:.9}]},
+ {key:"Coloni",   steps:[{die:true, w:[1991,1993], p:.88}]},
+ {key:"Osella",   steps:[{to:{name:"Fondmetal",abbr:"FON",color:"#2A3A6B",color2:"#c0c0c8"}, w:[1991,1992], p:.8},
+                         {die:true, w:[1992,1994], p:.9}]},
+ {key:"Brabham",  steps:[{die:true, w:[1992,1994], p:.85}]},
+ {key:"Leyton House", steps:[{to:{name:"March",abbr:"MAR",color:"#8AA0B0",color2:"#33414d"}, w:[1992,1993], p:.7},
+                         {die:true, w:[1992,1995], p:.85}]},
+ {key:"Scuderia Italia", steps:[{die:true, w:[1993,1995], p:.85}]},
+ {key:"Larrousse", steps:[{die:true, w:[1994,1996], p:.85}]},
+ {key:"Lotus",    steps:[{die:true, w:[1994,1997], p:.8}]},
+ {key:"Arrows",   steps:[{to:{name:"Footwork",abbr:"FTW",color:"#B23A2E",color2:"#f5f5f5"}, w:[1991,1992], p:.75},
+                         {to:{name:"Arrows",abbr:"ARR",color:"#FF6600",color2:"#111111"}, w:[1996,1998], p:.8, from:"Footwork"},
+                         {die:true, w:[2002,2005], p:.8}]},
+ {key:"Ligier",   steps:[{to:{name:"Prost GP",abbr:"PRO",color:"#0A1A3F",color2:"#F5F5F5"}, w:[1996,1998], p:.75},
+                         {die:true, w:[2001,2004], p:.8, from:"Prost GP"}]},
+ {key:"Tyrrell",  steps:[{to:{name:"BAR",abbr:"BAR",color:"#C9BFA6",color2:"#D0021B"}, w:[1998,2000], p:.8},
+                         {to:{name:"Honda",abbr:"HON",color:"#F5F5F5",color2:"#D0021B"}, w:[2005,2008], p:.7, from:"BAR"},
+                         {to:{name:"Brawn",abbr:"BGP",color:"#C6E600",color2:"#111111"}, w:[2008,2011], p:.5, from:"Honda"},
+                         {to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2010,2013], p:.85, from:"Brawn"}]},
+ {key:"Benetton", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2001,2004], p:.8},
+                         {to:{name:"Lotus",abbr:"LOT",color:"#111111",color2:"#c9a227"}, w:[2011,2014], p:.5, from:"Renault"},
+                         {to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2019,2024], p:.6, from:"Lotus"}]},
+ {key:"Minardi",  steps:[{to:{name:"Toro Rosso",abbr:"STR",color:"#153A72",color2:"#D00000"}, w:[2005,2008], p:.75, needs:"Red Bull"},
+                         {to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2019,2022], p:.6, needs:"Red Bull", from:"Toro Rosso"},
+                         {to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2028], p:.6, needs:"Red Bull", from:"AlphaTauri"}]},
+];
+/* equipos que ENTRAN durante la década (y los que llegan después, para que una carrera larga siga
+   teniendo mundo). Los frágiles traen su fecha de caducidad: Simtek y Pacific duraron dos temporadas,
+   Forti dos, y Lola no llegó a la tercera carrera. */
+const ENTRIES_1990 = [
+ {range:[1991,1991], prob:.95, team:{name:"Jordan", abbr:"JOR", color:"#2F9E2F", color2:"#111111", perf:70, cat:"F1"}, drivers:null},
+ {range:[1991,1991], prob:.5,  team:{name:"Modena", abbr:"MOD", color:"#1A4A8A", color2:"#c0c0c8", perf:54, cat:"F1"}, drivers:null, dieAfter:{w:[1,2], p:.95}},
+ {range:[1993,1993], prob:.9,  team:{name:"Sauber", abbr:"SAU", color:"#C9B79A", color2:"#111111", perf:69, cat:"F1"}, drivers:null},
+ {range:[1994,1995], prob:.7,  team:{name:"Simtek", abbr:"SIM", color:"#5A3A8A", color2:"#c0c0c8", perf:52, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.85}},
+ {range:[1994,1995], prob:.7,  team:{name:"Pacific", abbr:"PAC", color:"#2A7A8A", color2:"#f5f5f5", perf:52, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.85}},
+ {range:[1995,1996], prob:.6,  team:{name:"Forti", abbr:"FOR", color:"#C8B030", color2:"#6b5210", perf:51, cat:"F1"}, drivers:null, dieAfter:{w:[1,3], p:.9}},
+ {range:[1997,1998], prob:.45, team:{name:"Lola", abbr:"LOL", color:"#B01A1A", color2:"#f5f5f5", perf:48, cat:"F1"}, drivers:null, dieAfter:{w:[1,2], p:.95}},
+ {range:[1997,1998], prob:.85, team:{name:"Stewart", abbr:"STW", color:"#E6DDC7", color2:"#1a3d7c", perf:64, cat:"F1"}, drivers:null},
+ {range:[2002,2004], prob:.6,  team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:70, cat:"F1"}, drivers:null, dieAfter:{w:[6,10], p:.5}},
+ {range:[2006,2008], prob:.4,  team:{name:"Super Aguri", abbr:"SAG", color:"#D0021B", color2:"#F5F5F5", perf:60, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.75}},
+ {range:[2010,2012], prob:.5,  team:{name:"Virgin", abbr:"VIR", color:"#D11D2A", color2:"#151515", perf:60, cat:"F1"}, drivers:null, dieAfter:{w:[4,7], p:.6}},
+ {range:[2010,2012], prob:.5,  team:{name:"HRT", abbr:"HRT", color:"#8A8D90", color2:"#B01B2E", perf:58, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.75}},
+ {range:[2015,2018], prob:.6,  team:{name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:64, cat:"F1"}, drivers:null},
+];
+// 🎬 debuts REALES de la década (año ±1 por partida). `pref` usa el nombre del equipo EN 1990.
+const ARRIVALS_1990 = [
+ {y:1991,n:"M. Schumacher",b:1969,c:97,f:"🇩🇪",pref:"Jordan"}, {y:1991,n:"M. Häkkinen",b:1968,c:94,f:"🇫🇮",pref:"Lotus"},
+ {y:1991,n:"É. Comas",b:1963,c:78,f:"🇫🇷",pref:"Ligier"}, {y:1991,n:"M. Brundle",b:1959,c:82,f:"🇬🇧",pref:"Brabham"},
+ {y:1992,n:"C. Fittipaldi",b:1970,c:79,f:"🇧🇷",pref:"Minardi"}, {y:1992,n:"K. Wendlinger",b:1969,c:83,f:"🇦🇹",pref:"Leyton House"},
+ {y:1993,n:"R. Barrichello",b:1972,c:88,f:"🇧🇷",pref:"Jordan"}, {y:1993,n:"E. Irvine",b:1965,c:85,f:"🇬🇧",pref:"Jordan"},
+ {y:1993,n:"P. Lamy",b:1972,c:76,f:"🇵🇹",pref:"Lotus"},
+ {y:1994,n:"D. Coulthard",b:1971,c:89,f:"🇬🇧",pref:"Williams"}, {y:1994,n:"H-H. Frentzen",b:1967,c:88,f:"🇩🇪",pref:"Sauber"},
+ {y:1994,n:"J. Verstappen",b:1972,c:81,f:"🇳🇱",pref:"Benetton"}, {y:1994,n:"O. Panis",b:1966,c:82,f:"🇫🇷",pref:"Ligier"},
+ {y:1994,n:"M. Salo",b:1966,c:81,f:"🇫🇮",pref:"Lotus"}, {y:1994,n:"G. Morbidelli",b:1968,c:76,f:"🇮🇹",pref:"Arrows"},
+ {y:1995,n:"P. Diniz",b:1970,c:72,f:"🇧🇷",pref:"Ligier"}, {y:1995,n:"J. Herbert",b:1964,c:82,f:"🇬🇧",pref:"Benetton"},
+ {y:1996,n:"J. Villeneuve",b:1971,c:90,f:"🇨🇦",pref:"Williams"}, {y:1996,n:"G. Fisichella",b:1973,c:87,f:"🇮🇹",pref:"Minardi"},
+ {y:1996,n:"R. Rosset",b:1968,c:70,f:"🇧🇷",pref:"Arrows"},
+ {y:1997,n:"J. Trulli",b:1974,c:86,f:"🇮🇹",pref:"Minardi"}, {y:1997,n:"R. Schumacher",b:1975,c:88,f:"🇩🇪",pref:"Jordan"},
+ {y:1997,n:"A. Wurz",b:1974,c:83,f:"🇦🇹",pref:"Benetton"}, {y:1997,n:"J. Magnussen",b:1973,c:78,f:"🇩🇰",pref:"Stewart"},
+ {y:1998,n:"P. de la Rosa",b:1971,c:80,f:"🇪🇸",pref:"Arrows"}, {y:1998,n:"E. Tuero",b:1978,c:72,f:"🇦🇷",pref:"Minardi"},
+ {y:1999,n:"R. Zonta",b:1976,c:80,f:"🇧🇷",pref:"Tyrrell"}, {y:1999,n:"M. Gené",b:1974,c:78,f:"🇪🇸",pref:"Minardi"},
+ {y:2000,n:"J. Button",b:1980,c:91,f:"🇬🇧",pref:"Williams"}, {y:2000,n:"N. Heidfeld",b:1977,c:85,f:"🇩🇪",pref:"Ligier"},
+ {y:2001,n:"F. Alonso",b:1981,c:95,f:"🇪🇸",pref:"Minardi"}, {y:2001,n:"K. Räikkönen",b:1979,c:93,f:"🇫🇮",pref:"Sauber"},
+ {y:2001,n:"J.P. Montoya",b:1975,c:90,f:"🇨🇴",pref:"Williams"},
+ {y:2002,n:"F. Massa",b:1981,c:88,f:"🇧🇷",pref:"Sauber"}, {y:2002,n:"M. Webber",b:1976,c:88,f:"🇦🇺",pref:"Minardi"},
+ {y:2005,n:"N. Rosberg",b:1985,c:89,f:"🇩🇪",pref:"Tyrrell"}, {y:2006,n:"L. Hamilton",b:1985,c:96,f:"🇬🇧",pref:"McLaren"},
+ {y:2007,n:"S. Vettel",b:1987,c:94,f:"🇩🇪",pref:"Sauber"},
+];
+// promesas del junior de los 90 (nombres reales de aquellas categorías, con su año de disponibilidad)
+const ROOKIE_1990 = [
+  ["D. Coulthard","🇬🇧"],["R. Barrichello","🇧🇷"],["G. Fisichella","🇮🇹"],["J. Trulli","🇮🇹",1994],
+  ["A. Montermini","🇮🇹"],["V. Sospiri","🇮🇹"],["E. Naspetti","🇮🇹"],["L. Badoer","🇮🇹"],
+  ["G. Lavaggi","🇮🇹"],["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹"],["N. Larini","🇮🇹"],
+  ["P. Lamy","🇵🇹"],["A. Couto","🇵🇹",1995],["M. Gené","🇪🇸",1995],["P. de la Rosa","🇪🇸"],
+  ["J. Magnussen","🇩🇰"],["T. Kristensen","🇩🇰"],["R. Schumacher","🇩🇪",1994],["A. Wurz","🇦🇹",1993],
+  ["N. Heidfeld","🇩🇪",1996],["J. Böhler","🇩🇪"],["M. Werner","🇩🇪"],["C. Albers","🇳🇱",1998],
+  ["J. Bourdais","🇫🇷"],["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],
+  ["D. Franchitti","🇬🇧",1993],["J. McDougall","🇬🇧"],["W. Firman","🇬🇧",1996],["J. Bytzek","🇨🇦"],
+  ["R. Rosset","🇧🇷"],["C. Fittipaldi","🇧🇷"],["A. Ribeiro","🇧🇷",1995],["M. Gugelmin","🇧🇷"],
+  ["T. Sato","🇯🇵",1998],["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵"],["K. Hoshino","🇯🇵"],
+];
+const LEGENDS_1990 = [["J.M. Fangio",5,"🇦🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],["N. Lauda",3,"🇦🇹"],
+  ["J. Clark",2,"🇬🇧"],["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["A. Jones",1,"🇦🇺"],
+  ["J. Scheckter",1,"🇿🇦"],["K. Rosberg",1,"🇫🇮"],["J. Hunt",1,"🇬🇧"]];
+/* 🏁 LA ESCALERA DE LOS 90. No había una sola vía: la Fórmula Ford británica era la puerta de entrada
+   de medio paddock, y de ahí se pasaba a la F3 nacional (británica, italiana o alemana) y a la F3000
+   internacional, que era la antesala de verdad. */
+const FFORD_1990 = [
+  {name:"Van Diemen", color:"#1144aa", color2:"#0a2560", perf:58},{name:"Swift Racing", color:"#e30613", color2:"#7a0309", perf:56},
+  {name:"Reynard Racing", color:"#0e7a5f", color2:"#063d2f", perf:57},{name:"Duckhams Team", color:"#e6a01e", color2:"#8a5f0f", perf:53},
+  {name:"Mygale", color:"#7a1fa2", color2:"#3d0f52", perf:51},{name:"Ray Racing", color:"#888888", color2:"#444444", perf:50},
+  {name:"Quest Racing", color:"#2a2a35", color2:"#101018", perf:49}];
+const F3BR_1990 = [ // F3 británica
+  {name:"West Surrey Racing", color:"#1144aa", color2:"#0a2560", perf:66},{name:"Alan Docking Racing", color:"#2a2a35", color2:"#101018", perf:63},
+  {name:"Bowman Racing", color:"#e30613", color2:"#7a0309", perf:61},{name:"Madgwick Motorsport", color:"#0e7a5f", color2:"#063d2f", perf:60},
+  {name:"Paul Stewart Racing", color:"#f5f5f5", color2:"#1a3d7c", perf:64},{name:"Edenbridge Racing", color:"#e6a01e", color2:"#8a5f0f", perf:57},
+  {name:"Middlebridge Racing", color:"#7a1fa2", color2:"#3d0f52", perf:56}];
+const F3EU_1990 = [ // F3 italiana y alemana: el jugador acaba en una u otra según de dónde sea
+  {name:"Forti Corse", color:"#C8B030", color2:"#6b5210", perf:65, nat:"🇮🇹"},
+  {name:"RC Motorsport", color:"#dd0022", color2:"#6b0011", perf:62, nat:"🇮🇹"},
+  {name:"Prema Racing", color:"#e2001a", color2:"#7a000e", perf:63, nat:"🇮🇹"},
+  {name:"Trivellato Racing", color:"#0a4ea2", color2:"#062f61", perf:59, nat:"🇮🇹"},
+  {name:"WTS Racing", color:"#c0c0c8", color2:"#5a5a66", perf:64, nat:"🇩🇪"},
+  {name:"Bertram Schäfer Racing", color:"#111318", color2:"#c0392b", perf:61, nat:"🇩🇪"},
+  {name:"Josef Kaufmann Racing", color:"#c9a227", color2:"#6b5210", perf:58, nat:"🇩🇪"},
+  {name:"Volkswagen Motorsport", color:"#0e7a5f", color2:"#063d2f", perf:60, nat:"🇩🇪"}];
+const F3000_1990 = [ // F3000 internacional: la antesala de verdad
+  {name:"Eddie Jordan Racing", color:"#2F9E2F", color2:"#111111", perf:76},{name:"Pacific Racing", color:"#2A7A8A", color2:"#f5f5f5", perf:74},
+  {name:"DAMS", color:"#0088cc", color2:"#004a70", perf:75},{name:"Onyx Race Engineering", color:"#1A6B3A", color2:"#0d3a1f", perf:71},
+  {name:"First Racing", color:"#e30613", color2:"#7a0309", perf:70},{name:"Middlebridge F3000", color:"#7a1fa2", color2:"#3d0f52", perf:69},
+  {name:"GA Motorsport", color:"#e6a01e", color2:"#8a5f0f", perf:68},{name:"Crypton Engineering", color:"#c0c0c8", color2:"#5a5a66", perf:67}];
+const KART_1990 = [
+  {name:"CRG", color:"#d4820a", color2:"#7a4a06", perf:52, sub:"La escuela dura del karting italiano"},
+  {name:"Birel", color:"#cc2222", color2:"#5e0f0f", perf:52, sub:"La escuela italiana de toda la vida"},
+  {name:"Tony Kart", color:"#2a9d3a", color2:"#136223", perf:51, sub:"La marca joven que sube como la espuma"},
+  {name:"DAP", color:"#111318", color2:"#000000", perf:50, sub:"El chasis con el que se hizo media parrilla"},
+  {name:"Kali-Kart", color:"#0f7ac0", color2:"#08405f", perf:49, sub:"Motores propios y hambre"},
+  {name:"Haase", color:"#c9a227", color2:"#6b5210", perf:48, sub:"Alemania: método y kilómetros"},
+  {name:"Swiss Hutless", color:"#e2001a", color2:"#7a000e", perf:48, sub:"Precisión suiza sobre asfalto"},
+];
 const LINEAGE_2000 = [
  {key:"Jaguar", steps:[{to:{name:"Red Bull",abbr:"RBR",color:"#0A1E5E",color2:"#D4001A"}, w:[2004,2007], p:.8}]},
  // 🦋 TORO ROSSO ES RED BULL COMPRANDO MINARDI: sin comprador no hay reventa (lo cazó Carlos). Los tres
@@ -1515,6 +1695,12 @@ const ERAS = {
     lineage:LINEAGE_2000, arrivals:ARRIVALS_2000,
     // en 2000 no hay filial de Red Bull (compró Jaguar en 2005 y Minardi en 2006). La clave apunta al
     // nombre FUTURO: en cuanto Minardi pase a llamarse Toro Rosso, empieza a comportarse como filial.
+    juniorOf:{"Toro Rosso":"Red Bull"} },
+  "1990":{ id:"1990", baseYear:1990, teams:TEAMS_1990, grid:GRID1990, rookies:ROOKIE_1990, crossovers:CROSSOVERS, legends:LEGENDS_1990, expansion:ENTRIES_1990,
+    cats:{F4:["Fórmula Ford","Formula Ford"],F3:["F3 Británica","British F3"],FR:["F3 Continental","Continental F3"],F2:"F3000"},
+    jr:{F4:FFORD_1990,F3:F3BR_1990,FR:F3EU_1990,F2:F3000_1990}, kart:KART_1990,
+    lineage:LINEAGE_1990, arrivals:ARRIVALS_1990,
+    // en 1990 no hay filial de Red Bull: la clave apunta al nombre FUTURO y solo cuenta si Red Bull llega
     juniorOf:{"Toro Rosso":"Red Bull"} },
   "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:["Fórmula Renault","Formula Renault"],F3:["Fórmula 3","Formula 3"],FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010}, kart:KART_2010,
     lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
@@ -1997,6 +2183,13 @@ function paintBadge(el, key){
 }
 let _relTimer=null;
 function refreshReleases(){
+  // 🚧 1990 EN CONSTRUCCIÓN: solo con ?preview=glory26, sin fecha de salida todavía.
+  const d90=document.getElementById("dec1990");
+  if(d90 && ERAS["1990"]){
+    d90.disabled=!PREVIEW; d90.classList.toggle("locked",!PREVIEW);
+    d90.onclick = PREVIEW ? (()=>startCareerFlow("1990")) : null;
+    d90.innerHTML = PREVIEW ? `1990<span class="decsub">${L("🔒 en obras","🔒 under construction")}</span>` : "1990";
+  }
   // 🕰️ la cuenta atrás va DENTRO del botón de la década (petición de Carlos), no en la tarjeta del retro
   const d=document.getElementById("dec2000");
   let a=false;
