@@ -1931,6 +1931,15 @@ const TESTS = {
       return t;
     }
   },
+  // 🕰️ ATAJO PARA PROBAR LOS 90: arranca en el karting de 1990 con el catálogo ENTERO de dilemas y sin
+  // ficha que rellenar. Es la década tal y como se va a jugar, solo que se entra de un clic.
+  noventa: {
+    t:["Década de 1990","The 1990s"],
+    d:["Arrancas en el karting de 1990 sin rellenar la ficha y con TODOS los dilemas activos: la década tal y como se va a jugar. Sube por la Fórmula Ford, la F3 y la F3000 y mira cómo se muere media parrilla por el camino.",
+       "You start in 1990 karting with no form to fill in and EVERY dilemma active: the decade exactly as it will be played. Climb through Formula Ford, F3 and F3000 and watch half the grid die along the way."],
+    era:"1990", jr:true,
+    run(){ return null; }
+  },
   // 🧪 los CINCO dilemas de formación y nada más: el resto del catálogo queda apagado para poder
   // recorrer una carrera entera desde el karting viéndolos salir uno detrás de otro.
   formacion: {
