@@ -4234,12 +4234,15 @@ const DILEMAS=[
  // Jordan arriba, Benetton abajo, un solo puesto final). El motivo del debut varía para que no sea
  // siempre el mismo cuento.
  {id:"debutGrande",stage:"f1",minAge:17,
+  /* ⚖️ QUIÉN TE LLAMA. Cogía el MEJOR coche de la parrilla y salía absurdo: el equipo campeón vigente
+     apostando a mitad de año por alguien con dos carreras encima (lo cazó Carlos entrando en McLaren).
+     El caso real tampoco fue así: Schumacher saltó a un Benetton que era CUARTO, no al que ganaba.
+     Ahora llama un grande que NO es el mejor de la parrilla: ambición sí, milagro no. */
   cond:()=>{ if(S.cat!=="F1"||!S.team||(S.f1Seasons||0)>1||S.patronLock) return false;
     const mio=S.f1perf[S.team.name]??75;
-    return mio<=76 && F1_TEAMS.some(t=>(S.f1perf[t.name]??70)>=87 && !S.neverHire[t.name] && !isRBJr(t.name)); },
+    return mio<=76 && bigCallers().length>0; },
   t:()=>L("El que te descubrió y el que te quiere","The one who found you and the one who wants you"),
-  d:()=>{ const g=[...F1_TEAMS].filter(t=>(S.f1perf[t.name]??70)>=87 && !S.neverHire[t.name] && !isRBJr(t.name))
-      .sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))[0];
+  d:()=>{ const cands=bigCallers(); const g=cands.length?cands[irnd(0,cands.length-1)]:null;
     S._debutBig=g?g.name:null;
     const motivo=[L("se lesionó su titular","their regular got injured"),
                   L("sancionaron a su titular","their regular got banned"),
@@ -4401,6 +4404,13 @@ const DILEMAS=[
      [30,()=>{ CAR(-1); return quitarGalones(L("Te ven como un problema y deciden zanjarlo por la vía rápida: órdenes de equipo el resto del año. −1 coche. ","They see you as a problem and settle it the quick way: team orders for the rest of the year. −1 car. ")); }])}]},
 ];
 
+/* 🏆 los grandes que PUEDEN llamarte cuando deslumbras de sustituto: buenos coches, pero nunca EL
+   mejor de la parrilla. Un equipo que va ganando el mundial no se juega el año con un desconocido. */
+function bigCallers(){
+  const ord=[...F1_TEAMS].filter(t=>!S.neverHire[t.name] && !isRBJr(t.name))
+    .sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70));
+  return ord.slice(1,5).filter(t=>(S.f1perf[t.name]??70)>=82 && t.name!==(S.team&&S.team.name));
+}
 /* 📜 EL CONTRATO DE WONDERKID. Un grande te paga la escalera entera a cambio de una opción sobre tu
    futuro. Lo que compras es un SUELO (no te quedas fuera) y lo que vendes es tu primer año de libertad.
    · Mientras subes, ese equipo NO puede quebrar: te lo han prometido por contrato.
