@@ -2823,6 +2823,17 @@ function mateIfJoin(teamName){
    (lo cazó Carlos). Estos son los repartos reales de la F1, que las categorías inferiores copiaban:
      …-1990: 9-6-4-3-2-1   ·   1991-2002: 10-6-4-3-2-1
      2003-2009: 10-8-6-5-4-3-2-1   ·   2010-: 25-18-15-12-10-8-6-4-2-1                              */
+/* ⚖️ CUÁNTO PESA EL PILOTO Y CUÁNTO EL COCHE, SEGÚN LA ÉPOCA (idea de Carlos). Estaba clavado a
+   48/52 en los tres sitios donde se calcula un resultado. Cuanto más atrás, más mandaba el hombre:
+   menos electrónica, más diferencias de talento y coches que se rompían solos.
+   Pensado para estirarse hacia atrás: los 80 y los 50 irán por encima del 58%. */
+function drvW(y){
+  const yr = y || yearNow();
+  if(yr>=2009) return .48;
+  if(yr>=1998) return .50;
+  if(yr>=1994) return .54;
+  return .58;              // hasta 1993 (y más atrás, cuando llegue)
+}
 function ptsTable(y){
   const yr = y || yearNow();
   if(yr>=2010) return [25,18,15,12,10,8,6,4,2,1];
@@ -4957,7 +4968,7 @@ function bgF1Season(row){
   const rows=[];
   F1_TEAMS.forEach(t=>{
     (S.seats[t.name]||[]).forEach(d=>{
-      if(d!=="PLAYER") rows.push({d,team:t.name,score:d.skill*.48+S.f1perf[t.name]*.52+gauss()*3.4});
+      if(d!=="PLAYER"){ const w=drvW(); rows.push({d,team:t.name,score:d.skill*w+S.f1perf[t.name]*(1-w)+gauss()*3.4}); }
     });
   });
   rows.sort((a,b)=>b.score-a.score);
@@ -5148,6 +5159,7 @@ function simF1(row,st){
     occupySeat(myTeam);
   }
   const perf=S.f1perf;
+  const _W=drvW(row.year);   // ⚖️ el reparto piloto/coche de ESA época
   if(perf[myTeam]==null){ perf[myTeam]=rnd(73,80); }
   // parrilla real: los pilotos con nombre en sus asientos + tú
   const grid=[];
@@ -5186,13 +5198,13 @@ function simF1(row,st){
     const chaos=Math.random()<.10;
     const noiseMul=chaos?1.7:1;
     const scores=grid.map(d=>{
-      let s=d.skill*.48+((perf[d.team]??75)-(d.isP?carDeficit:0))*.52+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
+      let s=d.skill*_W+((perf[d.team]??75)-(d.isP?carDeficit:0))*(1-_W)+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
       if(d.isP) s+=roleBonus+affinity+(sel.style==="agresivo"?1.4:0); // agresivo: ritmo de carrera puro (y arriesgado)
       if(wet && d.isP) s+=(st.wet+(S.wetMaster||0))*6;   // 🌧️ + lo que aprendiste de chaval con gomas de seco
       return {d,s,dnf:(d.isP&&out)||Math.random()<((d.isP?st.dnf:.07)*(chaos?1.6:1))};
     });
     if(!out){
-      const qs=grid.map(d=>d.skill*.48+((perf[d.team]??75)-(d.isP?carDeficit:0))*.52+gauss()*(d.isP?st.varza:4.5)+(d.isP?affinity+(sel.style==="agresivo"?2.5:0):0));
+      const qs=grid.map(d=>d.skill*_W+((perf[d.team]??75)-(d.isP?carDeficit:0))*(1-_W)+gauss()*(d.isP?st.varza:4.5)+(d.isP?affinity+(sel.style==="agresivo"?2.5:0):0));
       const myQ=qs[qs.length-1];
       if(qs.filter(q=>q>myQ).length===0){poles++;}
       S.gp++;
