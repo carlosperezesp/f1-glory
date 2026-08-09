@@ -511,7 +511,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 #langToggle{position:fixed;top:12px;right:12px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer}
 #langToggle:hover{background:#fff}
-#themeToggle{position:fixed;top:12px;right:58px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
+#themeToggle{position:fixed;top:12px;right:70px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;width:34px;height:34px;font-size:16px;line-height:1;box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}
 @media print{#langToggle,#themeToggle{display:none}}
 /* en la maqueta apilada la tarjeta ocupa todo el ancho: al hacer scroll, los botones
@@ -4820,7 +4820,7 @@ let P_GOMAS=.5, P_TOQUE=.06;
 // padrino antes de los 20. Sin prioridad salían en el 1% y el 2% (medido).
 // el del chaval salía en el 2% sin prioridad y en el 55% con .18 — la misma curva empinada que ya me
 // pilló con el del debut. Con .05 queda en torno al 25%.
-let P_DEBUT=.2, P_PATRON=.5, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // .55 lo dejaba en el 48% de las carreras: demasiado para un suceso así
+let P_DEBUT=.2, P_PATRON=.26, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // el mecenas: .55 -> 48% de las carreras, .5 -> 21%. Sigue siendo demasiado para «la llamada que te cambia la vida»: se busca ~1 de cada 10
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
   // `minAge` pueden saltar antes (los de formación, que sin esto jamás se verían en karting).
@@ -5124,10 +5124,18 @@ function simSeason(){
     const R=S.regReveal, b=R.brawn;
     // ⚠️ el ganador del reglamento tiene que SEGUIR EN LA PARRILLA: salia «Prost GP cierra sus puertas»
   // y dos lineas mas abajo «Prost GP arrasa y se convierte en el coche a batir» (lo cazo Carlos).
+  /* ⚠️ …y tampoco puede coronar a un equipo que NO ganó. Carlos fue campeón con Spyker y el mismo
+     resumen decía «Red Bull arrasa y se convierte en el coche a batir». Si el mejor constructor de la
+     temporada fue otro, el reglamento se narra como lo que fue: un salto, no una coronación. */
+  const _mejor = (row.top3c && row.top3c[0]) || null;
   if(F1_TEAMS.some(t=>t.name===b))
-    row.events.push(L(`🏁 Se estrena un reglamento nuevo: ${b} arrasa y se convierte en el coche a batir.`,`🏁 A new rulebook comes in: ${b} dominates and becomes the car to beat.`));
+    row.events.push(( !_mejor || _mejor===b )
+      ? L(`🏁 Se estrena un reglamento nuevo: ${b} arrasa y se convierte en el coche a batir.`,`🏁 A new rulebook comes in: ${b} dominates and becomes the car to beat.`)
+      : L(`🏁 Se estrena un reglamento nuevo: ${b} da un salto enorme y se planta arriba, aunque el año acaba llevándoselo ${_mejor}.`,`🏁 A new rulebook comes in: ${b} takes a huge step and lands at the front, though the year ends up belonging to ${_mejor}.`));
     if(R.rumorTrue) row.events.push(L(`🔮 ${R.rumor} acertó de pleno con el reglamento.`,`🔮 ${R.rumor} nailed the new rules completely.`));
-    else row.events.push(L(`🔮 ${R.rumor} se estrelló con el nuevo reglamento; el verdadero triunfador fue ${b}.`,`🔮 ${R.rumor} flopped with the new rules; the real winner was ${b}.`));
+    else row.events.push(( !_mejor || _mejor===b )
+      ? L(`🔮 ${R.rumor} se estrelló con el nuevo reglamento; el verdadero triunfador fue ${b}.`,`🔮 ${R.rumor} flopped with the new rules; the real winner was ${b}.`)
+      : L(`🔮 ${R.rumor} se estrelló con el nuevo reglamento, y quien mejor lo entendió fue ${b}.`,`🔮 ${R.rumor} flopped with the new rules, and the one who read them best was ${b}.`));
     // 🎲 se cobra la apuesta: dejaste un coche ganador por unos planos. ¿Y ahora?
     if(R.bet && R.grade==="pleno") row.events.push(L(`🎲 LA APUESTA SALE REDONDA: ${R.bet} construyó el mejor coche de la parrilla y tú te subiste dos años antes que nadie. Los que te llamaron loco ahora te llaman visionario.`,`🎲 THE GAMBLE PAYS OFF: ${R.bet} built the best car on the grid and you climbed aboard two years before anyone else. Those who called you mad now call you a visionary.`));
     else if(R.bet && R.grade==="medias") row.events.push(L(`🎲 La apuesta sale a medias: ${R.bet} da un salto enorme y se planta entre los de arriba… pero no son el coche a batir. Ni ridículo ni gloria: ahora toca pelear.`,`🎲 The gamble half-lands: ${R.bet} takes a huge step and joins the front runners… but they're not the car to beat. Neither disaster nor glory: now you fight.`));
@@ -5357,7 +5365,13 @@ function killTeam(name, row){
 }
 function processLineage(row){
   (S.lineage||[]).forEach(chn=>{
+    /* 🔄 UN SOLO CAMBIO DE NOMBRE POR TEMPORADA. Al encadenar los pasos con `from`, en cuanto uno se
+       cumplía el siguiente ya cuadraba y podía dispararse el MISMO año: salía «BAR se transforma en
+       Brawn» y dos palabras después «Brawn se transforma en Mercedes» (lo cazó Carlos). Un equipo no
+       cambia de identidad dos veces en un invierno. */
+    let yaCambio=false;
     chn.steps.forEach(st=>{
+      if(yaCambio && !st.die) return;
       if(st.done || !st.go || yearNow()<st.year) return;
       // 🦋 ¿hace falta un comprador y no está en la parrilla? Entonces esta compra NO ocurre nunca.
       if(st.needs && !F1_TEAMS.some(x=>x.name===st.needs)){ st.done=true; return; }
@@ -5386,7 +5400,7 @@ function processLineage(row){
         if(F1_TEAMS.length<=10){ st.done=true; return; } // parrilla mínima de 10: no se muere nadie más
         killTeam(chn.cur, row); st.done=true; return;
       }
-      rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true;
+      rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true; yaCambio=true;
     });
   });
 }
