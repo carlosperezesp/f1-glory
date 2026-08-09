@@ -5251,6 +5251,13 @@ function rebrandTeam(oldName, to, row){
   Object.assign(t,{name:nn, abbr:to.abbr||t.abbr, color:to.color||t.color, color2:to.color2||t.color2});
   const mine = S.team && S.team.name===oldName;
   if(mine && S.team!==t){ S.team.name=nn; S.team.abbr=t.abbr; S.team.color=t.color; S.team.color2=t.color2; }
+  /* 🔄 …Y LA FILA DE ESTA TEMPORADA. row.team es una COPIA tomada al empezar el año; si el renombrado
+     ocurre ahora, esa copia se queda con el nombre viejo mientras el resto de la fila (el top-3 de
+     constructores, por ejemplo) ya usa el nuevo. Salía «Renault · 2013» con «🏭 Lotus» dos líneas más
+     abajo (lo cazó Carlos). Se actualiza la copia para que la temporada hable de un solo equipo. */
+  if(mine && row && row.team && row.team.name===oldName){
+    row.team.name=nn; row.team.abbr=t.abbr; row.team.color=t.color; row.team.color2=t.color2;
+  }
   row.events.push(mine
     ? L(`🔄 Tu equipo cambia de manos: ${oldName} pasa a ser ${nn}. Nuevos colores, mismo box.`,`🔄 Your team changes hands: ${oldName} becomes ${nn}. New colours, same garage.`)
     : L(`🔄 ${oldName} se transforma en ${nn}.`,`🔄 ${oldName} becomes ${nn}.`));
@@ -5446,13 +5453,19 @@ function alphaClash(row){
     // sales al mercado (como ya hacen otros dilemas). Con el motivo bien explicado.
     if(leaver==="PLAYER"){
       S.forceMove=true; S.alphaYears[tn]=0; mktMark(tn, stays);
+      // 👑 si el que se queda ACABA DE GANAR EL MUNDIAL, la historia no es que tú no quieras ser
+      // escudero: es que el equipo construye sobre el campeón y busca otro Nº2 (lo cazó Carlos, que
+      // además veía ofertas de Nº2 justo después de leer que no pensaba ser escudero de nadie).
+      const stayCampeon = stays!=="PLAYER" && S.lastChampName && stays.name===S.lastChampName;
       const esTxt =
         modo==="peor"     ? `${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
+      : (modo==="mejor" && stayCampeon) ? `${tn} se vuelca en ${stayName} tras su Mundial y quiere un Nº2 que no le discuta nada. Ese ya no eres tú: te toca buscar asiento.`
       : modo==="mejor"    ? `Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
       : modo==="veterano" ? `${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
                           : `${tn} quiere el título YA y prefiere la veteranía de ${stayName}: tu asiento se acaba.`;
       const enTxt =
         modo==="peor"     ? `${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
+      : (modo==="mejor" && stayCampeon) ? `${tn} throws everything behind ${stayName} after his title and wants a No.2 who won't argue. That's no longer you: time to find a seat.`
       : modo==="mejor"    ? `You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
       : modo==="veterano" ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
                           : `${tn} wants the title NOW and prefers ${stayName}'s experience: your seat is gone.`;
@@ -5881,7 +5894,12 @@ function maybeEvent(row,st){
   const rival = ()=>{ const m=(S.seats[S.team.name]||[]).find(d=>d!=="PLAYER"); return m?surname(m.name):L("tu compañero","your teammate","o teu companheiro"); };
   // 🏟️ un chaval de karting no gana «el fin de semana de Hungaroring»: en karts, circuitos de karts.
   const KARTPISTAS=["Lonato","Braga","Kerpen","La Conca","Genk","Jesolo","Ostende"];
-  const gp = ()=> S.cat==="KART" ? KARTPISTAS[irnd(0,KARTPISTAS.length-1)] : gpAt(yearNow());
+  // 🏟️ y en las categorías de promoción tampoco se corre en Melbourne ni en Interlagos: el calendario
+  // junior es europeo (lo cazó Carlos con una masterclass bajo la lluvia «en Melbourne» en F3000).
+  const JRPISTAS=["Silverstone","Spa","Hockenheim","Zolder","Pau","Monza","Nürburgring","Estoril","Donington","Magny-Cours"];
+  const gp = ()=> S.cat==="KART" ? KARTPISTAS[irnd(0,KARTPISTAS.length-1)]
+                : S.cat==="F1"   ? gpAt(yearNow())
+                :                  JRPISTAS[irnd(0,JRPISTAS.length-1)];
   // 🪑 DE PROBADOR NO SE CORRE: los eventos de pilotaje no tienen dónde pasar. Antes saltaban igual y
   //    salía «11 carreras seguidas sin un solo error» en un año sin una sola carrera (lo cazó Carlos).
   const corres = S.cat!=="TEST" || (row.subRaces||0)>0;
@@ -6320,7 +6338,7 @@ function nextOffers(){
       patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio
     } else if(S.ovr>=72){
       title=L("El banquillo de la F1","The F1 reserve bench");
-      sub=L("Nadie te da un volante titular aún, pero los grandes te quieren de piloto probador: FP1, simulador y paciencia.","No race seat yet, but the big teams want you as a reserve: FP1, simulator and patience.");
+      sub=L(`Nadie te da un volante titular aún, pero en la Fórmula 1 te quieren de piloto probador: FP1, ${yearNow()>=2005?"simulador":"test privados"} y paciencia.`,`No race seat yet, but Formula 1 wants you as a reserve driver: FP1, ${yearNow()>=2005?"simulator":"private testing"} and patience.`);
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
       pick(F1_TEAMS, Math.min(stayOK2?2:3, Math.max(1,nOffers()))).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       patronDoor(o, false);  // 📜 aquí el padrino te da el banquillo, que es lo que prometió
