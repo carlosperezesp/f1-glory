@@ -3555,8 +3555,12 @@ function signContract(o){
   if(o.team.cat==="F1") S.patronOffered=false;   // la marca vale para ESTE mercado, no para siempre
   // 🤝 le diste tu palabra a un equipo siguiendo a tu ingeniero, y firmas en otro sitio
   if(S.engPromise && o.team.cat==="F1"){
-    const ep=S.engPromise; S.engPromise=null;
-    if(o.team.name!==ep){
+    const ep=S.engPromise, ofrecido=S.engOffered; S.engPromise=null; S.engOffered=false;
+    if(o.team.name!==ep && !ofrecido){
+      // 🛡️ el mercado nunca puso a ese equipo delante: no hay palabra que romper (misma red que el padrino)
+      S.pendingEvents.push(L(`🤝 En ${ep} no acaban de encontrarte hueco y lo de reunirte con tu ingeniero se queda en nada. Sin rencores.`,
+                             `🤝 ${ep} can't find room for you and the reunion with your engineer comes to nothing. No hard feelings.`));
+    } else if(o.team.name!==ep){
       S.burned[ep]=S.age; VAL(.93);
       S.pendingEvents.push(L(`🤝 Diste tu palabra de seguir a tu ingeniero a ${ep} y acabas firmando en otro sitio. Él no te lo dice, pero deja de cogerte el teléfono. −fama`,
                              `🤝 You gave your word to follow your engineer to ${ep} and you sign somewhere else. He doesn't say a word, but he stops taking your calls. −fame`));
@@ -6459,8 +6463,9 @@ function nextOffers(){
     // 🤝 el equipo al que te comprometiste siguiendo a tu ingeniero: te espera, así que ESTÁ.
     if(S.engPromise){
       const et=F1_TEAMS.find(t=>t.name===S.engPromise && !S.neverHire[t.name]);
-      if(et && !cands.some(t=>t.name===et.name)) cands=[et].concat(cands);
-      else if(!et) S.engPromise=null;   // ese equipo ya no existe: promesa disuelta
+      if(et){ if(!cands.some(t=>t.name===et.name)) cands=[et].concat(cands);
+              S.engOffered=true; }        // 🛡️ constancia: solo se traiciona lo que se llegó a ofrecer
+      else S.engPromise=null;             // ese equipo ya no existe: promesa disuelta
     }
     if(S.forceMove){
       cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
