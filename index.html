@@ -580,7 +580,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 </head>
 <body>
 <button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
-<button id="langToggle" onclick="setLang(LANG==='en'?'es':'en')" title="Language / Idioma">EN</button>
+<button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
 
 <!-- ========== INTRO ========== -->
 <section id="intro">
@@ -809,7 +809,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 
 <script>
 /* ================= IDIOMA / LANGUAGE ================= */
-let LANG = (function(){ try{return localStorage.getItem("f1lang")||"es";}catch(e){return "es";} })();
+let LANG = (function(){ try{ const l=localStorage.getItem("f1lang")||"es"; return ["es","en","pt"].includes(l)?l:"es"; }catch(e){ return "es"; } })();
 // 🔒 modo PREVIEW (oculto): entra con ?preview=glory26 para activar funciones en pruebas SOLO para el dev
 // (persiste en localStorage; ?preview=off lo apaga). El resto de la gente no ve absolutamente nada distinto.
 const PREVIEW = (function(){ try{
@@ -826,14 +826,51 @@ const TEST_MODE = (function(){ try{
   const t=new URLSearchParams(location.search).get("test");
   return (t && PREVIEW) ? t : null;
 }catch(e){ return null; } })();
-const L = (es,en)=> LANG==="en" ? en : es;
+/* 🌐 TRES IDIOMAS, PERO EL TERCERO ES OPCIONAL. Reescribir las 1.267 llamadas de golpe era pedir un
+   fallo tonto; así, L(es,en) sigue funcionando igual y el portugués se va añadiendo frase a frase con
+   un tercer argumento. Mientras no lo tenga, cae en español, que se entiende mucho mejor que un hueco
+   vacío para un lector de Brasil o Portugal. */
+const L = (es,en,pt)=> LANG==="pt" ? (pt!=null?pt:es) : LANG==="en" ? en : es;
+const LANGS = ["es","en"];   // el portugués se añade abajo solo si el modo pruebas está activo
 function applyLang(){
-  document.querySelectorAll("[data-es]").forEach(el=>{ el.innerHTML = (LANG==="en"&&el.dataset.en!=null)? el.dataset.en : el.dataset.es; });
-  document.querySelectorAll("[data-esph]").forEach(el=>{ el.placeholder = (LANG==="en"&&el.dataset.enph!=null)? el.dataset.enph : el.dataset.esph; });
-  const tg=document.getElementById("langToggle"); if(tg) tg.textContent = LANG==="en"?"ES":"EN";
+  document.querySelectorAll("[data-es]").forEach(el=>{
+    el.innerHTML = (LANG==="pt"&&el.dataset.pt!=null) ? el.dataset.pt
+                 : (LANG==="en"&&el.dataset.en!=null) ? el.dataset.en : el.dataset.es; });
+  document.querySelectorAll("[data-esph]").forEach(el=>{
+    el.placeholder = (LANG==="pt"&&el.dataset.ptph!=null) ? el.dataset.ptph
+                   : (LANG==="en"&&el.dataset.enph!=null) ? el.dataset.enph : el.dataset.esph; });
+  // el botón enseña el idioma al que SALTAS, no en el que estás
+  const tg=document.getElementById("langToggle");
+  if(tg){ const i=LANGS.indexOf(LANG);
+    tg.textContent = LANGS.length<=2 ? (LANGS[(i+1)%LANGS.length]||"es").toUpperCase()
+                                     : "🌐 "+LANG.toUpperCase(); }
   document.documentElement.lang = LANG;
 }
+/* 🌐 EL BOTÓN DE IDIOMA SE ADAPTA SOLO (petición de Carlos):
+   · con DOS idiomas es un interruptor — pinchas y saltas al otro, como toda la vida.
+   · con TRES o más se convierte en un SELECTOR: pinchas y ves los disponibles.
+   Así, el día que el portugués esté traducido y se quite el candado, el botón cambia de
+   comportamiento sin tocar nada más. Hoy el público ve dos idiomas, o sea el interruptor de siempre. */
+const LANG_NAME={es:"Español",en:"English",pt:"Português"};
+function nextLang(){
+  if(LANGS.length<=2){ const i=LANGS.indexOf(LANG); setLang(LANGS[(i+1)%LANGS.length]||"es"); return; }
+  const m=document.getElementById("langMenu");
+  if(m){ m.remove(); return; }              // segundo clic: se cierra
+  const btn=document.getElementById("langToggle"); if(!btn) return;
+  const box=document.createElement("div"); box.id="langMenu";
+  box.style.cssText="position:absolute;z-index:60;background:var(--panel,#fff);border:1px solid var(--line,#ddd);border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);min-width:150px";
+  box.innerHTML=LANGS.map(l=>`<button data-l="${l}" style="display:block;width:100%;text-align:left;background:none;border:0;padding:9px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:14px;${l===LANG?"font-weight:700":""}">${l===LANG?"✓ ":"　"}${LANG_NAME[l]||l}</button>`).join("");
+  document.body.appendChild(box);
+  const r=btn.getBoundingClientRect();
+  box.style.top=(r.bottom+window.scrollY+6)+"px";
+  box.style.left=Math.max(8,(r.right+window.scrollX-box.offsetWidth))+"px";
+  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{ setLang(b.dataset.l); box.remove(); });
+  setTimeout(()=>document.addEventListener("click",function cerrar(e){
+    if(!box.contains(e.target) && e.target!==btn){ box.remove(); document.removeEventListener("click",cerrar); }
+  }),0);
+}
 function setLang(l){
+  if(!LANGS.includes(l)) l="es";
   LANG=l; try{localStorage.setItem("f1lang",l);}catch(e){}
   applyLang();
   // la pantalla de identidad tiene contenido puesto por JS (tarjeta del reto, chips, subtítulo):
@@ -7213,7 +7250,11 @@ function printCareer(){
   window.print();
   $("endModal").style.display="flex";
 }
-applyLang(); // aplicar el idioma guardado al cargar
+/* 🇵🇹 PORTUGUÉS EN OBRAS: solo aparece con ?preview=glory26, igual que las décadas nuevas. Cuando esté
+   traducido, se quita este candado y pasa a estar para todo el mundo. */
+if(PREVIEW) LANGS.push("pt");
+else if(LANG==="pt"){ LANG="es"; try{localStorage.setItem("f1lang","es");}catch(e){} }
+applyLang(); // aplicar el idioma guardado al cargar (ya con el candado del portugués resuelto)
 applyTheme(); // aplicar el tema guardado al cargar
 initSecretDecades();    // ⏳ pegatinas y desbloqueo por fecha (la de 2000 se abre sola el 10-ago)
 initSecretChallenges(); // 📅 el modo Reto se abre solo el 17-ago (o ya, con el preview activo)
