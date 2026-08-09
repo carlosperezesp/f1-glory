@@ -4378,7 +4378,12 @@ const DILEMAS=[
     De paso alimenta dos sistemas que estaban famélicos: los `respects`, que apenas se usaban, y las
     enemistades, que hoy no nacen en el 82% de las carreras. */
  {id:"elChaval",stage:"f1",
-  cond:()=>{ if(S.cat!=="F1"||(S.f1Seasons||0)<5||S.age<28) return false;
+  /* ⏳ CUÁNDO. Nunca con 20 años: hacen falta 5 temporadas de F1 — o solo 3 si ya eres campeón del
+     mundo, porque entonces tu palabra pesa mucho antes. Así el chaval al que alabas o hundes todavía
+     tiene años por delante para venir a discutirte un título (matiz de Carlos). */
+  cond:()=>{ if(S.cat!=="F1") return false;
+    const t=(S.f1Seasons||0), camp=(S.titles.f1||0)>0;
+    if(t < (camp?3:5) || S.age<25) return false;
     return chavalDelAno()!=null; },
   t:()=>L("¿Qué te parece el chaval?","What do you make of the kid?"),
   d:()=>{ const c=chavalDelAno(); S._chaval=c?c.name:null;
@@ -4389,25 +4394,37 @@ const DILEMAS=[
   opts:[
    {l:()=>L("Arroparle: «tiene algo que no se enseña»","Back him: «he's got something you can't teach»"),
     r:()=>{ const c=chavalPorNombre(S._chaval); const n=c?surname(c.name):L("el chaval","the kid");
-      if(c){ c.skill=Math.min(c.ceil||97,(c.skill||75)+2); S._incRival=c.name; respectBuild(); }
-      return ch(.7)
-        ? L(`Dices que hacía años que no veías a alguien frenar así. El titular le da la vuelta al paddock y ${n} corre el resto del año con dos palmos más de altura. No lo va a olvidar.`,
-            `You say you hadn't seen anyone brake like that in years. The headline goes around the paddock and ${n} races the rest of the year two feet taller. He won't forget it.`)
-        : (VAL(1.06), L(`Dices que hacía años que no veías a alguien frenar así, y de paso quedas como lo que eres: alguien que ya no necesita achicar a nadie. +fama`,
-                        `You say you hadn't seen anyone brake like that in years — and you come across as what you are: someone who no longer needs to cut anybody down. +fame`)); }},
+      if(c) S._incRival=c.name;
+      // ⚖️ un elogio tuyo puede darle alas… o echarle encima un peso que no pidió (matiz de Carlos)
+      return roll(
+        [55,()=>{ if(c){ c.skill=Math.min(c.ceil||97,(c.skill||75)+2); respectBuild(); }
+          return L(`Dices que hacía años que no veías a alguien frenar así. El titular le da la vuelta al paddock y ${n} corre el resto del año con dos palmos más de altura. No lo va a olvidar.`,
+                   `You say you hadn't seen anyone brake like that in years. The headline goes around the paddock and ${n} races the rest of the year two feet taller. He won't forget it.`); }],
+        [25,()=>{ if(c) respectBuild(); VAL(1.06);
+          return L(`Dices que hacía años que no veías a alguien frenar así, y de paso quedas como lo que eres: alguien que ya no necesita achicar a nadie. +fama`,
+                   `You say you hadn't seen anyone brake like that in years — and you come across as what you are: someone who no longer needs to cut anybody down. +fame`); }],
+        [20,()=>{ if(c){ c.skill=Math.max(60,(c.skill||75)-1); respectBuild(); }
+          return L(`Le pones encima un peso que no había pedido: de repente todo el mundo espera de ${n} lo que tú dijiste, y se le nota. Te lo agradece igual, pero le has hecho la temporada más difícil.`,
+                   `You load him with a weight he never asked for: suddenly everyone expects of ${n} what you said, and it shows. He's grateful anyway, but you've made his season harder.`); }]); }},
    {l:()=>L("Frialdad: «que aguante tres años y hablamos»","Cool: «let him last three years and we'll talk»"),
-    r:()=>L("Ni le subes ni le hundes. En el paddock se lee como lo que es: un veterano que ya ha visto pasar a muchos.","You neither lift him nor sink him. The paddock reads it for what it is: a veteran who's seen plenty come and go.")},
+    r:()=>{ const c=chavalPorNombre(S._chaval); const n=c?surname(c.name):L("el chaval","the kid");
+      return roll(
+        [55,()=>L("Ni le subes ni le hundes. En el paddock se lee como lo que es: un veterano que ya ha visto pasar a muchos.","You neither lift him nor sink him. The paddock reads it for what it is: a veteran who's seen plenty come and go.")],
+        [45,()=>{ if(c) c.skill=Math.min(c.ceil||97,(c.skill||75)+1);
+          return L(`«Tres años y hablamos». ${n} recorta el titular y se lo queda. A veces no hay mejor combustible que alguien dudando de ti.`,
+                   `«Three years and we'll talk». ${n} cuts the headline out and keeps it. Sometimes there's no better fuel than someone doubting you.`); }]); }},
    {l:()=>L("Bajarle los humos: «le queda mucho»","Cut him down: «he's got a long way to go»"),
     r:()=>{ const c=chavalPorNombre(S._chaval); const n=c?surname(c.name):L("el chaval","the kid");
       if(!c) return L("Sueltas la frase y al día siguiente ya nadie se acuerda.","You say your piece and by the next day nobody remembers.");
       S._incRival=c.name;
       return roll(
-        [45,()=>{ c.skill=Math.max(60,(c.skill||75)-2); feudBurn();
+        [40,()=>{ c.skill=Math.max(60,(c.skill||75)-2); feudBurn();
           return L(`El titular le sienta como un tiro y se le nota en pista: se agarra al volante en vez de pilotar. Pero eso no se perdona — a partir de hoy, ${n} y tú tenéis cuentas.`,
                    `The headline hits him hard and it shows on track: he grips the wheel instead of driving. But that's not forgiven — from today, ${n} and you have unfinished business.`); }],
-        [35,()=>{ feudBurn();
-          return L(`${n} se lo traga en público y responde en pista. Se te ha hecho un enemigo, y de los que van a estar muchos años.`,
-                   `${n} swallows it in public and answers on track. You've made an enemy — one who'll be around for years.`); }],
+        [40,()=>{ c.skill=Math.min(c.ceil||97,(c.skill||75)+2); feudBurn();
+          // ⚖️ el desprecio también enciende: le has dado exactamente lo que necesitaba
+          return L(`Le has dado justo lo que le faltaba. ${n} se pega tu frase en el casco y a partir de ahí vuela — y encima ahora tenéis cuentas pendientes.`,
+                   `You gave him exactly what he needed. ${n} tapes your words inside his helmet and flies from there — and now you have unfinished business too.`); }],
         [20,()=>(VAL(.93), L(`Suena a viejo defendiendo su sitio y el paddock lo nota más que él. −fama`,
                              `It sounds like an old man defending his patch, and the paddock notices more than he does. −fame`))]); }}]},
 
@@ -4642,11 +4659,12 @@ function pickBigCaller(){
 /* 🎤 el debutante del año: alguien joven, con asiento y recién llegado. Si no hay ninguno, el dilema
    ni se plantea — no se pregunta por un chaval que no existe. */
 function chavalDelAno(){
-  const yo=(S.team&&S.team.name)||"";
-  const c=seatedPool().filter(d=>d && d.name && (d.age||99)<=22 && (d.yrs||0)<=1 && (d.titles||0)===0
-                                 && d.name!==S.roleMate);
-  if(!c.length) return null;
-  return c.reduce((a,b)=>((b.ceil||0)>(a.ceil||0)?b:a));   // el que más futuro promete
+  const pool=seatedPool();
+  // los tres mayores TECHOS de toda la parrilla: por ese chaval sí preguntan
+  const top3=[...pool].sort((a,b)=>(b.ceil||0)-(a.ceil||0)).slice(0,3).map(d=>d.name);
+  const c=pool.filter(d=>d && d.name && (d.age||99)<=22 && (d.yrs||0)<=1 && (d.titles||0)===0
+                         && d.name!==S.roleMate && top3.includes(d.name));
+  return c.length ? c.reduce((a,b)=>((b.ceil||0)>(a.ceil||0)?b:a)) : null;
 }
 function chavalPorNombre(n){ return n ? seatedPool().find(d=>d&&d.name===n)||null : null; }
 /* 📜 EL CONTRATO DE WONDERKID. Un grande te paga la escalera entera a cambio de una opción sobre tu
@@ -4802,7 +4820,7 @@ let P_GOMAS=.5, P_TOQUE=.06;
 // padrino antes de los 20. Sin prioridad salían en el 1% y el 2% (medido).
 // el del chaval salía en el 2% sin prioridad y en el 55% con .18 — la misma curva empinada que ya me
 // pilló con el del debut. Con .05 queda en torno al 25%.
-let P_DEBUT=.2, P_PATRON=.5, P_CHAVAL=.05;   // .55 lo dejaba en el 48% de las carreras: demasiado para un suceso así
+let P_DEBUT=.2, P_PATRON=.5, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // .55 lo dejaba en el 48% de las carreras: demasiado para un suceso así
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
   // `minAge` pueden saltar antes (los de formación, que sin esto jamás se verían en karting).
