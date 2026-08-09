@@ -4371,6 +4371,46 @@ const DILEMAS=[
      return L(`Te vas un año antes de que acabe tu contrato. ${old} te cierra la puerta para siempre y en la prensa te llaman desertor, pero no piensas quemar tus mejores años peleándote con un coche que no es el tuyo. −fama`,
               `You leave a year before your contract ends. ${old} shuts the door on you forever and the press calls you a deserter, but you won't burn your best years fighting a car that isn't yours. −fame`); }}]},
 
+ /* 🎤 «¿QUÉ TE PARECE EL CHAVAL?» (idea de Carlos). Eres veterano, la prensa te pregunta por un
+    debutante y tu respuesta le cambia la carrera al otro. Sin ataduras: no toca mercado ni contratos —
+    solo el nivel del chaval y la memoria que guarda de ti. Es el ESPEJO de «El desprecio de la leyenda»,
+    donde el veterano al que le preguntan eres tú quien lo recibe.
+    De paso alimenta dos sistemas que estaban famélicos: los `respects`, que apenas se usaban, y las
+    enemistades, que hoy no nacen en el 82% de las carreras. */
+ {id:"elChaval",stage:"f1",
+  cond:()=>{ if(S.cat!=="F1"||(S.f1Seasons||0)<5||S.age<28) return false;
+    return chavalDelAno()!=null; },
+  t:()=>L("¿Qué te parece el chaval?","What do you make of the kid?"),
+  d:()=>{ const c=chavalDelAno(); S._chaval=c?c.name:null;
+    const n=c?surname(c.name):L("el novato","the rookie");
+    const e=c?(c.age||20):20;
+    return L(`Rueda de prensa de mitad de temporada. Llevas ${S.f1Seasons} años aquí y te toca la pregunta de siempre: qué te parece ${n}, el chaval de ${e} años que ha llegado esta temporada. Media docena de grabadoras esperan. Él lo va a leer mañana, como lo leíste tú en su día.`,
+             `Mid-season press conference. You've been here ${S.f1Seasons} years and here comes the usual question: what do you make of ${n}, the ${e}-year-old who arrived this season. Half a dozen recorders are waiting. He'll read it tomorrow, just like you read yours back then.`); },
+  opts:[
+   {l:()=>L("Arroparle: «tiene algo que no se enseña»","Back him: «he's got something you can't teach»"),
+    r:()=>{ const c=chavalPorNombre(S._chaval); const n=c?surname(c.name):L("el chaval","the kid");
+      if(c){ c.skill=Math.min(c.ceil||97,(c.skill||75)+2); S._incRival=c.name; respectBuild(); }
+      return ch(.7)
+        ? L(`Dices que hacía años que no veías a alguien frenar así. El titular le da la vuelta al paddock y ${n} corre el resto del año con dos palmos más de altura. No lo va a olvidar.`,
+            `You say you hadn't seen anyone brake like that in years. The headline goes around the paddock and ${n} races the rest of the year two feet taller. He won't forget it.`)
+        : (VAL(1.06), L(`Dices que hacía años que no veías a alguien frenar así, y de paso quedas como lo que eres: alguien que ya no necesita achicar a nadie. +fama`,
+                        `You say you hadn't seen anyone brake like that in years — and you come across as what you are: someone who no longer needs to cut anybody down. +fame`)); }},
+   {l:()=>L("Frialdad: «que aguante tres años y hablamos»","Cool: «let him last three years and we'll talk»"),
+    r:()=>L("Ni le subes ni le hundes. En el paddock se lee como lo que es: un veterano que ya ha visto pasar a muchos.","You neither lift him nor sink him. The paddock reads it for what it is: a veteran who's seen plenty come and go.")},
+   {l:()=>L("Bajarle los humos: «le queda mucho»","Cut him down: «he's got a long way to go»"),
+    r:()=>{ const c=chavalPorNombre(S._chaval); const n=c?surname(c.name):L("el chaval","the kid");
+      if(!c) return L("Sueltas la frase y al día siguiente ya nadie se acuerda.","You say your piece and by the next day nobody remembers.");
+      S._incRival=c.name;
+      return roll(
+        [45,()=>{ c.skill=Math.max(60,(c.skill||75)-2); feudBurn();
+          return L(`El titular le sienta como un tiro y se le nota en pista: se agarra al volante en vez de pilotar. Pero eso no se perdona — a partir de hoy, ${n} y tú tenéis cuentas.`,
+                   `The headline hits him hard and it shows on track: he grips the wheel instead of driving. But that's not forgiven — from today, ${n} and you have unfinished business.`); }],
+        [35,()=>{ feudBurn();
+          return L(`${n} se lo traga en público y responde en pista. Se te ha hecho un enemigo, y de los que van a estar muchos años.`,
+                   `${n} swallows it in public and answers on track. You've made an enemy — one who'll be around for years.`); }],
+        [20,()=>(VAL(.93), L(`Suena a viejo defendiendo su sitio y el paddock lo nota más que él. −fama`,
+                             `It sounds like an old man defending his patch, and the paddock notices more than he does. −fame`))]); }}]},
+
  // ═══ 🎓 DILEMAS DE LOS AÑOS DE FORMACIÓN (ago-2026) ═══
  // 📜 TE QUIEREN ATAR [McLaren-Hamilton, 1998]. La opción «pedir tiempo» vuelve a preguntar al año
  // siguiente: se borra de usedDilemmas a propósito.
@@ -4599,6 +4639,16 @@ function pickBigCaller(){
   for(const t of cands){ if((x-=peso(t))<0) return t; }
   return cands[cands.length-1];
 }
+/* 🎤 el debutante del año: alguien joven, con asiento y recién llegado. Si no hay ninguno, el dilema
+   ni se plantea — no se pregunta por un chaval que no existe. */
+function chavalDelAno(){
+  const yo=(S.team&&S.team.name)||"";
+  const c=seatedPool().filter(d=>d && d.name && (d.age||99)<=22 && (d.yrs||0)<=1 && (d.titles||0)===0
+                                 && d.name!==S.roleMate);
+  if(!c.length) return null;
+  return c.reduce((a,b)=>((b.ceil||0)>(a.ceil||0)?b:a));   // el que más futuro promete
+}
+function chavalPorNombre(n){ return n ? seatedPool().find(d=>d&&d.name===n)||null : null; }
 /* 📜 EL CONTRATO DE WONDERKID. Un grande te paga la escalera entera a cambio de una opción sobre tu
    futuro. Lo que compras es un SUELO (no te quedas fuera) y lo que vendes es tu primer año de libertad.
    · Mientras subes, ese equipo NO puede quebrar: te lo han prometido por contrato.
@@ -4750,7 +4800,9 @@ function regBetOn(){ return S.cat==="F1" && S.team && S.regBet===S.team.name; }
 let P_GOMAS=.5, P_TOQUE=.06;
 // ventanas de UN par de años: el del debut solo cabe en tus dos primeras temporadas de F1 y el del
 // padrino antes de los 20. Sin prioridad salían en el 1% y el 2% (medido).
-let P_DEBUT=.2, P_PATRON=.5;   // .55 lo dejaba en el 48% de las carreras: demasiado para un suceso así
+// el del chaval salía en el 2% sin prioridad y en el 55% con .18 — la misma curva empinada que ya me
+// pilló con el del debut. Con .05 queda en torno al 25%.
+let P_DEBUT=.2, P_PATRON=.5, P_CHAVAL=.05;   // .55 lo dejaba en el 48% de las carreras: demasiado para un suceso así
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
   // `minAge` pueden saltar antes (los de formación, que sin esto jamás se verían en karting).
@@ -4773,7 +4825,7 @@ function pickDilemma(){
   }
   // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
   //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
-  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON]]){
+  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL]]){
     if(S.usedDilemmas[id]) continue;
     if((S.age-S.lastDilemmaAge<1) && id!=="debutGrande" && id!=="patronContrato") continue;
     const d=DILEMAS.find(x=>x.id===id);
