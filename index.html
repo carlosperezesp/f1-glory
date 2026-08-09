@@ -5897,9 +5897,11 @@ function maybeEvent(row,st){
   // 🏟️ y en las categorías de promoción tampoco se corre en Melbourne ni en Interlagos: el calendario
   // junior es europeo (lo cazó Carlos con una masterclass bajo la lluvia «en Melbourne» en F3000).
   const JRPISTAS=["Silverstone","Spa","Hockenheim","Zolder","Pau","Monza","Nürburgring","Estoril","Donington","Magny-Cours"];
-  const gp = ()=> S.cat==="KART" ? KARTPISTAS[irnd(0,KARTPISTAS.length-1)]
-                : S.cat==="F1"   ? gpAt(yearNow())
-                :                  JRPISTAS[irnd(0,JRPISTAS.length-1)];
+  // …y fuera de la F1 se DICE la categoría, que si no «una masterclass en Silverstone» no aclara si
+  // fue en F3000 o en un Gran Premio (matiz de Carlos).
+  const gp = ()=> S.cat==="F1"   ? gpAt(yearNow())
+                : S.cat==="KART" ? KARTPISTAS[irnd(0,KARTPISTAS.length-1)]+" ("+catName("KART")+")"
+                :                  JRPISTAS[irnd(0,JRPISTAS.length-1)]+" ("+catName(S.cat)+")";
   // 🪑 DE PROBADOR NO SE CORRE: los eventos de pilotaje no tienen dónde pasar. Antes saltaban igual y
   //    salía «11 carreras seguidas sin un solo error» en un año sin una sola carrera (lo cazó Carlos).
   const corres = S.cat!=="TEST" || (row.subRaces||0)>0;
