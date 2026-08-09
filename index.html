@@ -3552,6 +3552,7 @@ function signContract(o){
   }
   const _trai = patronCheck(o.team.name, o.team.cat);
   if(_trai) S.pendingEvents.push(_trai);
+  if(o.team.cat==="F1") S.patronOffered=false;   // la marca vale para ESTE mercado, no para siempre
   // 🤝 le diste tu palabra a un equipo siguiendo a tu ingeniero, y firmas en otro sitio
   if(S.engPromise && o.team.cat==="F1"){
     const ep=S.engPromise; S.engPromise=null;
@@ -4604,6 +4605,7 @@ function pickBigCaller(){
 function patronDoor(o, titular){
   if(!S.patron || S.patronDone) return;
   const t=F1_TEAMS.find(x=>x.name===S.patron); if(!t) return;
+  S.patronOffered=true;   // 🛡️ queda constancia: solo se puede traicionar lo que se te llegó a ofrecer
   const arrasado = (S.titles.f2||0)>0 || (S.titles.f3||0)>0;
   if(titular || arrasado){
     if(!o.some(x=>x.team && x.team.name===t.name && x.team.cat!=="TEST"))
@@ -4616,7 +4618,13 @@ function patronDoor(o, titular){
 // ¿te vas con otro estando atado? Traición: puerta cerrada para siempre.
 function patronCheck(teamName, cat){
   if(!S.patron || S.patronDone || cat!=="F1") return null;
-  if(teamName===S.patron){ S.patronDone=true; return null; }
+  if(teamName===S.patron){ S.patronDone=true; S.patronOffered=false; return null; }
+  /* 🛡️ NO SE CASTIGA LO QUE NUNCA SE PUDO ELEGIR. Carlos firmó con Williams y el mercado le ofreció
+     Benetton y Ferrari; al firmar con uno de ellos, el juego le llamó traidor por una puerta que
+     jamás le abrió. Si el padrino no estaba entre las ofertas, el compromiso simplemente se disuelve. */
+  if(!S.patronOffered){ const ex=S.patron; S.patron=null; S.patronDone=true;
+    return L(`🤝 ${ex} no llega a tiempo de ofrecerte un asiento y el acuerdo se deshace sin reproches: firmas donde te quieren.`,
+             `🤝 ${ex} can't get you a seat in time and the deal quietly dissolves: you sign where you're wanted.`); }
   const old=S.patron; S.neverHire[old]=true; S.patronDone=true; VAL(.85);
   return L(`💔 Firmas con otro estando atado a ${old}: rompes la opción que pagó tu carrera entera. Te cierran la puerta para siempre y en la prensa te llaman desagradecido. −fama`,
            `💔 You sign elsewhere while tied to ${old}: you break the option that paid for your whole career. Their door shuts forever and the press calls you ungrateful. −fame`);
@@ -6295,6 +6303,7 @@ function nextOffers(){
       sub=L(`${dom}. Un equipo de F1 te ficha directo — o puedes esperar un año en la ${C2} y llegar más completo. Tú decides.`,`${dom}. An F1 team signs you straight away — or you can wait a year in ${C2} and arrive more complete. You decide.`);
       const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]);
       pick(sorted.slice(2,9),2).forEach(t=>o.push({team:t, role:roleFor(t.name), note:["Salto directo, llegas verde","Direct jump, you arrive raw"]}));
+      patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio TAMBIÉN por esta vía
       juniorOffers(F2_TEAMS,"F2").slice(0,1).forEach(x=>{ x.note=L("Esperar y llegar más fuerte","Wait and arrive stronger"); o.push(x); });
     } else if(S.ovr>=66||S.titles.f3>0){
       title=L(`Llaman de la ${catName("F2")}`,`${catName("F2")} comes calling`);
