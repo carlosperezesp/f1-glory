@@ -6139,6 +6139,24 @@ function returnF1Offers(){
 
 // Racing Bulls es el equipo-cantera: solo ficha PROMESAS. No persigue a veteranos NI a consagrados (campeones/élite).
 function rbOk(t){ return !(t && isRBJr(t.name) && (S.age>=32 || (S.titles.f1||0)>0 || S.ovr>=87)); }
+/* 🎚️ CUÁNTAS PUERTAS SE ABREN. Antes casi siempre tres, entraras cuando entraras y estuvieras como
+   estuvieras (medido: 2,91 por pantalla en las cuatro eras). Encargo de Carlos: que costar llegar se
+   note, y que al final de la carrera el teléfono suene menos.
+     · ENTRAR en la F1: 1 o 2 puertas. Si vienes arrasando (campeón de F2 con pedigrí), 2 o 3.
+     · VETERANO en declive: se van cerrando. A los 36 con mal año, a veces solo queda una.
+     · EN MEDIO, que es donde se juega casi todo: las tres de siempre.
+   Nunca baja de 1: la red de seguridad de no dejarte sin puertas sigue mandando. */
+function nOffers(){
+  const entrando = (S.f1Seasons||0)===0;
+  const ult=(S.seasons.at(-1)||{}).pos ?? 99;
+  if(entrando){
+    const ped=(typeof juniorPedigree==="function")?juniorPedigree():0;
+    return ped>=5 ? 3 : ped>=3 ? 2 : (ch(.55)?2:1);
+  }
+  if(S.age>=36) return ult<=6 ? 2 : (ch(.5)?2:1);
+  if(S.age>=33) return ult<=8 ? 3 : 2;
+  return 3;
+}
 function nextOffers(){
   // 🤝 el dilema del debut YA decidió dónde corres: ese invierno no hay mercado, solo la confirmación.
   if(S.lockTeam && !S.forceMove && !S.retired){
@@ -6254,13 +6272,13 @@ function nextOffers(){
       const lo = ped>=5?4 : ped>=4?2 : 0;
       const hi = ped>=5?11 : ped>=4?8 : 6;
       if(ped>=4) sub+=L(` Tu palmarés (${pedigreeLabel()}) te abre las puertas de los mejores.`,` Your record (${pedigreeLabel()}) opens the doors of the best.`);
-      pick(sorted.slice(lo,hi),3).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
+      pick(sorted.slice(lo,hi),nOffers()).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio
     } else if(S.ovr>=72){
       title=L("El banquillo de la F1","The F1 reserve bench");
       sub=L("Nadie te da un volante titular aún, pero los grandes te quieren de piloto probador: FP1, simulador y paciencia.","No race seat yet, but the big teams want you as a reserve: FP1, simulator and patience.");
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
-      pick(F1_TEAMS, stayOK2?2:3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
+      pick(F1_TEAMS, Math.min(stayOK2?2:3, Math.max(1,nOffers()))).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       patronDoor(o, false);  // 📜 aquí el padrino te da el banquillo, que es lo que prometió
       if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(` O quédate un año más en la ${catName("F2")} a por el título.`,` Or stay one more year in ${catName("F2")} to go for the title.`); }
     } else if(S.age>=26){ stuckDeadEnd(); return; }
@@ -6284,7 +6302,7 @@ function nextOffers(){
       const others=pick(cands.filter(t=>t.name!==own.name),2);
       if(proved || ch(.5)) o.push({team:own,note:["Ascenso interno","Internal promotion"],role:roleFor(own.name)});
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
-      while(o.length<3){ const _p=(proved?sorted.slice(2,9):sorted);
+      while(o.length<Math.min(3,nOffers())){ const _p=(proved?sorted.slice(2,9):sorted);
         const extra=_p.find(t=>!o.some(x=>x.team.name===t.name)&&!mktMoved(t.name)) || _p.find(t=>!o.some(x=>x.team.name===t.name));
         if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
       if(S.age<=24) o.push({team:{...own,cat:"TEST"},note:["Seguir de probador un año más","Stay as reserve one more year"]});
@@ -6398,7 +6416,7 @@ function nextOffers(){
       S.forceReason=null; S.forceReasonTeam=null; S.forceReasonTxt=null;
       S.forceMove=false;
     } else {
-      const others=pick(cands.filter(t=>t.name!==S.team.name),2);
+      const others=pick(cands.filter(t=>t.name!==S.team.name), Math.max(0,nOffers()-1));
       // afinidad de nacionalidad: tu equipo "de casa" aparece un poco más (italiano→Ferrari, etc.)
       const home=natAff().teams.map(n=>cands.find(t=>t.name===n)).find(Boolean);
       if(home && home.name!==S.team.name && !others.some(t=>t.name===home.name) && ch(.45)){
@@ -6585,7 +6603,7 @@ function regResetOffers(){
   const poolOthers=feudFilter(F1_TEAMS.filter(t=>t.name!==(cur&&cur.name) && t.name!==rumor.name && !S.burned[t.name] && !S.neverHire[t.name] && rbOk(t)));
   pk(poolOthers,2).forEach(t=>o.push({team:t,role:roleFor(t.name)}));
   if(xWants && !o.some(x=>x.team.name===rumor.name) && !S.neverHire[rumor.name] && !teamHasFeud(rumor.name)) o.push({team:rumor,role:roleFor(rumor.name),note:["🔮 El del rumor","🔮 The rumoured one"]});
-  while(o.length<3){ const _lib=t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]&&rbOk(t);
+  while(o.length<Math.min(3,nOffers())){ const _lib=t=>!o.some(x=>x.team.name===t.name)&&!S.neverHire[t.name]&&rbOk(t);
     const extra=F1_TEAMS.find(t=>_lib(t)&&!mktMoved(t.name)) || F1_TEAMS.find(_lib);
     if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
   const title=L("🏁 Revolución técnica","🏁 Technical revolution");
