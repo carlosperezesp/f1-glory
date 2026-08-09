@@ -3661,16 +3661,16 @@ const FIA_SCENARIOS=[
 ];
 
 const DILEMAS=[
- {id:"testsecreto",stage:"jr",t:()=>L("Test secreto","Secret test"),d:()=>L("Un equipo rival te ofrece probar su coche a escondidas. Si tu equipo se entera, habrá bronca.","A rival team offers you a secret test in their car. If your team finds out, there'll be trouble."),opts:[
+ {id:"testsecreto",stage:"jr",t:()=>L("Test secreto","Secret test","Teste secreto"),d:()=>L("Un equipo rival te ofrece probar su coche a escondidas. Si tu equipo se entera, habrá bronca.","A rival team offers you a secret test in their car. If your team finds out, there'll be trouble."),opts:[
    {l:()=>L("Ir a escondidas","Go in secret"),r:()=>ch(.6)?(OVR(1),L("Aprendes muchísimo de otro coche. +1 OVR","You learn a huge amount from another car. +1 OVR")):(VAL(.8),L("Tu equipo se entera. Te señalan como desleal. Fama -20%","Your team finds out. You're branded disloyal. Fame -20%"))},
    {l:()=>L("Contárselo a tu jefe","Tell your boss"),r:()=>ch(.5)?L("Te lo prohíben. Todo sigue igual.","They forbid it. Nothing changes."):(OVR(1),VAL(1.1),L("Lo organizan oficialmente: pruebas con permiso. +1 OVR y +fama","They set it up officially: a sanctioned test. +1 OVR and +fame"))}]},
- {id:"manager",stage:"jr",t:()=>L("El mánager tiburón","The shark agent"),d:()=>L("Un representante estrella quiere llevarte. Tiene los contactos… y fama de quedarse con todo.","A star agent wants to represent you. He has the contacts… and a reputation for taking everything."),opts:[
+ {id:"manager",stage:"jr",t:()=>L("El mánager tiburón","The shark agent","O empresário tubarão"),d:()=>L("Un representante estrella quiere llevarte. Tiene los contactos… y fama de quedarse con todo.","A star agent wants to represent you. He has the contacts… and a reputation for taking everything."),opts:[
    {l:()=>L("Firmar con él","Sign with him"),r:()=>ch(.6)?(VAL(1.3),L("Te abre puertas que ni sabías que existían. Fama +30%","He opens doors you didn't know existed. Fame +30%")):(VAL(.8),L("Sus comisiones te ahogan y decide él por ti. Fama -20%","His commissions choke you and he calls the shots. Fame -20%"))},
    {l:()=>L("Seguir con tu familia","Stick with your family"),r:()=>ch(.7)?L("Menos ruido, mismo camino. Sin cambios.","Less noise, same path. No change."):(VAL(1.1),L("Tu historia humilde enamora a un patrocinador. +fama","Your humble story wins over a sponsor. +fame"))}]},
- {id:"invierno",stage:"jr",t:()=>L("Invierno de hierro","Iron winter"),d:()=>L("Te ofrecen una pretemporada de entrenamiento extremo con un preparador militar.","You're offered an extreme pre-season with a military-style trainer."),opts:[
+ {id:"invierno",stage:"jr",t:()=>L("Invierno de hierro","Iron winter","Inverno de ferro"),d:()=>L("Te ofrecen una pretemporada de entrenamiento extremo con un preparador militar.","You're offered an extreme pre-season with a military-style trainer."),opts:[
    {l:()=>L("Al límite","Push to the limit"),r:()=>ch(.65)?(OVR(1),L("Llegas como una máquina. +1 OVR","You arrive like a machine. +1 OVR")):(OVR(-1),L("Te lesionas un hombro entrenando. -1 OVR","You hurt a shoulder training. -1 OVR"))},
    {l:()=>L("Invierno clásico","Normal winter"),r:()=>ch(.8)?L("Un invierno normal. Sin cambios.","A normal winter. No change."):(OVR(1),L("El descanso te sienta de maravilla. +1 OVR","The rest does you a world of good. +1 OVR"))}]},
- {id:"setup",stage:"jr",t:()=>L("El setup del rápido","The fast guy's setup"),d:()=>L("Tu compañero es más rápido. Puedes copiar su puesta a punto o desarrollar la tuya.","Your teammate is faster. You can copy his setup or develop your own."),opts:[
+ {id:"setup",stage:"jr",t:()=>L("El setup del rápido","The fast guy's setup","A afinação do mais rápido"),d:()=>L("Tu compañero es más rápido. Puedes copiar su puesta a punto o desarrollar la tuya.","Your teammate is faster. You can copy his setup or develop your own."),opts:[
    {l:()=>L("Copiar su setup","Copy his setup"),r:()=>roll(
      [4,()=>(OVR(1),L("Entiendes por fin lo que hacía diferente. +1 OVR","You finally get what he did differently. +1 OVR"))],
      [3,()=>L("Lo pruebas pero no te termina de encajar. Sin cambios.","You try it but it doesn't quite click. No change.")],
@@ -3679,10 +3679,10 @@ const DILEMAS=[
      [4,()=>(OVR(1),L("Desarrollas un criterio técnico único. +1 OVR","You develop a unique technical understanding. +1 OVR"))],
      [4,()=>L("Progreso lento pero tuyo. Sin cambios.","Slow progress, but your own. No change.")],
      [2,()=>(OVR(-1),L("Te obcecas en una vía muerta. -1 OVR","You stubbornly chase a dead end. -1 OVR"))])}]},
- {id:"redes",stage:"jr",from:2015,t:()=>L("Fama antes de tiempo","Fame too soon"),d:()=>L("Una marca te ofrece mucho dinero por ser imagen en redes. Exposición máxima… y distracción máxima.","A brand offers big money to be their social media face. Maximum exposure… and maximum distraction."),opts:[
+ {id:"redes",stage:"jr",from:2015,t:()=>L("Fama antes de tiempo","Fame too soon","Fama antes do tempo"),d:()=>L("Una marca te ofrece mucho dinero por ser imagen en redes. Exposición máxima… y distracción máxima.","A brand offers big money to be their social media face. Maximum exposure… and maximum distraction."),opts:[
    {l:()=>L("Aceptar la campaña","Take the deal"),r:()=>ch(.6)?(VAL(1.35),L("Te conviertes en la promesa mediática. Fama +35%","You become the media darling. Fame +35%")):(VAL(1.15),OVR(-1),L("Dinero sí, pero pierdes foco. +fama, -1 OVR","Money yes, but you lose focus. +fame, -1 OVR"))},
    {l:()=>L("Rechazarla","Turn it down"),r:()=>ch(.6)?(OVR(1),L("Cero ruido, todo pista. +1 OVR","Zero noise, all track. +1 OVR")):L("Nadie se acuerda de ti en los medios. Sin cambios.","Nobody in the media remembers you. No change.")}]},
- {id:"espionaje",stage:"f1",t:()=>L("El sobre anónimo","The anonymous envelope"),d:()=>L("Recibes datos técnicos filtrados del coche rival. Nadie lo sabe. Todavía.","You receive leaked technical data from a rival car. Nobody knows. Yet."),opts:[
+ {id:"espionaje",stage:"f1",t:()=>L("El sobre anónimo","The anonymous envelope","O envelope anónimo"),d:()=>L("Recibes datos técnicos filtrados del coche rival. Nadie lo sabe. Todavía.","You receive leaked technical data from a rival car. Nobody knows. Yet."),opts:[
    {l:()=>L("Usar los datos","Use the data"),r:()=>roll(
      [4,()=>(CAR(2),L("Vuestro coche da un salto sospechoso. +2 coche","Your car makes a suspicious leap. +2 car"))],
      [3,()=>(CAR(1),L("Copiáis una idea menor, sin levantar sospechas. +1 coche","You copy a minor idea, no suspicions raised. +1 car"))],
@@ -3691,13 +3691,13 @@ const DILEMAS=[
      [5,()=>(VAL(1.15),L("Tu integridad es portada. +15% fama","Your integrity makes the front page. +15% fame"))],
      [3,()=>L("Se archiva sin ruido. Sin cambios.","It's quietly filed away. No change.")],
      [2,()=>(CAR(-1),L("En el equipo algunos querían usarlos. Mal ambiente. -1 coche","Some in the team wanted to use it. Bad vibes. -1 car"))])}]},
- {id:"lesion",stage:"f1",t:()=>L("Lesión grave","Serious injury"),d:()=>L("Te rompes la muñeca entrenando. Los médicos recomiendan cirugía: media temporada fuera.","You break your wrist training. The doctors recommend surgery: half a season out."),opts:[
+ {id:"lesion",stage:"f1",t:()=>L("Lesión grave","Serious injury","Lesão grave"),d:()=>L("Te rompes la muñeca entrenando. Los médicos recomiendan cirugía: media temporada fuera.","You break your wrist training. The doctors recommend surgery: half a season out."),opts:[
    {l:()=>L("Correr infiltrado","Race on painkillers"),r:()=>ch(.55)?(OVR(-1),L("Aguantas como un héroe, pero pilotas mermado. -1 OVR","You tough it out like a hero, but drive diminished. -1 OVR")):(S.missRaces=8,OVR(-1),L("La muñeca dice basta: 8 carreras fuera igualmente. -1 OVR","The wrist gives up: 8 races out anyway. -1 OVR"))},
    {l:()=>L("Pasar por quirófano","Go under the knife"),r:()=>{S.missRaces=12;return ch(.7)?(OVR(1),L("Vuelves al 100% y con hambre. +1 OVR, pero pierdes media temporada","You return at 100% and hungry. +1 OVR, but you lose half a season")):(S.forceMove=true,L("Tu sustituto brilla y el equipo firma con él. Buscas asiento nuevo","Your stand-in shines and the team signs him. You look for a new seat"));}}]},
- {id:"pelea",stage:"f1",t:()=>L("Guerra civil","Civil war"),d:()=>L("Tu jefe de equipo te culpa en público de los malos resultados. El garaje se divide.","Your team boss publicly blames you for the poor results. The garage splits."),opts:[
+ {id:"pelea",stage:"f1",t:()=>L("Guerra civil","Civil war","Guerra civil"),d:()=>L("Tu jefe de equipo te culpa en público de los malos resultados. El garaje se divide.","Your team boss publicly blames you for the poor results. The garage splits."),opts:[
    {l:()=>L("Contraatacar en prensa","Hit back in the press"),r:()=>ch(.5)?(S.forceMove=true,OVR(1),L("Puentes quemados: sales del equipo con la cabeza alta. +1 OVR","Bridges burned: you leave with your head held high. +1 OVR")):(CAR(1),L("La directiva te respalda y el jefe sale. +1 coche","The board backs you and the boss is out. +1 car"))},
    {l:()=>L("Morderte la lengua","Bite your tongue"),r:()=>ch(.6)?(OVR(-1),L("El vestuario te pierde el respeto. -1 OVR","The team loses respect for you. -1 OVR")):(VAL(1.15),L("Tu templanza enamora al paddock. +15% fama","Your composure wins over the paddock. +15% fame"))}]},
- {id:"mecanicos",stage:"f1",t:()=>L("Horas extra","Overtime"),d:()=>L("El coche va mal. Puedes quedarte cada noche con los mecánicos buscando décimas.","The car is struggling. You can stay every night with the mechanics chasing tenths."),opts:[
+ {id:"mecanicos",stage:"f1",t:()=>L("Horas extra","Overtime","Horas extra"),d:()=>L("El coche va mal. Puedes quedarte cada noche con los mecánicos buscando décimas.","The car is struggling. You can stay every night with the mechanics chasing tenths."),opts:[
    {l:()=>L("Echar horas","Put in the hours"),r:()=>roll(
      [5,()=>(CAR(1.5),L("El garaje te adora y el coche mejora. +1.5 coche","The garage adores you and the car improves. +1.5 car"))],
      [3,()=>(VAL(1.1),L("No arregláis el coche, pero el equipo te venera. +fama","You don't fix the car, but the team reveres you. +fame"))],
@@ -3706,10 +3706,10 @@ const DILEMAS=[
      [5,()=>L("Cada uno a lo suyo. Sin cambios.","Everyone to their own. No change.")],
      [3,()=>(OVR(1),L("Fresco como ninguno en parrilla. +1 OVR","Freshest man on the grid. +1 OVR"))],
      [2,()=>(CAR(-.5),L("Los mecánicos echan en falta tu empuje. -0.5 coche","The mechanics miss your drive. -0.5 car"))])}]},
- {id:"sponsor",stage:"f1",t:()=>L("El patrocinador exigente","The demanding sponsor"),d:()=>L("Una petrolera te ofrece un contrato personal millonario. Exige eventos cada semana.","An oil company offers you a huge personal contract. It demands events every week."),opts:[
+ {id:"sponsor",stage:"f1",t:()=>L("El patrocinador exigente","The demanding sponsor","O patrocinador exigente"),d:()=>L("Una petrolera te ofrece un contrato personal millonario. Exige eventos cada semana.","An oil company offers you a huge personal contract. It demands events every week."),opts:[
    {l:()=>L("Firmar","Sign"),r:()=>ch(.6)?(VAL(1.4),L("Tu cuenta bancaria no da crédito. Fama +40%","Your bank account can't believe it. Fame +40%")):(VAL(1.2),OVR(-1),L("Dinero sí, pero vives en aviones. +fama, -1 OVR","Money yes, but you live on planes. +fame, -1 OVR"))},
    {l:()=>L("Rechazar","Decline"),r:()=>ch(.6)?(OVR(1),L("Todo tu tiempo es para el coche. +1 OVR","All your time goes to the car. +1 OVR")):(CAR(-1),L("El equipo pierde ese presupuesto y te lo recuerda. -1 coche","The team loses that budget and reminds you of it. -1 car"))}]},
- {id:"ordenes",stage:"f1",t:()=>L("Órdenes de equipo","Team orders"),d:()=>L("Vas 2º. El muro te ordena dejar pasar a tu compañero, que pelea por el mundial.","You're 2nd. The pit wall orders you to let your teammate past, as he's fighting for the title."),opts:[
+ {id:"ordenes",stage:"f1",t:()=>L("Órdenes de equipo","Team orders","Ordens de equipa"),d:()=>L("Vas 2º. El muro te ordena dejar pasar a tu compañero, que pelea por el mundial.","You're 2nd. The pit wall orders you to let your teammate past, as he's fighting for the title."),opts:[
    {l:()=>L("Obedecer","Obey"),r:()=>roll(
      [5,()=>(CAR(1),L("El equipo te lo devuelve con desarrollo. +1 coche","The team repays you with development. +1 car"))],
      [3,()=>(VAL(1.05),L("Tu deportividad gusta en el paddock. +fama","Your sportsmanship is well liked in the paddock. +fame"))],
@@ -3718,7 +3718,7 @@ const DILEMAS=[
      [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.15),OVR(1),L("Ganas y el mundo aplaude tu rebeldía. +fama, +1 OVR","You win and the world applauds your defiance. +fame, +1 OVR"))],
      [3,()=>(VAL(1.1),CAR(-1),L("Ídolo rebelde, pero el equipo te castiga. +fama, -1 coche","Rebel idol, but the team punishes you. +fame, -1 car"))],
      [3,()=>(CAR(-1),L("El equipo te congela: piezas nuevas… para el otro coche. -1 coche","The team freezes you out: new parts… for the other car. -1 car"))])}]},
- {id:"estrategia",stage:"f1",t:()=>L("Temporada a una carta","All-or-nothing season"),d:()=>L("Los ingenieros proponen un concepto de coche radical para el año: o rompe el cronómetro o rompe a secas.","The engineers propose a radical car concept for the year: it either breaks the stopwatch or just breaks."),opts:[
+ {id:"estrategia",stage:"f1",t:()=>L("Temporada a una carta","All-or-nothing season","Temporada a uma cartada"),d:()=>L("Los ingenieros proponen un concepto de coche radical para el año: o rompe el cronómetro o rompe a secas.","The engineers propose a radical car concept for the year: it either breaks the stopwatch or just breaks."),opts:[
    {l:()=>L("Apostar fuerte","Go all in"),r:()=>ch(.5)?(CAR(2.5),L("El experimento funciona: sois la sorpresa. +2.5 coche","The experiment works: you're the surprise package. +2.5 car")):(CAR(-2),L("El concepto no funciona y perdéis meses. -2 coche","The concept fails and you lose months. -2 car"))},
    {l:()=>L("Evolución segura","Safe evolution"),r:()=>ch(.7)?(CAR(.5),L("Paso corto pero firme. +0.5 coche","A small but solid step. +0.5 car")):L("Año gris de transición. Sin cambios.","A grey transition year. No change.")}]},
  // el ingeniero se va A UN EQUIPO CONCRETO (con nombre), y si te vas tú, vas a ESE equipo — antes te
@@ -3727,7 +3727,7 @@ const DILEMAS=[
     const c=feudFilter(F1_TEAMS.filter(x=>x.name!==S.team.name && !S.neverHire[x.name] && !S.burned[x.name] && rbOk(x)));
     if(!c.length) return false;
     S._engTeam=c[irnd(0,c.length-1)].name; return true; },
-  t:()=>L("Tu ingeniero se va","Your engineer leaves"),
+  t:()=>L("Tu ingeniero se va","Your engineer leaves","O teu engenheiro vai-se embora"),
   d:()=>L(`Tu ingeniero de confianza ficha por ${S._engTeam}. Te quiere llevar con él.`,`Your trusted race engineer signs for ${S._engTeam}. He wants to take you with him.`),opts:[
    {l:()=>L(`Irte con él a ${S._engTeam}`,`Follow him to ${S._engTeam}`),r:()=>{S.forceMove=true;S.poachTeam=S._engTeam;
      // 🤝 esto ya no es solo texto: te has comprometido. Ese equipo APARECERÁ en tu mercado de invierno,
@@ -3736,21 +3736,21 @@ const DILEMAS=[
      S.engPromise=S._engTeam;
      return ch(.6)?(OVR(1),L(`Al acabar la temporada te vas con él: la dupla seguirá haciendo magia en el garaje de ${S._engTeam}. +1 OVR`,`At season's end you follow him: the duo will keep working magic in ${S._engTeam}'s garage. +1 OVR`)):L(`Al acabar la temporada te vas con él a ${S._engTeam}… aunque el proyecto tardará en arrancar.`,`At season's end you follow him to ${S._engTeam}… though the project will take time to get going.`);}},
    {l:()=>L("Quedarte","Stay"),r:()=>ch(.55)?(CAR(.5),L("El nuevo ingeniero trae ideas frescas. +0.5 coche","The new engineer brings fresh ideas. +0.5 car")):(OVR(-1),L("Nada suena igual por la radio. -1 OVR","Nothing sounds the same on the radio. -1 OVR"))}]},
- {id:"docu",stage:"f1",from:2019,t:()=>L("Cámaras en el box","Cameras in the garage"),d:()=>L("Una plataforma quiere rodar tu documental durante la temporada. Fama mundial… con micrófonos hasta en la sopa.","A streaming platform wants to film your documentary all season. Global fame… with mics everywhere."),opts:[
+ {id:"docu",stage:"f1",from:2019,t:()=>L("Cámaras en el box","Cameras in the garage","Câmaras na garagem"),d:()=>L("Una plataforma quiere rodar tu documental durante la temporada. Fama mundial… con micrófonos hasta en la sopa.","A streaming platform wants to film your documentary all season. Global fame… with mics everywhere."),opts:[
    {l:()=>L("Luces, cámara","Lights, camera"),r:()=>ch(.65)?(VAL(1.3),L("Te conviertes en el favorito del público. Fama +30%","You become the fan favourite. Fame +30%")):(VAL(1.1),OVR(-1),L("El circo mediático te pasa factura. +fama, -1 OVR","The media circus takes its toll. +fame, -1 OVR"))},
    {l:()=>L("Puerta cerrada","Closed doors"),r:()=>ch(.6)?(OVR(1),L("Misterio y foco. La pista habla por ti. +1 OVR","Mystery and focus. The track speaks for you. +1 OVR")):(VAL(.92),L("La prensa te pinta como antipático. Fama -8%","The press paints you as unfriendly. Fame -8%"))}]},
- {id:"lemans",stage:"f1",t:()=>L("La tentación de Le Mans","The Le Mans temptation"),d:()=>L("Te invitan a correr las 24h de Le Mans en tu semana libre. Gloria extra… o fatiga extra.","You're invited to race the Le Mans 24h on your week off. Extra glory… or extra fatigue."),opts:[
+ {id:"lemans",stage:"f1",t:()=>L("La tentación de Le Mans","The Le Mans temptation","A tentação de Le Mans"),d:()=>L("Te invitan a correr las 24h de Le Mans en tu semana libre. Gloria extra… o fatiga extra.","You're invited to race the Le Mans 24h on your week off. Extra glory… or extra fatigue."),opts:[
    {l:()=>L("Correrla","Race it"),r:()=>ch(.5)?(OVR(1),VAL(1.1),L("Podio en La Sarthe. Leyenda transversal. +1 OVR, +fama","Podium at La Sarthe. A crossover legend. +1 OVR, +fame")):(OVR(-1),L("Vuelves roto y con jet lag eterno. -1 OVR","You come back broken and jet-lagged forever. -1 OVR"))},
    {l:()=>L("Declinar","Decline"),r:()=>ch(.8)?L("Foco total en la F1. Sin cambios.","Total focus on F1. No change."):(VAL(.95), yearNow()>=2008
      ? L("Te llaman aburrido en redes. Fama -5%","They call you boring online. Fame -5%")
      : L("En el paddock te cuelgan el cartel de aburrido. Fama -5%","The paddock pins the boring label on you. Fame -5%"))}]},
- {id:"metodo",stage:"f1",t:()=>L("El gurú del rendimiento","The performance guru"),d:()=>L("Un preparador revolucionario promete décimas con un método nunca visto: crioterapia, neurociencia y ayuno.","A revolutionary trainer promises tenths with a never-seen method: cryotherapy, neuroscience and fasting."),opts:[
+ {id:"metodo",stage:"f1",t:()=>L("El gurú del rendimiento","The performance guru","O guru do rendimento"),d:()=>L("Un preparador revolucionario promete décimas con un método nunca visto: crioterapia, neurociencia y ayuno.","A revolutionary trainer promises tenths with a never-seen method: cryotherapy, neuroscience and fasting."),opts:[
    {l:()=>L("Probarlo","Try it"),r:()=>ch(.55)?(OVR(1),L("Reflejos de otro planeta. +1 OVR","Out-of-this-world reflexes. +1 OVR")):(OVR(-1),L("Tu cuerpo no responde al experimento. -1 OVR","Your body doesn't respond to the experiment. -1 OVR"))},
    {l:()=>L("Método clásico","Classic method"),r:()=>ch(.8)?L("Lo de siempre funciona. Sin cambios.","The usual works. No change."):(OVR(1),L("La constancia paga. +1 OVR","Consistency pays. +1 OVR"))}]},
- {id:"recorte",stage:"f1",t:()=>L("Sueldo o coche","Salary or car"),d:()=>L("El equipo quiere fichar a un genio de la aerodinámica. Solo cabe en el presupuesto si te recortas el sueldo.","The team wants to sign an aero genius. It only fits the budget if you take a pay cut."),opts:[
+ {id:"recorte",stage:"f1",t:()=>L("Sueldo o coche","Salary or car","Salário ou carro"),d:()=>L("El equipo quiere fichar a un genio de la aerodinámica. Solo cabe en el presupuesto si te recortas el sueldo.","The team wants to sign an aero genius. It only fits the budget if you take a pay cut."),opts:[
    {l:()=>L("Aceptar el recorte","Take the pay cut"),r:()=>{VAL(.8);return ch(.65)?(CAR(2),L("El genio cumple: el coche vuela. -20% fama, +2 coche","The genius delivers: the car flies. -20% fame, +2 car")):L("El fichaje no rinde. Pagaste por nada. -20% fama","The signing flops. You paid for nothing. -20% fame");}},
    {l:()=>L("Defender tu sueldo","Defend your salary"),r:()=>ch(.6)?(VAL(1.1),L("Cobras lo que vales y punto. +10% fama","You earn what you're worth, end of story. +10% fame")):(CAR(-1),L("El equipo recorta en desarrollo. -1 coche","The team cuts development. -1 car"))}]},
- {id:"filtracion",stage:"f1",t:()=>L("La filtración","The leak"),d:()=>L("Un periodista tiene mensajes tuyos criticando duramente al equipo. Publica mañana.","A journalist has messages of yours harshly criticising the team. He publishes tomorrow."),opts:[
+ {id:"filtracion",stage:"f1",t:()=>L("La filtración","The leak","A fuga de informação"),d:()=>L("Un periodista tiene mensajes tuyos criticando duramente al equipo. Publica mañana.","A journalist has messages of yours harshly criticising the team. He publishes tomorrow."),opts:[
    {l:()=>L("Comprar su silencio","Buy his silence"),r:()=>{VAL(.88);return ch(.7)?L("La historia muere en un cajón. -12% fama","The story dies in a drawer. -12% fame"):L("Paga y aún así se publica. Doble desastre. -12% fama y bronca interna","You pay and it's published anyway. Double disaster. -12% fame and internal fallout");}},
    {l:()=>L("Adelantarte y disculparte","Get ahead of it and apologise"),r:()=>ch(.55)?(VAL(1.05),L("Tu honestidad desactiva la bomba. +fama","Your honesty defuses the bomb. +fame")):(CAR(-1),L("La relación con el equipo queda tocada. -1 coche","Your relationship with the team is damaged. -1 car"))}]},
  // solo tiene sentido si de verdad PELEAS el título: con un coche de media tabla nadie te propone un pacto
@@ -3765,7 +3765,7 @@ const DILEMAS=[
     const m=teammateOf(S.team.name);
     return !!m && ((m.skill||0)>=85 || (m.titles||0)>0);            // y un compañero de verdad peligroso
   },
-  t:()=>L("El pacto de no agresión","The non-aggression pact"),
+  t:()=>L("El pacto de no agresión","The non-aggression pact","O pacto de não agressão"),
   d:()=>{ const m=teammateOf(S.team.name); S._mateName=m?surname(m.name):L("tu compañero","your teammate","o teu companheiro");
     S._papaya=ch(.5);
     return S._papaya
@@ -3784,7 +3784,7 @@ const DILEMAS=[
      [3,()=>(feudMate(),L(`${n} se lo toma como una declaración de guerra. Con él, ni agua.`,`${n} takes it as a declaration of war. You two are done.`))]); }}]},
  // 🤝 el pacto ya NO es un texto suelto: hay un rival CON NOMBRE, y de aquí sale un aliado o un enemigo
  {id:"alianza",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=5&&titleRivals().length>0,
-  t:()=>L("Pacto entre pilotos","A drivers' pact"),
+  t:()=>L("Pacto entre pilotos","A drivers' pact","Pacto entre pilotos"),
   d:()=>{ const r=pickTitleRival(); const n=r?surname(r.name):L("otro aspirante","another contender");
     const eq=r?(Object.keys(S.seats).find(tn=>(S.seats[tn]||[]).some(d=>d&&d!=="PLAYER"&&d.name===r.name))||""):"";
     return L(`${n}${eq?" ("+eq+")":""} te busca en el motorhome: propone que no os quitéis puntos entre vosotros y atacar juntos al líder. Un pacto de caballeros… sin nada firmado.`,
@@ -3799,7 +3799,7 @@ const DILEMAS=[
      [5,()=>L("Cada lobo caza solo. Sin cambios.","Every wolf hunts alone. No change.")],
      [3,()=>(OVR(1),L("Tu independencia te hace más fuerte: no le debes nada a nadie. +1 OVR","Your independence makes you stronger: you owe nobody anything. +1 OVR"))],
      [2,()=>(feudBurn(),L(`${n} se lo toma como un desprecio personal. A partir de hoy, con él ni agua.`,`${n} takes it as a personal snub. From today, you two are done.`))]); }}]},
- {id:"fiesta",stage:"f1",t:()=>L("La noche de Mónaco","The Monaco night"),d:()=>L("La víspera del GP más glamuroso, medio Hollywood te invita a la fiesta del año en un yate.","The eve of the most glamorous GP, half of Hollywood invites you to the party of the year on a yacht."),opts:[
+ {id:"fiesta",stage:"f1",t:()=>L("La noche de Mónaco","The Monaco night","A noite do Mónaco"),d:()=>L("La víspera del GP más glamuroso, medio Hollywood te invita a la fiesta del año en un yate.","The eve of the most glamorous GP, half of Hollywood invites you to the party of the year on a yacht."),opts:[
    {l:()=>L("Una copita y ya…","Just one drink…"),r:()=>roll(
      [3,()=>(VAL(1.25),L("Sales en todas las portadas junto a estrellas de cine. Fama +25%","You're on every front page next to movie stars. Fame +25%"))],
      [3,()=>L("Te vas pronto y sin resaca. Sin cambios.","You leave early, no hangover. No change.")],
@@ -3810,10 +3810,10 @@ const DILEMAS=[
      [2,()=>(VAL(.95), yearNow()>=2008
        ? L("En redes te llaman soso. Fama -5%","They call you dull online. Fame -5%")
        : L("En el paddock te llaman soso. Fama -5%","The paddock calls you dull. Fame -5%"))])}]},
- {id:"jerarquia",stage:"f1",t:()=>L("Guerra por el Nº1","Fight for No.1"),d:()=>L("Tu compañero exige al equipo ser el piloto Nº1. Los ingenieros esperan tu reacción.","Your teammate demands to be No.1 driver. The engineers await your reaction."),opts:[
+ {id:"jerarquia",stage:"f1",t:()=>L("Guerra por el Nº1","Fight for No.1","Guerra pelo N.º1"),d:()=>L("Tu compañero exige al equipo ser el piloto Nº1. Los ingenieros esperan tu reacción.","Your teammate demands to be No.1 driver. The engineers await your reaction."),opts:[
    {l:()=>L("Plantarte: «el Nº1 soy yo»","Stand firm: «I'm the No.1»"),r:()=>ch(.5)?(darGalones(),S.oustMate=true,L("El equipo te respalda como Nº1. Tu compañero, humillado, no lo acepta y hará las maletas.","The team backs you as No.1. Your teammate, humiliated, won't accept it and will pack his bags.")):(CAR(-1),L("La guerra interna pasa factura al desarrollo. -1 coche","The internal war takes its toll on development. -1 car"))},
    {l:()=>L("Ceder el estatus","Concede the status"),r:()=>{S.role="2";return ch(.6)?(VAL(1.1),L("Juegas en equipo y tu fama crece. +10% fama","You play as a team and your fame grows. +10% fame")):(OVR(-1),L("Ver sus piezas nuevas cada carrera te quema. -1 OVR","Watching his new parts every race eats at you. -1 OVR"));}}]},
- {id:"novato",stage:"vet",t:()=>L("El novato prodigio","The wonderkid rookie"),d:()=>L("Tu nuevo compañero tiene 19 años, es rapidísimo y quiere tu corona. El equipo os deja pelear.","Your new teammate is 19, blindingly fast and wants your crown. The team lets you fight it out."),opts:[
+ {id:"novato",stage:"vet",t:()=>L("El novato prodigio","The wonderkid rookie","O novato prodígio"),d:()=>L("Tu nuevo compañero tiene 19 años, es rapidísimo y quiere tu corona. El equipo os deja pelear.","Your new teammate is 19, blindingly fast and wants your crown. The team lets you fight it out."),opts:[
    {l:()=>L("Ser su mentor","Be his mentor"),r:()=>roll(
      [5,()=>(VAL(1.15),CAR(1),L("Tu legado crece y el equipo rema unido. +fama, +1 coche","Your legacy grows and the team pulls together. +fame, +1 car"))],
      [3,()=>(VAL(1.1),L("Te ganas el respeto de todo el paddock. +fama","You earn the respect of the whole paddock. +fame"))],
@@ -3822,17 +3822,17 @@ const DILEMAS=[
      [4,()=>(OVR(1),L("Le recuerdas quién manda aquí. +1 OVR","You remind him who's boss here. +1 OVR"))],
      [3,()=>L("Intercambiáis golpes toda la temporada. Sin cambios.","You trade blows all season. No change.")],
      [3,()=>(OVR(-1),L("Perder contra un crío te rompe mentalmente. -1 OVR","Losing to a kid breaks you mentally. -1 OVR"))])}]},
- {id:"rumor",stage:"vet",t:()=>L("Rumores de retirada","Retirement rumours"),d:()=>L("La prensa dice que estás acabado y el equipo tantea sustitutos. Tu contrato acaba pronto.","The press says you're finished and the team is scouting replacements. Your contract ends soon."),opts:[
+ {id:"rumor",stage:"vet",t:()=>L("Rumores de retirada","Retirement rumours","Rumores de retirada"),d:()=>L("La prensa dice que estás acabado y el equipo tantea sustitutos. Tu contrato acaba pronto.","The press says you're finished and the team is scouting replacements. Your contract ends soon."),opts:[
    {l:()=>L("Anunciar: «me quedo»","Announce: «I'm staying»"),r:()=>ch(.6)?(CAR(1),L("El equipo cierra filas contigo. +1 coche","The team closes ranks behind you. +1 car")):(OVR(-1),L("La presión de la promesa te pesa. -1 OVR","The pressure of the promise weighs on you. -1 OVR"))},
    {l:()=>L("Alimentar el misterio","Feed the mystery"),r:()=>ch(.5)?(VAL(1.2),L("Medio paddock puja por ti. Fama +20%","Half the paddock bids for you. Fame +20%")):(S.forceMove=true,L("El equipo se cansa de esperar y firma a otro.","The team tires of waiting and signs someone else."))}]},
- {id:"espalda",stage:"vet",t:()=>L("La espalda dice basta","The back gives out"),d:()=>L("Años de baches pasan factura. Hay una cirugía arriesgada que podría devolverte dos años de carrera.","Years of bumps take their toll. There's a risky surgery that could give you two more years of career."),opts:[
+ {id:"espalda",stage:"vet",t:()=>L("La espalda dice basta","The back gives out","As costas dizem basta"),d:()=>L("Años de baches pasan factura. Hay una cirugía arriesgada que podría devolverte dos años de carrera.","Years of bumps take their toll. There's a risky surgery that could give you two more years of career."),opts:[
    {l:()=>L("Operarte","Have the surgery"),r:()=>ch(.5)?(OVR(2),L("Te sientes diez años más joven. +2 OVR","You feel ten years younger. +2 OVR")):(OVR(-2),L("La recuperación no sale bien. -2 OVR","The recovery goes badly. -2 OVR"))},
    {l:()=>L("Convivir con el dolor","Live with the pain"),r:()=>ch(.65)?(OVR(-1),L("Cada carrera duele un poco más. -1 OVR","Every race hurts a bit more. -1 OVR")):L("El fisio hace milagros. Sin cambios.","The physio works miracles. No change.")}]},
- {id:"embajador",stage:"vet",t:()=>L("La oferta cómoda","The comfortable offer"),d:()=>L("Tu marca te ofrece retirarte YA y ser embajador mundial: dinero, viajes y cero riesgo.","Your brand offers you to retire NOW and become a global ambassador: money, travel and zero risk."),opts:[
+ {id:"embajador",stage:"vet",t:()=>L("La oferta cómoda","The comfortable offer","A oferta confortável"),d:()=>L("Tu marca te ofrece retirarte YA y ser embajador mundial: dinero, viajes y cero riesgo.","Your brand offers you to retire NOW and become a global ambassador: money, travel and zero risk."),opts:[
    {l:()=>L("Aceptar y colgar el casco","Accept and hang up the helmet"),r:()=>{VAL(1.3);S.retired=true;setTimeout(endCareer,800);return L("Eliges irte en tus términos, con una sonrisa. +30% fama","You choose to leave on your terms, with a smile. +30% fame");}},
    {l:()=>L("Seguir corriendo","Keep racing"),r:()=>ch(.7)?(OVR(1),L("El fuego sigue vivo. +1 OVR","The fire is still alive. +1 OVR")):(OVR(-1),L("Empiezas a preguntarte si valió la pena. -1 OVR","You start wondering if it was worth it. -1 OVR"))}]},
  // ---- dilemas dramáticos ----
- {id:"crashgate",stage:"f1",t:()=>L("La orden imposible","The impossible order"),d:()=>L("El muro te insinúa «tener un problema» en una curva concreta: un coche de seguridad en ese instante le daría la victoria a tu equipo. Nadie lo sabría… en teoría.","The pit wall hints at «having a problem» at a specific corner: a safety car right then would hand your team the win. Nobody would know… in theory."),opts:[
+ {id:"crashgate",stage:"f1",t:()=>L("La orden imposible","The impossible order","A ordem impossível"),d:()=>L("El muro te insinúa «tener un problema» en una curva concreta: un coche de seguridad en ese instante le daría la victoria a tu equipo. Nadie lo sabría… en teoría.","The pit wall hints at «having a problem» at a specific corner: a safety car right then would hand your team the win. Nobody would know… in theory."),opts:[
    {l:()=>L("Provocar el accidente","Cause the crash"),r:()=>roll(
      [4,()=>(CAR(1),L("El plan sale redondo y el equipo te debe una. +1 coche","The plan works perfectly and the team owes you one. +1 car"))],
      [3,()=>(VAL(.8),L("Corren rumores por el paddock. Tu nombre queda manchado. Fama -20%","Rumours spread through the paddock. Your name is tarnished. Fame -20%"))],
@@ -3841,7 +3841,7 @@ const DILEMAS=[
      [5,()=>(VAL(1.1),L("Plantas cara y el paddock respeta tu integridad. +fama","You stand firm and the paddock respects your integrity. +fame"))],
      [3,()=>L("El jefe se traga su idea. Todo sigue igual.","The boss swallows his idea. Nothing changes.")],
      [2,()=>(CAR(-1),L("El equipo te lo hace pagar en desarrollo. -1 coche","The team makes you pay in development. -1 car"))])}]},
- {id:"safetycar",stage:"f1",t:()=>L("La decisión del muro de control","Race control's call"),d:()=>L("Última vuelta, coche de seguridad. Dirección de carrera toma una decisión confusa que TE beneficia de forma dudosa: podrías ganar así. Tu rival estalla por la radio.","Final lap, safety car. Race control makes a confusing call that dubiously benefits YOU: you could win like this. Your rival erupts on the radio."),opts:[
+ {id:"safetycar",stage:"f1",t:()=>L("La decisión del muro de control","Race control's call","A decisão da direção de corrida"),d:()=>L("Última vuelta, coche de seguridad. Dirección de carrera toma una decisión confusa que TE beneficia de forma dudosa: podrías ganar así. Tu rival estalla por la radio.","Final lap, safety car. Race control makes a confusing call that dubiously benefits YOU: you could win like this. Your rival erupts on the radio."),opts:[
    {l:()=>L("Aprovecharla y ganar","Take it and win"),r:()=>roll(
      [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.15),L("Ganas. Injusto para muchos, pero la victoria cuenta. +fama","You win. Unfair to many, but the win counts. +fame"))],
      [3,()=>(S.dilWin=(S.dilWin||0)+1,VAL(.95),L("Ganas entre polémica y medio mundo te señala. Fama -5%","You win amid controversy and half the world points at you. Fame -5%"))],
@@ -3852,7 +3852,7 @@ const DILEMAS=[
      [3,()=>L("Nadie te lo agradece. Regalaste una victoria. Sin cambios.","Nobody thanks you. You gave away a win. No change.")])}]},
  // idem: te juegas el Mundial en la última carrera → solo si de verdad estás ahí arriba
  {id:"titlecrash",stage:"vet",cond:()=>S.team&&(S.f1perf[S.team.name]??75)>=85&&((S.seasons.at(-1)||{}).pos??20)<=4,
-  t:()=>L("El duelo por el título","The title showdown"),d:()=>L("Última carrera del año, con el campeonato todavía abierto y tu rival directo al lado. Se acerca por fuera y tienes la puerta para cerrarle de forma temeraria.","Final race of the year, the championship still open and your closest rival alongside. He comes up the outside and you have the chance to slam the door recklessly."),opts:[
+  t:()=>L("El duelo por el título","The title showdown","O duelo pelo título"),d:()=>L("Última carrera del año, con el campeonato todavía abierto y tu rival directo al lado. Se acerca por fuera y tienes la puerta para cerrarle de forma temeraria.","Final race of the year, the championship still open and your closest rival alongside. He comes up the outside and you have the chance to slam the door recklessly."),opts:[
    {l:()=>L("Cerrarle sin piedad","Slam the door mercilessly"),r:()=>roll(
      [4,()=>(VAL(1.15),OVR(1),L("Le echas y sales impune: temido y respetado. +fama, +1 OVR","You run him off and get away with it: feared and respected. +fame, +1 OVR"))],
      [3,()=>(VAL(.75),L("Chocáis los dos: fama de tramposo y un año amargo. Fama -25%","You both crash: a cheat's reputation and a bitter year. Fame -25%"))],
@@ -3861,7 +3861,7 @@ const DILEMAS=[
      [4,()=>(VAL(1.2),L("Tu deportividad se hace leyenda. +20% fama","Your sportsmanship becomes legend. +20% fame"))],
      [3,()=>(OVR(1),L("Tu temple bajo presión te hace mejor. +1 OVR","Your composure under pressure makes you better. +1 OVR"))],
      [3,()=>L("Que gane el mejor. Sin cambios.","May the best driver win. No change.")])}]},
- {id:"frenazo",stage:"f1",t:()=>L("Sangre caliente","Hot blood"),d:()=>L("Un rival te ha hecho una jugarreta y vais pegados tras el coche de seguridad. Podrías 'equivocarte' y darle un toque para mandarle un mensaje.","A rival pulled a dirty move on you and you're nose-to-tail behind the safety car. You could 'make a mistake' and tap him to send a message."),opts:[
+ {id:"frenazo",stage:"f1",t:()=>L("Sangre caliente","Hot blood","Sangue quente"),d:()=>L("Un rival te ha hecho una jugarreta y vais pegados tras el coche de seguridad. Podrías 'equivocarte' y darle un toque para mandarle un mensaje.","A rival pulled a dirty move on you and you're nose-to-tail behind the safety car. You could 'make a mistake' and tap him to send a message."),opts:[
    {l:()=>L("Darle un toque","Tap him"),r:()=>roll(
      [4,()=>(VAL(.92),L("Golpe polémico en directo: sanción y bronca mediática. Fama -8%","A controversial hit live on TV: penalty and media backlash. Fame -8%"))],
      [3,()=>L("Solo un roce, queda en nada. Sin cambios.","Just a graze, it comes to nothing. No change.")],
@@ -3870,7 +3870,7 @@ const DILEMAS=[
      [4,()=>(OVR(1),L("Canalizas la furia en velocidad pura. +1 OVR","You channel the fury into pure speed. +1 OVR"))],
      [4,()=>L("Respiras hondo y a lo tuyo. Sin cambios.","You take a deep breath and get on with it. No change.")],
      [2,()=>(VAL(1.05),L("El paddock nota tu madurez. +fama","The paddock notices your maturity. +fame"))])}]},
- {id:"aparcado",stage:"f1",t:()=>L("La pole a cualquier precio","Pole at any cost"),d:()=>L("En clasificación vas primero, pero un rival mejora en su última vuelta. Podrías 'perder el coche' en una curva justo para sacar bandera amarilla y congelar tu pole.","In qualifying you're on top, but a rival is improving on his last lap. You could 'lose the car' at a corner to bring out a yellow flag and freeze your pole."),opts:[
+ {id:"aparcado",stage:"f1",t:()=>L("La pole a cualquier precio","Pole at any cost","A pole a qualquer preço"),d:()=>L("En clasificación vas primero, pero un rival mejora en su última vuelta. Podrías 'perder el coche' en una curva justo para sacar bandera amarilla y congelar tu pole.","In qualifying you're on top, but a rival is improving on his last lap. You could 'lose the car' at a corner to bring out a yellow flag and freeze your pole."),opts:[
    {l:()=>L("«Perder» el coche","«Lose» the car"),r:()=>roll(
      [3,()=>L("Cuela: pole salvada y nadie protesta. Sin cambios.","It works: pole saved and nobody protests. No change.")],
      [4,()=>(VAL(.9),L("Los comisarios lo ven claro: te borran la pole. Fama -10%","The stewards see right through it: your pole is deleted. Fame -10%"))],
@@ -3879,7 +3879,7 @@ const DILEMAS=[
      [5,()=>L("Te gana la pole limpiamente. Mañana será otro día. Sin cambios.","He beats you to pole fair and square. Tomorrow's another day. No change.")],
      [3,()=>(OVR(1),L("Estudias su vuelta perfecta y aprendes. +1 OVR","You study his perfect lap and learn. +1 OVR"))],
      [2,()=>(VAL(1.05),L("Tu deportividad gusta. +fama","Your sportsmanship goes down well. +fame"))])}]},
- {id:"zonagris",stage:"f1",t:()=>L("El invento de la zona gris","The grey-area invention"),d:()=>L("Tus ingenieros traen un sistema brillante que roza el límite del reglamento. Los rivales protestarían… si lo descubren.","Your engineers bring a brilliant system that skirts the edge of the rules. The rivals would protest… if they find out."),opts:[
+ {id:"zonagris",stage:"f1",t:()=>L("El invento de la zona gris","The grey-area invention","A invenção da zona cinzenta"),d:()=>L("Tus ingenieros traen un sistema brillante que roza el límite del reglamento. Los rivales protestarían… si lo descubren.","Your engineers bring a brilliant system that skirts the edge of the rules. The rivals would protest… if they find out."),opts:[
    {l:()=>L("Montarlo y correr","Fit it and race"),r:()=>roll(
      [4,()=>(CAR(2),L("Legal por los pelos y letal: dais un golpe en la mesa. +2 coche","Barely legal and lethal: you make a statement. +2 car"))],
      [3,()=>(CAR(1),VAL(.95),L("Legal, pero te llaman ventajista. +1 coche, -fama","Legal, but they call you an opportunist. +1 car, -fame"))],
@@ -3890,7 +3890,7 @@ const DILEMAS=[
      [3,()=>(VAL(1.05),L("Tu imagen de piloto limpio suma. +fama","Your clean-driver image pays off. +fame"))])}]},
  // con NOMBRE: «no recuerdo quién era mi compañero, entonces es raro» (Carlos). Si es famoso, lo piensas dos veces.
  {id:"companeros",stage:"f1",cond:()=>S.cat==="F1"&&!!S.team,
-  t:()=>L("Guerra a muerte con tu compañero","War to the death with your teammate"),
+  t:()=>L("Guerra a muerte con tu compañero","War to the death with your teammate","Guerra de morte com o teu companheiro"),
   d:()=>{ const m=surname(teammateOf(S.team.name).name);
     return L(`Tu compañero ${m} y tú peleáis por todo y ya os habéis tocado en pista. El equipo amenaza con separaros con órdenes si volvéis a chocar.`,`Your teammate ${m} and you fight over everything and have already touched on track. The team threatens to separate you with orders if you clash again.`); },opts:[
    {l:()=>L("No ceder ni un milímetro","Don't give an inch"),r:()=>roll(
@@ -3902,7 +3902,7 @@ const DILEMAS=[
      [3,()=>L("Frágil paz técnica. Sin cambios.","A fragile technical peace. No change.")],
      [3,()=>(S.role="2",L("Cedes terreno y él aprovecha para ser el Nº1.","You give ground and he takes advantage to become No.1."))])}]},
  // ---- dilemas con condición ----
- {id:"lluvia",stage:"f1",cond:()=>S.f1Seasons<=2,t:()=>L("La apuesta de la lluvia","The rain gamble"),
+ {id:"lluvia",stage:"f1",cond:()=>S.f1Seasons<=2,t:()=>L("La apuesta de la lluvia","The rain gamble","A aposta da chuva"),
   d:()=>L("Cielo de tormenta sobre el circuito y tú, jovencísimo, en tu salida. Puedes arriesgar con neumáticos lisos para robar posiciones… o salir prudente.","Storm clouds over the circuit and you, so young, on the grid. You can gamble on slicks to steal positions… or play it safe."),opts:[
    {l:()=>L("Arriesgar con lisos 🌧️","Gamble on slicks 🌧️"),r:()=>{
      const st=sel.style, p= st==="agresivo"?.5 : st==="tecnico"?.62 : .45;
@@ -3915,7 +3915,7 @@ const DILEMAS=[
           : L("La lluvia no llega a tiempo y te comen los puestos. −fama","The rain doesn't come in time and you get eaten alive. −fame"); }},
    {l:()=>L("Salir prudente","Play it safe"),r:()=>{VAL(1.02);return L("Sumas seguro, sin épica ni sustos. Un finde correcto.","You score safely, no drama, no heroics. A solid weekend.");}}]},
  {id:"reglamento",stage:"f1",cond:()=>S.role==="1" && S.team && S.f1perf[S.team.name]!=null && S.f1perf[S.team.name]<80 && S.age<=35,
-  t:()=>L("Apostar por el reglamento nuevo","Bet on the new regulations"),
+  t:()=>L("Apostar por el reglamento nuevo","Bet on the new regulations","Apostar no novo regulamento"),
   d:()=>L("Tu equipo, modesto, te plantea sacrificar esta temporada y volcarlo todo en el coche del año que viene, con el cambio de reglamento. Como Nº1, la decisión es tuya.","Your modest team proposes sacrificing this season and pouring everything into next year's car, with the rules change. As No.1, the call is yours."),opts:[
    {l:()=>L("Tirar el año: todo al coche del futuro 🎲","Write off the year: all in on next year's car 🎲"),r:()=>{ const t=S.team.name;
      if(ch(.55)){ S.f1target[t]=Math.min(94,(S.f1target[t]??S.f1perf[t])+rnd(7,12));
@@ -3924,13 +3924,13 @@ const DILEMAS=[
      return L("El concepto no funciona: el proyecto se hunde aún más. Año tirado para nada. 📉","The concept fails: the project sinks even further. A wasted year for nothing. 📉"); }},
    {l:()=>L("Competir este año con lo que hay","Compete this year with what you've got"),r:()=>ch(.5)?(CAR(.6),L("Exprimís el coche actual: algún puntito extra. +0.5 coche","You squeeze the current car: a few extra points. +0.5 car")):L("Un año de transición sin sobresaltos.","A quiet transition year.")}]},
  {id:"pupilo",stage:"f1",cond:()=>{ if(S.age<31||!S.team||!S.seats[S.team.name]) return false; const m=teammateOf(S.team.name); return m&&m.age!=null&&m.age<24; },
-  t:()=>L("El pupilo veloz","The fast pupil"),
+  t:()=>L("El pupilo veloz","The fast pupil","O pupilo veloz"),
   d:()=>{ const m=teammateOf(S.team.name); return L(`${surname(m.name)}, tu joven compañero, te pide que le enseñes tus trucos. Es rapidísimo… y ayudarle podría crear a tu propio verdugo.`,`${surname(m.name)}, your young teammate, asks you to teach him your tricks. He's lightning fast… and helping him could create your own executioner.`); },opts:[
    {l:()=>L("Enseñarle todo lo que sabes","Teach him everything you know"),r:()=>{ const m=teammateOf(S.team.name); if(m&&m.skill) m.skill=Math.min(m.ceil||95,m.skill+2); VAL(1.1);
      return L(`El paddock admira tu generosidad (+fama)… pero ${surname(m.name)} da un salto y aprieta por tu asiento.`,`The paddock admires your generosity (+fame)… but ${surname(m.name)} makes a leap and pushes for your seat.`); }},
    {l:()=>L("Guardarte los trucos","Keep your tricks to yourself"),r:()=>{VAL(.95);return L("Mantienes tu ventaja, pero en el garaje te ven distante y calculador.","You keep your edge, but in the garage they see you as distant and calculating.");}}]},
  {id:"contrato",stage:"f1",cond:()=>{ if(!S.team||!F1_TEAMS.some(t=>t.name===S.team.name)||S.ovr<85) return false; const b=bestPoachTeam(); return b && (S.f1perf[b]-S.f1perf[S.team.name])>=6; },
-  t:()=>L("Romper el contrato","Break the contract"),
+  t:()=>L("Romper el contrato","Break the contract","Romper o contrato"),
   // ⚠️ el fichaje se consuma AL ACABAR la temporada (forceMove + poachTeam actúan en el mercado
   // siguiente). El texto lo dice explícito — antes prometía «te vas YA», el jugador corría el año
   // entero con su equipo y parecía que la decisión no había hecho nada (lo cazó Carlos jugando).
@@ -3940,18 +3940,18 @@ const DILEMAS=[
      S.neverHire[old]=true; S.forceMove=true; S.poachTeam=b;
      return L(`Firmas con ${b||"el grande"} para la PRÓXIMA temporada: esta la terminas en ${old}, con todo el box mirándote de reojo. ${old} te cierra la puerta PARA SIEMPRE, pero el año que viene tendrás uno de los mejores coches de la parrilla.`,`You sign with ${b||"the giant"} for NEXT season: you'll see this one out at ${old}, with the whole garage eyeing you sideways. ${old} shuts the door FOREVER, but next year you'll have one of the best cars on the grid.`); }},
    {l:()=>L("Cumplir tu palabra","Keep your word"),r:()=>{VAL(1.08);return L("Honras el contrato. El paddock respeta tu lealtad, aunque el coche de al lado corra más. +fama","You honour the contract. The paddock respects your loyalty, even if the car next door is faster. +fame");}}]},
- {id:"gesto",stage:"f1",from:2017,cond:()=>S.seasons.length>0 && (S.seasons.at(-1).pos??20)<=3,t:()=>L("El gesto en el podio","The podium statement"),
+ {id:"gesto",stage:"f1",from:2017,cond:()=>S.seasons.length>0 && (S.seasons.at(-1).pos??20)<=3,t:()=>L("El gesto en el podio","The podium statement","O gesto no pódio"),
   d:()=>L("Subes al podio y quieres usar tu momento de gloria para un mensaje que te importa. El equipo teme el lío con los patrocinadores.","You climb the podium and want to use your moment of glory for a message that matters to you. The team fears trouble with the sponsors."),opts:[
    {l:()=>L("Alzar la voz 🏳️","Speak out 🏳️"),r:()=>ch(.6)?(VAL(1.25),L("Te conviertes en un icono más allá del deporte: la gente te admira. +fama","You become an icon beyond the sport: people admire you. +fame")):(VAL(.9),L("Hay reacción y bronca con el patrocinador: te llueven palos. −fama","There's a backlash and a row with the sponsor: you get hammered. −fame"))},
    {l:()=>L("Morderte la lengua","Bite your tongue"),r:()=>{CAR(.5);return L("El patrocinador respira aliviado y afloja el presupuesto. +0.5 coche","The sponsor breathes easy and loosens the budget. +0.5 car");}}]},
- {id:"dakarcameo",stage:"vet",cond:()=>S.age>=35 && !S.dakarDone && S.cat==="F1",t:()=>L("La llamada del Dakar","The call of the Dakar"),
+ {id:"dakarcameo",stage:"vet",cond:()=>S.age>=35 && !S.dakarDone && S.cat==="F1",t:()=>L("La llamada del Dakar","The call of the Dakar","O apelo do Dakar"),
   d:()=>L("En enero, con la F1 parada, te tienta el rally más brutal del planeta: el Dakar. Tu equipo tuerce el gesto… pero ya eres un veterano con galones y te lo permiten.","In January, with F1 on its break, the most brutal rally on the planet tempts you: the Dakar. Your team frowns… but you're a decorated veteran now and they let you."),opts:[
    {l:()=>L("Lanzarte al desierto 🏜️","Head into the desert 🏜️"),r:()=>{ S.dakarDone=true; S.appetite=Math.min(3,S.appetite+1);
      if(ch(.5)){ VAL(1.22); return L("Sobrevives a las dunas y terminas el Dakar: una hazaña que da la vuelta al mundo. +fama","You survive the dunes and finish the Dakar: a feat that travels the world. +fame"); }
      OVR(-1); S.missRaces=irnd(1,3); return L("Un vuelco te deja tocado: llegas magullado a la pretemporada de F1. −OVR y te pierdes algún GP.","A rollover leaves you battered: you arrive bruised to F1 pre-season. −OVR and you miss a few GPs."); }},
    {l:()=>L("No arriesgar tu asiento","Don't risk your seat"),r:()=>L("Tu equipo respira aliviado. Sigues centrado en la Fórmula 1.","Your team breathes easy. You stay focused on Formula 1.")}]},
  // 🎙️ radios de equipo
- {id:"radiocaliente",stage:"f1",t:()=>L("La radio caliente","The hot mic"),
+ {id:"radiocaliente",stage:"f1",t:()=>L("La radio caliente","The hot mic","O rádio ao rubro"),
   d:()=>L("El muro la ha liado con tu estrategia y adiós victoria. Tienes el pulgar sobre el botón de la radio y a media parrilla escuchando.","The pit wall botched your strategy and there goes the win. Your thumb hovers over the radio button, half the grid listening."),opts:[
    {l:()=>L("Estallar en directo","Blow up on air"),r:()=>roll(
      [4,()=>(VAL(1.25),yearNow()>=2008
@@ -3963,7 +3963,7 @@ const DILEMAS=[
      [5,()=>(CAR(1),L("El equipo lo agradece y aprieta por ti. +1 coche","The team appreciates it and pushes for you. +1 car"))],
      [3,()=>L("Nadie nota tu enfado. Sin cambios.","Nobody notices your anger. No change.")],
      [2,()=>(VAL(.9),L("Los fans te ven blando. Fama −10%","Fans find you soft. Fame −10%"))])}]},
- {id:"multi21",stage:"f1",cond:()=>S.team&&S.seats[S.team.name],t:()=>L("Mantén la posición","Hold position"),
+ {id:"multi21",stage:"f1",cond:()=>S.team&&S.seats[S.team.name],t:()=>L("Mantén la posición","Hold position","Mantém a posição"),
   d:()=>{const m=teammateOf(S.team.name);return L(`Vas 2º pegado a ${surname(m.name)}, tu compañero. Por la radio, en clave: «mantén posición». El equipo lo da por hecho.`,`You're 2nd, right behind your teammate ${surname(m.name)}. Over the radio, in code: «hold position». The team takes it for granted.`);},opts:[
    {l:()=>L("Obedecer la orden","Obey the order"),r:()=>roll(
      [5,()=>(CAR(1),L("Armonía total: eres el piloto de equipo perfecto. +1 coche","Total harmony: the perfect team player. +1 car"))],
@@ -3973,7 +3973,7 @@ const DILEMAS=[
      [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.2),L("Ganas la posición y el clip es legendario. Fama +20%","You take the place and the clip is legendary. Fame +20%"))],
      [3,()=>(S.dilWin=(S.dilWin||0)+1,CAR(-1),L("Ganas la batalla, pero el box se parte. −1 coche","You win the battle, but the garage splits. −1 car"))],
      [3,()=>(S.dilWin=(S.dilWin||0)+1,OVR(-1),L("Te llevas la victoria, pero el equipo te sanciona internamente. −1 OVR","You take the win, but the team disciplines you internally. −1 OVR"))])}]},
- {id:"cuentas",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&(S.yearsAtTeam||1)>=3,t:()=>L("Cuentas pendientes","Unfinished business"),
+ {id:"cuentas",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&(S.yearsAtTeam||1)>=3,t:()=>L("Cuentas pendientes","Unfinished business","Contas por saldar"),
   d:()=>{const m=teammateOf(S.team.name);return L(`Llevas años picándote con ${surname(m.name)} en el mismo garaje. El equipo os deja claro: quien acabe por delante manda la próxima temporada. Se decide en la pista.`,`Years of needling ${surname(m.name)} in the same garage. The team is clear: whoever finishes ahead calls the shots next season. Settle it on track.`);},opts:[
    {l:()=>L("Guerra abierta","All-out war"),r:()=>roll(
      [4,()=>(OVR(1),darGalones(),L("Le pasas por encima toda la temporada. Nº1 indiscutible. +1 OVR","You dominate him all season. Undisputed No.1. +1 OVR"))],
@@ -3984,7 +3984,7 @@ const DILEMAS=[
      [3,()=>L("Paz en el box, pero él se lleva los focos.","Peace in the garage, but he takes the spotlight.")],
      [2,()=>(VAL(.9),L("Te acusan de conformista. Fama −10%","You're branded content with mediocrity. Fame −10%"))])}]},
  // 💥 lesión bestia por apretar (ligada al estilo)
- {id:"limite",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&S.cat==="F1",t:()=>L("Al filo del abismo","On the ragged edge"),
+ {id:"limite",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&S.cat==="F1",t:()=>L("Al filo del abismo","On the ragged edge","No fio da navalha"),
   d:()=>L("Para arañar la última décima hay que llevar el coche a un punto que roza la locura. Tu instinto tira… el fisio y el muro contienen la respiración.","To find the last tenth you must take the car to a point bordering on madness. Your instinct pulls… the physio and the pit wall hold their breath."),opts:[
    {l:()=>L("Apretar sin freno","Push with no limits"),r:()=>{
      const aggr=sel.style==="agresivo";
@@ -4004,7 +4004,7 @@ const DILEMAS=[
      [3,()=>(VAL(1.05),L("Tu madurez gusta en el muro. Ligero +fama","Your maturity pleases the pit wall. Slight +fame"))],
      [2,()=>(OVR(-1),L("Demasiado conservador: pierdes comba con el resto. −1 OVR","Too conservative: you lose ground to the rest. −1 OVR"))])}]},
  // 🪑 dilemas de PROBADOR JOVEN (cat TEST, <=32): si luce, call-up a mitad de año o aceleras tu llegada
- {id:"resAgr1",stage:"test",cond:()=>sel.style==="agresivo"&&S.age<=32,t:()=>L("A tumba abierta","All or nothing"),
+ {id:"resAgr1",stage:"test",cond:()=>sel.style==="agresivo"&&S.age<=32,t:()=>L("A tumba abierta","All or nothing","A todo o gás"),
   d:()=>L("Un titular se lesiona y te dan un GP de sustituto. Puedes salir a por todas y dejar una actuación que nadie olvide… o pasarte de frenada.","A regular is injured and you get a one-off sub race. Go all-out for a drive nobody forgets… or overcook it."),opts:[
    {l:()=>L("A por todas","Send it"),r:()=>roll(
      [4,()=>(VAL(1.15),reserveCallup())],
@@ -4013,7 +4013,7 @@ const DILEMAS=[
    {l:()=>L("Con cabeza","Keep your head"),r:()=>roll(
      [5,()=>L("Carrera discreta y limpia. Sin cambios.","A quiet, clean race. No change.")],
      [2,()=>(VAL(.92),L("Aburres: nadie se acuerda de ti. −fama leve","Forgettable: nobody remembers you. slight −fame"))])}]},
- {id:"resAgr2",stage:"test",cond:()=>sel.style==="agresivo"&&S.age<=32,t:()=>L("La intuición","The gut call"),
+ {id:"resAgr2",stage:"test",cond:()=>sel.style==="agresivo"&&S.age<=32,t:()=>L("La intuición","The gut call","A intuição"),
   d:()=>L("En tu GP de sustituto, el muro te da instrucciones claras de gestión. Pero ves una ventana que ellos no: hacer lo contrario podría ser la jugada del año.","In your sub race, the pit wall gives clear management orders. But you see a window they don't: doing the opposite could be the move of the year."),opts:[
    {l:()=>L("Fiarte de tu instinto","Trust your gut"),r:()=>roll(
      [4,()=>reserveCallup()],
@@ -4022,14 +4022,14 @@ const DILEMAS=[
    {l:()=>L("Obedecer al muro","Follow the wall"),r:()=>roll(
      [5,()=>L("Cumples el guion. Resultado correcto, cero ruido. Sin cambios.","You stick to the script. A tidy result, no noise. No change.")],
      [2,()=>(S.testProved=Math.max(S.testProved||0,1),L("Valoran tu disciplina. Aceleras un poco.","They value your discipline. A little closer."))])}]},
- {id:"resTec1",stage:"test",cond:()=>sel.style==="tecnico"&&S.age<=32,t:()=>L("El reglaje","The setup"),
+ {id:"resTec1",stage:"test",cond:()=>sel.style==="tecnico"&&S.age<=32,t:()=>L("El reglaje","The setup","A afinação"),
   d:()=>L("Como probador te dejan trastear el coche en los Libres. Puedes volcarte en encontrar un reglaje y un feedback que los titulares no ven.","As reserve they let you play with the car in practice. Pour yourself into a setup and feedback the race drivers are missing."),opts:[
    {l:()=>L("Volcarte en el coche","Bury yourself in the car"),r:()=>roll(
      [4,()=>(S.testProved=2,L("Encuentras décimas: los ingenieros te adoran y aceleras tu llegada.","You find tenths: the engineers adore you and your arrival speeds up."))],
      [3,()=>(OVR(1),L("Aportas, sin fuegos artificiales. +1 OVR","You contribute, no fireworks. +1 OVR"))],
      [3,()=>L("Te obcecas en una vía muerta: pierdes el finde. Sin cambios.","You chase a dead end: the weekend's lost. No change.")])},
    {l:()=>L("Ir a lo tuyo","Do your own thing"),r:()=>L("Rodaje tranquilo. Sin cambios.","Quiet mileage. No change.")}]},
- {id:"resTec2",stage:"test",cond:()=>sel.style==="tecnico"&&S.age<=32,t:()=>L("Te has estudiado el circuito","You've done your homework"),
+ {id:"resTec2",stage:"test",cond:()=>sel.style==="tecnico"&&S.age<=32,t:()=>L("Te has estudiado el circuito","You've done your homework","Estudaste o circuito"),
   d:()=>L(`Se corre en un trazado nuevo y raro. Tú te lo has estudiado hasta el último piano ${yearNow()>=2005?"en el simulador":"en vídeo y sobre plano, curva por curva"}. En la reunión técnica puedes soltar tu análisis… o guardártelo.`,`The race is at a new, tricky track. You've studied it to the last kerb ${yearNow()>=2005?"in the sim":"on video and on paper, corner by corner"}. In the tech briefing you can lay out your read… or keep it to yourself.`),opts:[
    {l:()=>L("Compartir tu análisis","Share your homework"),r:()=>roll(
      [4,()=>(S.testProved=2,L("Tu lectura del circuito da en el clavo y el equipo brilla: te ganas su confianza y aceleras.","Your read on the track nails it and the team shines: you earn their trust and speed up."))],
@@ -4038,7 +4038,7 @@ const DILEMAS=[
    {l:()=>L("Guardártelo","Keep it to yourself"),r:()=>roll(
      [4,()=>L("Esperas tu momento. Sin cambios.","You bide your time. No change.")],
      [2,()=>L("Lo descubren solos; tu ventaja se esfuma. Sin cambios.","They figure it out anyway; your edge evaporates. No change.")])}]},
- {id:"resCon1",stage:"test",cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("El fiable","The safe pair of hands"),
+ {id:"resCon1",stage:"test",cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("El fiable","The safe pair of hands","O de confiança"),
   d:()=>L("Te toca un GP de sustituto. No tienes coche para pelear delante, pero puedes traerlo impecable a los puntos y venderte como el piloto en el que todo equipo confía.","You get a sub race. No car to fight up front, but you can bring it home spotless in the points and sell yourself as the driver every team trusts."),opts:[
    {l:()=>L("Puntos y cero errores","Points and zero mistakes"),r:()=>roll(
      [4,()=>(S.testProved=2,L("Carrera de manual, ni un fallo: toman nota de tu fiabilidad y aceleras.","A textbook race, not one mistake: they note your reliability and you speed up."))],
@@ -4047,7 +4047,7 @@ const DILEMAS=[
    {l:()=>L("Arriesgar por un titular","Gamble for a headline"),r:()=>roll(
      [3,()=>(VAL(.92),L("Sales de tu zona y la lías un poco. −fama leve","You leave your comfort zone and it gets messy. slight −fame"))],
      [3,()=>(VAL(1.12),L("Te sale un adelantamiento vistoso. +fama","You pull off a flashy overtake. +fame"))])}]},
- {id:"resCon2",stage:"test",cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("Cabeza fría en el caos","Cool head in chaos"),
+ {id:"resCon2",stage:"test",cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("Cabeza fría en el caos","Cool head in chaos","Cabeça fria no caos"),
   d:()=>L("Tu GP de sustituto se vuelve una locura: lluvia, coches de seguridad y rivales estampándose. Puedes mantener la calma mientras el resto se va al muro.","Your sub race turns to mayhem: rain, safety cars, rivals crashing everywhere. Keep your cool while the rest hit the wall."),opts:[
    {l:()=>L("Mantener la cabeza fría","Keep your cool"),r:()=>roll(
      [4,()=>reserveCallup()],
@@ -4057,7 +4057,7 @@ const DILEMAS=[
      [3,()=>(OVR(-1),L("Te arriesgas y pinchas: fuera. −1 OVR","You gamble and puncture: out. −1 OVR"))],
      [2,()=>(VAL(1.12),L("O te sale la jugada y adelantas a cinco. +fama","Or it pays off and you pass five cars. +fame"))])}]},
  // 🥊 incidentes de pista con un rival (NUNCA tu compañero). Si acaba en pelea → enemistados
- {id:"toqueVictima",stage:"f1",cond:()=>S.cat==="F1"&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El toque","The tap"),
+ {id:"toqueVictima",stage:"f1",cond:()=>S.cat==="F1"&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El toque","The tap","O toque"),
   d:()=>{const r=incidentRival();return L(`En plena remontada, ${r} te da un toque y te manda a la grava: carrera al garete. Puedes ir a hablar con él tras la bandera.`,`Mid-charge, ${r} taps you into the gravel: your race is over. You can go and have words after the flag.`);},opts:[
    {l:()=>L("Hablarlo con calma","Talk it out calmly"),r:()=>roll(
      [4,()=>(respectBuild(),VAL(1.05),L("Te escucha, se disculpa y hasta nace un respeto mutuo. Sin drama.","He listens, apologizes, and a mutual respect is born. No drama."))],
@@ -4066,7 +4066,7 @@ const DILEMAS=[
    {l:()=>L("Tragártelo, «así son las carreras»","Let it go, «racing incidents»"),r:()=>roll(
      [4,()=>(VAL(1.08),L("Pasas página con clase: el paddock lo nota. +fama","You move on with class: the paddock notices. +fame"))],
      [3,()=>L("Te lo guardas. Sin cambios.","You bottle it up. No change.")])}]},
- {id:"toqueCulpable",stage:"f1",cond:()=>S.cat==="F1"&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El culpable","The culprit"),
+ {id:"toqueCulpable",stage:"f1",cond:()=>S.cat==="F1"&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate),t:()=>L("El culpable","The culprit","O culpado"),
   d:()=>{const r=incidentRival();const c=gpAt(yearNow());return L(`Un cierre tuyo en ${c} manda a ${r} contra el muro: fuera en el acto, con el coche destrozado. ¿Vas a su box a disculparte?`,`A move of yours at ${c} puts ${r} in the wall: out on the spot, car destroyed. Do you go to his garage to apologize?`);},opts:[
    {l:()=>L("Ir a disculparte","Go and apologize"),r:()=>roll(
      [4,()=>(respectBuild(),VAL(1.1),L("Aceptan tus disculpas: quedas como un caballero. +fama","He accepts your apology: you come off as a gentleman. +fame"))],
@@ -4077,7 +4077,7 @@ const DILEMAS=[
      [3,()=>(VAL(.93),L("La prensa te pinta de villano. −fama leve","The press paints you as the villain. slight −fame"))],
      [2,()=>(VAL(1.06),L("Impones respeto por no achantarte. +fama leve","You command respect by standing your ground. slight +fame"))])}]},
  // secuela: tu equipo quiere fichar al piloto con quien te enemistaste (≥1 año después). Te hacen más caso si tienes galones.
- {id:"fichajeEnemigo",stage:"f1",cond:()=>S.cat==="F1"&&!!enemySignable(),t:()=>L("El fichaje del enemigo","Signing the enemy"),
+ {id:"fichajeEnemigo",stage:"f1",cond:()=>S.cat==="F1"&&!!enemySignable(),t:()=>L("El fichaje del enemigo","Signing the enemy","A contratação do inimigo"),
   d:()=>{const e=eligibleEnemy(); S._seqEnemy=e?e.name:null; const tm=(S.team&&S.team.name)||L("Tu equipo","Your team"); return L(`${tm} quiere fichar a ${e?surname(e.name):"un viejo rival"}, con quien te llevas a matar desde vuestra pelea en ${e?e.year:"su día"}. Te preguntan por tu opinión:`,`${tm} wants to sign ${e?surname(e.name):"an old rival"}, whom you've been at war with since your clash in ${e?e.year:"the past"}. They ask for your opinion:`);},opts:[
    {l:()=>L("«O él, o yo»","«Him or me»"),r:()=>{
      const f1s=S.seasons.filter(s=>s.cat==="F1"); const reigning=(f1s.at(-1)||{}).pos===1;
@@ -4090,7 +4090,7 @@ const DILEMAS=[
      [4,()=>(CAR(-1),L(`Choque de egos con ${en}: el box arde y el rendimiento se resiente. −1 coche`,`Ego clash with ${en}: the garage ignites and performance suffers. −1 car`))],
      [2,()=>L(`Convivencia tensa con ${en}, pero sin sangre. Sin cambios.`,`An uneasy coexistence with ${en}, but no blood. No change.`)]); }}]},
  // 🏛️ la FIA toma una decisión polémica (rota entre FIA_SCENARIOS, cada uno con sus opciones) y el paddock se parte
- {id:"falloFIA",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("El fallo de la FIA","The FIA's ruling"),
+ {id:"falloFIA",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("El fallo de la FIA","The FIA's ruling","A decisão da FIA"),
   d:()=>{ const pool=FIA_SCENARIOS.filter(sc=>!sc.titleDecider || (fiaContender() && (S.fiaTitleCount||0)<2));
     const sc=pool[irnd(0,pool.length-1)]; S._fiaSc=sc; S._fiaOpts=sc.opts();
     return sc.sit()+L(" ¿Qué postura tomas?"," What stance do you take?"); },
@@ -4099,7 +4099,7 @@ const DILEMAS=[
    {l:()=>S._fiaOpts?S._fiaOpts[1].l():"", r:()=>S._fiaOpts?S._fiaOpts[1].r():""},
    {l:()=>S._fiaOpts?S._fiaOpts[2].l():"", r:()=>S._fiaOpts?S._fiaOpts[2].r():""}]},
  // 🎤 al coronarte, los medios te preguntan si vas a por el récord de mundiales
- {id:"recordPregunta",stage:"f1",cond:()=>S.cat==="F1"&&S.seasons.at(-1)?.cat==="F1"&&S.seasons.at(-1)?.pos===1,t:()=>L("La pregunta del récord","The record question"),
+ {id:"recordPregunta",stage:"f1",cond:()=>S.cat==="F1"&&S.seasons.at(-1)?.cat==="F1"&&S.seasons.at(-1)?.pos===1,t:()=>L("La pregunta del récord","The record question","A pergunta do recorde"),
   d:()=>{ const rh=recordHolders(); const who=joinNames(rh.names);
     if((S.titles.f1||0)>=rh.rec) return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «Nadie ha ganado más que tú. ¿Hasta dónde piensas estirar TU récord?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Nobody has won more than you. How far do you plan to stretch YOUR record?». Everyone awaits your headline.`);
     return L(`Recién coronado, en la rueda de prensa te lo sueltan a bocajarro: «¿Vas a por el récord de ${rh.rec} mundiales de ${who}?». Todos esperan tu titular.`,`Freshly crowned, in the press room they hit you with it: «Are you going for the record of ${rh.rec} titles held by ${who}?». Everyone awaits your headline.`); },
@@ -4114,7 +4114,7 @@ const DILEMAS=[
   ]},
  // 🏎️ el coche es regulín (perf<83): exprimirlo. Distinto de `limite` (piloto al filo, riesgo de lesión); aquí manda el COCHE, sin lesiones. A1 y A2 pueden salir ambos en la misma partida.
  {id:"exprimirQuali",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)<83,
-  t:()=>L("Al filo en la Q3","On the edge in Q3"),
+  t:()=>L("Al filo en la Q3","On the edge in Q3","No limite na Q3"),
   d:()=>L("El coche no da para pelear la pole, pero tu ingeniero lo ve claro: si te la juegas al límite absoluto, rozando el muro en cada curva, quizá arañas unas plazas que no te tocan.","The car isn't quick enough to fight for pole, but your engineer sees it: if you send it to the absolute limit, kissing the wall at every corner, you might steal a few places you have no business taking."),opts:[
    {l:()=>L("Jugártela al límite","Send it to the limit"),r:()=>roll(
      [4,()=>(VAL(1.15),L("¡Vuelta mágica! Clavas una clasificación imposible para ese coche y el paddock alucina. +fama","Magic lap! You pull out a qualifying run that car had no right to and the paddock is stunned. +fame"))],
@@ -4122,7 +4122,7 @@ const DILEMAS=[
      [3,()=>(CAR(-.5),VAL(.95),L("Te pasas de frenada y besas el muro: coche tocado para el domingo y un ridículo. −coche, −fama leve","You overcook it and kiss the wall: car damaged for Sunday and an embarrassment. −car, slight −fame"))])},
    {l:()=>L("Conformarte con lo que hay","Settle for what you've got"),r:()=>L("Sacas el máximo sin riesgos. Sin cambios.","You extract the maximum, no risks. No change.")}]},
  {id:"exprimirCarrera",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&(S.f1perf[S.team.name]??75)<83,
-  t:()=>L("Ordeñar el coche","Milk the car"),
+  t:()=>L("Ordeñar el coche","Milk the car","Espremer o carro"),
   d:()=>L("Coche de media tabla, resultado de media tabla… salvo que machaques motor y gomas al límite todo el fin de semana para robar un puesto que no te corresponde. El riesgo: que algo reviente.","Midfield car, midfield result… unless you thrash the engine and tyres to the limit all weekend to steal a place you don't deserve. The risk: something blows up."),opts:[
    {l:()=>L("Exprimirlo al máximo","Wring its neck"),r:()=>roll(
      [4,()=>(OVR(1),VAL(1.08),L("Sobresaliente: sacas del coche lo que nadie creía posible. Un resultadazo. +1 OVR y +fama","Outstanding: you get out of that car what nobody thought possible. A huge result. +1 OVR and +fame"))],
@@ -4131,7 +4131,7 @@ const DILEMAS=[
    {l:()=>L("Cuidar la mecánica","Nurse the machinery"),r:()=>L("Ritmo conservador, cero sustos, el coche llega a casa. Sin cambios.","Conservative pace, no scares, the car makes it home. No change.")}]},
  // 👨‍👩‍👧 vida personal vs profesión (1 sola vez por partida; sabor al azar entre 4)
  {id:"emergenciaFamiliar",stage:"f1",cond:()=>S.cat==="F1",
-  t:()=>L("Lejos de casa","Far from home"),
+  t:()=>L("Lejos de casa","Far from home","Longe de casa"),
   d:()=>{ S._famV=[
       L("Tu hermano se casa este domingo… el mismo día del Gran Premio.","Your brother is getting married this Sunday… the same day as the Grand Prix."),
       L("Tu pareja se ha puesto de parto y tú estás a un océano de distancia del hospital.","Your partner has gone into labour and you're an ocean away from the hospital."),
@@ -4148,7 +4148,7 @@ const DILEMAS=[
      :L("Te pierdes la carrera y unos puntos valiosos. Pero duermes tranquilo.","You miss the race and some valuable points. But you sleep soundly."); }}]},
  // 🏢 nuevo Team Principal / CEO: mueve el RUMBO del coche (f1target deriva con los años) → repercusión real
  {id:"nuevoJefe",stage:"f1",cond:()=>S.cat==="F1"&&S.team&&S.f1target[S.team.name]!=null,
-  t:()=>L("El nuevo Team Principal","The new Team Principal"),
+  t:()=>L("El nuevo Team Principal","The new Team Principal","O novo Team Principal"),
   // el texto NOMBRA al equipo y dice qué clase de jefe llega, sin eufemismos («un peso pesado se sienta
   // en el muro» sonaba a acertijo: lo cazó Carlos jugando)
   d:()=>{ const tn=S.team?S.team.name:L("Tu equipo","Your team"); S._jefe=[
@@ -4167,7 +4167,7 @@ const DILEMAS=[
      return L("Prefieres ver antes de creer. El tiempo dirá si el joven acierta. Sin cambios.","You'd rather see it before believing it. Time will tell if the kid gets it right. No change."); }}]},
  // 🗣️ un MULTICAMPEÓN mayor que tú te llama «blando» en prensa (nombre real de TU partida, nunca inventado ni del karting)
  {id:"ataqueLeyenda",stage:"f1",cond:()=>S.cat==="F1"&&!!oldChampion(),
-  t:()=>L("El desprecio de la leyenda","The legend's disdain"),
+  t:()=>L("El desprecio de la leyenda","The legend's disdain","O desprezo da lenda"),
   d:()=>{ const c=oldChampion(); S._leg=c?surname(c.name):"un mito"; const n=c?c.titles:5;
     return L(`${S._leg}, ${n} veces campeón, te señala en una entrevista: «Esta generación lo tiene todo regalado. En mi época se peleaba de verdad. ${surname(sel.name)} no habría durado ni media temporada conmigo en pista». El titular corre como la pólvora.`,`${S._leg}, a ${n}-time champion, singles you out: «This generation has it all handed to them. In my day you had to really fight. ${surname(sel.name)} wouldn't have lasted half a season against me». The headline spreads like wildfire.`); },opts:[
    {l:()=>L("Responderle con tu palmarés","Answer him with your record"),r:()=>roll(
@@ -4178,7 +4178,7 @@ const DILEMAS=[
      [3,()=>L("Algunos interpretan que le das la razón, pero tú sigues a lo tuyo. Sin cambios.","Some read it as you conceding the point, but you carry on. No change.")])}]},
  // 💥 versión GRAVE y RARA de un incidente (heredera de `toqueCulpable`): mandas a un rival al HOSPITAL. Sin perdón → enemigo garantizado.
  {id:"pesoCulpa",stage:"f1",cond:()=>S.cat==="F1"&&S.ovr>=84&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate)&&ch(.5),
-  t:()=>L("El peso de la culpa","The weight of guilt"),
+  t:()=>L("El peso de la culpa","The weight of guilt","O peso da culpa"),
   d:()=>{const r=incidentRival();return L(`Un adelantamiento agresivo tuyo manda a ${r} a la grava y luego al hospital: fractura y varias carreras de baja. Las cámaras lo repiten en bucle y la prensa te crucifica.`,`An aggressive move of yours sends ${r} into the gravel and then to hospital: a fracture and several races out. The cameras replay it on a loop and the press crucifies you.`);},opts:[
    {l:()=>L("Dar la cara: perdón público y visita al hospital","Front up: public apology and hospital visit"),r:()=>roll(
      [4,()=>(respectBuild(),VAL(1.12),L("Vas a verlo, pides perdón de verdad y lo acepta. El paddock valora tu honestidad. +fama","You visit him, apologize sincerely and he accepts. The paddock values your honesty. +fame"))],
@@ -4188,7 +4188,7 @@ const DILEMAS=[
      :L("Firme y sin dramatismo, pero no te lo perdona: os habéis ganado un enemigo. Con él, ni agua.","Firm and undramatic, but he won't forgive you: you've made an enemy. You two are done."); }}]},
  // 🎬 2023-25 (solo se vive en las líneas retro): Hollywood rueda la superproducción de F1 en los GP reales
  {id:"pelicula",stage:"f1",cond:()=>S.cat==="F1"&&yearNow()>=2023&&yearNow()<=2025,
-  t:()=>L("Hollywood en el paddock","Hollywood in the paddock"),
+  t:()=>L("Hollywood en el paddock","Hollywood in the paddock","Hollywood no paddock"),
   d:()=>L("Se está rodando una superproducción de Hollywood sobre la F1: estrellas de cine, un equipo ficticio y cámaras en los garajes de los GP reales. Producción te lo propone: salir en la película.","A Hollywood blockbuster about F1 is being shot: movie stars, a fictional team and cameras inside real GP garages. Production makes you an offer: appear in the movie."),opts:[
    {l:()=>L("Participar en el rodaje","Join the shoot"),r:()=>roll(
      [5,()=>(VAL(1.25),L("Tu cameo llena la pantalla grande: medio planeta descubre tu nombre. Fama +25%","Your cameo lights up the big screen: half the planet learns your name. Fame +25%"))],
@@ -4200,7 +4200,7 @@ const DILEMAS=[
      [2,()=>(VAL(.95),L("Te llaman soso por decirle que no a Hollywood. −fama leve","They call you dull for saying no to Hollywood. slight −fame"))])}]},
  // 🦠 2020 (solo se vive en la línea retro de 2010): la pandemia detiene el mundo
  {id:"pandemia",stage:"f1",cond:()=>S.cat==="F1"&&yearNow()===2020,
-  t:()=>L("El año que el mundo se detuvo","The year the world stopped"),
+  t:()=>L("El año que el mundo se detuvo","The year the world stopped","O ano em que o mundo parou"),
   d:()=>L("Una pandemia global congela el planeta: GPs cancelados, paddocks vacíos y la temporada en el aire. Encerrado en casa, tienes que decidir cómo pasar el parón.","A global pandemic freezes the planet: cancelled GPs, empty paddocks and the season in limbo. Locked down at home, you must decide how to spend the stoppage."),opts:[
    {l:()=>L("Dominar los GP virtuales","Rule the virtual GPs"),r:()=>roll(
      [5,()=>(VAL(1.3),L("Arrasas en el simulador y conquistas a una generación nueva de fans. Fama +30%","You crush it on the sim and win over a whole new generation of fans. Fame +30%"))],
@@ -4218,7 +4218,7 @@ const DILEMAS=[
    if(S.cat!=="F1"||!S.team||((S.seasons.at(-1)||{}).pos??20)>3) return false;
    const my=S.f1perf[S.team.name]??75;
    return my>=85 && F1_TEAMS.filter(t=>(S.f1perf[t.name]??75)>my).length<=2; },
-  t:()=>L("El muro se equivoca de rival","The pit wall marks the wrong man"),
+  t:()=>L("El muro se equivoca de rival","The pit wall marks the wrong man","O muro engana-se de rival"),
   d:()=>L("Últimas carreras del año. El muro decide marcar a tu rival mediático… pero tu instinto dice que la amenaza REAL es otro coche que vuela sin hacer ruido.","Final races of the year. The pit wall decides to shadow your headline rival… but your gut says the REAL threat is another car flying under the radar."),opts:[
    {l:()=>L("Imponer tu criterio por radio","Overrule them on the radio"),r:()=>roll(
      [5,()=>(S.dilWin=(S.dilWin||0)+1,OVR(1),VAL(1.12),L("Tenías razón: cubres al rival correcto y el paddock alucina con tu lectura de carrera. +1 OVR, +fama","You were right: you cover the real threat and the paddock marvels at your racecraft. +1 OVR, +fame"))],
@@ -4230,7 +4230,7 @@ const DILEMAS=[
      [3,()=>(VAL(.93),L("Cubristeis al rival equivocado y el que volaba sin ruido se lleva el premio. La prensa no perdona. −fama","You shadowed the wrong man and the quiet flyer takes the prize. The press is merciless. −fame"))])}]},
  // 🚩 inspirado en 2012: Grosjean, un GP de suspensión por la montonera de Spa
  {id:"sancionGP",stage:"f1",cond:()=>S.cat==="F1",
-  t:()=>L("La sanción de un Gran Premio","A one-race ban"),
+  t:()=>L("La sanción de un Gran Premio","A one-race ban","O castigo de um Grande Prémio"),
   d:()=>L("Salida caótica: calculas mal un hueco y provocas una montonera que se lleva a cuatro coches. La FIA dicta algo histórico: UN GRAN PREMIO de suspensión, el primero en años.","A chaotic start: you misjudge a gap and trigger a pile-up that collects four cars. The FIA hands down something historic: a ONE-RACE ban, the first in years."),opts:[
    {l:()=>L("Recurrir y defenderte en público","Appeal and fight it in public"),r:()=>roll(
      [3,()=>L("El recurso prospera: la sanción se queda en multa. Te libras por los pelos.","The appeal succeeds: the ban becomes a fine. You dodge it by a whisker.")],
@@ -4242,7 +4242,7 @@ const DILEMAS=[
      [2,()=>(VAL(.95),L("El GP en el sofá se te hace eterno y vuelves algo espeso. −fama leve","The GP on your sofa drags forever and you return rusty. slight −fame"))]);}}]},
  // 🦺 inspirado en 2013: reventones de Silverstone y la GPDA al borde del plante
  {id:"rebelion",stage:"f1",cond:()=>S.cat==="F1",
-  t:()=>L("La rebelión de los pilotos","The drivers' revolt"),
+  t:()=>L("La rebelión de los pilotos","The drivers' revolt","A revolta dos pilotos"),
   d:()=>L("Cuatro reventones en una tarde y nadie sabe por qué. La asociación de pilotos propone plantarse: si es peligroso, NO se corre. Los equipos aprietan para correr igual. Te toca elegir.","Four blowouts in one afternoon and nobody knows why. The drivers' association proposes standing down: if it's unsafe, NOBODY races. The teams push to race anyway. Your call."),opts:[
    {l:()=>L("No correr: seguridad primero","Refuse to race: safety first"),r:()=>roll(
      [5,()=>(VAL(1.15),L("La parrilla entera te sigue y la FIA cede: neumáticos nuevos en 48 horas. Te has ganado al vestuario. +fama","The whole grid follows you and the FIA caves: new tyres within 48 hours. You've won the drivers' room. +fame"))],
@@ -4254,7 +4254,7 @@ const DILEMAS=[
      [3,()=>(OVR(-1),L("Un reventón a 300 km/h te pega el susto de tu vida. −1 OVR","A blowout at 300 km/h gives you the fright of your life. −1 OVR"))])}]},
  // 🏁 inspirado en 2016: Rosberg ganó su PRIMER Mundial con 31 años y se retiró cinco días después
  {id:"cimaRosberg",stage:"f1",cond:()=>S.cat==="F1"&&S.titles.f1===1&&(S.seasons.at(-1)||{}).pos===1&&S.age>=30,
-  t:()=>L("¿Retirarte en la cima?","Retire on top?"),
+  t:()=>L("¿Retirarte en la cima?","Retire on top?","Retirares-te no auge?"),
   d:()=>L("Lo has conseguido: campeón del mundo, después de todo el sacrificio que nadie vio. Y una voz dentro pregunta: ¿y ahora qué? Ya no queda nada que demostrar. Podrías irte como los más grandes: por la puerta de arriba.","You've done it: world champion, after sacrifices nobody saw. And a voice inside asks: now what? There's nothing left to prove. You could leave like the greats — through the top door."),opts:[
    {l:()=>L("Colgar el casco siendo campeón","Hang up the helmet as champion"),r:()=>{ endCareer(); return L("Cinco días después del título lo anuncias: te vas. El paddock se queda helado… y en pie, aplaudiendo.","Five days after the title you announce it: you're leaving. The paddock is stunned — and on its feet, applauding."); }},
    {l:()=>L("Seguir: aún tengo hambre","Keep going: I'm still hungry"),r:()=>roll(
@@ -4270,7 +4270,7 @@ const DILEMAS=[
   // absurdo (le pasó a Carlos: fichó por McLaren y en la misma pantalla le ofrecían comprometerse con Toyota)
   cond:()=>S.cat==="F1" && S.team && !S.regDone && S.regReg && yearNow()===S.regReg-2
        && S.ovr>=84 && gridRank(S.team.name)<=3 && !S.commitTeam && (S.yearsAtTeam||1)>=2 && !!regBetTeam(),
-  t:()=>L("La apuesta del reglamento","The rulebook gamble"),
+  t:()=>L("La apuesta del reglamento","The rulebook gamble","A aposta do regulamento"),
   d:()=>{ const b=regBetTeam(); if(!b) return "";
     const mio=ordCar(gridRank(S.team.name)), suyo=ordCar(gridRank(b.name));
     // ⚠️ el texto NO puede dar por hecho que llevas años arriba (lo cazó Carlos: venía de ser 7º y 8º
@@ -4314,7 +4314,7 @@ const DILEMAS=[
  // todavía. No puedes irte (contrato firmado), pero sí puedes envenenar el proyecto desde dentro.
  {id:"aguantarApuesta",stage:"f1",
   cond:()=>regBetOn() && S.regReveal && S.regReveal.year===yearNow(),
-  t:()=>L("El año de la verdad","The year of truth"),
+  t:()=>L("El año de la verdad","The year of truth","O ano da verdade"),
   d:()=>L(`Un año entero en la cola de la parrilla, tragando preguntas sobre si fue el mayor error de tu carrera. Ahora entra el reglamento por el que firmaste. En la fábrica hay caras raras y nadie suelta prenda: ni ellos saben todavía si el coche es una bomba o un ladrillo. Tú ya no puedes bajarte del barco… pero sí decidir cómo vas en él.`,
           `A whole year at the back of the grid, swallowing questions about whether it was the biggest mistake of your career. Now the rulebook you signed for arrives. There are odd faces at the factory and nobody says a word: not even they know yet whether the car is a bomb or a brick. You can't get off the boat now… but you can decide how you ride in it.`),
   opts:[
@@ -4344,7 +4344,7 @@ const DILEMAS=[
        && carAffinity(S.team.name)<0 && gridRank(S.team.name)>=4
        && ((S.seasons.at(-1)||{}).pos??20)>=5
        && ((S.titles.f1||0)>0 || S.seasons.slice(-6).some(s=>(s.pos??20)<=3)),
-  t:()=>L("El reglamento que te hunde","The rulebook that buries you"),
+  t:()=>L("El reglamento que te hunde","The rulebook that buries you","O regulamento que te afunda"),
   d:()=>{ const m=teammateOf(S.team.name);
     const mate=m&&m.name ? L(`Y por si faltara poco, ${surname(m.name)} se ha adaptado antes que tú: los sábados ya no son tuyos.`,`And to top it off, ${surname(m.name)} has adapted faster than you: Saturdays aren't yours any more.`) : "";
     return L(`El reglamento nuevo no solo ha cambiado quién es rápido: ha cambiado cómo hay que pilotar. Este coche premia justo lo contrario de lo que tú haces bien, y llevas una temporada entera peleándote con él en cada frenada. ${mate}`,
@@ -4373,7 +4373,7 @@ const DILEMAS=[
   // estado entre los tres mejores EN ALGÚN momento: los ojeadores no fichan por una sola temporada.
   cond:()=>S.cat!=="F1" && S.cat!=="TEST" && !S.patron && !S.patronNo && S.age<=19
        && (S.seasons||[]).some(x=>x.cat!=="F1" && (x.pos??20)<=3),
-  t:()=>L("Te quieren atar","They want you tied down"),
+  t:()=>L("Te quieren atar","They want you tied down","Querem prender-te"),
   d:()=>{ const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))[irnd(0,2)];
     S._patronCand=t?t.name:F1_TEAMS[0].name;
     return L(`Un grande de la Fórmula 1 se ha fijado en ti. No quieren ficharte para correr: quieren pagarte la escalera entera —coches, motores, test, todo— hasta que estés listo. A cambio se quedan una opción sobre tu futuro: cuando llegues, llegas con ${S._patronCand} o no llegas. Tienes ${S.age} años y te están ofreciendo no volver a preocuparte por el dinero nunca más.`,
@@ -4402,7 +4402,7 @@ const DILEMAS=[
   cond:()=>{ if(S.cat!=="F1"||!S.team||(S.f1Seasons||0)>1||S.patronLock) return false;
     const mio=S.f1perf[S.team.name]??75;
     return mio<=76 && bigCallers().length>0; },
-  t:()=>L("El que te descubrió y el que te quiere","The one who found you and the one who wants you"),
+  t:()=>L("El que te descubrió y el que te quiere","The one who found you and the one who wants you","O que te descobriu e o que te quer"),
   d:()=>{ const g=pickBigCaller();
     S._debutBig=g?g.name:null;
     const motivo=[L("se lesionó su titular","their regular got injured"),
@@ -4440,7 +4440,7 @@ const DILEMAS=[
  // 🛣️ EL CAMINO RARO [Schumacher, 1990]: programa de FÁBRICA en resistencia en vez de la escalera.
  {id:"caminoRaro",stage:"jr",minAge:17,
   cond:()=>(S.cat==="F3"||S.cat==="FR"||S.cat==="F2") && S.age>=17 && S.age<=22 && !S.advYears,
-  t:()=>L("El camino raro","The strange road"),
+  t:()=>L("El camino raro","The strange road","O caminho estranho"),
   d:()=>L("Una marca te ofrece algo que no hace nadie de tu edad: un volante de fábrica en resistencia. Sueldo de verdad, coches de verdad y kilómetros a espuertas contra pilotos hechos. Todo el mundo te dice que es un desvío y que la escalera es la escalera.",
           "A manufacturer offers you something nobody your age does: a factory drive in endurance racing. A real salary, real cars and mileage by the bucketload against grown men. Everyone tells you it's a detour and that the ladder is the ladder."),
   opts:[
@@ -4467,7 +4467,7 @@ const DILEMAS=[
   cond:()=>{ if(!S.lluviaOK||S.cat==="F1"||S.cat==="TEST"||S.wetMaster||!S.team) return false;
     const p=S.jrPerf[S.team.name]!=null?S.jrPerf[S.team.name]:(S.team.perf||60);
     return p<=58; },
-  t:()=>L("Llueve y no hay gomas de agua","It's raining and there are no wets"),
+  t:()=>L("Llueve y no hay gomas de agua","It's raining and there are no wets","Chove e não há pneus de chuva"),
   d:()=>{ const paga = S.patron
       ? L(`${S.patron} las pagaría con una llamada`,`${S.patron} would pay for them with one phone call`)
       : L("en tu casa habría que rascar de donde no hay","at home the money would have to come from somewhere it isn't");
@@ -4488,7 +4488,7 @@ const DILEMAS=[
  // federación no quería darle la superlicencia; su jefe salió de garante.
  {id:"licencia",stage:"jr",minAge:17,
   cond:()=>S.cat!=="F1" && S.cat!=="TEST" && S.ovr>=70 && (S.seasons||[]).filter(x=>x.cat!=="KART").length<=2,
-  t:()=>L("La licencia en duda","The licence in doubt"),
+  t:()=>L("La licencia en duda","The licence in doubt","A licença em dúvida"),
   d:()=>L("Un equipo de Fórmula 1 te quiere para el año que viene. El problema es que apenas has corrido carreras de monoplaza y la federación no las ve suficientes para darte la superlicencia. Tu futuro jefe ha salido de garante: responde por ti personalmente delante de todos. Si te estrellas, se lo lleva puesto él.",
              "A Formula 1 team wants you for next year. The problem is you've barely raced single-seaters and the federation doesn't think that's enough for a superlicence. Your future boss has vouched for you personally, in front of everyone. If you crash out, he goes down with you."),
   opts:[
@@ -4504,7 +4504,7 @@ const DILEMAS=[
  {id:"gomas",stage:"f1",
   cond:()=>S.cat==="F1" && S.team && !S.regDone && (S.yearsAtTeam||1)>=2 && S.age>=22
        && S.f1char[S.team.name] && S.f1char[S.team.name]!==sel.style && carAffinity(S.team.name)<0,
-  t:()=>L("Las gomas no perdonan","The tyres don't forgive"),
+  t:()=>L("Las gomas no perdonan","The tyres don't forgive","Os pneus não perdoam"),
   d:()=>{ const m=teammateOf(S.team.name);
     const rival = m&&m.name ? L(`${surname(m.name)} le ha encontrado el truco en dos carreras.`,`${surname(m.name)} cracked it in two races.`) : "";
     // cuántas décimas te cuesta: variable, para que no sea siempre «tres» (lo pidió Carlos)
@@ -4543,7 +4543,7 @@ const DILEMAS=[
   cond:()=>{ if(S.cat!=="F1"||!S.team||!S.seats[S.team.name]||(S.yearsAtTeam||1)<1||S.f1Seasons<2) return false;
     const m=teammateOf(S.team.name)||{};
     return !!m.name && Math.abs((m.skill||0)-S.ovr)<=5; },
-  t:()=>L("Os habéis tocado","You've collided"),
+  t:()=>L("Os habéis tocado","You've collided","Tocaram-se"),
   d:()=>{ const m=surname(teammateOf(S.team.name).name);
     // 🏟️ dónde y cuándo: circuito de la época (sin anacronismos) y una vuelta/curva que ESE trazado tiene
     const gps=gpList(yearNow()), gp=gps[dilVar("gpI",()=>irnd(0,gps.length-1))];
