@@ -33,7 +33,24 @@ const BANNED = [
   "nigger", "nigga", "negrata", "maricon", "faggot", "sudaca", "panchito", "gitanaco", "retrasad", "subnormal",
   // obscenidades obvias
   "hijoputa", "hijodeputa", "malparido", "fuckyou", "fuck", "shit", "polla", "verga", "cabron", "puto", "puta", "coño", "cono",
+  // 🇧🇷 portugués (Brasil y Portugal). Añadido al abrir el juego en portugués.
+  // insultos de odio
+  "viado", "veado", "viadinho", "traveco", "sapatao", "macaco", "crioulo", "favelado", "retardado", "mongoloid",
+  // obscenidades
+  "caralho", "buceta", "boceta", "piroca", "punheta", "pentelho", "xoxota", "arrombado", "vagabunda",
+  "otario", "babaca", "escroto", "bosta", "merda", "cuzao", "cuzinho", "fodase", "fodese", "sefoda", "vaisefoder", "fodido",
+  "filhadaputa", "filhodaputa", "fdp", "vaitomarnocu",
 ];
+/* ⚠️ NO METER AQUÍ, aunque sean insultos de libro: cada una bloquearía apellidos REALES por coincidir
+   como subcadena. Comprobado uno a uno antes de descartarlas.
+     · "bicha"  → BICHARA, apellido brasileño de origen libanés
+     · "porra"  → PORRAS, apellido español y latinoamericano corriente
+     · "corno"  → CORNO / CORNOLDI, apellidos italianos (y Brasil está lleno de apellidos italianos)
+     · "pinto"  → PINTO, de los apellidos portugueses más comunes que existen
+     · "preto"  → PRETO, apellido real
+     · "cu"     → demasiado corto: caería CUNHA, CURRO, CUEVAS…
+   El filtro busca subcadenas, así que una palabra corta o común hace más daño del que evita: deja
+   fuera a alguien con su propio apellido, y esa persona no vuelve. */
 function cleanName(raw) {
   const norm = String(raw || "")
     .toLowerCase()

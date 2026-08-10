@@ -7409,9 +7409,11 @@ function printCareer(){
   window.print();
   $("endModal").style.display="flex";
 }
-/* 🇵🇹🇵🇱🇫🇷 IDIOMAS EN OBRAS: solo aparecen con ?preview=glory26, igual que las décadas nuevas. Cada
-   uno se saca del candado cuando esté traducido; no tienen por qué salir los tres a la vez. */
-if(PREVIEW) LANGS.push("pt","pl","fr");   // en obras: solo visibles en modo pruebas
+/* 🇧🇷 EL PORTUGUÉS YA ESTÁ ABIERTO (10-ago-2026): 1.300 de 1.300 llamadas traducidas, incluidas las
+   tablas de datos, y el filtro de nombres del ranking sabe portugués. El polaco y el francés siguen
+   en obras: cada idioma sale del candado cuando esté entero, no antes y no todos a la vez. */
+LANGS.push("pt");
+if(PREVIEW) LANGS.push("pl","fr");   // en obras: solo visibles en modo pruebas
 /* 🔒 LA ÚNICA PUERTA. Si el idioma guardado todavía no está abierto al público, se vuelve al español
    Y SE BORRA lo guardado: si no, el día que se abra el polaco, a quien lo probara en el preview se le
    pondría el juego en polaco sin haberlo pedido. */
