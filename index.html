@@ -2022,6 +2022,7 @@ const CHALLENGES = {
        Y NINGUNA regla especial de retirada: entra de forma rarisima, pero una vez dentro es un
        piloto mas y envejece como todos. Si hace falta empujarle, sera subiendole el OVR de salida. */
     id:"valentino", era:"2000", year:2007, role:"2", secret:true,
+    drop:["V. Rossi"],   // el Rossi de verdad no puede correr contra ti: el Rossi eres tú
     /* 🎚️ OVR 80, no 76. Medido sobre la parrilla real de 2007: peor 72, mediana 82, mejor 95. Con 76
        tenías por delante al 80% del grid — eras de los tres peores, y solo el 27% de las partidas
        ganaba UNA carrera en toda la carrera: eso no es difícil, es frustrante. Con 80 tienes por
@@ -2242,8 +2243,15 @@ function setupChallenge(CH){
   S.challenge = CH.id;
   // 1) fuera el piloto real ANTES de adelantar la era: su asiento es el tuyo y no debe llegar
   //    por su cuenta a través de las llegadas históricas (si no, saldríais los dos).
+  /* ⚠️ HAY QUE VACIARLO DE TODOS LOS BOTES, NO SOLO DE LA PARRILLA. Con Alonso funcionaba porque él
+     entra por las llegadas históricas, que sí se limpiaban. Rossi no: está en el bote de CROSSOVERS
+     (estrellas de otras disciplinas que cruzan a la F1), que nadie tocaba — y aparecía en 16 de cada
+     150 partidas, corriendo contra ti. Lo cazó Carlos. Vale para todos los retos que vengan: si el
+     piloto está en la cantera o en los crossovers, hay que sacarlo de ahí también. */
   (CH.drop||[]).forEach(n=>{
-    S.arrivals = (S.arrivals||[]).filter(a=>a.n!==n);
+    S.arrivals   = (S.arrivals||[]).filter(a=>a.n!==n);
+    S.crossovers = (S.crossovers||[]).filter(c=>c.name!==n);
+    S.rookies    = (S.rookies||[]).filter(r=>r[0]!==n);
     Object.values(S.seats).forEach(sl=>{ if(Array.isArray(sl)) sl.forEach((d,i)=>{ if(d&&d!=="PLAYER"&&d.name===n) sl[i]=mkRookie(false, null); }); });
     S.dpool = S.dpool.filter(d=>!(d&&d.name===n));
   });
