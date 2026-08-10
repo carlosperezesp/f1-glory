@@ -5085,6 +5085,12 @@ function perderAsiento(row, es, en, pt){
   if(row && row.events) row.events.push(L(es,en,pt!=null?{pt}:null));
 }
 function simSeason(){
+  /* ⏳ EL MOTIVO CADUCA AQUÍ, que es por donde pasan TODAS las temporadas. Limpiarlo solo al pintar
+     ofertas no bastaba: los años que compites fuera de la F1 esa pantalla ni se abre, así que el
+     motivo sobrevivía escondido hasta reaparecer dos temporadas después. */
+  if(S.forceReasonYear && S.forceReasonYear!==yearNow()){
+    S.forceReasonTxt=null; S.forceReasonYear=null; S.forceOutTeam=null;
+  }
   const st=STYLES[sel.style];
   // ⚠️ el equipo se guarda como FOTO ({...}), no como referencia: si años después se renombra (Force India→
   // Aston Martin), tu historial conserva el nombre y colores DE LA ÉPOCA en que corriste ahí
@@ -5604,6 +5610,13 @@ function alphaClash(row){
       // el MOTIVO viaja a la pantalla de ofertas: «Tras la ruptura…» a secas no decía POR QUÉ estabas
       // en la calle y había que ir a buscarlo a los eventos de la temporada (lo cazó Carlos)
       S.forceReasonTxt=[esTxt, enTxt, ptTxt];
+      /* ⏳ SELLADO CON FECHA. Antes el motivo se guardaba y ya: si ese invierno no pasabas por la
+         pantalla de «Buscando equipo», se quedaba esperando y aparecía UNA TEMPORADA DESPUÉS, cuando
+         ya corrías en otro equipo. Carlos lo vio corriendo en BAR y leyendo «McLaren prefiere la
+         veteranía de Kubica»… de 2015. Y como salía a destiempo, contradecía a las ofertas de ese
+         momento: el mismo McLaren que «prefería a Kubica» le ofrecía ser Nº1 con Kubica de compañero. */
+      S.forceReasonYear = nextY(row);
+      S.forceOutTeam    = tn;          // quien te echa no te vuelve a llamar ESE mismo invierno
       return;
     }
     // destino: el mejor equipo que NO tenga ya su propia pareja de gallos (y nunca el filial de RB)
@@ -6591,6 +6604,10 @@ function nextOffers(){
               S.engOffered=true; }        // 🛡️ constancia: solo se traiciona lo que se llegó a ofrecer
       else S.engPromise=null;             // ese equipo ya no existe: promesa disuelta
     }
+    // 🚪 el que te echa este invierno no te ofrece asiento este invierno (y menos de Nº1 al lado del
+    //    piloto por el que te echó). Al invierno siguiente vuelve a ser un equipo más.
+    if(S.forceOutTeam && S.forceReasonYear===yearNow())
+      cands=cands.filter(t=>t.name!==S.forceOutTeam);
     if(S.forceMove){
       cands=cands.filter(t=>t.name!==S.team.name && !S.neverHire[t.name]);
       if(!cands.length){ const _f=t=>t.name!==S.team.name&&!S.burned[t.name]&&!S.neverHire[t.name]&&rbOk(t);
@@ -6609,15 +6626,21 @@ function nextOffers(){
         //    esperó meses sin garantías, en marzo Brawn compró el equipo por una libra… y fue campeón.
         //    Aquí las puertas de arriba son una opción MÁS: puedes no firmar ninguna y esperar.
         if(!S.esperaQuiebra) o.push(esperarTrasQuiebraOption(S.forceReasonTeam));
-      } else if(S.forceReasonTxt){
+      } else if(S.forceReasonTxt && (!S.forceReasonYear || S.forceReasonYear===yearNow())){
         // el porqué concreto (la ruptura de gallos, etc.) en vez del genérico «tras la ruptura»
         sub=(sub||"")+LA(S.forceReasonTxt)+L(" Estas puertas siguen abiertas."," These doors are still open.",{pt:" Estas portas continuam abertas."});
       } else {
         sub=(sub||"")+L("Tras la ruptura, necesitas un volante nuevo. Estas puertas siguen abiertas.","After the split, you need a new seat. These doors are still open.",{pt:"Depois do rompimento, você precisa de um volante novo. Estas portas continuam abertas."});
       }
       S.forceReason=null; S.forceReasonTeam=null; S.forceReasonTxt=null;
+      S.forceReasonYear=null; S.forceOutTeam=null;
       S.forceMove=false;
     } else {
+      // ⏳ aunque esta vez NO estés en la calle, el motivo caduca igual: si no se limpia aquí, el de
+      //    este año reaparece el que viene (que es exactamente el fallo que cazó Carlos).
+      if(S.forceReasonYear && S.forceReasonYear!==yearNow()){
+        S.forceReasonTxt=null; S.forceReasonYear=null; S.forceOutTeam=null;
+      }
       const others=pick(cands.filter(t=>t.name!==S.team.name), Math.max(0,nOffers()-1));
       // afinidad de nacionalidad: tu equipo "de casa" aparece un poco más (italiano→Ferrari, etc.)
       const home=natAff().teams.map(n=>cands.find(t=>t.name===n)).find(Boolean);
