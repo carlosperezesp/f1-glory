@@ -4520,7 +4520,8 @@ const DILEMAS=[
         return L(`Te apartas y dejas que lo resuelvan los abogados. Sale bien: acabas en ${big} y sin quedar mal con nadie.`,`You step aside and let the lawyers sort it out. It works: you end up at ${big} and nobody has a bad word for you.`,{pt:`Você se afasta e deixa os advogados resolverem. Dá certo: acaba na ${big} e sem ficar mal com ninguém.`}); }],
       [50,()=>{ S.forceMove=true; S.forceReasonTxt=[
           `El pleito entre ${small} y ${big} se alarga tanto que la temporada se acaba sin que nadie te siente en ningún sitio.`,
-          `The lawsuit between ${small} and ${big} drags on so long that the season ends without anyone putting you in a car.`];
+          `The lawsuit between ${small} and ${big} drags on so long that the season ends without anyone putting you in a car.`,
+          `O processo entre a ${small} e a ${big} se arrasta tanto que a temporada acaba sem ninguém te colocar em lugar nenhum.`];
         return L(`El pleito se eterniza, los dos se cansan y te quedas sin los dos. A buscar asiento donde sea.`,`The lawsuit drags on, both sides get tired and you lose them both. Time to find a seat anywhere.`,{pt:`O processo se arrasta, os dois se cansam e você fica sem nenhum dos dois. A procurar vaga onde der.`}); }]); }}]},
 
  // 🛣️ EL CAMINO RARO [Schumacher, 1990]: programa de FÁBRICA en resistencia en vez de la escalera.
@@ -5593,10 +5594,16 @@ function alphaClash(row){
       : modo==="mejor"    ? `You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
       : modo==="veterano" ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
                           : `${tn} wants the title NOW and prefers ${stayName}'s experience: your seat is gone.`;
-      row.events.push(L("🥊 "+esTxt, "🥊 "+enTxt));
+      const ptTxt =
+        modo==="peor"     ? `A ${tn} aposta em ${stayName} como Nº1 e te mostra a porta: hora de procurar vaga.`
+      : (modo==="mejor" && stayCampeon) ? `A ${tn} se volta toda para ${stayName} depois do Mundial dele e quer um Nº2 que não conteste nada. Esse já não é você: hora de procurar vaga.`
+      : modo==="mejor"    ? `Você é o melhor da garagem e não pretende ser escudeiro de ninguém: vai ao mercado atrás do seu próprio projeto.`
+      : modo==="veterano" ? `A ${tn} aposta na juventude de ${stayName}: agradecem os serviços prestados e você fica sem vaga.`
+                          : `A ${tn} quer o título JÁ e prefere a experiência de ${stayName}: a sua vaga acabou.`;
+      row.events.push(L("🥊 "+esTxt, "🥊 "+enTxt, {pt:"🥊 "+ptTxt}));
       // el MOTIVO viaja a la pantalla de ofertas: «Tras la ruptura…» a secas no decía POR QUÉ estabas
       // en la calle y había que ir a buscarlo a los eventos de la temporada (lo cazó Carlos)
-      S.forceReasonTxt=[esTxt, enTxt];
+      S.forceReasonTxt=[esTxt, enTxt, ptTxt];
       return;
     }
     // destino: el mejor equipo que NO tenga ya su propia pareja de gallos (y nunca el filial de RB)
