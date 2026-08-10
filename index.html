@@ -1904,6 +1904,9 @@ const TEAM_LOGOS = {
   "Tyrrell":"Tyrrell.png","Ligier":"Ligier.png","Brabham":"brabham.png","Stewart":"stewart.png",
   "Footwork":"Footwork.png","Larrousse":"Larrouse.png","Leyton House":"leytonhouse.png",
   "March":"March.png","Osella":"Osella.png","Fondmetal":"fondmetal.png",
+  // ✅ pasados por Carlos el 10-ago. Siguen sin escudo: Forti, Lola y Scuderia Italia.
+  "AGS":"AGS.png","Coloni":"Coloni.png","EuroBrun":"Eurobrun.png","Life":"Life.png",
+  "Modena":"Modena.png","Onyx":"Onyx.png","Simtek":"Simtek.png","Pacific":"Pacific.png",
   // equipos de expansión retro/actual
   "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png",
   // 🕰️ era 2000 y sus transformaciones
@@ -2045,9 +2048,13 @@ const CHALLENGES = {
     sub:["El test de Fiorano · casi treinta años · sin un solo año de monoplaza",
          "The Fiorano test · pushing thirty · not one season in a single-seater",
          "O teste de Fiorano · quase trinta anos · sem um único ano de monoposto"],
-    d:["Volviendo de Valencia en avión dijo que no y se quedó en MotoGP, donde ganaría dos Mundiales más. Aquí dices que sí. Llegas con su talento, su nombre y su edad: casi treinta años y ni una sola temporada en un monoplaza. Nadie ha empezado tan tarde y ha ganado nada. ¿Puedes sacar más de 2 Mundiales antes de que se te acabe el tiempo?",
-       "Flying home from Valencia he said no and stayed in MotoGP, where he would win two more world titles. Here you say yes. You arrive with his talent, his name and his age: pushing thirty and not one season in a single-seater. Nobody has ever started this late and won anything. Can you take more than 2 titles before the clock runs out?",
-       "Voltando de Valência de avião ele disse não e ficou na MotoGP, onde ganharia mais dois Mundiais. Aqui você diz sim. Chega com o talento dele, o nome dele e a idade dele: quase trinta anos e nenhuma temporada em monoposto. Ninguém começou tão tarde e ganhou alguma coisa. Você consegue tirar mais de 2 Mundiais antes de o tempo acabar?"],
+    d:["Volviendo de Valencia en avión dijo que no y se quedó en MotoGP, donde ganaría dos Mundiales más. Aquí dices que sí. Llegas con su talento, su nombre y su edad: casi treinta años y ni una sola temporada en un monoplaza. Nadie ha empezado tan tarde y ha ganado nada. ¿Eres capaz de levantar UNO antes de que se te acabe el tiempo?",
+       "Flying home from Valencia he said no and stayed in MotoGP, where he would win two more world titles. Here you say yes. You arrive with his talent, his name and his age: pushing thirty and not one season in a single-seater. Nobody has ever started this late and won anything. Can you lift just ONE before the clock runs out?",
+       "Voltando de Valência de avião ele disse não e ficou na MotoGP, onde ganharia mais dois Mundiais. Aqui você diz sim. Chega com o talento dele, o nome dele e a idade dele: quase trinta anos e nenhuma temporada em monoposto. Ninguém começou tão tarde e ganhou alguma coisa. Você consegue levantar UM antes de o tempo acabar?"],
+    /* 🎯 EL LISTÓN ES UN MUNDIAL, NO TRES. Medido: ni con OVR 88 pasaba del 1% en «más de 2»,
+       porque el techo son las ~5 temporadas que le quedan, no el nivel. Con uno, y con OVR 80, lo
+       consigue el 6% — exactamente lo que cuesta El Nano con SU listón. Y el texto gana: nadie ha
+       empezado tan tarde y ha ganado nada, así que levantar uno solo ya responde la pregunta. */
     persona:"VALENTINO",
     at:"2026-08-24T10:00:00Z",
   },
@@ -6993,6 +7000,10 @@ function renderCareerMap(){
   el.classList.toggle("dense", totalYears>12 || longestStint>=9);
   const careerPeak=Math.max(...f1s.map(s=>s.ovr));
   let html=`<h4>${L("🏁 Tu carrera año a año","🏁 Your career year by year",{pt:"🏁 A sua carreira ano a ano"})} <span class="cmpeakbadge">${L("Mejor OVR","Best OVR",{pt:"Melhor OVR"})} ${careerPeak}</span></h4>`;
+  /* 🏁 «Resistencia (WEC)» no cabe en los 118px de la fila y salía cortado como «Resistencia (W…»
+     (lo vio Carlos). Lo de dentro del paréntesis es lo que cambia con la época —Sport Prototipos,
+     Le Mans Series, WEC— así que es lo que merece el sitio. El nombre entero queda en el title. */
+  const cortoAdv = n => { const m=/\(([^)]+)\)/.exec(n||""); return m ? m[1] : n; };
   stints.forEach(st=>{
     const rows=st.rows, y0=rows[0].year, y1=rows[rows.length-1].year, n=rows.length;
     const isTest=st.cat==="TEST", isAdv=st.cat==="ADV";
@@ -7013,9 +7024,9 @@ function renderCareerMap(){
     }).join("");
     html+=`<div class="cmstint">
       <span class="cmmeta">${st.split ? badge(st.team,"cmdot",y0)+badge(st.team2,"cmdot",y0) : badge(st.team,"cmdot",y0)}
-        <span class="cmname">${st.split
+        <span class="cmname" title="${st.split ? teamDisp(st.team, y0)+" → "+teamDisp(st.team2, y0) : teamDisp(st.team, y0)}">${st.split
           ? `${teamDisp(st.team, y0)} → ${teamDisp(st.team2, y0)}`
-          : `${teamDisp(st.team, y0)}${isTest?L(" ·prob"," ·res",{pt:" ·test"}):""}`}</span><span class="cmyears">${yrs}</span></span>
+          : `${(isAdv?cortoAdv(teamDisp(st.team, y0)):teamDisp(st.team, y0))}${isTest?L(" ·prob"," ·res",{pt:" ·test"}):""}`}</span><span class="cmyears">${yrs}</span></span>
       <span class="cmcells">${cells}</span></div>`;
   });
   el.innerHTML=html;
