@@ -5985,7 +5985,7 @@ function simF1(row,st){
   if(pull>0 && S.f1target[myTeam]!=null){
     const before=S.f1target[myTeam];
     S.f1target[myTeam]=Math.min(93, S.f1target[myTeam]+pull);
-    if(S.ovr>=90 && before<80 && ch(.3)) row.events.push(L("🔧 Tu talento reorienta el proyecto: el equipo apunta más alto.","🔧 Your talent reshapes the project: the team aims higher."));
+    if(S.ovr>=90 && before<80 && ch(.3)) row.events.push(L("🔧 Tu talento reorienta el proyecto: el equipo apunta más alto.","🔧 Your talent reshapes the project: the team aims higher.",{pt:"🔧 O seu talento reorienta o projeto: a equipe mira mais alto."}));
   }
   // el campeón de constructores desarrolla con handicap (reglamento) al año siguiente;
   // si además ganas el título de pilotos, todos te apuntan → handicap extra (rompe dinastías)
@@ -6018,63 +6018,63 @@ function maybeEvent(row,st){
 
   // estilo del piloto
   if(corres && sel.style==="tecnico") pool.push(
-    {id:"tec-lluvia",t:L(`🌧️ Masterclass bajo la lluvia en ${gp()} — el paddock habla de ti.`,`🌧️ Wet-weather masterclass at ${gp()} — the paddock is talking about you.`),fx:()=>OVR(1)},
-    {id:"tec-setup",t:L("🧠 Clavas el reglaje que nadie encontró: el coche vuela en clasificación.","🧠 You nail the setup nobody else found: the car flies in qualifying."),fx:()=>OVR(.7)},
-    {id:"tec-datos",t:L(`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,`🔬 Your data reading turns a shaky strategy into a masterstroke at ${gp()}.`),fx:()=>VAL(1.08)}
+    {id:"tec-lluvia",t:L(`🌧️ Masterclass bajo la lluvia en ${gp()} — el paddock habla de ti.`,`🌧️ Wet-weather masterclass at ${gp()} — the paddock is talking about you.`,{pt:`🌧️ Aula de pilotagem na chuva em ${gp()} — o paddock só fala de você.`}),fx:()=>OVR(1)},
+    {id:"tec-setup",t:L("🧠 Clavas el reglaje que nadie encontró: el coche vuela en clasificación.","🧠 You nail the setup nobody else found: the car flies in qualifying.",{pt:"🧠 Você crava o acerto que ninguém achou: o carro voa na classificação."}),fx:()=>OVR(.7)},
+    {id:"tec-datos",t:L(`🔬 Tu lectura de datos convierte una estrategia dudosa en un golazo en ${gp()}.`,`🔬 Your data reading turns a shaky strategy into a masterstroke at ${gp()}.`,{pt:`🔬 A sua leitura dos dados transforma uma estratégia duvidosa num golaço em ${gp()}.`}),fx:()=>VAL(1.08)}
   );
   if(corres && sel.style==="agresivo") pool.push(
-    {id:"agr-toque",t:L("💥 Toque polémico defendiendo posición. Los comisarios te vigilan.","💥 A controversial clash defending position. The stewards are watching you."),fx:()=>{}},
-    {id:"agr-pass",t:L(`🔥 Adelantamiento imposible por fuera en ${gp()} que corta la respiración.`,`🔥 An impossible around-the-outside pass at ${gp()} that takes your breath away.`),fx:()=>VAL(1.1)},
-    {id:"agr-quali",t:L("🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.","🅿️ A wild Q3 lap, inches from the wall: pole by thousandths."),fx:()=>{S.poles++;VAL(1.05);}}
+    {id:"agr-toque",t:L("💥 Toque polémico defendiendo posición. Los comisarios te vigilan.","💥 A controversial clash defending position. The stewards are watching you.",{pt:"💥 Toque polêmico defendendo posição. Os comissários ficam de olho em você."}),fx:()=>{}},
+    {id:"agr-pass",t:L(`🔥 Adelantamiento imposible por fuera en ${gp()} que corta la respiración.`,`🔥 An impossible around-the-outside pass at ${gp()} that takes your breath away.`,{pt:`🔥 Ultrapassagem impossível por fora em ${gp()} de tirar o fôlego.`}),fx:()=>VAL(1.1)},
+    {id:"agr-quali",t:L("🅿️ Vuelta salvaje en la Q3, al límite del muro: pole por milésimas.","🅿️ A wild Q3 lap, inches from the wall: pole by thousandths.",{pt:"🅿️ Volta selvagem no Q3, raspando o muro: pole por milésimos."}),fx:()=>{S.poles++;VAL(1.05);}}
   );
   if(corres && sel.style==="consistente") pool.push(
-    {id:"con-nofail",t:L(`🎯 ${irnd(9,14)} carreras seguidas sin un solo error: el paddock alucina.`,`🎯 ${irnd(9,14)} races in a row without a single mistake: the paddock is stunned.`),fx:()=>OVR(.7)},
-    {id:"con-frio",t:L(`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,`🧊 Ice-cold under pressure on the last lap at ${gp()}.`),fx:()=>VAL(1.08)}
+    {id:"con-nofail",t:L(`🎯 ${irnd(9,14)} carreras seguidas sin un solo error: el paddock alucina.`,`🎯 ${irnd(9,14)} races in a row without a single mistake: the paddock is stunned.`,{pt:`🎯 ${irnd(9,14)} corridas seguidas sem um único erro: o paddock não acredita.`}),fx:()=>OVR(.7)},
+    {id:"con-frio",t:L(`🧊 Frío como el hielo bajo presión en la última vuelta de ${gp()}.`,`🧊 Ice-cold under pressure on the last lap at ${gp()}.`,{pt:`🧊 Frio como gelo sob pressão na última volta de ${gp()}.`}),fx:()=>VAL(1.08)}
   );
 
   if(inF1) pool.push(
-    {id:"f1-dev",t:L("🔧 Lideras el desarrollo del coche: mejoras para el año próximo.","🔧 You lead the car's development: upgrades for next year."),fx:()=>CAR(1.8)},
-    {id:"f1-guerra",t:L(`🤝 Guerra fría con ${rival()} dentro del box.`,`🤝 A cold war with ${rival()} inside the garage.`),fx:()=>{}},
-    {id:"f1-rumor",t:L("📰 La prensa te vincula con un asiento top para el próximo año.","📰 The press links you to a top seat for next year."),fx:()=>{}},
+    {id:"f1-dev",t:L("🔧 Lideras el desarrollo del coche: mejoras para el año próximo.","🔧 You lead the car's development: upgrades for next year.",{pt:"🔧 Você lidera o desenvolvimento do carro: melhorias para o ano que vem."}),fx:()=>CAR(1.8)},
+    {id:"f1-guerra",t:L(`🤝 Guerra fría con ${rival()} dentro del box.`,`🤝 A cold war with ${rival()} inside the garage.`,{pt:`🤝 Guerra fria com ${rival()} dentro do box.`}),fx:()=>{}},
+    {id:"f1-rumor",t:L("📰 La prensa te vincula con un asiento top para el próximo año.","📰 The press links you to a top seat for next year.",{pt:"📰 A imprensa te liga a uma vaga de ponta para o ano que vem."}),fx:()=>{}},
     // «que entra en los documentales» sonaba a gesta histórica en una temporada de 3 puntos, y además
     // los documentales de plataforma no existen antes de 2019. Ahora es lo que es: una buena tarde.
-    {id:"f1-remonta",t:L(`🏁 Remontada desde P${irnd(11,19)} en ${gp()}: de las que se recuerdan al final del año.`,`🏁 A charge from P${irnd(11,19)} at ${gp()}: one of those you remember at the end of the year.`),fx:()=>VAL(1.1)},
+    {id:"f1-remonta",t:L(`🏁 Remontada desde P${irnd(11,19)} en ${gp()}: de las que se recuerdan al final del año.`,`🏁 A charge from P${irnd(11,19)} at ${gp()}: one of those you remember at the end of the year.`,{pt:`🏁 Recuperação desde o P${irnd(11,19)} em ${gp()}: das que se lembram no fim do ano.`}),fx:()=>VAL(1.1)},
     // ⏱️ el PUNTO por vuelta rápida solo existió de 2019 a 2024 (anacronismo cazado por Carlos en 2009)
     {id:"f1-vrapida",t:(yearNow()>=2019&&yearNow()<=2024)
-      ? L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: an extra point and highlight of the day.`)
-      : L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: el highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: the highlight of the day.`),
+      ? L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: punto extra y highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: an extra point and highlight of the day.`,{pt:`⏱️ Volta mais rápida na última volta de ${gp()}: ponto extra e melhor momento do dia.`})
+      : L(`⏱️ Vuelta rápida en la última vuelta de ${gp()}: el highlight del día.`,`⏱️ Fastest lap on the final lap at ${gp()}: the highlight of the day.`,{pt:`⏱️ Volta mais rápida na última volta de ${gp()}: o melhor momento do dia.`}),
      fx:()=>{ if(yearNow()>=2019&&yearNow()<=2024) S.ptsF1++; VAL(1.05); }},
     {id:"f1-viral",t:yearNow()>=2008
-      ? L("🎙️ Tu entrevista post-carrera se vuelve viral en redes.","🎙️ Your post-race interview goes viral online.")
-      : L("🎙️ Tu entrevista post-carrera da la vuelta a la prensa deportiva.","🎙️ Your post-race interview is quoted by the whole sports press."),fx:()=>VAL(1)},
-    {id:"f1-estrat",t:L(`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,`🧊 A one-stop strategy nobody saw coming: you steal ${irnd(2,4)} places at ${gp()}.`),fx:()=>VAL(1.08)},
-    {id:"f1-neumaticos",t:L("🛞 Gestionas unos neumáticos imposibles hasta la bandera a cuadros.","🛞 You nurse impossible tyres all the way to the chequered flag."),fx:()=>OVR(.6)},
-    {id:"f1-elogio",t:L(`💬 Un excampeón te señala como el mejor en pista este fin de semana.`,`💬 A former champion names you the best on track this weekend.`),fx:()=>VAL(1)},
-    {id:"f1-portada",t:L("📸 Portada de la prensa deportiva tras un domingo redondo.","📸 Front page of the sports press after a perfect Sunday."),fx:()=>VAL(1)},
-    {id:"f1-curva1",t:L(`🏎️ Tu adelantamiento por fuera en la curva 1 de ${gp()} da la vuelta al mundo.`,`🏎️ Your around-the-outside move at turn 1 of ${gp()} goes around the world.`),fx:()=>VAL(1)},
-    {id:"f1-fiab",t:L(`🔌 Un fallo de fiabilidad te deja sin puntos en un ${gp()} que dominabas.`,`🔌 A reliability failure leaves you pointless at a ${gp()} you were dominating.`),fx:()=>{}},
-    {id:"f1-sancion",t:L(`🚧 Una sanción de ${pick([5,10])}s discutible te baja del podio en ${gp()}.`,`🚧 A questionable ${pick([5,10])}s penalty drops you off the podium at ${gp()}.`),fx:()=>{}},
+      ? L("🎙️ Tu entrevista post-carrera se vuelve viral en redes.","🎙️ Your post-race interview goes viral online.",{pt:"🎙️ A sua entrevista pós-corrida viraliza nas redes."})
+      : L("🎙️ Tu entrevista post-carrera da la vuelta a la prensa deportiva.","🎙️ Your post-race interview is quoted by the whole sports press.",{pt:"🎙️ A sua entrevista pós-corrida dá a volta na imprensa esportiva."}),fx:()=>VAL(1)},
+    {id:"f1-estrat",t:L(`🧊 Estrategia a una parada que nadie vio venir: robas ${irnd(2,4)} posiciones en ${gp()}.`,`🧊 A one-stop strategy nobody saw coming: you steal ${irnd(2,4)} places at ${gp()}.`,{pt:`🧊 Estratégia de uma parada que ninguém viu chegar: você rouba ${irnd(2,4)} posições em ${gp()}.`}),fx:()=>VAL(1.08)},
+    {id:"f1-neumaticos",t:L("🛞 Gestionas unos neumáticos imposibles hasta la bandera a cuadros.","🛞 You nurse impossible tyres all the way to the chequered flag.",{pt:"🛞 Você administra uns pneus impossíveis até a bandeirada."}),fx:()=>OVR(.6)},
+    {id:"f1-elogio",t:L(`💬 Un excampeón te señala como el mejor en pista este fin de semana.`,`💬 A former champion names you the best on track this weekend.`,{pt:`💬 Um ex-campeão te aponta como o melhor na pista neste fim de semana.`}),fx:()=>VAL(1)},
+    {id:"f1-portada",t:L("📸 Portada de la prensa deportiva tras un domingo redondo.","📸 Front page of the sports press after a perfect Sunday.",{pt:"📸 Capa da imprensa esportiva depois de um domingo perfeito."}),fx:()=>VAL(1)},
+    {id:"f1-curva1",t:L(`🏎️ Tu adelantamiento por fuera en la curva 1 de ${gp()} da la vuelta al mundo.`,`🏎️ Your around-the-outside move at turn 1 of ${gp()} goes around the world.`,{pt:`🏎️ A sua ultrapassagem por fora na curva 1 de ${gp()} dá a volta ao mundo.`}),fx:()=>VAL(1)},
+    {id:"f1-fiab",t:L(`🔌 Un fallo de fiabilidad te deja sin puntos en un ${gp()} que dominabas.`,`🔌 A reliability failure leaves you pointless at a ${gp()} you were dominating.`,{pt:`🔌 Uma falha de confiabilidade te deixa sem pontos num ${gp()} que você dominava.`}),fx:()=>{}},
+    {id:"f1-sancion",t:L(`🚧 Una sanción de ${pick([5,10])}s discutible te baja del podio en ${gp()}.`,`🚧 A questionable ${pick([5,10])}s penalty drops you off the podium at ${gp()}.`,{pt:`🚧 Uma punição discutível de ${pick([5,10])}s te tira do pódio em ${gp()}.`}),fx:()=>{}},
     {id:"f1-radio",t:yearNow()>=2010
-      ? L("🗣️ Tu bronca por radio con el muro se convierte en meme.","🗣️ Your radio rant at the pit wall becomes a meme.")
-      : L("🗣️ Tu bronca con el muro se cuela en la retransmisión y no se habla de otra cosa.","🗣️ Your row with the pit wall makes the broadcast and nobody talks about anything else."),fx:()=>{}}
+      ? L("🗣️ Tu bronca por radio con el muro se convierte en meme.","🗣️ Your radio rant at the pit wall becomes a meme.",{pt:"🗣️ O seu bate-boca no rádio com o muro vira meme."})
+      : L("🗣️ Tu bronca con el muro se cuela en la retransmisión y no se habla de otra cosa.","🗣️ Your row with the pit wall makes the broadcast and nobody talks about anything else.",{pt:"🗣️ O seu bate-boca com o muro entra na transmissão e não se fala de outra coisa."}),fx:()=>{}}
   );
   else if(S.cat!=="TEST") pool.push(
-    {id:"jr-programa",t:L("⭐ Un programa junior de F1 se fija en ti.","⭐ An F1 junior programme takes notice of you."),fx:()=>OVR(1)},
+    {id:"jr-programa",t:L("⭐ Un programa junior de F1 se fija en ti.","⭐ An F1 junior programme takes notice of you.",{pt:"⭐ Um programa júnior de F1 repara em você."}),fx:()=>OVR(1)},
     // 🕰️ en 1992 no hay simulador de verdad: antes de mediados de los 2000 son inviernos de gimnasio y test
     {id:"jr-sim",t:yearNow()>=2005
-      ? L("🛠️ Inviernos enteros en el simulador: progreso silencioso.","🛠️ Whole winters in the simulator: quiet progress.")
-      : L("🛠️ Inviernos enteros de gimnasio y kilómetros de test: progreso silencioso.","🛠️ Whole winters of gym work and testing miles: quiet progress."),fx:()=>OVR(1)},
-    {id:"jr-domina",t:L(`🏆 Dominas el fin de semana de ${gp()} de principio a fin.`,`🏆 You dominate the ${gp()} weekend from start to finish.`),fx:()=>OVR(.8)},
-    {id:"jr-test",t:L("📈 Un test con un equipo superior sale mejor de lo esperado.","📈 A test with a bigger team goes better than expected."),fx:()=>OVR(.8)},
-    {id:"jr-pequeno",t:L("🧰 Tu equipo modesto le saca petróleo al coche: te haces notar.","🧰 Your modest team squeezes everything from the car: you get noticed."),fx:()=>OVR(.6)},
-    {id:"jr-mentor",t:L("🎓 Un veterano del paddock te toma como pupilo.","🎓 A paddock veteran takes you under his wing."),fx:()=>OVR(.8)},
+      ? L("🛠️ Inviernos enteros en el simulador: progreso silencioso.","🛠️ Whole winters in the simulator: quiet progress.",{pt:"🛠️ Invernos inteiros no simulador: progresso silencioso."})
+      : L("🛠️ Inviernos enteros de gimnasio y kilómetros de test: progreso silencioso.","🛠️ Whole winters of gym work and testing miles: quiet progress.",{pt:"🛠️ Invernos inteiros de academia e quilômetros de teste: progresso silencioso."}),fx:()=>OVR(1)},
+    {id:"jr-domina",t:L(`🏆 Dominas el fin de semana de ${gp()} de principio a fin.`,`🏆 You dominate the ${gp()} weekend from start to finish.`,{pt:`🏆 Você domina o fim de semana de ${gp()} do começo ao fim.`}),fx:()=>OVR(.8)},
+    {id:"jr-test",t:L("📈 Un test con un equipo superior sale mejor de lo esperado.","📈 A test with a bigger team goes better than expected.",{pt:"📈 Um teste com uma equipe superior sai melhor do que o esperado."}),fx:()=>OVR(.8)},
+    {id:"jr-pequeno",t:L("🧰 Tu equipo modesto le saca petróleo al coche: te haces notar.","🧰 Your modest team squeezes everything from the car: you get noticed.",{pt:"🧰 A sua equipe modesta tira leite de pedra do carro: você aparece."}),fx:()=>OVR(.6)},
+    {id:"jr-mentor",t:L("🎓 Un veterano del paddock te toma como pupilo.","🎓 A paddock veteran takes you under his wing.",{pt:"🎓 Um veterano do paddock te adota como pupilo."}),fx:()=>OVR(.8)},
     {id:"jr-clip",t:yearNow()>=2008
-      ? L(`📱 Un clip tuyo remontando en ${gp()} se hace viral.`,`📱 A clip of you charging through the field at ${gp()} goes viral.`)
-      : L(`📼 Tu remontada en ${gp()} corre de mano en mano por el paddock.`,`📼 Your charge at ${gp()} gets passed around the paddock on tape.`),fx:()=>VAL(.6)}
+      ? L(`📱 Un clip tuyo remontando en ${gp()} se hace viral.`,`📱 A clip of you charging through the field at ${gp()} goes viral.`,{pt:`📱 Um clipe seu recuperando posições em ${gp()} viraliza.`})
+      : L(`📼 Tu remontada en ${gp()} corre de mano en mano por el paddock.`,`📼 Your charge at ${gp()} gets passed around the paddock on tape.`,{pt:`📼 A sua recuperação em ${gp()} corre de mão em mão pelo paddock.`}),fx:()=>VAL(.6)}
   );
   pool.push(
-    {id:"any-fisico",t:L("🩺 Molestias físicas a mitad de temporada.","🩺 Physical niggles mid-season."),fx:()=>{}},
-    {id:"any-gripe",t:L(`😷 Pasas la carrera de ${gp()} con gripe: aguantas como puedes.`,`😷 You race ${gp()} with the flu: you tough it out.`),fx:()=>{}}
+    {id:"any-fisico",t:L("🩺 Molestias físicas a mitad de temporada.","🩺 Physical niggles mid-season.",{pt:"🩺 Incômodos físicos no meio da temporada."}),fx:()=>{}},
+    {id:"any-gripe",t:L(`😷 Pasas la carrera de ${gp()} con gripe: aguantas como puedes.`,`😷 You race ${gp()} with the flu: you tough it out.`,{pt:`😷 Você faz a corrida de ${gp()} com gripe: aguenta como dá.`}),fx:()=>{}}
   );
 
   const usable=pool.filter(e=>(S.usedEvents[e.id]||0)<2);
@@ -6095,9 +6095,9 @@ function pickN(arr,n){ const c=[...arr],out=[]; while(out.length<n&&c.length) ou
    Tres desenlaces, y el malo es MALO de verdad — si no, no sería una apuesta.                        */
 function esperarTrasQuiebraOption(exEquipo){
   return { special:true, color:"#8a6a10", em:"⏳",
-    name:L("Esperar sin firmar nada","Wait and sign nothing"),
+    name:L("Esperar sin firmar nada","Wait and sign nothing",{pt:"Esperar sem assinar nada"}),
     sub:L("Rechazas lo que hay y confías en que aparezca algo mejor. Sin garantías.",
-          "You turn down what's on the table and trust something better appears. No guarantees."),
+          "You turn down what's on the table and trust something better appears. No guarantees.",{pt:"Você recusa o que tem e aposta que apareça algo melhor. Sem garantias."}),
     onClick:()=>{
       S.esperaQuiebra=true;
       const libres=t=>!S.burned[t.name] && !S.neverHire[t.name] && rbOk(t) && !teamHasFeud(t.name);
@@ -6112,11 +6112,11 @@ function esperarTrasQuiebraOption(exEquipo){
           S.f1perf[t.name]=v; S.f1target[t.name]=v;
           S.cache[t.name]=Math.max(S.cache[t.name]||50, 62);
           S.pendingEvents.push(L(`🕰️ Tu apuesta sale REDONDA: unos inversores rescatan a ${t.name} y el coche que sale del túnel de viento es un misil. Y tú estabas libre.`,
-                                 `🕰️ Your gamble PAYS OFF: investors rescue ${t.name} and the car that comes out of the wind tunnel is a missile. And you were available.`));
-          setDecision(L("⏳ La espera valió la pena","⏳ The wait paid off"),
+                                 `🕰️ Your gamble PAYS OFF: investors rescue ${t.name} and the car that comes out of the wind tunnel is a missile. And you were available.`,{pt:`🕰️ A sua aposta sai PERFEITA: uns investidores resgatam a ${t.name} e o carro que sai do túnel de vento é um míssil. E você estava livre.`}));
+          setDecision(L("⏳ La espera valió la pena","⏳ The wait paid off",{pt:"⏳ A espera valeu a pena"}),
             L(`Meses sin firmar, aguantando las llamadas de tu representante. Y entonces ${t.name} renace con dinero nuevo… y con un coche que nadie esperaba. Te quieren a ti.`,
-              `Months without signing, dodging your agent's calls. And then ${t.name} is reborn with new money… and a car nobody saw coming. And they want you.`), false, true);
-          renderOffers([{team:t, role:"1", note:L("El milagro","The miracle")}], false);
+              `Months without signing, dodging your agent's calls. And then ${t.name} is reborn with new money… and a car nobody saw coming. And they want you.`,{pt:`Meses sem assinar, segurando as ligações do seu empresário. E então a ${t.name} renasce com dinheiro novo… e com um carro que ninguém esperava. E querem você.`}), false, true);
+          renderOffers([{team:t, role:"1", note:L("El milagro","The miracle",{pt:"O milagre"})}], false);
           return;
         }
       }
@@ -6126,22 +6126,22 @@ function esperarTrasQuiebraOption(exEquipo){
         const tomar=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
         const dos=tomar(medios.length?medios:orden.filter(libres),2);
         if(dos.length){
-          S.pendingEvents.push(L("🕰️ La espera no trajo ningún milagro, pero encontraste asiento.","🕰️ The wait brought no miracle, but you found a seat."));
-          setDecision(L("⏳ Sin milagro, pero con volante","⏳ No miracle, but a seat"),
+          S.pendingEvents.push(L("🕰️ La espera no trajo ningún milagro, pero encontraste asiento.","🕰️ The wait brought no miracle, but you found a seat.",{pt:"🕰️ A espera não trouxe milagre nenhum, mas você achou uma vaga."}));
+          setDecision(L("⏳ Sin milagro, pero con volante","⏳ No miracle, but a seat",{pt:"⏳ Sem milagre, mas com volante"}),
             L("El invierno se hace largo y el milagro no llega. A última hora aparece algo: no es lo que soñabas, pero es la Fórmula 1.",
-              "Winter drags on and the miracle never comes. At the last minute something turns up: not what you dreamed of, but it's Formula 1."), false, true);
+              "Winter drags on and the miracle never comes. At the last minute something turns up: not what you dreamed of, but it's Formula 1.",{pt:"O inverno fica longo e o milagre não vem. Na última hora aparece algo: não é o que você sonhava, mas é a Fórmula 1."}), false, true);
           renderOffers(dos.map(t=>({team:t, role:roleFor(t.name)})), false);
           return;
         }
       }
       // ── 3) TE QUEDAS FUERA (25%): el mercado se cierra y solo hay banquillo ──
       S.pendingEvents.push(L("🕰️ Esperaste demasiado: el mercado se cerró y te quedaste sin volante titular.",
-                             "🕰️ You waited too long: the market closed and you were left without a race seat."));
-      setDecision(L("⏳ Te quedaste fuera","⏳ You were left out"),
+                             "🕰️ You waited too long: the market closed and you were left without a race seat.",{pt:"🕰️ Você esperou demais: o mercado fechou e você ficou sem volante de titular."}));
+      setDecision(L("⏳ Te quedaste fuera","⏳ You were left out",{pt:"⏳ Você ficou de fora"}),
         L("Los asientos se fueron llenando uno a uno mientras tú esperabas. Cuando quisiste reaccionar, no quedaba ninguno. Solo el simulador y los viernes.",
-          "The seats filled up one by one while you waited. By the time you reacted, there were none left. Just the simulator and Fridays."), false, true);
+          "The seats filled up one by one while you waited. By the time you reacted, there were none left. Just the simulator and Fridays.",{pt:"As vagas foram sendo preenchidas uma a uma enquanto você esperava. Quando quis reagir, não sobrava nenhuma. Só o simulador e as sextas."}), false, true);
       const tomar3=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
-      const test=tomar3(F1_TEAMS.filter(libres),3).map(t=>({team:{...t,cat:"TEST"}, note:L("Programa de pruebas","Test programme")}));
+      const test=tomar3(F1_TEAMS.filter(libres),3).map(t=>({team:{...t,cat:"TEST"}, note:L("Programa de pruebas","Test programme",{pt:"Programa de testes"})}));
       renderOffers(test, S.age>=31);
     }};
 }
@@ -6175,10 +6175,10 @@ function simAdventure(row){
   } else VAL(0.95); // sin gran resultado, tu foco mediático se enfría un poco
   if(champPos===1){ S.advTitles++; if(!marqueeWin) VAL(1.12); }
   S.appetite=Math.min(3, S.appetite + (key==="lemans"||key==="dakar"?1.2:0.8));
-  const res = marqueeWin ? L(`🏆 ¡GANAS ${serMarquee(key)}!`,`🏆 You WIN ${serMarquee(key)}!`)
-    : champPos===1 ? L(`🥇 ¡Campeón de ${serName(key)}!`,`🥇 ${serName(key)} champion!`)
-    : champPos<=3 ? L(`${champPos}º del campeonato (podio)`,`P${champPos} in the championship (podium)`)
-    : L(`${champPos}º · ${serMarquee(key)}: te quedas sin premio`,`P${champPos} · ${serMarquee(key)}: no silverware`);
+  const res = marqueeWin ? L(`🏆 ¡GANAS ${serMarquee(key)}!`,`🏆 You WIN ${serMarquee(key)}!`,{pt:`🏆 VOCÊ VENCE ${serMarquee(key)}!`})
+    : champPos===1 ? L(`🥇 ¡Campeón de ${serName(key)}!`,`🥇 ${serName(key)} champion!`,{pt:`🥇 Campeão da ${serName(key)}!`})
+    : champPos<=3 ? L(`${champPos}º del campeonato (podio)`,`P${champPos} in the championship (podium)`,{pt:`${champPos}º do campeonato (pódio)`})
+    : L(`${champPos}º · ${serMarquee(key)}: te quedas sin premio`,`P${champPos} · ${serMarquee(key)}: no silverware`,{pt:`${champPos}º · ${serMarquee(key)}: você fica sem prêmio`});
   row.events.push(`${sr.em} ${serName(key)} ${row.year}: ${res}`);
   // ganar Indy/Le Mans avanza (o completa) la Triple Corona → aviso coherente con Mónaco
   if(newCrownLeg){
@@ -6205,12 +6205,12 @@ function returnChance(){
 }
 // 🌏 escape joven: te atascas en la escalera → Super Fórmula/IndyCar/Fórmula E a ganarte la vuelta a la F1
 function youngEscapeOption(){
-  return {special:true, em:"🌏", name:L("Buscarte la vida en otra categoría","Make your name in another series"),
-    sub:L("Super Fórmula, IndyCar o Fórmula E… y ganarte el salto a la F1","Super Formula, IndyCar or Formula E… and earn your leap to F1"),
+  return {special:true, em:"🌏", name:L("Buscarte la vida en otra categoría","Make your name in another series",{pt:"Se virar em outra categoria"}),
+    sub:L("Super Fórmula, IndyCar o Fórmula E… y ganarte el salto a la F1","Super Formula, IndyCar or Formula E… and earn your leap to F1",{pt:"Super Fórmula, IndyCar ou Fórmula E… e conquistar o salto para a F1"}),
     color:"#6d28d9", onClick:()=>chooseYoungSeries()};
 }
 function chooseYoungSeries(){
-  setDecision(L("🌏 Buscarte la vida","🌏 Make your name elsewhere"),L("La escalera a la F1 se te ha atascado. En vez de esperar sentado, te vas a otra categoría a competir de verdad. Brilla —o al menos crece y rueda— y la F1 puede acabar llamándote. Pero es una apuesta: si no cuaja, tu sueño puede quedarse por el camino.","The ladder to F1 has stalled. Instead of waiting around, you head to another series to race for real. Shine —or at least grow and rack up laps— and F1 may end up calling. But it's a gamble: if it doesn't click, your dream may slip away."));
+  setDecision(L("🌏 Buscarte la vida","🌏 Make your name elsewhere",{pt:"🌏 Se virar"}),L("La escalera a la F1 se te ha atascado. En vez de esperar sentado, te vas a otra categoría a competir de verdad. Brilla —o al menos crece y rueda— y la F1 puede acabar llamándote. Pero es una apuesta: si no cuaja, tu sueño puede quedarse por el camino.","The ladder to F1 has stalled. Instead of waiting around, you head to another series to race for real. Shine —or at least grow and rack up laps— and F1 may end up calling. But it's a gamble: if it doesn't click, your dream may slip away.",{pt:"A escada para a F1 travou. Em vez de esperar sentado, você vai para outra categoria competir de verdade. Brilhe —ou pelo menos cresça e rode— e a F1 pode acabar te chamando. Mas é uma aposta: se não pegar, o seu sonho pode ficar pelo caminho."}));
   $("decRecap").style.display="none";
   const young=["superformula","indy","formulae"].filter(serieOK);
   const fav=natAff().series.filter(k=>young.includes(k));
@@ -6230,16 +6230,16 @@ function startYoungDetour(key){
 // callejón sin salida en la escalera: los buenos aún tienen la vía de escape; los demás cuelgan el casco
 function stuckDeadEnd(){
   if(S.ovr>=63 && ch(0.7)){
-    setDecision(L("🚧 La escalera se ha cerrado","🚧 The ladder has closed"),L("Los asientos que te acercan a la F1 ya no llegan. Te queda una bala: irte a otra categoría y ganarte el salto desde fuera… o colgar el casco.","The seats that lead toward F1 aren't coming anymore. One bullet left: head to another series and earn your leap from the outside… or hang up your helmet."));
+    setDecision(L("🚧 La escalera se ha cerrado","🚧 The ladder has closed",{pt:"🚧 A escada se fechou"}),L("Los asientos que te acercan a la F1 ya no llegan. Te queda una bala: irte a otra categoría y ganarte el salto desde fuera… o colgar el casco.","The seats that lead toward F1 aren't coming anymore. One bullet left: head to another series and earn your leap from the outside… or hang up your helmet.",{pt:"As vagas que te aproximam da F1 não vêm mais. Resta uma bala: ir para outra categoria e conquistar o salto de fora… ou pendurar o capacete."}));
     $("decRecap").style.display="none";
     renderSpecialOptions([
-      {special:true, em:"🌏", name:L("Buscarte la vida fuera","Make your name elsewhere"), sub:L("Super Fórmula, IndyCar o Fórmula E","Super Formula, IndyCar or Formula E"), color:"#6d28d9", onClick:()=>chooseYoungSeries()},
-      {special:true, em:"🏁", name:L("Retirarse","Retire",{pt:"Retirar-se"}), sub:L("Se acabó el sueño de la F1","The F1 dream is over"), color:"#71717c", onClick:endCareer}
+      {special:true, em:"🌏", name:L("Buscarte la vida fuera","Make your name elsewhere",{pt:"Se virar lá fora"}), sub:L("Super Fórmula, IndyCar o Fórmula E","Super Formula, IndyCar or Formula E",{pt:"Super Fórmula, IndyCar ou Fórmula E"}), color:"#6d28d9", onClick:()=>chooseYoungSeries()},
+      {special:true, em:"🏁", name:L("Retirarse","Retire",{pt:"Retirar-se"}), sub:L("Se acabó el sueño de la F1","The F1 dream is over",{pt:"Acabou o sonho da F1"}), color:"#71717c", onClick:endCareer}
     ]);
   } else washedOut();
 }
 function chooseAdventureSeries(){
-  setDecision(L("🌎 ¿Dónde te lanzas?","🌎 Where do you go?"),L("Elige tu aventura fuera de la Fórmula 1. Cada mundo es distinto… y ninguna victoria está garantizada.","Choose your adventure outside Formula 1. Each world is different… and no win is guaranteed."));
+  setDecision(L("🌎 ¿Dónde te lanzas?","🌎 Where do you go?",{pt:"🌎 Para onde você se joga?"}),L("Elige tu aventura fuera de la Fórmula 1. Cada mundo es distinto… y ninguna victoria está garantizada.","Choose your adventure outside Formula 1. Each world is different… and no win is guaranteed.",{pt:"Escolha a sua aventura fora da Fórmula 1. Cada mundo é diferente… e nenhuma vitória está garantida."}));
   $("decRecap").style.display="none";
   // máximo 3 series (+ retirarse): semicableado por nacionalidad + azar (no todas de golpe).
   // ⏳ solo series que YA EXISTEN en el año de la partida (la Fórmula E, desde 2014)
@@ -6250,7 +6250,7 @@ function chooseAdventureSeries(){
   const rest=all.filter(k=>!chosen.includes(k));
   while(chosen.length<3 && rest.length) chosen.push(rest.splice(irnd(0,rest.length-1),1)[0]);
   const opts=chosen.map(k=>{ const s=SERIES[k]; return {special:true, em:s.em, name:serName(k),
-    sub:serSub(k)+(s.triple?L(" · 👑 Triple Corona"," · 👑 Triple Crown"):""), color:s.col, onClick:()=>startAdventure(k)}; });
+    sub:serSub(k)+(s.triple?L(" · 👑 Triple Corona"," · 👑 Triple Crown",{pt:" · 👑 Tríplice Coroa"}):""), color:s.col, onClick:()=>startAdventure(k)}; });
   opts.push({special:true, em:"🏁", name:L("Retirarse","Retire",{pt:"Retirar-se"}), sub:L("Colgar el casco","Hang up your helmet",{pt:"Pendurar o capacete"}), color:"#71717c", onClick:endCareer});
   renderSpecialOptions(opts);
 }
@@ -6271,17 +6271,17 @@ function advOffers(){
   // titular con el resultado del año, para que NO pase desapercibido (título, victoria mítica…)
   const last=S.seasons.at(-1), ar=last&&last.advResult;
   let resTxt="";
-  if(ar){ resTxt = ar.win ? L(`🏆 ¡Ganaste ${serMarquee(S.advSeries)}!`,`🏆 You won ${serMarquee(S.advSeries)}!`)
-        : ar.champPos===1 ? L(`🥇 ¡Campeón de ${nm}!`,`🥇 ${nm} champion!`)
-        : ar.champPos<=3 ? L(`🥉 ${ar.champPos}º del campeonato`,`🥉 P${ar.champPos} in the championship`)
-        : L(`${ar.champPos}º del campeonato`,`P${ar.champPos} in the championship`); }
-  setDecision(`${sr.em} `+(resTxt||L("Tu vida fuera de la F1","Your life outside F1")), `${nm} ${yearNow()-1} · `+L("¿Y ahora qué?","What now?"));
+  if(ar){ resTxt = ar.win ? L(`🏆 ¡Ganaste ${serMarquee(S.advSeries)}!`,`🏆 You won ${serMarquee(S.advSeries)}!`,{pt:`🏆 Você venceu ${serMarquee(S.advSeries)}!`})
+        : ar.champPos===1 ? L(`🥇 ¡Campeón de ${nm}!`,`🥇 ${nm} champion!`,{pt:`🥇 Campeão da ${nm}!`})
+        : ar.champPos<=3 ? L(`🥉 ${ar.champPos}º del campeonato`,`🥉 P${ar.champPos} in the championship`,{pt:`🥉 ${ar.champPos}º do campeonato`})
+        : L(`${ar.champPos}º del campeonato`,`P${ar.champPos} in the championship`,{pt:`${ar.champPos}º do campeonato`}); }
+  setDecision(`${sr.em} `+(resTxt||L("Tu vida fuera de la F1","Your life outside F1",{pt:"A sua vida fora da F1"})), `${nm} ${yearNow()-1} · `+L("¿Y ahora qué?","What now?",{pt:"E agora?"}));
   const first = S.youngDetour && (S.f1Seasons||0)===0; // aún no ha pisado la F1: es un SALTO, no un regreso
   const opts=[
-    {special:true, em:sr.em, name:L("Seguir en ","Stay in ")+nm, sub: first?L("Otro año para ganarte la F1","Another year to earn your F1 shot"):L("Otra temporada de aventura","Another adventure season"), color:sr.col, onClick:()=>startSeasonRun()},
-    {special:true, em:"🔙", name: first?L("Dar el salto a la F1","Make the leap to F1"):L("Intentar volver a la F1","Try to return to F1"), sub: back>=.6?L("Los equipos te tienen en el radar","Teams have you on their radar"):back>=.3?L("Habrá que convencer a alguien","You'll have to convince someone"): first?L("Difícil aún: sigue creciendo y dando la cara","Tough still: keep growing and showing up"):L("Difícil: llevas tiempo fuera y algo oxidado","Tough: you've been away a while and a bit rusty"), color:"#e10600", onClick:()=>attemptReturn()},
+    {special:true, em:sr.em, name:L("Seguir en ","Stay in ",{pt:"Continuar na "})+nm, sub: first?L("Otro año para ganarte la F1","Another year to earn your F1 shot",{pt:"Mais um ano para conquistar a F1"}):L("Otra temporada de aventura","Another adventure season",{pt:"Mais uma temporada de aventura"}), color:sr.col, onClick:()=>startSeasonRun()},
+    {special:true, em:"🔙", name: first?L("Dar el salto a la F1","Make the leap to F1",{pt:"Dar o salto para a F1"}):L("Intentar volver a la F1","Try to return to F1",{pt:"Tentar voltar para a F1"}), sub: back>=.6?L("Los equipos te tienen en el radar","Teams have you on their radar",{pt:"As equipes têm você no radar"}):back>=.3?L("Habrá que convencer a alguien","You'll have to convince someone",{pt:"Vai ser preciso convencer alguém"}): first?L("Difícil aún: sigue creciendo y dando la cara","Tough still: keep growing and showing up",{pt:"Ainda difícil: continue crescendo e dando a cara"}):L("Difícil: llevas tiempo fuera y algo oxidado","Tough: you've been away a while and a bit rusty",{pt:"Difícil: você está fora há tempo e meio enferrujado"}), color:"#e10600", onClick:()=>attemptReturn()},
   ];
-  if(S.appetite>=1) opts.push({special:true, em:"🌎", name:L("Probar otra competición","Try another series"), sub:L("El gusanillo aventurero","The adventurer's itch"), color:"#6d28d9", onClick:()=>chooseAdventureSeries()});
+  if(S.appetite>=1) opts.push({special:true, em:"🌎", name:L("Probar otra competición","Try another series",{pt:"Testar outra competição"}), sub:L("El gusanillo aventurero","The adventurer's itch",{pt:"A vontade de aventura"}), color:"#6d28d9", onClick:()=>chooseAdventureSeries()});
   opts.push({special:true, em:"🏁", name:L("Retirarse","Retire",{pt:"Retirar-se"}), sub:L("Colgar el casco como aventurero","Hang up your helmet as an adventurer",{pt:"Pendurar o capacete como aventureiro"}), color:"#71717c", onClick:endCareer});
   renderSpecialOptions(opts);
 }
@@ -6289,10 +6289,10 @@ function attemptReturn(){
   if(ch(returnChance())){ returnF1Offers(); }
   else {
     renderRecap();
-    setDecision(L("La F1 no llama… todavía","F1 isn't calling… yet"),L("Ningún equipo te ofrece asiento este año. Sigues tu aventura o cuelgas el casco.","No team offers you a seat this year. Continue your adventure or hang up your helmet."));
+    setDecision(L("La F1 no llama… todavía","F1 isn't calling… yet",{pt:"A F1 não chama… ainda"}),L("Ningún equipo te ofrece asiento este año. Sigues tu aventura o cuelgas el casco.","No team offers you a seat this year. Continue your adventure or hang up your helmet.",{pt:"Nenhuma equipe te oferece vaga este ano. Você segue a sua aventura ou pendura o capacete."}));
     renderSpecialOptions([
-      {special:true, em:SERIES[S.advSeries].em, name:L("Seguir en ","Stay in ")+serName(S.advSeries), sub:L("Otra temporada","Another season"), color:SERIES[S.advSeries].col, onClick:()=>startSeasonRun()},
-      {special:true, em:"🏁", name:L("Retirarse","Retire",{pt:"Retirar-se"}), sub:L("Fin del viaje","End of the journey"), color:"#71717c", onClick:endCareer}
+      {special:true, em:SERIES[S.advSeries].em, name:L("Seguir en ","Stay in ",{pt:"Continuar na "})+serName(S.advSeries), sub:L("Otra temporada","Another season",{pt:"Mais uma temporada"}), color:SERIES[S.advSeries].col, onClick:()=>startSeasonRun()},
+      {special:true, em:"🏁", name:L("Retirarse","Retire",{pt:"Retirar-se"}), sub:L("Fin del viaje","End of the journey",{pt:"Fim da viagem"}), color:"#71717c", onClick:endCareer}
     ]);
   }
 }
@@ -6304,9 +6304,9 @@ function returnF1Offers(){
   if(!cands.length) cands=sorted.filter(t=>!S.neverHire[t.name]).slice(-4);
   const o=[]; pickN(cands,Math.min(3,cands.length)).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
   const leap = S.youngDetour && (S.f1Seasons||0)===0;
-  setDecision(leap?L("🏎️ ¡La F1 te abre la puerta!","🏎️ F1 opens the door!"):L("🔙 ¡De vuelta en la Fórmula 1!","🔙 Back in Formula 1!"),
-    leap?L("Tu grind fuera de la escalera dio fruto: un equipo apuesta por ti para dar el salto. Elige tu debut:","Your grind outside the ladder paid off: a team bets on you for the leap. Choose your debut:")
-        :L("Un equipo apuesta por tu experiencia y tu tirón mediático. Elige tu regreso:","A team bets on your experience and star power. Choose your comeback:"));
+  setDecision(leap?L("🏎️ ¡La F1 te abre la puerta!","🏎️ F1 opens the door!",{pt:"🏎️ A F1 te abre a porta!"}):L("🔙 ¡De vuelta en la Fórmula 1!","🔙 Back in Formula 1!",{pt:"🔙 De volta à Fórmula 1!"}),
+    leap?L("Tu grind fuera de la escalera dio fruto: un equipo apuesta por ti para dar el salto. Elige tu debut:","Your grind outside the ladder paid off: a team bets on you for the leap. Choose your debut:",{pt:"A sua batalha fora da escada deu fruto: uma equipe aposta em você para dar o salto. Escolha a sua estreia:"})
+        :L("Un equipo apuesta por tu experiencia y tu tirón mediático. Elige tu regreso:","A team bets on your experience and star power. Choose your comeback:",{pt:"Uma equipe aposta na sua experiência e no seu apelo de mídia. Escolha a sua volta:"}));
   $("decRecap").style.display="none";
   renderOffers(o,false);
 }
@@ -6336,9 +6336,9 @@ function nextOffers(){
   if(S.lockTeam && !S.forceMove && !S.retired){
     const t=F1_TEAMS.find(x=>x.name===S.lockTeam); S.lockTeam=null;
     if(t){
-      setDecision(L("Contrato cerrado","Contract settled"),
+      setDecision(L("Contrato cerrado","Contract settled",{pt:"Contrato fechado"}),
         L(`Lo de este verano ya está firmado: tu sitio para el año que viene es ${t.name}. Este invierno no hay nada que negociar.`,
-          `This summer's business is done: your seat for next year is ${t.name}. There's nothing to negotiate this winter.`));
+          `This summer's business is done: your seat for next year is ${t.name}. There's nothing to negotiate this winter.`,{pt:`O deste verão já está assinado: o seu lugar para o ano que vem é a ${t.name}. Neste inverno não há nada a negociar.`}));
       $("decRecap").style.display="none";
       renderOffers([{team:t, role:roleFor(t.name), note:["✍️ Lo firmado en verano","✍️ Signed back in the summer"]}], false);
       scrollToDecision(); return;
@@ -6361,107 +6361,107 @@ function nextOffers(){
   // años ya disputados en la categoría actual + si ya la ganaste (para la opción "quédate a por el título")
   const yrsHere=(()=>{let n=0;for(let i=S.seasons.length-1;i>=0;i--){if(S.seasons[i].cat===S.cat)n++;else break;}return n;})();
   const wonHere=(S.cat==="F4"&&S.titles.f4>0)||(S.cat==="F3"&&S.titles.f3>0)||(S.cat==="FR"&&S.titles.fr>0)||(S.cat==="F2"&&S.titles.f2>0);
-  const stayOffer=(poolPk,catPk)=>{ const t=juniorOffers(poolPk,catPk)[0]; t.note=L("Quédate un año más: ve a por el título","Stay one more year: go for the title"); return t; };
+  const stayOffer=(poolPk,catPk)=>{ const t=juniorOffers(poolPk,catPk)[0]; t.note=L("Quédate un año más: ve a por el título","Stay one more year: go for the title",{pt:"Fique mais um ano: vá atrás do título"}); return t; };
 
   if(S.cat==="KART"){
     if(S.age<17){
-      title=L("Un año más de karting","One more year in karting");
-      sub=L("Aún eres muy joven para los monoplazas. Sigue puliendo tu talento en los karts.","You're still too young for single-seaters. Keep polishing your talent in karts.");
+      title=L("Un año más de karting","One more year in karting",{pt:"Mais um ano de kart"});
+      sub=L("Aún eres muy joven para los monoplazas. Sigue puliendo tu talento en los karts.","You're still too young for single-seaters. Keep polishing your talent in karts.",{pt:"Você ainda é muito novo para os monopostos. Continue lapidando o seu talento no kart."});
       juniorOffers(KART_TEAMS,"KART").forEach(x=>o.push(x));
     } else {
-      title=L(`Primer coche: la ${catName("F4")}`,`First car: ${catName("F4")}`);
-      sub=L(`Dejas los karts. La ${catName("F4")} es tu primer monoplaza: ¿proyecto ganador o programa de desarrollo?`,`You leave karting behind. ${catName("F4")} is your first single-seater: winning project or development programme?`);
+      title=L(`Primer coche: la ${catName("F4")}`,`First car: ${catName("F4")}`,{pt:`Primeiro carro: a ${catName("F4")}`});
+      sub=L(`Dejas los karts. La ${catName("F4")} es tu primer monoplaza: ¿proyecto ganador o programa de desarrollo?`,`You leave karting behind. ${catName("F4")} is your first single-seater: winning project or development programme?`,{pt:`Você deixa o kart. A ${catName("F4")} é o seu primeiro monoposto: projeto vencedor ou programa de desenvolvimento?`});
       juniorOffers(F4_TEAMS,"F4").forEach(x=>o.push(x));
     }
   }
   else if(S.cat==="F4"){
     if(S.ovr>=66 && lastPos<=3){
       const C4=catName("F4"), C3=catName("F3"), C2=catName("F2");
-      const dom = lastPos===1 ? L(`Arrasas en la ${C4} como campeón`,`You dominate ${C4} as champion`) : L(`Acabas ${lastPos}º en la ${C4}, entre los mejores`,`You finish P${lastPos} in ${C4}, among the best`);
-      title=L(`🌟 ¡Tan bueno que te saltas la ${C3}!`,`🌟 So good you skip ${C3}!`);
-      sub=L(`${dom}. Un equipo de ${C2} te ficha directo, saltándote la ${C3} — o puedes hacer la ${C3} y llegar más rodado. Tú decides.`,`${dom}. A ${C2} team signs you straight away, skipping ${C3} — or you can do ${C3} and arrive more seasoned. You decide.`);
-      juniorOffers(F2_TEAMS,"F2").slice(0,2).forEach(x=>{ x.note=L(`Salto directo, te saltas la ${C3}`,`Direct jump, skipping ${C3}`); o.push(x); });
-      juniorOffers(F3_TEAMS,"F3").slice(0,1).forEach(x=>{ x.note=L(`Hacer ${C3}, más rodaje`,`Do ${C3}, more mileage`); o.push(x); });
+      const dom = lastPos===1 ? L(`Arrasas en la ${C4} como campeón`,`You dominate ${C4} as champion`,{pt:`Você arrasa na ${C4} como campeão`}) : L(`Acabas ${lastPos}º en la ${C4}, entre los mejores`,`You finish P${lastPos} in ${C4}, among the best`,{pt:`Você termina em ${lastPos}º na ${C4}, entre os melhores`});
+      title=L(`🌟 ¡Tan bueno que te saltas la ${C3}!`,`🌟 So good you skip ${C3}!`,{pt:`🌟 Tão bom que você pula a ${C3}!`});
+      sub=L(`${dom}. Un equipo de ${C2} te ficha directo, saltándote la ${C3} — o puedes hacer la ${C3} y llegar más rodado. Tú decides.`,`${dom}. A ${C2} team signs you straight away, skipping ${C3} — or you can do ${C3} and arrive more seasoned. You decide.`,{pt:`${dom}. Uma equipe da ${C2} te contrata direto, pulando a ${C3} — ou você pode fazer a ${C3} e chegar mais rodado. Você decide.`});
+      juniorOffers(F2_TEAMS,"F2").slice(0,2).forEach(x=>{ x.note=L(`Salto directo, te saltas la ${C3}`,`Direct jump, skipping ${C3}`,{pt:`Salto direto, você pula a ${C3}`}); o.push(x); });
+      juniorOffers(F3_TEAMS,"F3").slice(0,1).forEach(x=>{ x.note=L(`Hacer ${C3}, más rodaje`,`Do ${C3}, more mileage`,{pt:`Fazer a ${C3}, mais rodagem`}); o.push(x); });
     } else if(S.ovr>=56||S.titles.f4>0){
       const C4=catName("F4"), C3=catName("F3"), C2=catName("F2"), CR=catName("FR");
-      title=L(`El tercer escalón: ${C3} o ${CR}`,`The third rung: ${C3} or ${CR}`);
-      sub=(lastPos<=5?L(`Buen año en la ${C4}. `,`Good year in ${C4}. `):L(`Tu nivel ya pide más que la ${C4}. `,`You've outgrown ${C4}. `))+L(`Eliges cómo subir: la ${C3} (más prestigio y nivel) o la ${CR} (más rodaje, menos presión). Las dos suben a la ${C2}.`,`You choose how to step up: ${C3} (more prestige and level) or ${CR} (more track time, less pressure). Both lead to ${C2}.`);
+      title=L(`El tercer escalón: ${C3} o ${CR}`,`The third rung: ${C3} or ${CR}`,{pt:`O terceiro degrau: ${C3} ou ${CR}`});
+      sub=(lastPos<=5?L(`Buen año en la ${C4}. `,`Good year in ${C4}. `,{pt:`Bom ano na ${C4}. `}):L(`Tu nivel ya pide más que la ${C4}. `,`You've outgrown ${C4}. `,{pt:`O seu nível já pede mais do que a ${C4}. `}))+L(`Eliges cómo subir: la ${C3} (más prestigio y nivel) o la ${CR} (más rodaje, menos presión). Las dos suben a la ${C2}.`,`You choose how to step up: ${C3} (more prestige and level) or ${CR} (more track time, less pressure). Both lead to ${C2}.`,{pt:`Você escolhe como subir: a ${C3} (mais prestígio e nível) ou a ${CR} (mais rodagem, menos pressão). As duas levam à ${C2}.`});
       const stayOK4 = yrsHere<2 && !wonHere && S.age<=19;
       juniorOffers(F3_TEAMS,"F3").slice(0, stayOK4?1:2).forEach(x=>o.push(x));
-      juniorOffers(FRECA_TEAMS,"FR").slice(0,1).forEach(x=>{ x.note=L(`${CR}: desarrollo, menos presión`,`${CR}: development, less pressure`); o.push(x); });
-      if(stayOK4){ o.push(stayOffer(F4_TEAMS,"F4")); sub+=L(` O quédate un año más en la ${C4} a por el título.`,` Or stay one more year in ${C4} to go for the title.`); }
+      juniorOffers(FRECA_TEAMS,"FR").slice(0,1).forEach(x=>{ x.note=L(`${CR}: desarrollo, menos presión`,`${CR}: development, less pressure`,{pt:`${CR}: desenvolvimento, menos pressão`}); o.push(x); });
+      if(stayOK4){ o.push(stayOffer(F4_TEAMS,"F4")); sub+=L(` O quédate un año más en la ${C4} a por el título.`,` Or stay one more year in ${C4} to go for the title.`,{pt:` Ou fique mais um ano na ${C4} atrás do título.`}); }
     } else if(S.age>=21){ washedOut(); return; }
     else {
-      title=L(`Otro año en la ${catName("F4")}`,`Another year in ${catName("F4")}`);
-      sub=L(`Todavía verde. Necesitas crecer antes de dar el salto a la ${catName("F3")}.`,`Still raw. You need to grow before jumping to ${catName("F3")}.`);
+      title=L(`Otro año en la ${catName("F4")}`,`Another year in ${catName("F4")}`,{pt:`Mais um ano na ${catName("F4")}`});
+      sub=L(`Todavía verde. Necesitas crecer antes de dar el salto a la ${catName("F3")}.`,`Still raw. You need to grow before jumping to ${catName("F3")}.`,{pt:`Ainda verde. Você precisa crescer antes de dar o salto para a ${catName("F3")}.`});
       juniorOffers(F4_TEAMS,"F4").forEach(x=>o.push(x));
     }
   }
   else if(S.cat==="F3"){
     if(S.ovr>=71 && lastPos<=3){
       const C3=catName("F3"), C2=catName("F2");
-      const dom = lastPos===1 ? L(`Ganas la ${C3} y tu progresión es de otro planeta`,`You win ${C3} and your progression is out of this world`) : L(`Acabas ${lastPos}º en la ${C3} con una progresión de otro planeta`,`You finish P${lastPos} in ${C3} with out-of-this-world progression`);
-      title=L(`🌟 ¡La Fórmula 1 llama sin pasar por la ${C2}!`,`🌟 Formula 1 calls, skipping ${C2}!`);
-      sub=L(`${dom}. Un equipo de F1 te ficha directo — o puedes esperar un año en la ${C2} y llegar más completo. Tú decides.`,`${dom}. An F1 team signs you straight away — or you can wait a year in ${C2} and arrive more complete. You decide.`);
+      const dom = lastPos===1 ? L(`Ganas la ${C3} y tu progresión es de otro planeta`,`You win ${C3} and your progression is out of this world`,{pt:`Você vence a ${C3} e a sua evolução é de outro planeta`}) : L(`Acabas ${lastPos}º en la ${C3} con una progresión de otro planeta`,`You finish P${lastPos} in ${C3} with out-of-this-world progression`,{pt:`Você termina em ${lastPos}º na ${C3} com uma evolução de outro planeta`});
+      title=L(`🌟 ¡La Fórmula 1 llama sin pasar por la ${C2}!`,`🌟 Formula 1 calls, skipping ${C2}!`,{pt:`🌟 A Fórmula 1 chama sem passar pela ${C2}!`});
+      sub=L(`${dom}. Un equipo de F1 te ficha directo — o puedes esperar un año en la ${C2} y llegar más completo. Tú decides.`,`${dom}. An F1 team signs you straight away — or you can wait a year in ${C2} and arrive more complete. You decide.`,{pt:`${dom}. Uma equipe de F1 te contrata direto — ou você pode esperar um ano na ${C2} e chegar mais completo. Você decide.`});
       const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]);
       pick(sorted.slice(2,9),2).forEach(t=>o.push({team:t, role:roleFor(t.name), note:["Salto directo, llegas verde","Direct jump, you arrive raw"]}));
       patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio TAMBIÉN por esta vía
-      juniorOffers(F2_TEAMS,"F2").slice(0,1).forEach(x=>{ x.note=L("Esperar y llegar más fuerte","Wait and arrive stronger"); o.push(x); });
+      juniorOffers(F2_TEAMS,"F2").slice(0,1).forEach(x=>{ x.note=L("Esperar y llegar más fuerte","Wait and arrive stronger",{pt:"Esperar e chegar mais forte"}); o.push(x); });
     } else if(S.ovr>=66||S.titles.f3>0){
-      title=L(`Llaman de la ${catName("F2")}`,`${catName("F2")} comes calling`);
-      sub=L("La antesala de la F1. Un buen año aquí y los jefes de equipo sabrán tu nombre.","The antechamber to F1. A good year here and the team bosses will know your name.");
+      title=L(`Llaman de la ${catName("F2")}`,`${catName("F2")} comes calling`,{pt:`A ${catName("F2")} chama`});
+      sub=L("La antesala de la F1. Un buen año aquí y los jefes de equipo sabrán tu nombre.","The antechamber to F1. A good year here and the team bosses will know your name.",{pt:"A antessala da F1. Um bom ano aqui e os chefes de equipe vão saber o seu nome."});
       const stayOK3 = yrsHere<2 && !wonHere && S.age<=22;
       juniorOffers(F2_TEAMS,"F2").slice(0, stayOK3?2:3).forEach(x=>o.push(x));
-      if(stayOK3){ o.push(stayOffer(F3_TEAMS,"F3")); sub+=L(` O quédate un año más en la ${catName("F3")} a por el título.`,` Or stay one more year in ${catName("F3")} to go for the title.`); }
+      if(stayOK3){ o.push(stayOffer(F3_TEAMS,"F3")); sub+=L(` O quédate un año más en la ${catName("F3")} a por el título.`,` Or stay one more year in ${catName("F3")} to go for the title.`,{pt:` Ou fique mais um ano na ${catName("F3")} atrás do título.`}); }
     } else if(S.age>=24){ stuckDeadEnd(); return; }
     else {
-      title=L(`Otro año en la ${catName("F3")}`,`Another year in ${catName("F3")}`);
-      sub=L("Aún no es suficiente. Necesitas crecer para subir.","Not enough yet. You need to grow to move up.");
+      title=L(`Otro año en la ${catName("F3")}`,`Another year in ${catName("F3")}`,{pt:`Mais um ano na ${catName("F3")}`});
+      sub=L("Aún no es suficiente. Necesitas crecer para subir.","Not enough yet. You need to grow to move up.",{pt:"Ainda não é suficiente. Você precisa crescer para subir."});
       juniorOffers(F3_TEAMS,"F3").forEach(x=>o.push(x));
-      if(S.age>=20&&ch(.4)){ o.push(youngEscapeOption()); sub+=L(" O prueba suerte en otra categoría y gánate el salto a la F1."," Or try another series and earn your leap to F1."); }
+      if(S.age>=20&&ch(.4)){ o.push(youngEscapeOption()); sub+=L(" O prueba suerte en otra categoría y gánate el salto a la F1."," Or try another series and earn your leap to F1.",{pt:" Ou tente a sorte em outra categoria e conquiste o salto para a F1."}); }
     }
   }
   else if(S.cat==="FR"){ // Fórmula Regional: sube a F2 (sin salto directo a F1 — eso es exclusivo de la F3)
     if(S.ovr>=66||S.titles.fr>0){
       const CR=catName("FR"), C2=catName("F2");
-      title=L(`Llaman de la ${C2}`,`${C2} comes calling`);
-      sub=L(`La ${CR} te ha curtido. La ${C2} es la antesala de la F1.`,`${CR} has seasoned you. ${C2} is the antechamber to F1.`);
+      title=L(`Llaman de la ${C2}`,`${C2} comes calling`,{pt:`A ${C2} chama`});
+      sub=L(`La ${CR} te ha curtido. La ${C2} es la antesala de la F1.`,`${CR} has seasoned you. ${C2} is the antechamber to F1.`,{pt:`A ${CR} te calejou. A ${C2} é a antessala da F1.`});
       const stayOKfr = yrsHere<2 && !wonHere && S.age<=22;
       juniorOffers(F2_TEAMS,"F2").slice(0, stayOKfr?2:3).forEach(x=>o.push(x));
-      if(stayOKfr){ o.push(stayOffer(FRECA_TEAMS,"FR")); sub+=L(` O quédate un año más en la ${CR} a por el título.`,` Or stay one more year in ${CR} to go for the title.`); }
+      if(stayOKfr){ o.push(stayOffer(FRECA_TEAMS,"FR")); sub+=L(` O quédate un año más en la ${CR} a por el título.`,` Or stay one more year in ${CR} to go for the title.`,{pt:` Ou fique mais um ano na ${CR} atrás do título.`}); }
     } else if(S.age>=24){ stuckDeadEnd(); return; }
     else {
-      title=L(`Otro año en la ${catName("FR")}`,`Another year in ${catName("FR")}`);
-      sub=L("Aún no es suficiente. Necesitas crecer para subir.","Not enough yet. You need to grow to move up.");
+      title=L(`Otro año en la ${catName("FR")}`,`Another year in ${catName("FR")}`,{pt:`Mais um ano na ${catName("FR")}`});
+      sub=L("Aún no es suficiente. Necesitas crecer para subir.","Not enough yet. You need to grow to move up.",{pt:"Ainda não é suficiente. Você precisa crescer para subir."});
       juniorOffers(FRECA_TEAMS,"FR").forEach(x=>o.push(x));
-      if(S.age>=20&&ch(.4)){ o.push(youngEscapeOption()); sub+=L(" O prueba suerte en otra categoría y gánate el salto a la F1."," Or try another series and earn your leap to F1."); }
+      if(S.age>=20&&ch(.4)){ o.push(youngEscapeOption()); sub+=L(" O prueba suerte en otra categoría y gánate el salto a la F1."," Or try another series and earn your leap to F1.",{pt:" Ou tente a sorte em outra categoria e conquiste o salto para a F1."}); }
     }
   }
   else if(S.cat==="F2"){
     const sorted=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]);
     if(S.titles.f2>0 && S.ovr>=76){
-      title=L("🏎️ ¡Asiento titular en FÓRMULA 1!","🏎️ A race seat in FORMULA 1!");
-      sub=L(`Campeón de la ${catName("F2")} y listo. Saltas directo a la parrilla, sin pasar por el banquillo.`,`${catName("F2")} champion and ready. You jump straight to the grid, no reserve bench.`);
+      title=L("🏎️ ¡Asiento titular en FÓRMULA 1!","🏎️ A race seat in FORMULA 1!",{pt:"🏎️ Vaga de titular na FÓRMULA 1!"});
+      sub=L(`Campeón de la ${catName("F2")} y listo. Saltas directo a la parrilla, sin pasar por el banquillo.`,`${catName("F2")} champion and ready. You jump straight to the grid, no reserve bench.`,{pt:`Campeão da ${catName("F2")} e pronto. Você salta direto para o grid, sem passar pelo banco.`});
       // pedigrí: cuanto más ganaste en juniors, MEJORES equipos te abren la puerta (sorted = peor→mejor)
       const ped=juniorPedigree();
       const lo = ped>=5?4 : ped>=4?2 : 0;
       const hi = ped>=5?11 : ped>=4?8 : 6;
-      if(ped>=4) sub+=L(` Tu palmarés (${pedigreeLabel()}) te abre las puertas de los mejores.`,` Your record (${pedigreeLabel()}) opens the doors of the best.`);
+      if(ped>=4) sub+=L(` Tu palmarés (${pedigreeLabel()}) te abre las puertas de los mejores.`,` Your record (${pedigreeLabel()}) opens the doors of the best.`,{pt:` Os seus títulos (${pedigreeLabel()}) te abrem as portas dos melhores.`});
       pick(sorted.slice(lo,hi),nOffers()).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio
     } else if(S.ovr>=72){
-      title=L("El banquillo de la F1","The F1 reserve bench");
-      sub=L(`Nadie te da un volante titular aún, pero en la Fórmula 1 te quieren de piloto probador: FP1, ${yearNow()>=2005?"simulador":"test privados"} y paciencia.`,`No race seat yet, but Formula 1 wants you as a reserve driver: FP1, ${yearNow()>=2005?"simulator":"private testing"} and patience.`);
+      title=L("El banquillo de la F1","The F1 reserve bench",{pt:"O banco da F1"});
+      sub=L(`Nadie te da un volante titular aún, pero en la Fórmula 1 te quieren de piloto probador: FP1, ${yearNow()>=2005?"simulador":"test privados"} y paciencia.`,`No race seat yet, but Formula 1 wants you as a reserve driver: FP1, ${yearNow()>=2005?"simulator":"private testing"} and patience.`,{pt:`Ninguém te dá um volante de titular ainda, mas na Fórmula 1 te querem como piloto de testes: TL1, ${yearNow()>=2005?"simulador":"testes privados"} e paciência.`});
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
       pick(F1_TEAMS, Math.min(stayOK2?2:3, Math.max(1,nOffers()))).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       patronDoor(o, false);  // 📜 aquí el padrino te da el banquillo, que es lo que prometió
-      if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(` O quédate un año más en la ${catName("F2")} a por el título.`,` Or stay one more year in ${catName("F2")} to go for the title.`); }
+      if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(` O quédate un año más en la ${catName("F2")} a por el título.`,` Or stay one more year in ${catName("F2")} to go for the title.`,{pt:` Ou fique mais um ano na ${catName("F2")} atrás do título.`}); }
     } else if(S.age>=26){ stuckDeadEnd(); return; }
     else {
-      title=L(`Otro año en la ${catName("F2")}`,`Another year in ${catName("F2")}`);
-      sub=L("Los asientos de F1 no llegan todavía. ¿Coche ganador o seguir desarrollándote?","The F1 seats aren't coming yet. Winning car or keep developing?");
+      title=L(`Otro año en la ${catName("F2")}`,`Another year in ${catName("F2")}`,{pt:`Mais um ano na ${catName("F2")}`});
+      sub=L("Los asientos de F1 no llegan todavía. ¿Coche ganador o seguir desarrollándote?","The F1 seats aren't coming yet. Winning car or keep developing?",{pt:"As vagas de F1 ainda não vêm. Carro vencedor ou continuar se desenvolvendo?"});
       juniorOffers(F2_TEAMS,"F2").forEach(x=>o.push(x));
-      if(S.age>=21&&ch(.5)){ o.push(youngEscapeOption()); sub+=L(" O da el salto a otra categoría (Super Fórmula, IndyCar, FE) y gánate la F1 desde fuera."," Or leap to another series (Super Formula, IndyCar, FE) and earn F1 from the outside."); }
+      if(S.age>=21&&ch(.5)){ o.push(youngEscapeOption()); sub+=L(" O da el salto a otra categoría (Super Fórmula, IndyCar, FE) y gánate la F1 desde fuera."," Or leap to another series (Super Formula, IndyCar, FE) and earn F1 from the outside.",{pt:" Ou dê o salto para outra categoria (Super Fórmula, IndyCar, FE) e conquiste a F1 de fora."}); }
     }
   }
   else if(S.cat==="TEST"){
@@ -6470,9 +6470,9 @@ function nextOffers(){
     const proved = (S.testProved||0)>=2;
     const ready = proved || S.ovr>=78 || (S.testYears>=2 && S.ovr>=73) || (S.testYears>=3 && S.ovr>=70);
     if(ready){
-      title=L("🏎️ ¡Asiento TITULAR en F1!","🏎️ A RACE seat in F1!");
-      sub = proved ? L("Tu papel como sustituto convenció: hay volante de verdad para ti.","Your stand-in performances convinced them: there's a real seat for you.")
-                   : L("Las horas de simulador (y de pista) dan fruto. Volantes de verdad sobre la mesa.","The simulator (and track) hours pay off. Real seats on the table.");
+      title=L("🏎️ ¡Asiento TITULAR en F1!","🏎️ A RACE seat in F1!",{pt:"🏎️ Vaga de TITULAR na F1!"});
+      sub = proved ? L("Tu papel como sustituto convenció: hay volante de verdad para ti.","Your stand-in performances convinced them: there's a real seat for you.",{pt:"A sua atuação como substituto convenceu: há volante de verdade para você."})
+                   : L("Las horas de simulador (y de pista) dan fruto. Volantes de verdad sobre la mesa.","The simulator (and track) hours pay off. Real seats on the table.",{pt:"As horas de simulador (e de pista) dão fruto. Volantes de verdade em cima da mesa."});
       const cands = proved ? sorted.slice(2,8) : sorted.slice(0,5);
       const others=pick(cands.filter(t=>t.name!==own.name),2);
       if(proved || ch(.5)) o.push({team:own,note:["Ascenso interno","Internal promotion"],role:roleFor(own.name)});
@@ -6484,17 +6484,17 @@ function nextOffers(){
       S.testProved=0;
     } else if(S.age>=28){ if(S.f1Seasons>0){ endCareer(); } else { washedOut(); } return; }
     else {
-      title=L("Otro año de probador","Another year as reserve");
-      sub=L("El asiento titular se resiste. Sigues de reserva: FP1, simulador y alguna carrera si surge.","The race seat is elusive. You stay a reserve: FP1, simulator and the odd race if it comes up.");
+      title=L("Otro año de probador","Another year as reserve",{pt:"Mais um ano de piloto de testes"});
+      sub=L("El asiento titular se resiste. Sigues de reserva: FP1, simulador y alguna carrera si surge.","The race seat is elusive. You stay a reserve: FP1, simulator and the odd race if it comes up.",{pt:"A vaga de titular resiste. Você segue como reserva: TL1, simulador e alguma corrida se surgir."});
       pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
-      if(S.age>=22&&S.age<=26&&ch(.45)){ o.push(youngEscapeOption()); sub+=L(" O cansado de esperar, vete a competir fuera y gánate el salto."," Or, tired of waiting, go race elsewhere and earn your leap."); }
+      if(S.age>=22&&S.age<=26&&ch(.45)){ o.push(youngEscapeOption()); sub+=L(" O cansado de esperar, vete a competir fuera y gánate el salto."," Or, tired of waiting, go race elsewhere and earn your leap.",{pt:" Ou, cansado de esperar, vá competir fora e conquiste o salto."}); }
     }
   }
   else { // F1 titular
     // tras una lesión gravísima siendo Nº2 joven: solo hay interés como probador
     if(S.demoteReserve){
       S.demoteReserve=false; S.forceMove=false;
-      setDecision(L("De vuelta al banquillo","Back to the bench"),L("La lesión te costó el asiento. Solo hay sitio para ti como probador… por ahora.","The injury cost you your seat. There's only room for you as a reserve… for now."));
+      setDecision(L("De vuelta al banquillo","Back to the bench",{pt:"De volta ao banco"}),L("La lesión te costó el asiento. Solo hay sitio para ti como probador… por ahora.","The injury cost you your seat. There's only room for you as a reserve… for now.",{pt:"A lesão te custou a vaga. Só há lugar para você como piloto de testes… por ora."}));
       pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       renderRecap(); renderOffers(o, true); return;
     }
