@@ -2015,7 +2015,13 @@ const CHALLENGES = {
      ⚙️ SIN COMPARATIVA, como La Bestia: no hay palmarés suyo en F1 que superar. El listón es lo que
         dejó de ganar diciendo que no — dos Mundiales — y eso va en el texto, no en una tabla. */
   valentino: {
-    id:"valentino", era:"2000", year:[2006,2007], role:"2", secret:true,
+    /* 📌 AÑO FIJO, decision de Carlos: en un reto con ranking todos los jugadores tienen que partir
+       de las MISMAS condiciones, y un año variable rompia eso. 2007 es el realista: cuando dijo que
+       no volviendo de Valencia, en febrero de 2006, los asientos de esa temporada ya estaban dados.
+       (La maquinaria de ventana de años se queda hecha: Villeneuve y Bottas la van a querer.)
+       Y NINGUNA regla especial de retirada: entra de forma rarisima, pero una vez dentro es un
+       piloto mas y envejece como todos. Si hace falta empujarle, sera subiendole el OVR de salida. */
+    id:"valentino", era:"2000", year:2007, role:"2", secret:true,
     who:{ born:1979, ovr:76, ceil:93, flag:"🇮🇹", country:"Italia", style:"agresivo", num:"46",
           fameBase:190 },   // llega famosísimo… de otra cosa: en la F1 todavía no ha hecho nada
     // las dos puertas que existieron de verdad. Son LINAJES, no nombres: si en tu partida Red Bull no
