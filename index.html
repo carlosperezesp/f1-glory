@@ -1114,6 +1114,7 @@ const SUPPORTERS = [
   // (`driver`), porque el nombre con el que apoyas y el nombre con el que quieres correr no tienen
   // por qué ser el mismo.
   {n:"Darkkk", f:"🇦🇺", t:2, driver:"J. Taylor"},
+  {n:"Aaron Grixti", f:"🇲🇹", t:2, driver:"A. Grixti"},   // 🇲🇹 el primer maltés de la parrilla
 ];
 const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
@@ -1874,8 +1875,13 @@ const gauss = ()=> (Math.random()+Math.random()+Math.random()-1.5)*2;
    (lo cazó Carlos con los hermanos Schumacher). En esos, se conserva el nombre entero.
    «Mick Schumacher» ya viene con nombre completo y la expresión no lo toca. */
 const AMBIG_SURNAMES = new Set(["Schumacher","Hill","Fittipaldi","Rossi","Senna","Verstappen","Monteiro"]);
+/* ☕ Y EL PILOTO DE UN MECENAS SE LLAMA COMO ÉL HA ELEGIDO LLAMARSE. La regla de arriba le quitaba la
+   inicial y «J. Taylor» salía «Taylor» en todos los textos (lo cazó Carlos). El nombre con el que
+   alguien ha pedido correr no es un apellido cualquiera: se respeta entero. */
+const SUP_KEEP = new Set(SUPPORTERS.filter(s=>(s.t||0)>=2).map(s=>s.driver||s.n));
 const surname = n=>{
   if(!n) return n;
+  if(SUP_KEEP.has(n)) return n;
   const base = n.replace(/^[A-ZÁÉÍÓÚÑ]\.\s*/,"");
   return AMBIG_SURNAMES.has(base) ? n : base;
 };
@@ -2008,7 +2014,52 @@ const CHALLENGES = {
     bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:["El Alonso real","The real Alonso","O Alonso de verdade"],
     at:"2026-08-17T10:00:00Z",
   },
-  /* 🏍️ RETO II · VALENTINO (idea de Carlos). Todo lo de aquí pasó: el test de Fiorano de abril de
+  /* 🇦🇷 RETO · PECHITO (idea de Carlos, salida de las sugerencias de la gente). Todo lo de aquí pasó:
+     en enero de 2010 USF1 lo presentó como piloto titular —el primer equipo estadounidense en treinta
+     años—, el Gobierno argentino puso 2 de los 8 millones del presupuesto, y en marzo el equipo se
+     deshizo sin haber llegado a montar un coche. No es «¿y si le hubieran fichado?»: LE FICHARON.
+     ⚙️ EL WHAT-IF YA ESTABA EN EL JUEGO, pero le pasaba a otro: USF1 es un equipo de expansión de la
+        era 2010 (12% de las partidas) y, si cuaja, debuta con J.M. López. El reto es meterte TÚ ahí.
+        De ahí salían sus números (OVR 79, techo 85), pero eran los de un NPC de fondo de parrilla.
+     🎚️ OVR 82, TECHO 88 (medido en tandas alternadas con Valentino de control, para que la comparación
+        no dependa de la racha). Con 79/85 el Mundial salía en el 1,5% de 550 partidas y dos de cada
+        tres carreras terminaban sin ganar ni una: ni de lejos el ~5% que cuestan Valentino y El Nano.
+        El culpable no es el techo (con 79/88 seguía en el 1%), es el coche: USF1 rinde 60 y aquí no
+        hay segunda puerta a la que agarrarse. Con 82/88 el título sale en el 3,5% de 870 partidas
+        contra el 4,8% de Valentino en 690 — la diferencia cabe dentro del ruido (1,4 puntos con un
+        error típico de 1,0) — y ganar alguna carrera pasa del 33% al 57%, contra su 65%.
+        Subir más se pasa de largo: con 86/92 el título se dispara al 8,9%, casi el doble que él.
+        Carlos: «Pechito ya viene de pilotar coches, es de asumir que en un cara a cara sería
+        ligeramente mejor que Valentino».
+        ⚠️ El López NPC de las partidas normales se queda en 79/85: allí sigue siendo un secundario.
+     ⚙️ SIN COMPARATIVA, como Valentino: no tiene un solo Gran Premio que superar. El listón va en el
+        texto — Argentina no gana un Mundial desde Fangio y no pone un piloto en la parrilla desde
+        Mazzacane en 2001. */
+  pechito: {
+    /* 📌 AÑO FIJO 2011, no la ventana 2011-2014 del equipo: en un reto con ranking todos los
+       jugadores tienen que partir de las MISMAS condiciones. 2011 es además el primer año en el que
+       USF1 podía existir después del desastre, y el que deja la edad real que le tocaba: 28. */
+    id:"pechito", era:"2010", year:2011, team:"USF1", role:"2", secret:true,
+    forceExp:{name:"USF1", year:2011},   // 🇺🇸 el equipo no se sortea: en este reto entra sí o sí
+    drop:["J.M. López"],   // ⚠️ está en la cantera Y dentro del propio USF1 (driversBorn)
+    who:{ born:1983, ovr:82, ceil:88, flag:"🇦🇷", country:"Argentina", style:"agresivo", num:"37" },
+    t:["Pechito","Pechito","Pechito"],   // el apodo funciona igual en los tres idiomas
+    sub:["El equipo que no llegó a existir · 2011 · 28 años",
+         "The team that never made it to the grid · 2011 · aged 28",
+         "A equipe que nunca chegou a existir · 2011 · 28 anos"],
+    d:["Enero de 2010: te presentan como piloto de USF1, el primer equipo americano en treinta años, y el Gobierno argentino pone 2 de los 8 millones. En marzo el equipo se deshace sin haber montado un coche y te quedas sin volante, sin dinero y sin F1. Aquí USF1 aguanta y en 2011 te sube a un coche que nace de cero, en el fondo de la parrilla, con 28 años. Argentina no ve un piloto suyo en la F1 desde Mazzacane y no gana un Mundial desde Fangio. ¿Lo traes tú?",
+       "January 2010: you are unveiled as a USF1 driver, the first American team in thirty years, and the Argentine government puts up 2 of the 8 million. By March the team has collapsed without ever building a car and you are left with no seat, no money and no F1. Here USF1 holds on, and in 2011 it puts you in a car built from nothing, at the back of the grid, aged 28. Argentina hasn't had a driver in F1 since Mazzacane and hasn't won a title since Fangio. Are you the one who brings it home?",
+       "Janeiro de 2010: você é apresentado como piloto da USF1, a primeira equipe americana em trinta anos, e o governo argentino põe 2 dos 8 milhões. Em março a equipe se desfaz sem ter montado um carro e você fica sem vaga, sem dinheiro e sem F1. Aqui a USF1 aguenta e em 2011 coloca você num carro que nasce do zero, no fundo do grid, aos 28 anos. A Argentina não vê um piloto seu na F1 desde Mazzacane e não ganha um Mundial desde Fangio. É você quem traz?"],
+    persona:"PECHITO",
+    at:"2026-08-24T10:00:00Z",
+  },
+  /* 🚧 RETO III · HUECO RESERVADO (Kubica o Bruno Senna: decisión pendiente). No está construido y no
+     se puede jugar — vive aquí SOLO para que Valentino salga de IV desde el primer día. Motivo: el
+     número de un reto es su posición en este registro, y Pechito y Valentino son los dos debutantes
+     tardíos, así que no pueden ir seguidos (decisión de Carlos, 10-ago-2026).
+     PARA CONSTRUIRLO: se rellena esta entrada, se le quita `wip` y se le pone su `at`. Nada más. */
+  reto3: { id:"reto3", wip:true },
+  /* 🏍️ RETO IV · VALENTINO (idea de Carlos). Todo lo de aquí pasó: el test de Fiorano de abril de
      2004 con el casco prestado de Schumacher, los 1:00.5 de 2005 haciendo tandas largas con Montezemolo
      y Todt mirando, y la pretemporada de Cheste en febrero de 2006, donde con un F2004 adaptado se
      quedó a 7 décimas de Schumacher y por delante de los dos McLaren, del Toyota de Trulli y del BMW
@@ -2056,7 +2107,9 @@ const CHALLENGES = {
        consigue el 6% — exactamente lo que cuesta El Nano con SU listón. Y el texto gana: nadie ha
        empezado tan tarde y ha ganado nada, así que levantar uno solo ya responde la pregunta. */
     persona:"VALENTINO",
-    at:"2026-08-24T10:00:00Z",
+    // ⏳ El 24-ago es de Pechito y el 31 del Reto III. Valentino cierra el mes: si para entonces está
+    //    la traducción al italiano, su lanzamiento y el del idioma se refuerzan solos.
+    at:"2026-09-07T10:00:00Z",
   },
   // 🐲 RETO III · LA BESTIA (idea de Carlos). Familia «reglas», no «revivir a alguien»: partida NORMAL
   // desde el karting, pero el año que pisas la F1 debuta un piloto ficticio de OVR 99 que NO envejece,
@@ -2255,6 +2308,11 @@ function setupChallenge(CH){
      (estrellas de otras disciplinas que cruzan a la F1), que nadie tocaba — y aparecía en 16 de cada
      150 partidas, corriendo contra ti. Lo cazó Carlos. Vale para todos los retos que vengan: si el
      piloto está en la cantera o en los crossovers, hay que sacarlo de ahí también. */
+  /* 🕳️ Y HAY UN QUINTO BOTE QUE NO SE PUEDE VACIAR AQUÍ: los pilotos «de serie» de un equipo de
+     expansión (J.M. López viene DENTRO de USF1). Ese equipo ni existe todavía cuando se hace este
+     borrado — nace después, dentro de advanceEraTo. Por eso la lista se guarda en la partida y
+     processEntries la respeta cuando el equipo entra de verdad. */
+  S.chDrop = (CH.drop||[]).slice();
   (CH.drop||[]).forEach(n=>{
     S.arrivals   = (S.arrivals||[]).filter(a=>a.n!==n);
     S.crossovers = (S.crossovers||[]).filter(c=>c.name!==n);
@@ -2348,7 +2406,9 @@ const RELEASES = {
   get retos(){ const f=Object.values(CHALLENGES).map(c=>c.at).filter(Boolean).sort();
                return { at: f[0] || "2026-08-17T10:00:00Z" }; },
 };
-function chOpen(c){ return PREVIEW || !c.at || Date.parse(c.at)<=Date.now(); }
+/* 🚧 `wip` = hueco reservado: existe SOLO para que la numeración sea la definitiva desde ya (el número
+   de cada reto sale de su posición en CHALLENGES). Ni se juega, ni se anuncia, ni cuenta como próximo. */
+function chOpen(c){ return !c.wip && (PREVIEW || !c.at || Date.parse(c.at)<=Date.now()); }
 /* retos ya abiertos, del más nuevo al más viejo. El primero es EL ACTUAL; los demás, el archivo. */
 function chLive(){
   return Object.values(CHALLENGES).filter(chOpen)
@@ -2356,7 +2416,7 @@ function chLive(){
 }
 /* el próximo por salir (para el escaparate de la tarjeta) */
 function chNext(){
-  return Object.values(CHALLENGES).filter(c=>c.at && Date.parse(c.at)>Date.now())
+  return Object.values(CHALLENGES).filter(c=>!c.wip && c.at && Date.parse(c.at)>Date.now())
     .sort((a,b)=>Date.parse(a.at)-Date.parse(b.at))[0] || null;
 }
 const NEW_DAYS = 14;                        // cuánto dura la pegatina de ¡NUEVO! tras salir
@@ -2490,9 +2550,18 @@ function showIdentity(){
     const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:5px 9px">${x}</span>`;
     if(suplanta){
       const cEnt=COUNTRIES.find(c=>c[0]===CH.who.country);  // el país del chip, en el idioma activo
+      /* 🐞 LOS DOS CHIPS DE LA DERECHA SE ESCRIBÍAN A PELO. Un reto no tiene por qué traer `who.age`
+         (Valentino trae el AÑO DE NACIMIENTO, y la edad sale del año) ni `team` (Valentino trae dos
+         PUERTAS). Resultado: «undefined años» y «undefined · 2007» en su pantalla de identidad.
+         Ahora los dos se derivan de lo que haya, y el chip que no se pueda calcular no se pinta. */
+      const _chAno  = Array.isArray(CH.year) ? CH.year[0]+"–"+CH.year[CH.year.length-1] : CH.year;
+      const _chEdad = CH.who.age!=null ? CH.who.age
+                    : (CH.who.born!=null && !Array.isArray(CH.year) ? CH.year-CH.who.born : null);
+      const _chEq   = CH.team || (CH.doors||[]).map(d=>d.line).join(" / ");
       // orden 2×2: país + edad arriba, estilo + equipo abajo (petición de Carlos)
-      $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), L(CH.who.age+" años","aged "+CH.who.age,{pt:CH.who.age+" anos"}),
-        styleLabel(CH.who.style), CH.team+" · "+CH.year].map(chip).join("");
+      $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country),
+        _chEdad!=null ? L(_chEdad+" años","aged "+_chEdad,{pt:_chEdad+" anos"}) : null,
+        styleLabel(CH.who.style), (_chEq?_chEq+" · ":"")+_chAno].filter(Boolean).map(chip).join("");
       sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
       $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
     } else {
@@ -2605,6 +2674,18 @@ function startCareer(){
       Object.values(gs).forEach(arr=>{ if(arr.length>1){ const keep=irnd(0,arr.length-1); arr.forEach((e,i)=>{ if(i!==keep) e.added=true; }); } });
     }
     else { const activeExp = irnd(0, EXP.length-1); EXP.forEach((e,i)=>{ e.added = (i!==activeExp); e.year = irnd(e.range[0],e.range[1]); }); }
+    /* 📅 RETO CON EQUIPO DE EXPANSIÓN OBLIGATORIO. USF1 es un dado del 12% que además cae en un año
+       cualquiera entre 2011 y 2014: un reto no puede depender de eso — si el equipo no sale, no hay
+       reto. `forceExp` lo obliga a entrar y en EL AÑO que diga el reto, igual que el reto ya fija el
+       año y el asiento. No ensucia las partidas normales: el sorteo de arriba reescribe estos dos
+       campos al empezar cada una. */
+    const _chExp = challengeNow();
+    if(_chExp && _chExp.forceExp){
+      S.chForceExp = _chExp.forceExp.name;
+      EXP.forEach(e=>{
+        if(e.team && e.team.name===_chExp.forceExp.name){ e.added=false; e.year=_chExp.forceExp.year; }
+      });
+    }
   }
   F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf; S.f1char[t.name]=CHARS[irnd(0,2)];
     S.cache[t.name]=(CACHE_SEED[ERA.id]&&CACHE_SEED[ERA.id][t.name])??t.perf; });
@@ -5404,24 +5485,30 @@ function checkExpansion(row){
 // 🆕 entradas de equipos nuevos del año en curso. Separado de checkExpansion para que
 // advanceEraTo() (arrancar una era en un año posterior al suyo) pueda reutilizarlo.
 function processEntries(row){
+  // 📅 RETO: el piloto al que suplantas tampoco puede colarse POR AQUÍ (ver setupChallenge)
+  const _drop = S.chDrop || [];
   (S.expansion||[]).forEach(e=>{
     if(e.added || yearNow()<e.year) return;
     if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
-    // 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento
-    const brawn = ch(0.03);
+    /* 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento.
+       ⚖️ NO en el equipo que un reto obliga a entrar: el reto es TU asiento y todos los jugadores
+          compiten en la misma tabla, así que ese 3% le regalaba a uno de cada treinta un coche
+          ganador desde el minuto uno. En una partida normal sigue igual de vivo. */
+    const brawn = e.team.name!==S.chForceExp && ch(0.03);
     const perf = brawn ? irnd(88,92) : e.team.perf;
     S.f1perf[e.team.name]=perf;
     S.f1target[e.team.name]=perf+(brawn?rnd(-1,3):rnd(-2,7));
     S.f1char[e.team.name]=CHARS[irnd(0,2)];
     // recién llegado = sin pedigrí, por rico que sea (el caché se lo tendrá que ganar en pista)
     S.cache[e.team.name]=Math.min(60, e.team.perf);
-    S.seats[e.team.name]=(e.drivers||[]).map(([name,age,skill,ceil,titles,flag])=>{
+    S.seats[e.team.name]=(e.drivers||[]).filter(d=>!_drop.includes(d[0])).map(([name,age,skill,ceil,titles,flag])=>{
       const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d;
     });
     // pilotos «de serie» con año de nacimiento (López en USF1): entran con su edad real, si no llegaron ya por otra vía
     (e.driversBorn||[]).forEach(([name,bn,skill,ceil,flag])=>{
+      if(_drop.includes(name)) return;   // 📅 en su propio reto, el López de verdad no existe: eres tú
       if(S.seats[e.team.name].length>=2 || S.dpool.some(d=>d.name===name)) return;
       const d={name, age:Math.max(20,yearNow()-bn), skill, ceil, titles:0, flag};
       homeBuffOne(d); S.dpool.push(d); S.seats[e.team.name].push(d);
