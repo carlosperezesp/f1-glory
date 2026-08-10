@@ -845,6 +845,10 @@ const L = (es,en,x)=>{
 /* 🪜 A QUÉ IDIOMA SE CAE CUANDO FALTA UNA FRASE. No es capricho: a un lector de Brasil el español
    roto se le entiende mucho mejor que el inglés, y a uno de Polonia le pasa justo al revés. */
 const FALLBACK = {pt:"es", pl:"en", fr:"en"};
+/* 📚 Muchos textos no están escritos en el código sino en TABLAS DE DATOS, guardados como ["es","en"].
+   LA() traduce uno de esos pares sin tener que reescribir cada llamada: basta con añadirle un tercer
+   elemento a la tabla. Si no lo tiene, cae por el mismo escalón que L(). */
+const LA = a => Array.isArray(a) ? L(a[0], a[1], a[2]!=null?{pt:a[2]}:null) : a;
 const LANGS = ["es","en"];   // los idiomas en obras se añaden abajo solo si el modo pruebas está activo
 function applyLang(){
   // mismo escalón de reserva que L(): idioma pedido → su reserva → español
@@ -1780,27 +1784,27 @@ const ERAS = {
     lineage:[], arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
   // crossovers TAMBIÉN en retro: cada estrella lleva su año de nacimiento real y solo cruza con 27-37
   // años → Palou (n. 1997) solo puede aparecer 2024-2034, empiece la partida en 2010 o en 2020. Sin anacronismos.
-  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:["Fórmula Renault","Formula Renault"],F2:"F2"}, jr:{F4:F4_2020,F3:F3_2020,FR:FREN_2020,F2:F2_2020}, kart:null,
+  "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:["Fórmula Renault","Formula Renault","Fórmula Renault"],F2:"F2"}, jr:{F4:F4_2020,F3:F3_2020,FR:FREN_2020,F2:F2_2020}, kart:null,
     lineage:LINEAGE_2020, arrivals:ARRIVALS_2020, juniorOf:{"AlphaTauri":"Red Bull"} },
   // 🚧 2000 EN PRUEBAS: solo jugable con ?preview=glory26 (initSecretDecades) hasta darla por buena.
   // La escalera de 2000 no tenía un escalón intermedio tipo GP3, pero SÍ dos F3 nacionales en paralelo
   // (británica y alemana), que es justo lo que el juego modela con F3 y FR.
   "2000":{ id:"2000", baseYear:2000, teams:TEAMS_2000, grid:GRID2000, rookies:ROOKIE_2000, crossovers:CROSSOVERS, legends:LEGENDS_2000, expansion:ENTRIES_2000,
-    cats:{F4:["Fórmula Renault","Formula Renault"],F3:["F3 Británica","British F3"],FR:["F3 Alemana","German F3"],F2:"F3000"},
+    cats:{F4:["Fórmula Renault","Formula Renault","Fórmula Renault"],F3:["F3 Británica","British F3","F3 Britânica"],FR:["F3 Alemana","German F3","F3 Alemã"],F2:"F3000"},
     jr:{F4:FREN_2000,F3:F3BR_2000,FR:F3DE_2000,F2:F3000_2000}, kart:KART_2000,
     lineage:LINEAGE_2000, arrivals:ARRIVALS_2000,
     // en 2000 no hay filial de Red Bull (compró Jaguar en 2005 y Minardi en 2006). La clave apunta al
     // nombre FUTURO: en cuanto Minardi pase a llamarse Toro Rosso, empieza a comportarse como filial.
     juniorOf:{"Toro Rosso":"Red Bull"} },
   "1990":{ id:"1990", baseYear:1990, teams:TEAMS_1990, grid:GRID1990, rookies:ROOKIE_1990, legends:LEGENDS_1990, expansion:ENTRIES_1990,
-    cats:{F4:["Fórmula Ford","Formula Ford"],F3:["F3 Británica","British F3"],FR:["F3 Continental","Continental F3"],F2:"F3000"},
+    cats:{F4:["Fórmula Ford","Formula Ford","Fórmula Ford"],F3:["F3 Británica","British F3","F3 Britânica"],FR:["F3 Continental","Continental F3","F3 Continental"],F2:"F3000"},
     jr:{F4:FFORD_1990,F3:F3BR_1990,FR:F3EU_1990,F2:F3000_1990}, kart:KART_1990,
     deadly:true, deathWindow:[1993,1995],   // ⚫ los años en los que puede pasar (uno por partida)
     crossovers:CROSSOVERS_1990,
     lineage:LINEAGE_1990, arrivals:ARRIVALS_1990,
     // en 1990 no hay filial de Red Bull: la clave apunta al nombre FUTURO y solo cuenta si Red Bull llega
     juniorOf:{"Toro Rosso":"Red Bull"} },
-  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:["Fórmula Renault","Formula Renault"],F3:["Fórmula 3","Formula 3"],FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010}, kart:KART_2010,
+  "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:["Fórmula Renault","Formula Renault","Fórmula Renault"],F3:["Fórmula 3","Formula 3","Fórmula 3"],FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010}, kart:KART_2010,
     lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
 };
 let SELECTED_ERA = "2026";
@@ -1808,7 +1812,7 @@ function curEra(){ return ERAS[(S&&S.era)||SELECTED_ERA]||ERAS["2026"]; }
 // etiqueta de categoría según la era (GP2/GP3 en 2010, F2/F3/FRECA en 2020/2026)
 function catName(cat){ if(cat==="KART") return "Karting"; if(cat==="TEST") return L("Probador","Reserve",{pt:"Piloto de testes"});
   const v=curEra().cats[cat]; if(!v) return cat;
-  return Array.isArray(v) ? L(v[0],v[1]) : v; }
+  return Array.isArray(v) ? LA(v) : v; }
 
 // vínculos equipo A → equipo B: el filial nunca supera a la marca madre
 let JUNIOR_OF = {"Racing Bulls":"Red Bull"}; // se resetea por partida según la era (Toro Rosso/AlphaTauri/Racing Bulls)
@@ -1990,14 +1994,15 @@ const CHALLENGES = {
     // estilo "consistente": es el que el propio juego describe como «estilo Alonso»
     who:{ born:1981, age:19, ovr:74, ceil:95, flag:"🇪🇸", country:"España", style:"consistente", num:"21" },
     drop:["F. Alonso"],
-    t:["El Nano","El Nano"],   // el apodo funciona igual en los dos idiomas
-    sub:["Alonso en Minardi · 2001 · 19 años","Alonso at Minardi · 2001 · aged 19"],
+    t:["El Nano","El Nano","El Nano"],   // el apodo funciona igual en los tres idiomas
+    sub:["Alonso en Minardi · 2001 · 19 años","Alonso at Minardi · 2001 · aged 19","Alonso na Minardi · 2001 · 19 anos"],
     d:["Diecinueve años, el peor coche de la parrilla y un asiento que nadie envidia. Nadie sabe todavía quién eres y nadie apuesta un duro por ti. Tienes su talento y su punto de partida: lo que hagas con ellos ya no es cosa suya. ¿Crees que puedes ganar más de 2 Mundiales?",
-       "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business. Do you think you can win more than 2 titles?"],
+       "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business. Do you think you can win more than 2 titles?",
+       "Dezenove anos, o pior carro do grid e uma vaga que ninguém inveja. Ninguém ainda sabe quem você é e ninguém aposta um centavo em você. Você tem o talento dele e o ponto de partida dele: o que fizer com isso já não é problema dele. Acha que consegue ganhar mais de 2 Mundiais?"],
     // palmarés REAL de Alonso, para el veredicto
     persona:"ALONSO",   // en el ranking y la tarjeta saldrás como ALONSO (TU APODO)
     // par [es,en]: L() aquí se resolvería al CARGAR la página, no al mostrarla
-    bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:["El Alonso real","The real Alonso"],
+    bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:["El Alonso real","The real Alonso","O Alonso de verdade"],
     at:"2026-08-17T10:00:00Z",
   },
   // 🐲 RETO II · LA BESTIA (idea de Carlos). Familia «reglas», no «revivir a alguien»: partida NORMAL
@@ -2005,10 +2010,11 @@ const CHALLENGES = {
   // NO declina y NO se retira. Sin comparativa: el listón es cuántos Mundiales le arrancas.
   bestia: {
     id:"bestia", era:"2026", secret:true, rules:{ beast:true },
-    t:["La Bestia","The Beast"],
-    sub:["Un rival de 99 para toda tu carrera","A 99-rated rival for your whole career"],
+    t:["La Bestia","The Beast","A Fera"],
+    sub:["Un rival de 99 para toda tu carrera","A 99-rated rival for your whole career","Um rival de 99 para a sua carreira inteira"],
     d:["El año que pises la Fórmula 1, debutará contigo alguien que no debería existir: un piloto de 99 que no envejece, no baja y no se retira jamás. Estará ahí cada domingo de tu carrera, en uno de los mejores coches. No hay trucos ni atajos. ¿Cuántos Mundiales eres capaz de arrancarle?",
-       "The year you reach Formula 1, someone who shouldn't exist will debut alongside you: a 99-rated driver who never ages, never declines and never retires. He'll be there every Sunday of your career, in one of the best cars. No tricks, no shortcuts. How many titles can you tear away from him?"],
+       "The year you reach Formula 1, someone who shouldn't exist will debut alongside you: a 99-rated driver who never ages, never declines and never retires. He'll be there every Sunday of your career, in one of the best cars. No tricks, no shortcuts. How many titles can you tear away from him?",
+       "No ano em que você pisar na Fórmula 1, vai estrear com você alguém que não deveria existir: um piloto de 99 que não envelhece, não cai e nunca se aposenta. Ele vai estar lá todo domingo da sua carreira, num dos melhores carros. Sem truques nem atalhos. Quantos Mundiais você é capaz de arrancar dele?"],
     at:"2026-08-24T10:00:00Z",
   },
 };
@@ -2092,14 +2098,14 @@ function setupTest(T){
   // 🧪 los escenarios de FORMACIÓN arrancan donde arranca todo el mundo: en el karting.
   if(T.jr){
     refreshCard();
-    setDecision("🧪 "+L(T.t[0],T.t[1]), L(T.d[0],T.d[1]));
+    setDecision("🧪 "+LA(T.t), LA(T.d));
     $("decRecap").style.display="none";
     renderOffers(juniorOffers(KART_TEAMS,"KART").slice(0,3), false);
     return;
   }
   S.cat="F1";
   refreshCard();
-  setDecision("🧪 "+L(T.t[0],T.t[1]), L(T.d[0],T.d[1]));
+  setDecision("🧪 "+LA(T.t), LA(T.d));
   $("decRecap").style.display="none";
   renderOffers([{team:t, role:roleFor(t.name), note:L("Empezar la prueba","Start the test",{pt:"Começar o teste"})}], false);
 }
@@ -2198,7 +2204,7 @@ function setupChallenge(CH){
   S.cat="F1";
   $("identity").style.display="none"; $("career").style.display="block";
   refreshCard();
-  setDecision("📅 "+challengeLabel(CH)+" · "+L(CH.sub[0],CH.sub[1]), L(CH.d[0],CH.d[1]));
+  setDecision("📅 "+challengeLabel(CH)+" · "+LA(CH.sub), LA(CH.d));
   $("decRecap").style.display="none";
   // se presenta como UNA sola oferta y el fichaje va por el camino de siempre (asiento, rol, compañero,
   // años en el equipo, evento de firma). Así hereda también estrellas, carácter del coche y encaje.
@@ -2216,7 +2222,7 @@ function initSecretChallenges(){
   const btn=(c,archivo)=>{
     const b=document.createElement("button"); b.className="dec"+(archivo?" dec-arch":"");
     b.style.cssText="font-size:13px;line-height:1.35;padding:11px 14px";
-    b.innerHTML=`${challengeLabel(c)}<br><small style="opacity:.7;font-weight:600">${L(c.sub[0],c.sub[1])}</small>`;
+    b.innerHTML=`${challengeLabel(c)}<br><small style="opacity:.7;font-weight:600">${LA(c.sub)}</small>`;
     b.onclick=(ev)=>{ ev.stopPropagation(); startChallengeFlow(c.id); };
     return b;
   };
@@ -2341,7 +2347,7 @@ function refreshReleases(){
     const prox=chNext(), act=chLive()[0];
     if(!abierto && prox) sub.textContent=L(`Empieza con «${challengeLabel(prox)}»`,`Starts with «${challengeLabel(prox)}»`,{pt:`Começa com «${challengeLabel(prox)}»`});
     else if(abierto && act) sub.textContent=L(`Ahora: ${challengeLabel(act)}`,`Now: ${challengeLabel(act)}`,{pt:`Agora: ${challengeLabel(act)}`});
-    else sub.textContent=L(sub.dataset.es, sub.dataset.en);
+    else sub.textContent=L(sub.dataset.es, sub.dataset.en, {pt:sub.dataset.pt});
   }
   // el cronómetro solo late si de verdad hay una cuenta atrás el mismo día
   if((a||b) && !_relTimer) _relTimer=setInterval(refreshReleases,1000);
@@ -2353,8 +2359,8 @@ function initPreviewBar(){ if(!PREVIEW) return;
   const b=document.createElement("div"); b.id="previewBar";
   // 🧪 accesos directos a los escenarios de prueba, para no tener que recordar las URLs
   const tests=Object.keys(TESTS).map(k=>
-    `<a href="?preview=glory26&test=${k}" title="${L(TESTS[k].d[0],TESTS[k].d[1])}">🧪 ${L(TESTS[k].t[0],TESTS[k].t[1])}</a>`).join(" · ");
-  b.innerHTML=(TEST_MODE?`🧪 ${L("PRUEBA","TEST",{pt:"TESTE"})}: ${L(TESTS[TEST_MODE].t[0],TESTS[TEST_MODE].t[1])} · `:"")
+    `<a href="?preview=glory26&test=${k}" title="${LA(TESTS[k].d)}">🧪 ${LA(TESTS[k].t)}</a>`).join(" · ");
+  b.innerHTML=(TEST_MODE?`🧪 ${L("PRUEBA","TEST",{pt:"TESTE"})}: ${LA(TESTS[TEST_MODE].t)} · `:"")
     +`🔒 ${L("Modo pruebas: esto solo lo ves TÚ","Preview mode: only YOU can see this",{pt:"Modo de testes: só VOCÊ vê isto"})}`
     +(tests?` · ${tests}`:"")
     +` · <a href="?preview=off">${L("salir","exit",{pt:"sair"})}</a>`;
@@ -2394,12 +2400,12 @@ function showIdentity(){
   $("identity").classList.toggle("challenge", !!CH);
   if(CH){
     $("chTitle").textContent = "📅 "+challengeLabel(CH);
-    $("chDesc").textContent  = L(CH.d[0],CH.d[1]);
+    $("chDesc").textContent  = LA(CH.d);
     const chip=(x)=>`<span class="mini-badge" style="background:#2a2a36;font-size:11px;padding:5px 9px">${x}</span>`;
     if(suplanta){
       const cEnt=COUNTRIES.find(c=>c[0]===CH.who.country);  // el país del chip, en el idioma activo
       // orden 2×2: país + edad arriba, estilo + equipo abajo (petición de Carlos)
-      $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), L(CH.who.age+" años","aged "+CH.who.age),
+      $("chFixed").innerHTML = [CH.who.flag+" "+(cEnt?countryLabel(cEnt):CH.who.country), L(CH.who.age+" años","aged "+CH.who.age,{pt:CH.who.age+" anos"}),
         styleLabel(CH.who.style), CH.team+" · "+CH.year].map(chip).join("");
       sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
       $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
@@ -3241,7 +3247,10 @@ function quitarGalones(prefijo){
   const en = (prefijo||"") + (duro
     ? "Not even your record saves you. For the first time since you arrived, the team puts you second."
     : "You lose No.1 status: from now on the team builds around him.");
-  return L(es,en);
+  const pt = (prefijo||"") + (duro
+    ? "Nem o seu retrospecto te salva. Pela primeira vez desde que você chegou, a equipe te coloca atrás."
+    : "Você perde o status de Nº1: de agora em diante a equipe constrói em cima dele.");
+  return L(es,en,{pt});
 }
 /* 🚪 el compañero que sale mal parado de la bronca pide salida… salvo que sea joven, que se traga el
    sapo y se queda a aprender (matiz de Carlos). Se marcha al final de temporada, sin dilema aparte. */
@@ -3372,40 +3381,40 @@ function serieOK(k){ const S0=SERIES[k], yr=yearNow();
 const SERIES={
   // 🇺🇸 en los 90 esto era la CART: el nombre IndyCar como campeonato unificado es de 2008 en adelante
   indy:     {eras:[[0,"CART"],[2008,"IndyCar"]],
-             name:"IndyCar", em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500", triple:"indy", decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas.", subEn:"Ovals and road courses. The jewel: the Indy 500."},
+             name:"IndyCar", em:"🇺🇸", col:"#c8102e", perf:82, varza:6.5, marquee:"Indy 500", triple:"indy", decay:0.9, sub:"Óvalos y circuitos. La joya: las 500 Millas.", subEn:"Ovals and road courses. The jewel: the Indy 500.", subPt:"Ovais e circuitos mistos. A joia: as 500 Milhas."},
   // el WEC nace en 2012: antes, la resistencia europea era la Le Mans Series (las 24h siempre existieron)
   // 🕔 la Le Mans Series nace en 2004 y el WEC en 2012; antes, resistencia de sport prototipos a secas
-  lemans:   {eras:[[0,"Resistencia (Sport Prototipos)","Endurance (Sportscars)"],[2004,"Resistencia (Le Mans Series)","Endurance (Le Mans Series)"],[2012,"Resistencia (WEC)","Endurance (WEC)"]],
-             name:"Resistencia (WEC)", nameEn:"Endurance (WEC)", em:"🕔", col:"#1d6a3c", perf:83, varza:5, marquee:"Le Mans 24h", triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans.", subEn:"Sportscars. The jewel: the Le Mans 24h."},
-  nascar:   {name:"NASCAR", em:"🏁", col:"#ffd200", perf:80, varza:8, marquee:"Daytona 500", triple:null, decay:1.4, sub:"Stock cars. Otro mundo: puro contacto.", subEn:"Stock cars. Another world: pure contact."},
+  lemans:   {eras:[[0,"Resistencia (Sport Prototipos)","Endurance (Sportscars)","Resistência (Sport Protótipos)"],[2004,"Resistencia (Le Mans Series)","Endurance (Le Mans Series)","Resistência (Le Mans Series)"],[2012,"Resistencia (WEC)","Endurance (WEC)","Resistência (WEC)"]],
+             name:"Resistencia (WEC)", nameEn:"Endurance (WEC)", namePt:"Resistência (WEC)", em:"🕔", col:"#1d6a3c", perf:83, varza:5, marquee:"Le Mans 24h", marqueePt:"24h de Le Mans", triple:"lemans", decay:0.6, sub:"Sportscars. La joya: las 24h de Le Mans.", subEn:"Sportscars. The jewel: the Le Mans 24h.", subPt:"Sport protótipos. A joia: as 24h de Le Mans."},
+  nascar:   {name:"NASCAR", em:"🏁", col:"#ffd200", perf:80, varza:8, marquee:"Daytona 500", triple:null, decay:1.4, sub:"Stock cars. Otro mundo: puro contacto.", subEn:"Stock cars. Another world: pure contact.", subPt:"Stock cars. Outro mundo: puro contato."},
   // 🇩🇪 el DTM se muere en 1996 y no vuelve hasta 2000: en ese hueco no se puede fichar por él
   dtm:      {from:1984, gap:[1997,1999],
-             name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", triple:null, decay:1.0, sub:"Turismos alemanes, pura estrategia.", subEn:"German touring cars, pure strategy."},
+             name:"DTM", em:"🇩🇪", col:"#111318", perf:79, varza:5.5, marquee:"título DTM", marqueeEn:"DTM title", marqueePt:"título da DTM", triple:null, decay:1.0, sub:"Turismos alemanes, pura estrategia.", subEn:"German touring cars, pure strategy.", subPt:"Turismos alemães, pura estratégia."},
   // 🇦🇺 los V8 Supercars arrancan en 1997; antes era el Australian Touring Car Championship
   supercars:{eras:[[0,"Australian Touring Car"],[1997,"V8 Supercars"],[2016,"Supercars AUS"]],
-             name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst."},
-  dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win."},
+             name:"Supercars AUS", em:"🇦🇺", col:"#00843d", perf:78, varza:6.5, marquee:"Bathurst 1000", triple:null, decay:1.2, sub:"Turismos australianos. La joya: Bathurst.", subEn:"Australian touring cars. The jewel: Bathurst.", subPt:"Turismos australianos. A joia: Bathurst."},
+  dakar:    {name:"Dakar", em:"🏜️", col:"#d98a1f", perf:76, varza:10, marquee:"Dakar", triple:null, decay:1.6, sub:"Raid extremo. Sobrevivir ya es ganar.", subEn:"Extreme rally raid. Just finishing is a win.", subPt:"Rali raid extremo. Sobreviver já é ganhar."},
   // ⚡ la Fórmula E NO EXISTE hasta 2014: en una partida que empieza en 2010, no aparece hasta entonces
-  formulae: {from:2014, name:"Fórmula E", nameEn:"Formula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy."},
+  formulae: {from:2014, name:"Fórmula E", nameEn:"Formula E", namePt:"Fórmula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", marqueePt:"título da Fórmula E", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy.", subPt:"Monopostos elétricos em circuitos de rua: energia e estratégia."},
   brasil:   {eras:[[0,"Stock Car Brasil"],[2022,"Stock Car Pro Series"]],
-             name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão."},
+             name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão.", subPt:"Turismos brasileiros, muito disputados. A joia: a Corrida do Milhão."},
   // «Super Fórmula» solo desde 2013: antes era la Formula Nippon
   // 🇯🇵 F3000 japonesa hasta 1995, Formula Nippon desde 1996 y Super Fórmula desde 2013
-  superformula:{eras:[[0,"F3000 Japonesa","Japanese F3000"],[1996,"Formula Nippon"],[2013,"Super Fórmula","Super Formula"]],
-             name:"Super Fórmula", nameEn:"Super Formula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1."},
+  superformula:{eras:[[0,"F3000 Japonesa","Japanese F3000","F3000 Japonesa"],[1996,"Formula Nippon"],[2013,"Super Fórmula","Super Formula","Super Fórmula"]],
+             name:"Super Fórmula", nameEn:"Super Formula", namePt:"Super Fórmula", em:"🇯🇵", col:"#b31217", perf:81, varza:5.5, marquee:"título de Super Fórmula", marqueeEn:"Super Formula title", marqueePt:"título da Super Fórmula", triple:null, decay:1.0, sub:"Monoplazas potentísimos en Japón: la gran vía de regreso a la F1.", subEn:"Ferociously fast single-seaters in Japan: the great route back to F1.", subPt:"Monopostos potentíssimos no Japão: a grande via de volta à F1."},
 };
 // nombre de la serie EN SU ÉPOCA (Formula Nippon→Super Fórmula, Le Mans Series→WEC, V8 Supercars→Supercars…).
 // `year` opcional: para el historial, el nombre que tenía el año en que corriste allí.
 function serName(k, year){ const s=SERIES[k]||{};
   if(s.eras){ const yr=year||yearNow();
-    for(let i=s.eras.length-1;i>=0;i--){ if(yr>=s.eras[i][0]) return L(s.eras[i][1], s.eras[i][2]||s.eras[i][1]); } }
-  return L(s.name, s.nameEn||s.name); }
+    for(let i=s.eras.length-1;i>=0;i--){ if(yr>=s.eras[i][0]) return L(s.eras[i][1], s.eras[i][2]||s.eras[i][1], {pt:s.eras[i][3]}); } }
+  return L(s.name, s.nameEn||s.name, {pt:s.namePt}); }
 // nombre de equipo según idioma: las aventuras (WEC/FE/Super Fórmula) tienen nombre EN distinto → resolver por su clave de serie
 // `year` opcional: en el historial, el nombre que tenía la serie el año en que corriste allí
 // (corriste en la Formula Nippon de 2011 aunque te retires en 2035, cuando ya se llama Super Fórmula)
 function teamDisp(t, year){ return t && t.cat==="ADV" && t.series ? serName(t.series, year) : (t?t.name:""); }
-function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub); }
-function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee); }
+function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub, {pt:s.subPt}); }
+function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee, {pt:s.marqueePt}); }
 // Triple Corona: Mónaco + Indy 500 + Le Mans. Nombres de cada pata y estado.
 const CROWN_LEG={ monaco:["el GP de Mónaco","the Monaco GP"], indy:["las 500 Millas de Indianápolis","the Indy 500"], lemans:["las 24h de Le Mans","the Le Mans 24h"] };
 function crownDone(){ return ["monaco","indy","lemans"].filter(k=>S.tripleCrown&&S.tripleCrown[k]).length; }
@@ -3435,9 +3444,9 @@ const NAT_AFFINITY={
 function natAff(){ return NAT_AFFINITY[sel.country]||{teams:[],series:[]}; }
 function natLikesSeries(k){ return natAff().series.includes(k); }
 const JR_PROFILES=[
-  {label:"🏆 Proyecto ganador", labelEn:"🏆 Winning project", dev:-0.1, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie", descEn:"Good car: if you WIN titles you arrive with pedigree and experience. If not, you end up in no man's land"},
-  {label:"⚖️ Equilibrado", labelEn:"⚖️ Balanced", dev:0.1,  desc:"Resultados y formación a partes iguales", descEn:"Results and development in equal measure"},
-  {label:"🎓 Programa de desarrollo", labelEn:"🎓 Development programme", dev:0.35, desc:"Coche flojo, pero te forman: llegas más fuerte aunque no ganes", descEn:"Weak car, but they develop you: you arrive stronger even without winning"},
+  {label:"🏆 Proyecto ganador", labelEn:"🏆 Winning project", labelPt:"🏆 Projeto vencedor", dev:-0.1, desc:"Buen coche: si GANAS títulos, llegas con galones y experiencia. Si no, te quedas en tierra de nadie", descEn:"Good car: if you WIN titles you arrive with pedigree and experience. If not, you end up in no man's land", descPt:"Bom carro: se VOCÊ GANHAR títulos, chega com galões e experiência. Se não, fica em terra de ninguém"},
+  {label:"⚖️ Equilibrado", labelEn:"⚖️ Balanced", labelPt:"⚖️ Equilibrado", dev:0.1,  desc:"Resultados y formación a partes iguales", descEn:"Results and development in equal measure", descPt:"Resultados e formação em partes iguais"},
+  {label:"🎓 Programa de desarrollo", labelEn:"🎓 Development programme", labelPt:"🎓 Programa de desenvolvimento", dev:0.35, desc:"Coche flojo, pero te forman: llegas más fuerte aunque no ganes", descEn:"Weak car, but they develop you: you arrive stronger even without winning", descPt:"Carro fraco, mas eles te formam: você chega mais forte mesmo sem ganhar"},
 ];
 // genera 3 ofertas junior con perfil según su coche (mejor coche = ganador; peor = desarrollo)
 function juniorOffers(teams, cat){
@@ -3452,7 +3461,7 @@ function juniorOffers(teams, cat){
   const three = base.map(t=>({t, perf:perfOf(t)})).sort((a,b)=>b.perf-a.perf);
   return three.map((x,i)=>{
     const p = JR_PROFILES[i] || JR_PROFILES[1];
-    return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:L(p.label,p.labelEn), note:[p.desc,p.descEn]};
+    return {team:{...x.t, cat, perf:x.perf, dev:p.dev}, profile:L(p.label,p.labelEn,{pt:p.labelPt}), note:[p.desc,p.descEn,p.descPt]};
   });
 }
 
@@ -3467,8 +3476,8 @@ function offerAcademies(){
 function setDecision(title,sub,pulsing,outcome){
   try{ if(typeof S!=="undefined" && S) S._lastDecision={t:title,s:sub,p:pulsing,o:outcome}; }catch(e){}
   const h=$("decTitle"), p=$("decSub");
-  h.textContent=Array.isArray(title)?L(title[0],title[1]):title;
-  p.textContent=Array.isArray(sub)?L(sub[0],sub[1]):sub;
+  h.textContent=Array.isArray(title)?LA(title):title;
+  p.textContent=Array.isArray(sub)?LA(sub):sub;
   h.classList.toggle("pulsing",!!pulsing);
   p.classList.toggle("outcome",!!outcome);
 }
@@ -3511,9 +3520,9 @@ function renderOffers(offers, withRetire){
     }
     // ⚠️ o.note es un PAR [es,en]: interpolarlo directo imprimía los dos idiomas pegados con una coma
     // («…en tierra de nadie,Good car: if you WIN titles…»). Lo cazó Carlos en las academias de karting.
-    if(o.profile) profileLine=`<span class="jprofile"><b>${o.profile}</b> · ${Array.isArray(o.note)?L(o.note[0],o.note[1]):o.note}</span>`;
+    if(o.profile) profileLine=`<span class="jprofile"><b>${o.profile}</b> · ${Array.isArray(o.note)?LA(o.note):o.note}</span>`;
     // note/profile aceptan par [es,en] para poder repintarse al cambiar de idioma
-    const noteTxt = Array.isArray(o.note) ? L(o.note[0],o.note[1]) : o.note;
+    const noteTxt = Array.isArray(o.note) ? LA(o.note) : o.note;
     const subNote = (noteTxt && !o.profile) ? " · "+noteTxt : "";
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
@@ -4811,7 +4820,9 @@ function ordCar(n){ // posición del coche en la parrilla, en cristiano
             "noveno","décimo","undécimo","duodécimo","decimotercero"];
   const en=["","best","second-best","third-best","fourth","fifth","sixth","seventh","eighth",
             "ninth","tenth","eleventh","twelfth","thirteenth"];
-  return L(es[n]||(n+"º"), en[n]||(n+"th"));
+  const pt=["","melhor","segundo melhor","terceiro melhor","quarto","quinto","sexto","sétimo","oitavo",
+            "nono","décimo","décimo primeiro","décimo segundo","décimo terceiro"];
+  return L(es[n]||(n+"º"), en[n]||(n+"th"), {pt:pt[n]||(n+"º")});
 }
 function regBetTeam(){
   if(!S.team) return null;
@@ -4997,7 +5008,8 @@ function maybeInjury(row){
     // pantalla de ofertas y no hay que buscarlo en el resumen del año (2ª vez que lo cazó Carlos).
     perderAsiento(row,
       "⚠️ Sin galones, el equipo no te espera: pierdes el asiento y tocará pelear la vuelta.",
-      "⚠️ Without status, the team won't wait: you lose the seat and must fight your way back.");
+      "⚠️ Without status, the team won't wait: you lose the seat and must fight your way back.",
+      "⚠️ Sem galões, a equipe não te espera: você perde a vaga e vai ter que brigar pela volta.");
   }
 }
 /* ⚫ EL ACCIDENTE QUE CAMBIÓ LA F1. Una vez por partida, dentro de la ventana de la era. No siempre
@@ -5065,10 +5077,11 @@ function tickSeguridadEra(row){
                     "🛡️ Formula 1 comes out of the winter a different sport: new rules, engine changes and a tense paddock.",{pt:"🛡️ A Fórmula 1 sai do inverno sendo outra: regras novas, mudanças no motor e tensão no paddock."}));
 }
 /* pierdes el asiento por un suceso (no por un dilema): apunta el motivo Y lo narra, de una vez */
-function perderAsiento(row, es, en){
+function perderAsiento(row, es, en, pt){
   S.forceMove=true;
-  S.forceReasonTxt=[es.replace(/^[^\s]*\s/,""), en.replace(/^[^\s]*\s/,"")]; // sin el emoji inicial
-  if(row && row.events) row.events.push(L(es,en));
+  const sinEmoji = t => t ? t.replace(/^[^\s]*\s/,"") : t;   // sin el emoji inicial
+  S.forceReasonTxt=[sinEmoji(es), sinEmoji(en), sinEmoji(pt)];
+  if(row && row.events) row.events.push(L(es,en,pt!=null?{pt}:null));
 }
 function simSeason(){
   const st=STYLES[sel.style];
@@ -5128,7 +5141,8 @@ function simSeason(){
         } else {
           perderAsiento(row,
             `👑 Has ganado el Mundial y el equipo sigue prefiriéndole a él. Quieren empezar un nuevo proyecto, aquí ya no hay sitio para ti.`,
-            `👑 You've won the title and the team still prefers him. They want to start a new project — there's no room for you here.`);
+            `👑 You've won the title and the team still prefers him. They want to start a new project — there's no room for you here.`,
+            `👑 Você ganhou o Mundial e a equipe continua preferindo ele. Querem começar um projeto novo; aqui já não há lugar para você.`);
         }
       }
     }
@@ -5613,7 +5627,12 @@ function alphaClash(row){
       modo==="peor"     ? `🥊 ${tn} will build around ${yo?"you":stayName} and let ${va} go: he signs for ${dest.name} for ${yN}. ${vuelve} takes the seat.`
     : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a ${yN} move to ${dest.name} to be the undisputed No.1. ${vuelve} will arrive at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
     : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`
-                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives at ${tn} for ${yN}.`));
+                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives at ${tn} for ${yN}.`,
+      {pt:
+        modo==="peor"     ? `🥊 A ${tn} vai construir ${yo?"em cima de você":"em cima de "+stayName} e deixar ${va} sair, assinando com a ${dest.name} para ${yN}. ${vuelve} vai ocupar a vaga.`
+      : modo==="mejor"    ? `🥊 Bomba: ${va} anuncia que vai para a ${dest.name} em ${yN} atrás de ser o número um. ${vuelve} chega à ${tn} para ser ${yo?"seu companheiro":"companheiro de "+stayName}.`
+      : modo==="veterano" ? `🥊 A ${tn} aposta ${yo?"na sua juventude":"na juventude de "+stayName}: ${va} faz as malas rumo à ${dest.name} e em ${yN} chega ${vuelve} à ${tn}.`
+                          : `🥊 A ${tn} quer o título já e fica com ${yo?"a sua experiência":"a experiência de "+stayName}: ${va} vai para a ${dest.name} e em ${yN} entra ${vuelve} na ${tn}.`}));
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
@@ -6585,7 +6604,7 @@ function nextOffers(){
         if(!S.esperaQuiebra) o.push(esperarTrasQuiebraOption(S.forceReasonTeam));
       } else if(S.forceReasonTxt){
         // el porqué concreto (la ruptura de gallos, etc.) en vez del genérico «tras la ruptura»
-        sub=(sub||"")+L(S.forceReasonTxt[0],S.forceReasonTxt[1])+L(" Estas puertas siguen abiertas."," These doors are still open.",{pt:" Estas portas continuam abertas."});
+        sub=(sub||"")+LA(S.forceReasonTxt)+L(" Estas puertas siguen abiertas."," These doors are still open.",{pt:" Estas portas continuam abertas."});
       } else {
         sub=(sub||"")+L("Tras la ruptura, necesitas un volante nuevo. Estas puertas siguen abiertas.","After the split, you need a new seat. These doors are still open.",{pt:"Depois do rompimento, você precisa de um volante novo. Estas portas continuam abertas."});
       }
@@ -7023,7 +7042,7 @@ function openRanking(){
 }
 function closeRanking(){ $("rankModal").style.display="none"; }
 /* ☕ MURO DE MECENAS */
-const TIER_NAME={3:["🏆 Escudería","🏆 Team owners"],2:["🏎️ Pilotos","🏎️ Drivers"],1:["☕ Mecánicos","☕ Crew"]};
+const TIER_NAME={3:["🏆 Escudería","🏆 Team owners","🏆 Equipe"],2:["🏎️ Pilotos","🏎️ Drivers","🏎️ Pilotos"],1:["☕ Mecánicos","☕ Crew","☕ Mecânicos"]};
 function openPatrons(){ $("patronModal").style.display="flex"; renderPatrons(); track("patrons_open"); }
 function closePatrons(){ $("patronModal").style.display="none"; }
 function renderPatrons(){
@@ -7037,7 +7056,7 @@ function renderPatrons(){
   [3,2,1].forEach(t=>{
     const list=SUPPORTERS.filter(s=>(s.t||1)===t);
     if(!list.length) return;
-    html+=`<div class="pt-tier">${L(TIER_NAME[t][0],TIER_NAME[t][1])}</div>`;
+    html+=`<div class="pt-tier">${LA(TIER_NAME[t])}</div>`;
     html+=list.map(s=>`<div class="pt-row">${s.f?`<span>${s.f}</span>`:""}<span>${s.n}</span></div>`).join("");
   });
   html+=`<div class="pt-empty">${L("Gracias por mantener esto en marcha. 🧡","Thanks for keeping this running. 🧡",{pt:"Obrigado por manter isto de pé. 🧡"})}</div>`;
@@ -7217,7 +7236,7 @@ function endCareer(){
              : L("📉 ÉL LLEGÓ MÁS LEJOS","📉 HE WENT FURTHER",{pt:"📉 ELE CHEGOU MAIS LONGE"});
     // tabla de TRES columnas de verdad (etiqueta · él · tú): la versión anterior apelotonaba
     // los números en una esquina y no se leía (lo cazó Carlos)
-    const rname=Array.isArray(_CHend.benchName)?L(_CHend.benchName[0],_CHend.benchName[1]):(_CHend.benchName||L("Él","Him",{pt:"Ele"}));
+    const rname=Array.isArray(_CHend.benchName)?LA(_CHend.benchName):(_CHend.benchName||L("Él","Him",{pt:"Ele"}));
     // cada línea es un duelo: cifras + barra que muestra de un vistazo cuánto le sacas o te saca
     const fila=(et,a,b)=>{
       const tot=Math.max(a,b,1), pa=Math.round(100*a/tot), pb=Math.round(100*b/tot);
