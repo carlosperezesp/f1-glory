@@ -377,6 +377,15 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .pt-cta{display:inline-block;margin-top:12px;background:linear-gradient(135deg,#ff5e5b,#e10600);color:#fff;font-weight:800;font-size:13.5px;padding:9px 20px;border-radius:999px;text-decoration:none}
 .intro-links{margin-top:14px;font-size:13px;color:var(--muted)}
 .intro-links a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none}
+.intro-links .il-sep{margin:0 8px;opacity:.55}
+/* 📲 aviso de «añádelo como app»: discreto, ancho del menú, con su aspa para cerrarlo */
+#installHint{display:none;align-items:center;gap:10px;max-width:430px;margin:16px auto 0;padding:10px 12px;
+  background:var(--panel2,rgba(127,127,127,.10));border:1px solid var(--line);border-radius:12px;
+  font-size:12.5px;line-height:1.4;color:var(--muted);text-align:left}
+#installHint b{color:var(--ink,inherit)}
+#installBtn{flex:0 0 auto;border:0;border-radius:999px;padding:7px 13px;font:inherit;font-weight:800;font-size:12px;
+  background:linear-gradient(135deg,#e10600,#ff6a1a);color:#fff;cursor:pointer}
+#installX{flex:0 0 auto;margin-left:auto;background:none;border:0;color:var(--muted);font-size:15px;cursor:pointer;padding:2px 4px;line-height:1}
 /* aviso legal: discreto, al pie de la portada */
 /* sin animación a propósito: el aviso legal debe verse siempre, no depender de que la animación corra */
 #intro p.legal{max-width:520px;margin:22px auto 0;font-size:10.5px;line-height:1.5;color:var(--muted);opacity:.62;animation:none}
@@ -625,7 +634,16 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <p class="news" style="max-width:540px;margin:8px auto 0;font-size:13px;line-height:1.5;color:var(--muted)"
      data-es="¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧" data-pt="Sugestões ou erros? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Escreva para mim!</a> 📧" data-pl="Sugestie albo błędy? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Napisz do mnie!</a> 📧" data-fr="Suggestions ou bugs ? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Écris-moi !</a> 📧" data-pt="Sugestões ou erros? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Escreve-me!</a> 📧"
      data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
-  <p class="intro-links"><a onclick="openPatrons()" data-es="☕ Muro de mecenas" data-pt="☕ Mural de mecenas" data-pl="☕ Ściana patronów" data-fr="☕ Mur des mécènes" data-pt="☕ Mural de apoiantes" data-en="☕ Wall of supporters">☕ Muro de mecenas</a></p>
+  <!-- 📲 aviso de instalar como app: solo en móvil, se puede cerrar y no vuelve (lo activa initInstallHint) -->
+  <div id="installHint" style="display:none">
+    <span id="installTxt"></span>
+    <button id="installBtn" style="display:none"></button>
+    <button id="installX" onclick="dismissInstallHint()" aria-label="cerrar">✕</button>
+  </div>
+  <!-- 🏆 el ranking vivía SOLO en la pantalla final: quien entraba y no jugaba no sabía que existía -->
+  <p class="intro-links"><a onclick="openRanking()" data-es="🏆 Ranking de leyendas" data-pt="🏆 Ranking de lendas" data-pl="🏆 Ranking legend" data-fr="🏆 Classement des légendes" data-en="🏆 Legends ranking">🏆 Ranking de leyendas</a>
+    <span class="il-sep">·</span>
+    <a onclick="openPatrons()" data-es="☕ Muro de mecenas" data-pt="☕ Mural de mecenas" data-pl="☕ Ściana patronów" data-fr="☕ Mur des mécènes" data-pt="☕ Mural de apoiantes" data-en="☕ Wall of supporters">☕ Muro de mecenas</a></p>
   <p class="legal"
      data-es="Proyecto personal de un aficionado, sin relación con la Fórmula 1. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares." data-pt="Projeto pessoal de um fã, sem relação com a Fórmula 1. Não é afiliado nem endossado pela Fórmula 1, pela FIA nem por nenhuma equipe. Os nomes, marcas e escudos pertencem aos seus respectivos titulares." data-pl="Prywatny projekt kibica, bez związku z Formułą 1. Nie jest powiązany z Formułą 1, FIA ani żadnym zespołem i nie ma ich poparcia. Nazwy, znaki i loga należą do ich właścicieli." data-fr="Projet personnel d'un passionné, sans lien avec la Formule 1. Ni affilié ni approuvé par la Formule 1, la FIA ou une quelconque écurie. Les noms, marques et logos appartiennent à leurs détenteurs respectifs." data-pt="Projeto pessoal de um adepto, sem qualquer ligação à Fórmula 1. Não é afiliado nem apoiado pela Fórmula 1, pela FIA nem por nenhuma equipa."
      data-en="A personal fan project, unconnected to Formula 1. Not affiliated with or endorsed by Formula 1, the FIA or any team. All names, trademarks and badges belong to their respective owners.">Proyecto personal de un aficionado, sin relación con la Fórmula 1. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares.</p>
@@ -766,11 +784,18 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <div class="legend-score" id="legendScore"></div>
       <div class="end-actions">
         <div class="ea-row">
-          <button class="btn sm" onclick="location.reload()" data-es="Nueva carrera" data-pt="Nova carreira" data-pl="Nowa kariera" data-fr="Nouvelle carrière" data-pt="Nova carreira" data-en="New career">Nueva carrera</button>
-          <button class="btn sm line" id="shareBtn" onclick="shareCareer()" data-es="📸 Compartir" data-pt="📸 Compartilhar" data-pl="📸 Udostępnij" data-fr="📸 Partager" data-pt="📸 Partilhar" data-en="📸 Share">📸 Compartir</button>
+          <!-- 🔁 el botón más pulsado del final: repetir sin volver a rellenar la ficha. Va PRIMERO
+               a propósito (idea de Carlos: «daría una rejugabilidad muy buena»). -->
+          <!-- ⚠️ etiqueta CORTA: «Otra con el mismo piloto» se partía en cuatro líneas dentro de la
+               pastilla en un móvil de 375px. El detalle largo ya lo cuenta el título de al lado. -->
+          <button class="btn sm" id="againBtn" onclick="playAgainSameSettings()" title="Repite conservando apellido, dorsal, país, estilo y época" data-es="🔁 Mismo piloto" data-pt="🔁 Mesmo piloto" data-pl="🔁 Ten sam kierowca" data-fr="🔁 Même pilote" data-en="🔁 Same driver">🔁 Mismo piloto</button>
+          <button class="btn sm line" onclick="location.reload()" data-es="Empezar de cero" data-pt="Começar do zero" data-pl="Zacznij od zera" data-fr="Repartir de zéro" data-en="Start from scratch">Empezar de cero</button>
         </div>
         <div class="ea-row">
+          <button class="btn sm line" id="shareBtn" onclick="shareCareer()" data-es="📸 Compartir" data-pt="📸 Compartilhar" data-pl="📸 Udostępnij" data-fr="📸 Partager" data-pt="📸 Partilhar" data-en="📸 Share">📸 Compartir</button>
           <button class="btn sm line" onclick="viewCareer()" data-es="👁️ Ver carrera" data-pt="👁️ Ver carreira" data-pl="👁️ Zobacz karierę" data-fr="👁️ Voir la carrière" data-pt="👁️ Ver carreira" data-en="👁️ View career">👁️ Ver carrera</button>
+        </div>
+        <div class="ea-row">
           <button class="btn sm line" id="rankBtn" onclick="openRanking()">🏆 Ranking</button>
         </div>
       </div>
@@ -917,6 +942,8 @@ function setLang(l){
   // reto → le devolvía el «Próximamente» y se perdía la cuenta atrás (lo cazó Carlos). Hay que repintar
   // los lanzamientos DESPUÉS de applyLang, siempre.
   try{ refreshReleases(); }catch(e){}
+  // 📲 el aviso de instalar se escribe por JS, así que no lo cubren los data-es/data-en
+  try{ const h=document.getElementById("installHint"); if(h && h._pinta) h._pinta(); }catch(e){}
   // re-render de lo que esté en pantalla (si hay partida)
   try{ if(typeof S!=="undefined" && S){
     refreshCard(); renderF1State(); renderTimeline();
@@ -2543,6 +2570,46 @@ function initPreviewBar(){ if(!PREVIEW) return;
     +(tests?` · ${tests}`:"")
     +` · <a href="?preview=off">${L("salir","exit",{pt:"sair"})}</a>`;
   document.body.appendChild(b); }
+/* 📲 «AÑÁDELO COMO APP EN TU MÓVIL» (idea de Carlos, 11-ago). El manifest.json lleva puesto desde
+   agosto y la instalación YA funcionaba: lo único que faltaba era decírselo a la gente.
+   · Solo en MÓVIL (en un portátil no aporta) y nunca si ya lo estás jugando instalado.
+   · Android/Chrome dispara `beforeinstallprompt` → se puede ofrecer un BOTÓN que instala de verdad.
+   · En iPhone ese evento no existe: ahí solo cabe explicar el camino (Compartir → Añadir a inicio).
+   · Se cierra con la ✕ y no vuelve a salir nunca (localStorage). */
+let _installEvt=null;
+function esMovil(){ try{ return window.matchMedia("(max-width:820px)").matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }catch(e){ return false; } }
+function yaInstalado(){ try{ return window.matchMedia("(display-mode:standalone)").matches || window.navigator.standalone===true; }catch(e){ return false; } }
+function dismissInstallHint(){ try{ localStorage.setItem("f1g_install_off","1"); }catch(e){}
+  const h=document.getElementById("installHint"); if(h) h.style.display="none"; }
+function initInstallHint(){
+  const h=document.getElementById("installHint"); if(!h) return;
+  let off=false; try{ off=localStorage.getItem("f1g_install_off")==="1"; }catch(e){}
+  if(off || yaInstalado() || !esMovil()) return;
+  const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const txt=document.getElementById("installTxt"), btn=document.getElementById("installBtn");
+  const pinta=()=>{
+    txt.innerHTML = esIOS
+      ? L("📲 <b>Juega como una app:</b> pulsa Compartir y luego «Añadir a pantalla de inicio».",
+          "📲 <b>Play it like an app:</b> tap Share, then «Add to Home Screen».",
+          {pt:"📲 <b>Jogue como um app:</b> toque em Compartilhar e depois «Adicionar à Tela de Início»."})
+      : L("📲 <b>Juega como una app:</b> añádelo a tu pantalla de inicio.",
+          "📲 <b>Play it like an app:</b> add it to your home screen.",
+          {pt:"📲 <b>Jogue como um app:</b> adicione à sua tela de início."});
+    if(btn) btn.textContent=L("Añadir","Add",{pt:"Adicionar"});
+  };
+  pinta();
+  h._pinta=pinta;               // para repintarlo al cambiar de idioma
+  h.style.display="flex";
+  // Android: si el navegador ofrece instalación real, se enseña el botón
+  window.addEventListener("beforeinstallprompt", e=>{
+    e.preventDefault(); _installEvt=e;
+    if(btn && !esIOS){ btn.style.display="inline-block";
+      btn.onclick=async()=>{ try{ _installEvt.prompt(); await _installEvt.userChoice; }catch(err){}
+        _installEvt=null; dismissInstallHint(); };
+    }
+  });
+  window.addEventListener("appinstalled", ()=>dismissInstallHint());
+}
 function showIdentity(){
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
   /* ⚫ ERAS EN LAS QUE SE PODÍA MORIR. En vez de decidir por el jugador, se le pregunta al entrar, con
@@ -2768,6 +2835,31 @@ function startCareer(){
   if(_T){ setupTest(_T); return; }
   refreshCard();
   offerAcademies();
+}
+
+/* 🔁 OTRA CARRERA CON EL MISMO PILOTO (idea de Carlos, 11-ago: «sin tener que volver a configurarlo
+   todo desde cero; daría una rejugabilidad muy buena»). `sel` —apellido, dorsal, país y estilo— es un
+   objeto global que YA sobrevive entre partidas, y los campos del formulario conservan sus valores,
+   así que repetir es saltarse la pantalla de identidad y llamar a startCareer otra vez.
+   Lo que hay que devolver a cero a mano es lo que vive FUERA de `S`: el modal final, el panel de la F1
+   del año pasado, la trayectoria pintada y el modo en el que estabas.
+   ⚠️ ES EL CAMINO QUE EL CUADERNO MARCA COMO PELIGROSO («filtra estado entre partidas», precedente de
+   Campos al 72%), así que NO se publica sin medirlo: ver la tanda de comprobación del 11-ago. */
+function playAgainSameSettings(){
+  const era = (S && S.era) || SELECTED_ERA || "2026";
+  CHALLENGE=null; TP_MODE=false; SELECTED_ERA=era;   // se repite el modo CLÁSICO: los retos y el muro tienen su propia puerta
+  try{
+    $("endModal").style.display="none";
+    $("reopenBtn").style.display="none";
+    // ⚠️ LA PORTADA LA OCULTA `showIdentity`, y aquí nos la saltamos: sin esto, al repetir carrera
+    //    aparecía el menú principal ENCIMA de la partida recién empezada (cazado en la revisión visual).
+    $("intro").style.display="none"; $("identity").style.display="none";
+    $("f1state").style.display="none";               // el top-3 del año pasado no puede quedarse pegado
+    $("offerList").innerHTML=""; $("decRecap").style.display="none";
+    $("tlBody").innerHTML='<div class="tl-empty">'+L("Tu historia empieza aquí…","Your story starts here…",{pt:"A sua história começa aqui…"})+'</div>';
+    window.scrollTo(0,0);
+  }catch(e){}
+  startCareer();
 }
 
 function refreshCard(){
@@ -3261,6 +3353,17 @@ function promoteFromReserve(){
 // incidentes de pista: elige un rival que NO sea tu compañero; guarda su nombre completo por si acaban a hostias
 // pilotos EN ACTIVO (con asiento ahora mismo): para toques, enemigos y demás — un retirado no puede tocarte en pista
 function seatedPool(){ const out=[]; Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") out.push(d); })); return out; }
+/* 🏆 UN CAMPEÓN DE OTRO EQUIPO PELEANDO EL TÍTULO: con asiento, con Mundial en la vitrina y en un coche
+   de los de arriba. Fuera de TU garaje a propósito: si fuera tu compañero, esa pelea también sería
+   tuya y el favor no tendría sentido. */
+function campeonEnLucha(){
+  const mine=S.team&&S.team.name, pool=[];
+  Object.entries(S.seats||{}).forEach(([tn,sl])=>{
+    if(tn===mine || !Array.isArray(sl) || (S.f1perf[tn]||70)<84) return;
+    sl.forEach(d=>{ if(d && d!=="PLAYER" && (d.titles||0)>=1 && (d.age||0)>=28) pool.push(d); });
+  });
+  return pool.length?pool[irnd(0,pool.length-1)]:null;
+}
 function incidentRival(){
   const pool=seatedPool().filter(d=>d.name && d.name!=="TÚ" && d.name!==S.roleMate);
   const d=pool.length?pool[irnd(0,pool.length-1)]:null;
@@ -4448,6 +4551,27 @@ const DILEMAS=[
    {l:()=>L("Callar con humildad","Stay humble and quiet",{pt:"Calar com humildade"}),r:()=>roll(
      [4,()=>(VAL(1.08),L("«Es una leyenda, le respeto». Tu elegancia gusta. +fama leve","«He's a legend, I respect him». Your grace goes down well. slight +fame",{pt:"«É uma lenda, eu respeito». A sua elegância agrada. +fama leve"}))],
      [3,()=>L("Algunos interpretan que le das la razón, pero tú sigues a lo tuyo. Sin cambios.","Some read it as you conceding the point, but you carry on. No change.",{pt:"Alguns entendem que você deu razão a ele, mas você segue no seu. Sem mudanças."})])}]},
+ /* 🤝 EL FAVOR DEL VETERANO (idea de Carlos, 5-ago): de novato, un campeón DE OTRO EQUIPO te pide que
+    no le estorbes en una pelea por el título que no es la tuya. La otra mitad de la fábrica de
+    aliados: aquí el padrino te lo ganas tú. */
+ {id:"favorVeterano",stage:"f1",cond:()=>S.cat==="F1"&&S.f1Seasons<=2&&!!campeonEnLucha(),
+  t:()=>L("El favor del veterano","The veteran's favour",{pt:"O favor do veterano"}),
+  d:()=>{ const v=campeonEnLucha(); S._favor=v||null;
+    const nm=v?surname(v.name):L("un campeón","a champion",{pt:"um campeão"});
+    return L(`${nm} se pelea el Mundial y tú andas por media tabla. Te busca en el paddock, sin cámaras: «El domingo, cuando me veas por el retrovisor, no me hagas perder tres décimas. No te pido que te apartes, te pido que no me compliques una pelea que no es tuya». Tú eres un novato. Él lleva un título en la vitrina.`,
+             `${nm} is fighting for the title and you're mid-table. He finds you in the paddock, no cameras around: «On Sunday, when you see me in your mirrors, don't cost me three tenths. I'm not asking you to pull over — just don't complicate a fight that isn't yours». You're a rookie. He has a title in the cabinet.`,
+             {pt:`${nm} está brigando pelo Mundial e você anda no meio do grid. Ele te procura no paddock, sem câmeras: «No domingo, quando me vir pelo retrovisor, não me faça perder três décimos. Não peço que saia da frente, peço que não complique uma briga que não é sua». Você é um novato. Ele tem um título na estante.`}); },opts:[
+   {l:()=>L("Ayudarle","Help him out",{pt:"Ajudar"}),r:()=>{ const v=S._favor;
+     if(v){ S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===v.name)) S.respects.push({name:v.name, year:yearNow()}); }
+     return roll(
+       [6,()=>(VAL(1.06),L(`Cumples sin aspavientos, y ${v?surname(v.name):"él"} no es de los que olvidan: a partir de ahí te nombra en las ruedas de prensa y te abre puertas donde tú no llegas. Te has echado un padrino. +fama leve`,
+                           `You deliver without fuss, and ${v?surname(v.name):"he"} isn't the forgetting type: from then on he name-drops you in press conferences and opens doors you couldn't. You've got yourself a godfather. slight +fame`,
+                           {pt:`Você cumpre sem alarde, e ${v?surname(v.name):"ele"} não é de esquecer: a partir dali te cita nas coletivas e abre portas onde você não chega. Você arrumou um padrinho. +fama leve`}))],
+       [3,()=>(VAL(.95),L("Cumples… y alguien del muro rival lo ve raro. La prensa habla de «amiguismo» un par de semanas. −fama leve, pero él te lo debe.","You deliver… and someone on a rival pit wall notices. The press mutters about «favours» for a fortnight. slight −fame, but he owes you one.",{pt:"Você cumpre… e alguém do muro rival estranha. A imprensa fala em «camaradagem» por duas semanas. −fama leve, mas ele te deve uma."}))]); }},
+   {l:()=>L("Competir sin regalar nada","Race him for everything",{pt:"Competir sem dar nada"}),r:()=>roll(
+     [5,()=>(VAL(1.08),L("Le peleas cada metro como si te jugaras lo mismo que él. No le gusta, pero el paddock entero toma nota: ese novato no se achanta ante nadie. +fama","You fight him for every metre as if you had as much at stake. He doesn't like it, but the whole paddock takes note: that rookie backs down to nobody. +fame",{pt:"Você briga por cada metro como se estivesse em jogo o mesmo que ele. Ele não gosta, mas o paddock inteiro anota: esse novato não se acovarda diante de ninguém. +fama"}))],
+     [3,()=>{ const v=S._favor; if(v){ S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===v.name)) S.feuds.push({name:v.name, year:yearNow()}); }
+       return L(`Te cruzas en su pelea y el título se le complica. No te lo va a perdonar: te has ganado un enemigo con galones.`,`You get in the way of his fight and his title gets complicated. He won't forgive it: you've made a powerful enemy.`,{pt:`Você atravessa a briga dele e o título complica. Ele não vai perdoar: você ganhou um inimigo graduado.`}); }])}]},
  // 💥 versión GRAVE y RARA de un incidente (heredera de `toqueCulpable`): mandas a un rival al HOSPITAL. Sin perdón → enemigo garantizado.
  {id:"pesoCulpa",stage:"f1",cond:()=>S.cat==="F1"&&S.ovr>=84&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate)&&ch(.5),
   t:()=>L("El peso de la culpa","The weight of guilt",{pt:"O peso da culpa"}),
@@ -5089,6 +5213,10 @@ let P_GOMAS=.5, P_TOQUE=.06;
 // padrino antes de los 20. Sin prioridad salían en el 1% y el 2% (medido).
 // el del chaval salía en el 2% sin prioridad y en el 55% con .18 — la misma curva empinada que ya me
 // pilló con el del debut. Con .05 queda en torno al 25%.
+/* 🤝 el favor del veterano vive en una ventana de DOS temporadas (eres novato) y compitiendo con los
+   ~56 dilemas de F1 salía 1 vez cada 60 carreras: o va con prioridad o no existe. Mismo tratamiento
+   que las otras ventanas cortas, y como constante para poder medirla A/B. */
+let P_FAVOR=.16;   // medido: .4 → salía en el 66% de las carreras (era la norma); .16 → ~1 de cada 3
 let P_DEBUT=.2, P_PATRON=.26, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // el mecenas: .55 -> 48% de las carreras, .5 -> 21%. Sigue siendo demasiado para «la llamada que te cambia la vida»: se busca ~1 de cada 10
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
@@ -5112,7 +5240,7 @@ function pickDilemma(){
   }
   // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
   //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
-  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL]]){
+  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL],["favorVeterano",P_FAVOR]]){
     if(S.usedDilemmas[id]) continue;
     if((S.age-S.lastDilemmaAge<1) && id!=="debutGrande" && id!=="patronContrato") continue;
     const d=DILEMAS.find(x=>x.id===id);
@@ -5894,13 +6022,27 @@ function alphaClash(row){
     // a un campeón vigente no lo echa nadie: si le tocaba, se va el otro
     // ⚠️ solo protegía al JUGADOR: un campeón NPC podía ser echado por «apostar por la juventud»
     // el mismo invierno en que ganaba el título (lo cazó Carlos con Barrichello campeón y a la calle).
+    /* ⚠️ CON LA TEMPORADA QUE ACABA DE CORRERSE, NO CON LA ANTERIOR. Esto miraba `S.seasons.at(-1)`…
+       pero alphaClash corre DENTRO de simSeason, y la fila del año se guarda al final: leía el curso
+       PASADO. Resultado: ganabas el Mundial y ese mismo invierno tu equipo te enseñaba la puerta
+       «apostando por la veteranía del otro» (lo cazó Carlos con un Ferrari campeón en 2010). El NPC sí
+       estaba bien protegido porque `lastChampName` se actualiza en el acto: el fallo era solo tuyo. */
     const campeonVigente = x => x==="PLAYER"
-      ? ((S.seasons.at(-1)||{}).cat==="F1" && (S.seasons.at(-1)||{}).pos===1)
+      ? (row.cat==="F1" && row.pos===1)
       : !!(x && S.lastChampName && x.name===S.lastChampName);
-    /* 👑 EL CAMPEÓN SÍ PUEDE IRSE — pero se va ÉL, no lo echan (matiz de Carlos: Rosberg se piró,
-       Alonso y Hamilton pudieron hacerlo). En «mejor» la decisión es del piloto, así que ahí no se
-       toca nada. En los otros tres modos manda el equipo, y ningún equipo echa a su campeón vigente. */
-    if(modo!=="mejor" && campeonVigente(slots[goIdx])) goIdx = 1-goIdx;
+    /* 👑 EL CAMPEÓN SÍ PUEDE IRSE — normalmente se va ÉL, no lo echan (Rosberg se piró, Alonso y
+       Hamilton pudieron hacerlo). En «mejor» la decisión es del piloto y ahí no se toca nada.
+       ⚖️ PERO QUE TE ECHEN SIENDO CAMPEÓN NO ES IMPOSIBLE (matiz de Carlos, 11-ago): «si Alonso gana
+       en McLaren en 2007 se habría tenido que ir igual; no es raro, pero tampoco imposible». Así que
+       el título no es un escudo absoluto: te salva 3 de cada 4 veces, y la que no, NO se cuenta como
+       «apostamos por el otro» —que es lo que chirriaba— sino como lo que sería de verdad: una
+       convivencia rota que ni un Mundial arregla. Al NPC se le sigue protegiendo siempre: su marcha
+       no se narra en primera persona y sin explicación parecía un fallo (caso Barrichello). */
+    let rupturaCampeon=false;
+    if(modo!=="mejor" && campeonVigente(slots[goIdx])){
+      if(slots[goIdx]==="PLAYER" && ch(.25)) rupturaCampeon=true;
+      else goIdx = 1-goIdx;
+    }
     const leaver=slots[goIdx], stays=slots[1-goIdx];
     const stayName = stays==="PLAYER" ? L("TÚ","YOU",{pt:"TU"}) : surname(stays.name);
     // 🫵 SI EL QUE SOBRA ERES TÚ: no te movemos a la fuerza de equipo, pero el asiento se acaba y
@@ -5912,23 +6054,29 @@ function alphaClash(row){
       // además veía ofertas de Nº2 justo después de leer que no pensaba ser escudero de nadie).
       const stayCampeon = stays!=="PLAYER" && S.lastChampName && stays.name===S.lastChampName;
       const esTxt =
-        modo==="peor"     ? `${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
+        rupturaCampeon    ? `Ganas el Mundial y aun así la convivencia con ${stayName} está rota: ${tn} se queda con él y tú sales al mercado. No serías el primer campeón que se va por la puerta de atrás.`
+      : modo==="peor"     ? `${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
       : (modo==="mejor" && stayCampeon) ? `${tn} se vuelca en ${stayName} tras su Mundial y quiere un Nº2 que no le discuta nada. Ese ya no eres tú: te toca buscar asiento.`
       : modo==="mejor"    ? `Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
       : modo==="veterano" ? `${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
-                          : `${tn} quiere el título YA y prefiere la veteranía de ${stayName}: tu asiento se acaba.`;
+      /* ⚠️ NADA DE «QUIEREN EL TÍTULO YA» (lo cazó Carlos): esa frase da por hecho que el equipo no lo
+         estaba peleando… y se leía justo debajo de «¡¡CAMPEÓN DEL MUNDO!!». El motivo se cuenta sin
+         juzgar el año: el equipo apuesta por el otro, y punto. */
+                          : `${tn} decide apostar por ${stayName} y su veteranía: te toca buscar nuevo equipo.`;
       const enTxt =
-        modo==="peor"     ? `${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
+        rupturaCampeon    ? `You win the title and even so, living with ${stayName} has become impossible: ${tn} keeps him and you hit the market. You wouldn't be the first champion to leave by the back door.`
+      : modo==="peor"     ? `${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
       : (modo==="mejor" && stayCampeon) ? `${tn} throws everything behind ${stayName} after his title and wants a No.2 who won't argue. That's no longer you: time to find a seat.`
       : modo==="mejor"    ? `You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
       : modo==="veterano" ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
-                          : `${tn} wants the title NOW and prefers ${stayName}'s experience: your seat is gone.`;
+                          : `${tn} decides to build around ${stayName} and his experience: time to find a new team.`;
       const ptTxt =
-        modo==="peor"     ? `A ${tn} aposta em ${stayName} como Nº1 e te mostra a porta: hora de procurar vaga.`
+        rupturaCampeon    ? `Você ganha o Mundial e mesmo assim a convivência com ${stayName} está quebrada: a ${tn} fica com ele e você vai ao mercado. Não seria o primeiro campeão a sair pela porta dos fundos.`
+      : modo==="peor"     ? `A ${tn} aposta em ${stayName} como Nº1 e te mostra a porta: hora de procurar vaga.`
       : (modo==="mejor" && stayCampeon) ? `A ${tn} se volta toda para ${stayName} depois do Mundial dele e quer um Nº2 que não conteste nada. Esse já não é você: hora de procurar vaga.`
       : modo==="mejor"    ? `Você é o melhor da garagem e não pretende ser escudeiro de ninguém: vai ao mercado atrás do seu próprio projeto.`
       : modo==="veterano" ? `A ${tn} aposta na juventude de ${stayName}: agradecem os serviços prestados e você fica sem vaga.`
-                          : `A ${tn} quer o título JÁ e prefere a experiência de ${stayName}: a sua vaga acabou.`;
+                          : `A ${tn} decide apostar em ${stayName} e na experiência dele: hora de procurar equipe nova.`;
       row.events.push(L("🥊 "+esTxt, "🥊 "+enTxt, {pt:"🥊 "+ptTxt}));
       // el MOTIVO viaja a la pantalla de ofertas: «Tras la ruptura…» a secas no decía POR QUÉ estabas
       // en la calle y había que ir a buscarlo a los eventos de la temporada (lo cazó Carlos)
@@ -5966,16 +6114,16 @@ function alphaClash(row){
       modo==="peor"     ? `🥊 ${tn} construirá ${yo?"sobre ti":"sobre "+stayName} y dejará marchar a ${va}, que firma por ${dest.name} para ${yN}. ${vuelve} ocupará su asiento.`
     : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se irá a ${dest.name} en ${yN} buscando ser el número uno. ${vuelve} llegará a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
     : modo==="veterano" ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`
-                        : `🥊 ${tn} quiere el título ya y se queda con ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marchará a ${dest.name} y en ${yN} entrará ${vuelve} en ${tn}.`,
+                        : `🥊 ${tn} apuesta por ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marchará a ${dest.name} y en ${yN} entrará ${vuelve} en ${tn}.`,
       modo==="peor"     ? `🥊 ${tn} will build around ${yo?"you":stayName} and let ${va} go: he signs for ${dest.name} for ${yN}. ${vuelve} takes the seat.`
     : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a ${yN} move to ${dest.name} to be the undisputed No.1. ${vuelve} will arrive at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
     : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`
-                        : `🥊 ${tn} wants the title now and keeps ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives at ${tn} for ${yN}.`,
+                        : `🥊 ${tn} backs ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives at ${tn} for ${yN}.`,
       {pt:
         modo==="peor"     ? `🥊 A ${tn} vai construir ${yo?"em cima de você":"em cima de "+stayName} e deixar ${va} sair, assinando com a ${dest.name} para ${yN}. ${vuelve} vai ocupar a vaga.`
       : modo==="mejor"    ? `🥊 Bomba: ${va} anuncia que vai para a ${dest.name} em ${yN} atrás de ser o número um. ${vuelve} chega à ${tn} para ser ${yo?"seu companheiro":"companheiro de "+stayName}.`
       : modo==="veterano" ? `🥊 A ${tn} aposta ${yo?"na sua juventude":"na juventude de "+stayName}: ${va} faz as malas rumo à ${dest.name} e em ${yN} chega ${vuelve} à ${tn}.`
-                          : `🥊 A ${tn} quer o título já e fica com ${yo?"a sua experiência":"a experiência de "+stayName}: ${va} vai para a ${dest.name} e em ${yN} entra ${vuelve} na ${tn}.`}));
+                          : `🥊 A ${tn} aposta ${yo?"na sua experiência":"na experiência de "+stayName}: ${va} vai para a ${dest.name} e em ${yN} entra ${vuelve} na ${tn}.`}));
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
@@ -7519,6 +7667,7 @@ function endCareer(){
     try{ const g=document.querySelector("#endModal .end-stats"); if(g&&window._endStats0) g.innerHTML=window._endStats0;
       const sb=$("shareBtn"); if(sb) sb.style.display="";
       const rb=$("rankBtn"); if(rb) rb.style.display="";
+      const ag=$("againBtn"); if(ag) ag.style.display="";
       $("endAdv").style.display=""; const cm=$("careerMap"); if(cm) cm.style.display="";
     }catch(e){} }
   S.retired=true;
@@ -8570,9 +8719,11 @@ function endTPCareer(){
   ls.className="legend-score"+(tier.shiny?" shiny":"");
   ls.style.background=tier.bg; ls.style.borderColor="transparent"; ls.style.color=tier.ink;
   ls.innerHTML=`<div><div class="ls-k">${L("🏅 Puntos de gloria","🏅 Glory points",{pt:"🏅 Pontos de glória"})}</div><div class="ls-tier">${tier.name}</div></div><div class="ls-v">${score}</div>`;
-  // Fase 1: sin tarjeta compartible ni tabla online (lb:tp espera a que el equilibrio esté medido)
+  // Fase 1: sin tarjeta compartible ni tabla online (lb:tp espera a que el equilibrio esté medido).
+  // Y sin «otra con el mismo piloto»: aquí no eres un piloto, y el modo tiene su propia puerta.
   const sb=$("shareBtn"); if(sb) sb.style.display="none";
   const rb=$("rankBtn"); if(rb) rb.style.display="none";
+  const ag=$("againBtn"); if(ag) ag.style.display="none";
   $("printHeader").innerHTML=`<h2>${sel.flag} ${pName()} · Team Principal</h2>
     <div class="pl">${legacy}</div>
     <div class="ps"><span><b>${yrs}</b> ${L("temporadas","seasons",{pt:"temporadas"})}</span><span><b>${C}</b> ${L("Constructores","Constructors",{pt:"Construtores"})}</span>
@@ -8594,6 +8745,7 @@ applyTheme(); // aplicar el tema guardado al cargar
 initSecretDecades();    // ⏳ pegatinas y desbloqueo por fecha (la de 2000 se abre sola el 10-ago)
 initSecretChallenges(); // 📅 el modo Reto se abre solo el 17-ago (o ya, con el preview activo)
 initTPCard();           // 🧑‍💼 modo Team Principal: jugable SOLO con el preview (el público ve «Próximamente»)
+initInstallHint();      // 📲 «añádelo como app»: solo móvil, solo si no está ya instalado, y descartable
 initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 try{ pendRetry(); }catch(e){}  // 📮 ¿quedó alguna carrera sin enviar la última vez? va ahora
 </script>
