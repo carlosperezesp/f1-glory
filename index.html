@@ -379,10 +379,14 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .intro-links a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none}
 .intro-links .il-sep{margin:0 8px;opacity:.55}
 /* 📲 aviso de «añádelo como app»: discreto, ancho del menú, con su aspa para cerrarlo */
-#installHint{display:none;align-items:center;gap:10px;max-width:430px;margin:16px auto 0;padding:10px 12px;
+#installHint{display:none;flex-direction:column;gap:8px;max-width:430px;margin:16px auto 0;padding:10px 12px;
   background:var(--panel2,rgba(127,127,127,.10));border:1px solid var(--line);border-radius:12px;
-  font-size:12.5px;line-height:1.4;color:var(--muted);text-align:left}
+  font-size:12.5px;line-height:1.4;color:var(--muted);text-align:left;cursor:pointer}
+#installHint .ih-top{display:flex;align-items:center;gap:10px}
 #installHint b{color:var(--ink,inherit)}
+#installSteps{margin:2px 0 0;padding-left:20px;display:none}
+#installSteps li{margin:3px 0}
+#installHint.open #installSteps{display:block}
 #installBtn{flex:0 0 auto;border:0;border-radius:999px;padding:7px 13px;font:inherit;font-weight:800;font-size:12px;
   background:linear-gradient(135deg,#e10600,#ff6a1a);color:#fff;cursor:pointer}
 #installX{flex:0 0 auto;margin-left:auto;background:none;border:0;color:var(--muted);font-size:15px;cursor:pointer;padding:2px 4px;line-height:1}
@@ -636,9 +640,15 @@ img.tlogo.mb{width:20px;height:20px;border:none}
      data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
   <!-- 📲 aviso de instalar como app: solo en móvil, se puede cerrar y no vuelve (lo activa initInstallHint) -->
   <div id="installHint" style="display:none">
-    <span id="installTxt"></span>
-    <button id="installBtn" style="display:none"></button>
-    <button id="installX" onclick="dismissInstallHint()" aria-label="cerrar">✕</button>
+    <div class="ih-top">
+      <span id="installTxt"></span>
+      <button id="installBtn" style="display:none"></button>
+      <button id="installX" onclick="event.stopPropagation();dismissInstallHint()" aria-label="cerrar">✕</button>
+    </div>
+    <!-- 📖 los pasos, que sin ellos el aviso solo dice QUÉ hacer y no CÓMO (lo pidió Carlos) -->
+    <!-- sin display:none EN LÍNEA: un estilo en línea gana a la hoja de estilos y la clase .open no
+         podía abrirlo. Lo oculta el CSS (#installSteps) y lo abre #installHint.open. -->
+    <ol id="installSteps"></ol>
   </div>
   <!-- 🏆 el ranking vivía SOLO en la pantalla final: quien entraba y no jugaba no sabía que existía -->
   <p class="intro-links"><a onclick="openRanking()" data-es="🏆 Ranking de leyendas" data-pt="🏆 Ranking de lendas" data-pl="🏆 Ranking legend" data-fr="🏆 Classement des légendes" data-en="🏆 Legends ranking">🏆 Ranking de leyendas</a>
@@ -2586,25 +2596,45 @@ function initInstallHint(){
   let off=false; try{ off=localStorage.getItem("f1g_install_off")==="1"; }catch(e){}
   if(off || yaInstalado() || !esMovil()) return;
   const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const txt=document.getElementById("installTxt"), btn=document.getElementById("installBtn");
+  const txt=document.getElementById("installTxt"), btn=document.getElementById("installBtn"), pasos=document.getElementById("installSteps");
   const pinta=()=>{
-    txt.innerHTML = esIOS
-      ? L("📲 <b>Juega como una app:</b> pulsa Compartir y luego «Añadir a pantalla de inicio».",
-          "📲 <b>Play it like an app:</b> tap Share, then «Add to Home Screen».",
-          {pt:"📲 <b>Jogue como um app:</b> toque em Compartilhar e depois «Adicionar à Tela de Início»."})
-      : L("📲 <b>Juega como una app:</b> añádelo a tu pantalla de inicio.",
-          "📲 <b>Play it like an app:</b> add it to your home screen.",
-          {pt:"📲 <b>Jogue como um app:</b> adicione à sua tela de início."});
-    if(btn) btn.textContent=L("Añadir","Add",{pt:"Adicionar"});
+    txt.innerHTML = L("📲 <b>Juega como una app:</b> añádelo a tu pantalla de inicio. <u>Cómo se hace</u>",
+                      "📲 <b>Play it like an app:</b> add it to your home screen. <u>How to do it</u>",
+                      {pt:"📲 <b>Jogue como um app:</b> adicione à sua tela de início. <u>Como fazer</u>"});
+    if(btn) btn.textContent=L("Instalar","Install",{pt:"Instalar"});
+    // los pasos REALES de cada teléfono: en iPhone no existe la instalación automática y hay que ir a mano
+    const P = esIOS
+      ? L(["Pulsa el botón <b>Compartir</b> (el cuadrado con la flecha ↑), abajo en Safari.",
+           "Baja y elige <b>«Añadir a pantalla de inicio»</b>.",
+           "Confirma con <b>Añadir</b>. Ya tienes el icono con los demás."],
+          ["Tap the <b>Share</b> button (the square with an arrow ↑) at the bottom of Safari.",
+           "Scroll down and pick <b>«Add to Home Screen»</b>.",
+           "Confirm with <b>Add</b>. The icon now sits with your other apps."],
+          {pt:["Toque no botão <b>Compartilhar</b> (o quadrado com a seta ↑), embaixo no Safari.",
+               "Desça e escolha <b>«Adicionar à Tela de Início»</b>.",
+               "Confirme em <b>Adicionar</b>. Pronto: o ícone fica com os outros apps."]})
+      : L(["Abre el menú <b>⋮</b> del navegador (arriba a la derecha).",
+           "Elige <b>«Instalar aplicación»</b> o <b>«Añadir a pantalla de inicio»</b>.",
+           "Confirma. Ya tienes el icono con los demás."],
+          ["Open the browser menu <b>⋮</b> (top right).",
+           "Choose <b>«Install app»</b> or <b>«Add to Home screen»</b>.",
+           "Confirm. The icon now sits with your other apps."],
+          {pt:["Abra o menu <b>⋮</b> do navegador (canto superior direito).",
+               "Escolha <b>«Instalar aplicativo»</b> ou <b>«Adicionar à tela inicial»</b>.",
+               "Confirme. Pronto: o ícone fica com os outros apps."]});
+    pasos.innerHTML = P.map(x=>"<li>"+x+"</li>").join("");
   };
   pinta();
+  // pinchar en el aviso despliega o pliega las instrucciones
+  h.onclick=()=>{ h.classList.toggle("open"); };
   h._pinta=pinta;               // para repintarlo al cambiar de idioma
   h.style.display="flex";
   // Android: si el navegador ofrece instalación real, se enseña el botón
   window.addEventListener("beforeinstallprompt", e=>{
     e.preventDefault(); _installEvt=e;
     if(btn && !esIOS){ btn.style.display="inline-block";
-      btn.onclick=async()=>{ try{ _installEvt.prompt(); await _installEvt.userChoice; }catch(err){}
+      btn.onclick=async(ev)=>{ ev.stopPropagation();   // el botón instala; el resto del aviso despliega los pasos
+        try{ _installEvt.prompt(); await _installEvt.userChoice; }catch(err){}
         _installEvt=null; dismissInstallHint(); };
     }
   });
@@ -3353,17 +3383,6 @@ function promoteFromReserve(){
 // incidentes de pista: elige un rival que NO sea tu compañero; guarda su nombre completo por si acaban a hostias
 // pilotos EN ACTIVO (con asiento ahora mismo): para toques, enemigos y demás — un retirado no puede tocarte en pista
 function seatedPool(){ const out=[]; Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") out.push(d); })); return out; }
-/* 🏆 UN CAMPEÓN DE OTRO EQUIPO PELEANDO EL TÍTULO: con asiento, con Mundial en la vitrina y en un coche
-   de los de arriba. Fuera de TU garaje a propósito: si fuera tu compañero, esa pelea también sería
-   tuya y el favor no tendría sentido. */
-function campeonEnLucha(){
-  const mine=S.team&&S.team.name, pool=[];
-  Object.entries(S.seats||{}).forEach(([tn,sl])=>{
-    if(tn===mine || !Array.isArray(sl) || (S.f1perf[tn]||70)<84) return;
-    sl.forEach(d=>{ if(d && d!=="PLAYER" && (d.titles||0)>=1 && (d.age||0)>=28) pool.push(d); });
-  });
-  return pool.length?pool[irnd(0,pool.length-1)]:null;
-}
 function incidentRival(){
   const pool=seatedPool().filter(d=>d.name && d.name!=="TÚ" && d.name!==S.roleMate);
   const d=pool.length?pool[irnd(0,pool.length-1)]:null;
@@ -4551,27 +4570,6 @@ const DILEMAS=[
    {l:()=>L("Callar con humildad","Stay humble and quiet",{pt:"Calar com humildade"}),r:()=>roll(
      [4,()=>(VAL(1.08),L("«Es una leyenda, le respeto». Tu elegancia gusta. +fama leve","«He's a legend, I respect him». Your grace goes down well. slight +fame",{pt:"«É uma lenda, eu respeito». A sua elegância agrada. +fama leve"}))],
      [3,()=>L("Algunos interpretan que le das la razón, pero tú sigues a lo tuyo. Sin cambios.","Some read it as you conceding the point, but you carry on. No change.",{pt:"Alguns entendem que você deu razão a ele, mas você segue no seu. Sem mudanças."})])}]},
- /* 🤝 EL FAVOR DEL VETERANO (idea de Carlos, 5-ago): de novato, un campeón DE OTRO EQUIPO te pide que
-    no le estorbes en una pelea por el título que no es la tuya. La otra mitad de la fábrica de
-    aliados: aquí el padrino te lo ganas tú. */
- {id:"favorVeterano",stage:"f1",cond:()=>S.cat==="F1"&&S.f1Seasons<=2&&!!campeonEnLucha(),
-  t:()=>L("El favor del veterano","The veteran's favour",{pt:"O favor do veterano"}),
-  d:()=>{ const v=campeonEnLucha(); S._favor=v||null;
-    const nm=v?surname(v.name):L("un campeón","a champion",{pt:"um campeão"});
-    return L(`${nm} se pelea el Mundial y tú andas por media tabla. Te busca en el paddock, sin cámaras: «El domingo, cuando me veas por el retrovisor, no me hagas perder tres décimas. No te pido que te apartes, te pido que no me compliques una pelea que no es tuya». Tú eres un novato. Él lleva un título en la vitrina.`,
-             `${nm} is fighting for the title and you're mid-table. He finds you in the paddock, no cameras around: «On Sunday, when you see me in your mirrors, don't cost me three tenths. I'm not asking you to pull over — just don't complicate a fight that isn't yours». You're a rookie. He has a title in the cabinet.`,
-             {pt:`${nm} está brigando pelo Mundial e você anda no meio do grid. Ele te procura no paddock, sem câmeras: «No domingo, quando me vir pelo retrovisor, não me faça perder três décimos. Não peço que saia da frente, peço que não complique uma briga que não é sua». Você é um novato. Ele tem um título na estante.`}); },opts:[
-   {l:()=>L("Ayudarle","Help him out",{pt:"Ajudar"}),r:()=>{ const v=S._favor;
-     if(v){ S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===v.name)) S.respects.push({name:v.name, year:yearNow()}); }
-     return roll(
-       [6,()=>(VAL(1.06),L(`Cumples sin aspavientos, y ${v?surname(v.name):"él"} no es de los que olvidan: a partir de ahí te nombra en las ruedas de prensa y te abre puertas donde tú no llegas. Te has echado un padrino. +fama leve`,
-                           `You deliver without fuss, and ${v?surname(v.name):"he"} isn't the forgetting type: from then on he name-drops you in press conferences and opens doors you couldn't. You've got yourself a godfather. slight +fame`,
-                           {pt:`Você cumpre sem alarde, e ${v?surname(v.name):"ele"} não é de esquecer: a partir dali te cita nas coletivas e abre portas onde você não chega. Você arrumou um padrinho. +fama leve`}))],
-       [3,()=>(VAL(.95),L("Cumples… y alguien del muro rival lo ve raro. La prensa habla de «amiguismo» un par de semanas. −fama leve, pero él te lo debe.","You deliver… and someone on a rival pit wall notices. The press mutters about «favours» for a fortnight. slight −fame, but he owes you one.",{pt:"Você cumpre… e alguém do muro rival estranha. A imprensa fala em «camaradagem» por duas semanas. −fama leve, mas ele te deve uma."}))]); }},
-   {l:()=>L("Competir sin regalar nada","Race him for everything",{pt:"Competir sem dar nada"}),r:()=>roll(
-     [5,()=>(VAL(1.08),L("Le peleas cada metro como si te jugaras lo mismo que él. No le gusta, pero el paddock entero toma nota: ese novato no se achanta ante nadie. +fama","You fight him for every metre as if you had as much at stake. He doesn't like it, but the whole paddock takes note: that rookie backs down to nobody. +fame",{pt:"Você briga por cada metro como se estivesse em jogo o mesmo que ele. Ele não gosta, mas o paddock inteiro anota: esse novato não se acovarda diante de ninguém. +fama"}))],
-     [3,()=>{ const v=S._favor; if(v){ S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===v.name)) S.feuds.push({name:v.name, year:yearNow()}); }
-       return L(`Te cruzas en su pelea y el título se le complica. No te lo va a perdonar: te has ganado un enemigo con galones.`,`You get in the way of his fight and his title gets complicated. He won't forgive it: you've made a powerful enemy.`,{pt:`Você atravessa a briga dele e o título complica. Ele não vai perdoar: você ganhou um inimigo graduado.`}); }])}]},
  // 💥 versión GRAVE y RARA de un incidente (heredera de `toqueCulpable`): mandas a un rival al HOSPITAL. Sin perdón → enemigo garantizado.
  {id:"pesoCulpa",stage:"f1",cond:()=>S.cat==="F1"&&S.ovr>=84&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate)&&ch(.5),
   t:()=>L("El peso de la culpa","The weight of guilt",{pt:"O peso da culpa"}),
@@ -5213,10 +5211,6 @@ let P_GOMAS=.5, P_TOQUE=.06;
 // padrino antes de los 20. Sin prioridad salían en el 1% y el 2% (medido).
 // el del chaval salía en el 2% sin prioridad y en el 55% con .18 — la misma curva empinada que ya me
 // pilló con el del debut. Con .05 queda en torno al 25%.
-/* 🤝 el favor del veterano vive en una ventana de DOS temporadas (eres novato) y compitiendo con los
-   ~56 dilemas de F1 salía 1 vez cada 60 carreras: o va con prioridad o no existe. Mismo tratamiento
-   que las otras ventanas cortas, y como constante para poder medirla A/B. */
-let P_FAVOR=.16;   // medido: .4 → salía en el 66% de las carreras (era la norma); .16 → ~1 de cada 3
 let P_DEBUT=.2, P_PATRON=.26, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // el mecenas: .55 -> 48% de las carreras, .5 -> 21%. Sigue siendo demasiado para «la llamada que te cambia la vida»: se busca ~1 de cada 10
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
@@ -5240,7 +5234,7 @@ function pickDilemma(){
   }
   // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
   //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
-  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL],["favorVeterano",P_FAVOR]]){
+  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL]]){
     if(S.usedDilemmas[id]) continue;
     if((S.age-S.lastDilemmaAge<1) && id!=="debutGrande" && id!=="patronContrato") continue;
     const d=DILEMAS.find(x=>x.id===id);
