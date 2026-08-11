@@ -367,7 +367,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 
 /* end modal */
 #endModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.45);backdrop-filter:blur(6px);z-index:50;align-items:center;justify-content:center;padding:20px}
-#rankModal,#patronModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.55);backdrop-filter:blur(6px);z-index:60;align-items:center;justify-content:center;padding:16px}
+#rankModal,#patronModal,#tpGridModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.55);backdrop-filter:blur(6px);z-index:60;align-items:center;justify-content:center;padding:16px}
 /* muro de mecenas */
 .pt-tier{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:14px 4px 6px}
 .pt-tier:first-child{margin-top:4px}
@@ -595,8 +595,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <span class="mode-txt"><b data-es="Reto semanal" data-pt="Desafio semanal" data-pl="Wyzwanie tygodnia" data-fr="Défi hebdomadaire" data-pt="Desafio semanal" data-en="Weekly challenge">Reto semanal</b><small id="retoSub" data-es="Un escenario nuevo cada semana" data-pt="Um cenário novo a cada semana" data-pl="Nowy scenariusz co tydzień" data-fr="Un nouveau scénario chaque semaine" data-pt="Um cenário novo todas as semanas" data-en="A new scenario every week">Un escenario nuevo cada semana</small></span>
     </div>
     <div class="decade-grid" id="challengeGrid" style="display:none"></div>
-    <div class="mode-card soon">
-      <span class="soon-badge" data-es="Próximamente" data-pt="Em breve" data-pl="Wkrótce" data-fr="Bientôt" data-pt="Em breve" data-en="Coming soon">Próximamente</span>
+    <div class="mode-card soon" id="tpCard">
+      <span class="soon-badge" id="badgeTP" data-es="Próximamente" data-pt="Em breve" data-pl="Wkrótce" data-fr="Bientôt" data-pt="Em breve" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico">🧑‍💼</span>
       <span class="mode-txt"><b data-es="Modo Team Principal" data-pt="Modo Chefe de Equipe" data-pl="Tryb szefa zespołu" data-fr="Mode Directeur d'écurie" data-pt="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-pt="Contrate os melhores pilotos, desenvolva o melhor carro e leve a sua equipe à glória" data-pl="Podpisuj najlepszych kierowców, rozwijaj najlepszy samochód i poprowadź zespół po chwałę" data-fr="Recrute les meilleurs pilotes, développe la meilleure voiture et mène ton écurie à la gloire" data-pt="Contrata os melhores pilotos, desenvolve o melhor carro e leva a tua equipa à glória" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
     </div>
@@ -767,7 +767,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <div class="end-actions">
         <div class="ea-row">
           <button class="btn sm" onclick="location.reload()" data-es="Nueva carrera" data-pt="Nova carreira" data-pl="Nowa kariera" data-fr="Nouvelle carrière" data-pt="Nova carreira" data-en="New career">Nueva carrera</button>
-          <button class="btn sm line" onclick="shareCareer()" data-es="📸 Compartir" data-pt="📸 Compartilhar" data-pl="📸 Udostępnij" data-fr="📸 Partager" data-pt="📸 Partilhar" data-en="📸 Share">📸 Compartir</button>
+          <button class="btn sm line" id="shareBtn" onclick="shareCareer()" data-es="📸 Compartir" data-pt="📸 Compartilhar" data-pl="📸 Udostępnij" data-fr="📸 Partager" data-pt="📸 Partilhar" data-en="📸 Share">📸 Compartir</button>
         </div>
         <div class="ea-row">
           <button class="btn sm line" onclick="viewCareer()" data-es="👁️ Ver carrera" data-pt="👁️ Ver carreira" data-pl="👁️ Zobacz karierę" data-fr="👁️ Voir la carrière" data-pt="👁️ Ver carreira" data-en="👁️ View career">👁️ Ver carrera</button>
@@ -804,6 +804,17 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <button class="rank-x" onclick="closePatrons()">✕</button>
     </div>
     <div class="rank-list" id="patronList"></div>
+  </div>
+</div>
+
+<!-- 👥 MODO TP: parrilla completa + pool de reservas (capa de información del mercado) -->
+<div id="tpGridModal">
+  <div class="rank-card">
+    <div class="rank-head">
+      <h2>👥 <span data-es="Parrilla y mercado" data-pt="Grid e mercado" data-pl="Stawka i rynek" data-fr="Plateau et marché" data-pt="Grelha e mercado" data-en="Grid & market">Parrilla y mercado</span></h2>
+      <button class="rank-x" onclick="closeTPGrid()">✕</button>
+    </div>
+    <div class="rank-list" id="tpGridList"></div>
   </div>
 </div>
 
@@ -1340,8 +1351,15 @@ const LINEAGE_2010 = [
                             {to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2020,2027], p:.7}]},
  {key:"Toro Rosso", steps:[{to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2018,2022], p:.6},
                            {to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2028], p:.6}]},
+ /* 🚫 AQUÍ NO VA KICK SAUBER, y es una decisión, no un olvido (Carlos, 11-ago-2026). Los eslabones de
+    esta cadena son cambios de DUEÑO o de fabricante —BMW compra, BMW se va, Alfa pone la marca, Audi
+    compra la fábrica—; Kick Sauber fueron dos años de derechos de nombre del chasis de una casa de
+    apuestas, tan corta que en 2026 ya no existe. Además, en historia alternativa es lo más arbitrario
+    que puede pasar: a estas alturas el mundo lleva una década divergiendo y que aparezca ESE
+    patrocinador en ESE año exacto no se sostiene. Regla que deja: el linaje modela entidades, no
+    patrocinadores. El debut de Audi sí se corrigió a 2026, que es su año real. */
  {key:"Sauber", steps:[{to:{name:"Alfa Romeo",abbr:"ALF",color:"#900000",color2:"#C0C0C8"}, w:[2017,2021], p:.5},
-                       {to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2024,2031], p:.65}]},
+                       {to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2031], p:.65}]},
  {key:"Lotus", steps:[{to:{name:"Caterham",abbr:"CAT",color:"#00573F",color2:"#F5D800"}, w:[2011,2013], p:.6},
                       {die:true, w:[2013,2017], p:.6}]},
  {key:"Virgin", steps:[{to:{name:"Marussia",abbr:"MAR",color:"#B01717",color2:"#151515"}, w:[2011,2013], p:.6},
@@ -1352,7 +1370,7 @@ const LINEAGE_2020 = [
  {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2021,2024], p:.75}]},
  {key:"Racing Point", steps:[{to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2021,2023], p:.85}]},
  {key:"AlphaTauri", steps:[{to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2027], p:.6}]},
- {key:"Alfa Romeo", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2024,2030], p:.65}]},
+ {key:"Alfa Romeo", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2030], p:.65}]},
 ];
 // equipos NUEVOS de la era (con prob por partida; independientes entre sí, salvo grupo `excl`:
 // el proyecto GM solo entra bajo UNA marca por partida — o Andretti o Cadillac, como en la realidad).
@@ -1716,7 +1734,7 @@ const LINEAGE_2000 = [
  {key:"Sauber", steps:[{to:{name:"BMW Sauber",abbr:"BMW",color:"#0a4ea2",color2:"#c0c0c8"}, w:[2005,2008], p:.6},
                        {to:{name:"Sauber",abbr:"SAU",color:"#0A4EA2",color2:"#C00000"}, w:[2009,2012], p:.7},
                        {to:{name:"Alfa Romeo",abbr:"ALF",color:"#900000",color2:"#C0C0C8"}, w:[2018,2022], p:.5},
-                       {to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2025,2031], p:.6}]},
+                       {to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2031], p:.6}]},
  {key:"Jordan", steps:[{to:{name:"Midland",abbr:"MID",color:"#C00000",color2:"#f5f5f5"}, w:[2005,2008], p:.5},
                        {to:{name:"Spyker",abbr:"SPY",color:"#F58220",color2:"#111111"}, w:[2006,2009], p:.6},
                        {to:{name:"Force India",abbr:"FI",color:"#E87511",color2:"#245A2A"}, w:[2007,2011], p:.75},
@@ -1811,7 +1829,7 @@ const ERAS = {
 let SELECTED_ERA = "2026";
 function curEra(){ return ERAS[(S&&S.era)||SELECTED_ERA]||ERAS["2026"]; }
 // etiqueta de categoría según la era (GP2/GP3 en 2010, F2/F3/FRECA en 2020/2026)
-function catName(cat){ if(cat==="KART") return "Karting"; if(cat==="TEST") return L("Probador","Reserve",{pt:"Piloto de testes"});
+function catName(cat){ if(cat==="KART") return "Karting"; if(cat==="TP") return "Team Principal"; if(cat==="TEST") return L("Probador","Reserve",{pt:"Piloto de testes"});
   const v=curEra().cats[cat]; if(!v) return cat;
   return Array.isArray(v) ? LA(v) : v; }
 
@@ -1968,18 +1986,28 @@ function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el 
 // ni Singapur; Jeddah llega en 2021. Global para que cualquier dilema/evento pueda ambientar sin anacronismos.
 // [nombre, año de estreno, vueltas de carrera, nº de curvas] — las vueltas y las curvas son las reales,
 // para que un «vuelta 31, curva 5» inventado nunca pida una curva que ese circuito no tiene.
+/* 📅 EL CALENDARIO, CON MES. El quinto campo es el MES REAL en el que se corre cada Gran Premio, y no
+   es decoración: el accidente de época necesita saber POR DÓNDE VA EL AÑO cuando ocurre (Imola es la
+   tercera carrera, Suzuka la penúltima), y de ahí salen tanto las carreras que te pierdes como si la
+   baja llega o no a la temporada siguiente. Dos circuitos han cambiado de sitio en el calendario y se
+   resuelven por año: Australia CERRABA el campeonato hasta 1995 (Adelaida) y lo abre desde 1996;
+   Brasil lo abría hasta 2003 y lo cierra desde 2004. */
 function gpList(yr){
-  return [[L("Mónaco","Monaco",{pt:"Mônaco"}),0,78,19],["Silverstone",0,52,18],["Spa",0,44,19],["Monza",0,53,11],["Suzuka",0,53,18],
-    ["Interlagos",0,71,15],["Hungaroring",0,70,14],["Barcelona",0,66,14],["Montreal",0,70,14],["Melbourne",0,58,14],
-    [L("Singapur","Singapore",{pt:"Singapura"}),2008,62,19],[L("Abu Dabi","Abu Dhabi",{pt:"Abu Dhabi"}),2009,58,16],["Austin",2012,56,20],[L("Bakú","Baku",{pt:"Baku"}),2016,51,20],
-    ["Imola",2020,63,19],["Zandvoort",2021,72,14],[L("Yeda","Jeddah",{pt:"Jeddah"}),2021,50,27],["Las Vegas",2023,50,17]]
-    .filter(c=>!c[1]||yr>=c[1]).map(c=>({n:c[0], laps:c[2], turns:c[3]}));
+  return [[L("Mónaco","Monaco",{pt:"Mônaco"}),0,78,19,5],["Silverstone",0,52,18,7],["Spa",0,44,19,8],["Monza",0,53,11,9],["Suzuka",0,53,18,10],
+    ["Interlagos",0,71,15,3],["Hungaroring",0,70,14,8],["Barcelona",0,66,14,5],["Montreal",0,70,14,6],["Melbourne",0,58,14,3],
+    [L("Singapur","Singapore",{pt:"Singapura"}),2008,62,19,9],[L("Abu Dabi","Abu Dhabi",{pt:"Abu Dhabi"}),2009,58,16,12],["Austin",2012,56,20,10],[L("Bakú","Baku",{pt:"Baku"}),2016,51,20,6],
+    ["Imola",2020,63,19,4],["Zandvoort",2021,72,14,8],[L("Yeda","Jeddah",{pt:"Jeddah"}),2021,50,27,3],["Las Vegas",2023,50,17,11]]
+    .filter(c=>!c[1]||yr>=c[1])
+    .map(c=>({n:c[0], laps:c[2], turns:c[3],
+      mes: c[0]==="Melbourne"  ? (yr<=1995?11:3)
+         : c[0]==="Interlagos" ? (yr>=2004?11:3)
+         : c[4] }));
 }
 function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
-function startCareerFlow(era){ CHALLENGE=null;
+function startCareerFlow(era){ CHALLENGE=null; TP_MODE=false;
   if(TEST_MODE && TESTS[TEST_MODE] && TESTS[TEST_MODE].era) era=TESTS[TEST_MODE].era; SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
 // 🕰️ Modo Retro: la tarjeta despliega el selector de décadas (2010 y 2020 jugables; el resto, en camino)
 function toggleRetro(){
@@ -2262,6 +2290,7 @@ function pName(){
 }
 function startChallengeFlow(id){
   if(!CHALLENGES[id]) return;
+  TP_MODE=false;
   CHALLENGE = id; SELECTED_ERA = CHALLENGES[id].era;
   track("challenge_selected", {challenge:id});
   showIdentity();
@@ -2538,10 +2567,16 @@ function showIdentity(){
   const suplanta = !!(CH && CH.who);
   $("cardChallenge").style.display = CH?"block":"none";
   $("cardCountry").style.display   = suplanta?"none":"block";
-  $("cardStyle").style.display     = suplanta?"none":"block";
+  // 🧑‍💼 MODO TP: el jefe no tiene estilo de pilotaje ni dorsal — solo apellido y bandera.
+  // Los valores mudos existen para que el resto del flujo (validador clásico, tarjeta) no se rompa.
+  $("cardStyle").style.display     = (suplanta||TP_MODE)?"none":"block";
+  const _numF=$("inNum").parentElement, _plate=$("helmetNum").parentElement;
+  if(_numF) _numF.style.display = TP_MODE?"none":"";
+  if(_plate) _plate.style.display = TP_MODE?"none":"";
+  if(TP_MODE){ sel.style="consistente"; $("inNum").value="1"; }
   // con dos tarjetas la rejilla de tres columnas deja todo descolgado a la izquierda
   const _g=document.querySelector(".id-grid");
-  _g.classList.toggle("duo", suplanta);        // 2 tarjetas: identidad + reto
+  _g.classList.toggle("duo", suplanta||TP_MODE); // 2 tarjetas: identidad + reto (o identidad + país en TP)
   _g.classList.toggle("cuatro", !!CH && !suplanta); // 4 tarjetas: + país y estilo → 2×2
   $("identity").classList.toggle("challenge", !!CH);
   if(CH){
@@ -2571,7 +2606,9 @@ function showIdentity(){
   }
   // el subtítulo miente en un reto: ahí no eliges ni bandera ni estilo, solo tu apellido
   const st=document.querySelector("#identity > p");
-  if(st) st.textContent = suplanta ? L("Solo eliges tu apellido: es el que llevarás al ranking. Lo demás lo pone él.",
+  if(st) st.textContent = TP_MODE ? L("Tu apellido y tu bandera. El coche lo pone la fábrica; las decisiones, tú.",
+                                 "Your surname and your flag. The factory brings the car; you bring the decisions.",{pt:"O seu sobrenome e a sua bandeira. O carro quem põe é a fábrica; as decisões, você."})
+                            : suplanta ? L("Solo eliges tu apellido: es el que llevarás al ranking. Lo demás lo pone él.",
                                  "You only choose your surname: that's the one you take to the leaderboard. The rest is his.",{pt:"Você só escolhe o seu sobrenome: é o que vai levar para o ranking. O resto quem põe é ele."})
                             : L("Tu dorsal, tu bandera y tu forma de pilotar. El resto lo decide la pista.",
                                 "Your number, your flag and how you drive. The track decides the rest.",{pt:"O seu número, a sua bandeira e o seu jeito de pilotar. O resto quem decide é a pista."});
@@ -2603,7 +2640,9 @@ function pickStyle(s){
   validateIdentity();
 }
 function validateIdentity(){
-  const ok = $("inName").value.trim().length>=2 && $("inNum").value.length>=1 && sel.country && sel.style;
+  // 🧑‍💼 en TP no hay dorsal ni estilo que validar: con apellido y país basta
+  const ok = TP_MODE ? ($("inName").value.trim().length>=2 && sel.country)
+    : $("inName").value.trim().length>=2 && $("inNum").value.length>=1 && sel.country && sel.style;
   $("btnConfirm").disabled = !ok;
 }
 
@@ -2635,7 +2674,7 @@ function startCareer(){
     seasons:[], f1Seasons:0, testYears:0, testProved:0, retired:false,
     f1perf:{}, f1target:{}, f1char:{}, cache:{}, retiredPool:[], comebackDone:false, jrPerf:{}, usedEvents:{}, usedDilemmas:{}, dilemmaCount:0, lastDilemmaAge:0, reserveDilOK:ch(.5), lluviaOK:ch(.42),
     bigInjuryDone:false, feuds:[], respects:[], _incRival:null, fiaTitleCount:0, fiaTitlePending:null, _fiaSc:null,
-    pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, forceMove:false, apxShown:false,
+    pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, pendMiss:0, forceMove:false, apxShown:false,
     baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
     seats:{}, dpool:[], rookies:[...ERA.rookies], crossovers:ERA.crossovers.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     role:null, roleTeam:null, roleMate:null,
@@ -2712,6 +2751,9 @@ function startCareer(){
   S._t0 = Date.now(); // marca de inicio real (para el filtro anti-trampa de tiempo de juego)
   try{ const c=$("chkDeaths"); S.deathsOn = (ERAS[SELECTED_ERA]||{}).deadly ? !!(c&&c.checked) : false; }catch(e){ S.deathsOn=false; }
   S.supDriver = pickSupDriver();  // 🏎️ ¿corre el piloto de algún mecenas en esta partida?
+  /* 🧑‍💼 MODO TEAM PRINCIPAL: mismo mundo, la cámara al otro lado. El estado y la parrilla de arriba
+     valen tal cual; a partir de aquí no hay karting ni asiento de piloto — se elige escudería. */
+  if(TP_MODE){ initTPState(); tpChooseTeam(); return; }
   // 📅 RETO que revive a alguien: en vez del karting, arrancas directamente en su asiento.
   //    Los retos de REGLAS (La Bestia) no tienen `who`: se juegan como una carrera normal desde el
   //    karting, y su regla se aplica sola cuando toca (spawnBeast al llegar a la F1).
@@ -2726,6 +2768,12 @@ function startCareer(){
 }
 
 function refreshCard(){
+  if(S && S.cat==="TP"){ tpRefreshCard(); return; }   // 🧑‍💼 la tarjeta del jefe es otra: prestigio, consejo, dueño
+  // si la partida anterior (misma sesión) fue de TP, restaurar las etiquetas clásicas de la tarjeta
+  // ⚠️ el flag vive FUERA de S: cada startCareer crea un S nuevo y un flag dentro de S se perdía justo
+  // cuando hacía falta (lo cazó la tanda de regresión: OVR seguía diciendo PRESTIGIO)
+  if(window._tpUiDirty){ window._tpUiDirty=false; try{ applyLang(); $("tagNum").style.display="";
+    const _bl=$("ovrBadge").querySelector(".l"); if(_bl) _bl.textContent="OVR"; }catch(e){} }
   if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
   if(sel.flag) $("tagNat").textContent = sel.flag+" "+natCode(sel.flag);
   $("ovrNum").textContent = S.ovr;
@@ -2921,11 +2969,13 @@ function npcSeason(row){
   // 2º y además, los mejores coches pescan talento de abajo
   const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]).map(t=>t.name);
   for(let i=0;i<4;i++){
+    if(tpManaged(order[i])) continue;  // 🧑‍💼 tu equipo no ficha solo: fichas tú
     const top=S.seats[order[i]]; if(!top||!top[0]||!top[1]) continue;
     const wIdx = top[0]==="PLAYER"?1: top[1]==="PLAYER"?0: (top[0].skill<=top[1].skill?0:1);
     const weak = top[wIdx]; if(weak==="PLAYER"||!weak) continue;
     let best=null,bTeam=null,bIdx=0;
     for(let j=i+3;j<order.length;j++){
+      if(tpManaged(order[j])) continue;  // 🧑‍💼 …ni el mercado se lleva a TUS pilotos en silencio (guarda de la cala)
       const lower=S.seats[order[j]]; if(!lower) continue;
       lower.forEach((d,k)=>{ if(d&&d!=="PLAYER"&&(!best||d.skill>best.skill)){best=d;bTeam=order[j];bIdx=k;} });
     }
@@ -2987,6 +3037,8 @@ function npcRescateTalento(row){
   Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
     sl.forEach((d,i)=>{
       if(!d || d==="PLAYER") return;
+      // 🧑‍💼 a TU estrella no la «rescatan» de tu propio equipo (guarda de la cala): eso será un dilema
+      if(tpManaged(tm)){ S.rotYears[d.name]=0; return; }
       if(!cola.has(tm) || (d.skill||0)<87){ S.rotYears[d.name]=0; return; }
       S.rotYears[d.name]=(S.rotYears[d.name]||0)+1;
       if(S.rotYears[d.name]>=2) candidatos.push({d,tm,i});
@@ -2997,6 +3049,7 @@ function npcRescateTalento(row){
   const c=candidatos[0];
   if(!ch(.55)) return;                       // no siempre: el rescate cuesta y a veces no llega
   for(const tn of cabeza){
+    if(tpManaged(tn)) continue;              // 🧑‍💼 tu equipo no rescata solo: para eso está la terna
     const sl=S.seats[tn]; if(!Array.isArray(sl)) continue;
     if(isRBJr(tn) && ((c.d.age||0)>=32 || (c.d.titles||0)>0 || c.d.crossover)) continue;
     if(!canLureStar(tn, c.d)) continue;      // el caché sigue mandando con los galácticos
@@ -3044,6 +3097,9 @@ function npcMercadoOrdinario(){
   const perf = t => (S.f1perf[t] ?? 75);
   const bolsa=[], huecos=[];
   Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
+    // 🧑‍💼 el equipo gestionado queda FUERA del mercado ordinario: sus renovaciones y sus huecos
+    // (una retirada, p.ej.) los decide el jugador con la terna, no esta función
+    if(tpManaged(tm)) return;
     sl.forEach((d,i)=>{
       if(d===null || d===undefined){ huecos.push({tm,i}); return; }  // retirada de este año
       if(d==="PLAYER") return;
@@ -3091,7 +3147,8 @@ function npcMercadoOrdinario(){
   // 🔁 los buenos que se quedan sin asiento no se esfuman: esperan en la nevera a la próxima ventana
   S.freeAgents = bolsa.filter(d=>(d.skill||0)>=84 && (d.age||0)<=34).slice(0,3);
   // 🔒 red de seguridad: ningún asiento puede quedarse vacío bajo ninguna circunstancia
-  Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)) return;
+  // (salvo el equipo gestionado en TP: su hueco lo cubre el jugador antes de la próxima temporada)
+  Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl) || tpManaged(tm)) return;
     sl.forEach((d,i)=>{ if(d===null||d===undefined) sl[i]=mkRookie(isRBJr(tm), tm); }); });
 }
 /* 🔙 EL COMEBACK (Schumacher 2010, Räikkönen 2012, Alonso 2021): como mucho UNO por partida — que sea
@@ -3114,7 +3171,7 @@ function maybeComeback(row){
   if(Object.values(S.seats).some(sl=>Array.isArray(sl)&&sl.some(x=>x&&x!=="PLAYER"&&x.name===r.name))) return;
   const fuera=yr-r.retiredYear;
   const skill=Math.max(74, Math.round(r.skill-2-fuera));   // el óxido del parón
-  const dest=F1_TEAMS.filter(t=>!isRBJr(t.name) && (((S.cache&&S.cache[t.name])||0)>=70 || (S.f1perf[t.name]||0)>=85))
+  const dest=F1_TEAMS.filter(t=>!isRBJr(t.name) && !tpManaged(t.name) && (((S.cache&&S.cache[t.name])||0)>=70 || (S.f1perf[t.name]||0)>=85))
     .filter(t=>{ const sl=S.seats[t.name]; return sl && sl.some(x=>x && x!=="PLAYER" && (x.skill||0)<skill-2 && !(x.titles>0)); });
   if(!dest.length) return;
   const t=dest[irnd(0,dest.length-1)], sl=S.seats[t.name];
@@ -3170,6 +3227,21 @@ function occupySeat(teamName){
   // limpia cualquier "PLAYER" residual en otros equipos (herencia de bugs pasados) con un joven
   spots.forEach(([tn,j])=>{ if(tn!==teamName && S.seats[tn] && S.seats[tn][j]==="PLAYER") S.seats[tn][j]=mkRookie(isRBJr(tn), tn); });
   S.mySeatTeam=teamName;
+}
+/* 🪑 AL SALIR DE LA F1, TU ASIENTO NO SE QUEDA VACÍO. Al irte a IndyCar (o al banquillo de probador) el
+   centinela "PLAYER" seguía sentado en tu antiguo equipo, y `bgF1Season` salta a los fantasmas: el
+   equipo corría temporadas ENTERAS con un solo coche y se hundía en constructores. Cazado en la partida
+   de pruebas de 2000: un Benetton de 83 de coche acabó 11º de 11… con su otro piloto 6º del Mundial, y
+   el mundo con un piloto real de menos. En la F1 de verdad, en cuanto te vas te sustituye alguien. */
+function releasePlayerSeat(row){
+  Object.entries(S.seats||{}).forEach(([tn,sl])=>{ if(!Array.isArray(sl)) return;
+    sl.forEach((d,i)=>{ if(d==="PLAYER"){
+      const sub=mkRookie(isRBJr(tn), tn); sl[i]=sub;
+      if(row && row.events) row.events.push(L(`🪑 Tu asiento en ${tn} no espera a nadie: se queda con él ${sub.name}.`,
+        `🪑 Your seat at ${tn} waits for nobody: ${sub.name} takes it.`,{pt:`🪑 A sua vaga na ${tn} não espera por ninguém: fica com ela ${sub.name}.`}));
+    }});
+  });
+  S.mySeatTeam=null;
 }
 // call-up de reserva a mitad de temporada: pasas de probador a piloto de F1 ESE año (te subiste
 // a mitad de temporada → te pierdes las primeras carreras). Robusto: reutiliza occupySeat.
@@ -5200,7 +5272,15 @@ function maybeAccidenteEra(row){
   let tot=pool.reduce((n,x)=>n+x.w,0), r=Math.random()*tot, v=pool[pool.length-1];
   for(const x of pool){ if((r-=x.w)<0){ v=x; break; } }
   S.eraCrashDone=true;
-  const gps=gpList(yr), gp=gps[irnd(0,gps.length-1)].n;
+  /* 🗓️ CUALQUIER FIN DE SEMANA DEL AÑO, EMPEZANDO POR EL PRIMERO. Imola fue la TERCERA carrera de 1994:
+     cerrar la puerta a los accidentes de principio de temporada sería quitarle a esta era justo lo que
+     la define (petición expresa de Carlos). Para que eso sea posible, este bloque se decide ANTES de
+     simular el año —no después— y de ahí sale en qué carrera ocurre: el mes real del circuito dice por
+     dónde va el campeonato (marzo = primera, noviembre = última). */
+  const _cs=gpList(yr), _c=_cs[irnd(0,_cs.length-1)], gp=_c.n, mesAcc=_c.mes;
+  const _races=racesIn(yr);
+  // en qué carrera del calendario cae (marzo→noviembre repartido entre las carreras del año)
+  const iAcc=Math.max(0, Math.min(_races-1, Math.round(_races*(mesAcc-3)/9)));
   const cuando = ch(.5) ? L("en la clasificación","in qualifying",{pt:"na classificação"}) : L("durante la carrera","during the race",{pt:"durante a corrida"});
   const nombre = v.p ? surname(sel.name)+L(" (TÚ)"," (YOU)",{pt:" (VOCÊ)"}) : surname(v.d.name);
   // gravedad: sin la casilla marcada, lo mortal se convierte en retirada
@@ -5210,18 +5290,50 @@ function maybeAccidenteEra(row){
   if(grave==="fatal"){
     row.events.push(L(`⚫ Fin de semana de luto en ${gp}. ${nombre} tiene un accidente gravísimo ${cuando} y el domingo se corre en silencio en medio de la polémica.`,
                       `⚫ A weekend of mourning at ${gp}. ${nombre} has a terrible accident ${cuando} and Sunday's race runs in silence, amid the outcry.`,{pt:`⚫ Fim de semana de luto em ${gp}. ${nombre} sofre um acidente gravíssimo ${cuando} e no domingo se corre em silêncio, em meio à polêmica.`}));
-    if(v.p){ S.retired=true; S.retireReason="accidente"; }
+    // 🏁 tu año se corta EN el accidente: corriste los GP previos y esos puntos cuentan (Rindt fue
+    // campeón póstumo). La pantalla final la abre simSeason al ver `retired`.
+    if(v.p){ S.crashRace=iAcc; S.retired=true; S.retireReason="accidente"; }
     else quitarDeLaParrilla(v.d);
   } else if(grave==="retira"){
     row.events.push(L(`🦴 Accidente gravísimo en ${gp}. ${nombre} sobrevive, pero no volverá a un coche de Fórmula 1. El paddock aprende a decir «por suerte» con la boca pequeña.`,
                       `🦴 A terrible accident at ${gp}. ${nombre} survives, but will never race a Formula 1 car again. The paddock learns to say «luckily» through gritted teeth.`,{pt:`🦴 Acidente gravíssimo em ${gp}. ${nombre} sobrevive, mas não voltará a um carro de Fórmula 1. O paddock aprende a dizer «ainda bem» de boca pequena.`}));
-    if(v.p){ S.retired=true; S.retireReason="accidente"; }
+    if(v.p){ S.crashRace=iAcc; S.retired=true; S.retireReason="accidente"; }
     else quitarDeLaParrilla(v.d);
   } else if(grave==="lesion"){
     const meses=irnd(3,8);
     row.events.push(L(`🏥 ${nombre} pasa ${meses} meses fuera. La FIA toma medidas para aumentar la seguridad de los pilotos.`,
                       `🏥 ${nombre} is out for ${meses} months. The FIA moves to improve driver safety.`,{pt:`🏥 ${nombre} fica ${meses} meses fora. A FIA toma medidas para aumentar a segurança dos pilotos.`}));
-    if(v.p){ OVR(-2); S.dnpSeason=true; }
+    /* 🏥 LA BAJA SE CUENTA CON EL CALENDARIO EN LA MANO, y son TRES desenlaces distintos según cuándo
+       te pasa y cuánto dura (antes se marcaba `S.dnpSeason=true`, que además de borrarse solo al acabar
+       la temporada daba siempre el año por perdido):
+         · te lesionas pronto y la baja es corta  → vuelves ESE MISMO AÑO para el tramo final,
+         · la baja se come lo que queda de curso  → tu temporada acaba ahí… y el invierno te cura,
+         · o es tan larga que muerde el año que viene → te pierdes las primeras del siguiente.
+       El campeonato va de marzo a noviembre y no vuelve hasta MARZO: por eso una baja de 3 meses en
+       octubre no cuesta ni una carrera (matiz de Carlos), y una de 6 en abril te devuelve en septiembre. */
+    if(v.p){ OVR(-2);
+      S.crashRace=iAcc;                                   // tu año se corta en el accidente…
+      const fuera=Math.max(1, Math.round(_races*meses/9)); // …y la baja dura esto en carreras
+      const vuelta=iAcc+fuera;
+      if(vuelta <= _races-2){
+        S.backAt=vuelta;                                   // …pero llegas a tiempo de volver este año
+        row.events.push(L(`🏥 Te pierdes ${fuera} carreras y reapareces para las ${_races-vuelta} últimas del campeonato.`,
+                          `🏥 You miss ${fuera} races and reappear for the final ${_races-vuelta} of the championship.`,
+                          {pt:`🏥 Você perde ${fuera} corridas e reaparece para as ${_races-vuelta} últimas do campeonato.`}));
+      } else {
+        const sobra=(mesAcc+meses)-15;   // marzo del año que viene = mes 15 contando desde este enero
+        if(sobra > .5){
+          S.pendMiss=sobra;              // en meses; el arranque del año siguiente los pasa a carreras
+          row.events.push(L("🏥 Tu temporada se acaba aquí, y la recuperación se lleva además parte del año que viene.",
+                            "🏥 Your season ends here, and the recovery also eats into next year.",
+                            {pt:"🏥 A sua temporada acaba aqui, e a recuperação ainda leva parte do ano que vem."}));
+        } else {
+          row.events.push(L("🏥 Tu temporada se acaba aquí; la baja se te va en el invierno y llegas a la pretemporada a tiempo.",
+                            "🏥 Your season ends here; the lay-off is swallowed by the winter and you make pre-season testing in time.",
+                            {pt:"🏥 A sua temporada acaba aqui; a baixa cabe no inverno e você chega à pré-temporada a tempo."}));
+        }
+      }
+    }
     else if(v.d) v.d.skill=Math.max(70,(v.d.skill||75)-2);
   } else {
     row.events.push(L(`😮‍💨 El coche de ${nombre} queda irreconocible en ${gp} y sale andando. Nadie se explica cómo. La FIA anuncia medidas de seguridad.`,
@@ -5275,10 +5387,36 @@ function simSeason(){
       row.events.push(L(`✍️ Te sientas en el ${dest.name} con la temporada empezada.`,`✍️ You get into the ${dest.name} with the season already under way.`,{pt:`✍️ Você senta no ${dest.name} com a temporada já começada.`}));
     }
   }
+  // 🪑 si este año NO corres en la F1 (aventura, banquillo, escalera), tu antiguo asiento vuelve al
+  //    mercado antes de simular nada: la parrilla corre siempre con sus 20+ pilotos de verdad
+  if(S.cat!=="F1") releasePlayerSeat(row);
   checkExpansion(row);
+  /* 🏥 BAJA ARRASTRADA del accidente de época: el accidente se narra al FINAL de la temporada, cuando
+     esa ya está simulada, así que los meses de baja se cobran aquí, en el año siguiente. Va antes de
+     maybeInjury a propósito: con la baja puesta, su guarda (`missRaces>0`) evita encadenar dos
+     lesiones el mismo año. */
+  if(S.pendMiss){
+    const _m=S.pendMiss; S.pendMiss=0;
+    if(S.cat==="F1"){
+      const _r=racesIn(row.year);
+      // el campeonato dura ~9 meses (marzo→noviembre): los meses que te quedan de baja se traducen a
+      // carreras de ESTE calendario, siempre al menos una (si no, la línea de arriba mentiría) y nunca
+      // el año entero, que para eso está la lesión de pretemporada
+      S.missRaces=Math.max(S.missRaces||0, Math.max(1, Math.min(_r-2, Math.round(_r*_m/9))));
+      row.events.push(L(`🏥 Empiezas el año en recuperación: te pierdes las ${S.missRaces} primeras carreras.`,
+                        `🏥 You start the year still recovering: you miss the first ${S.missRaces} races.`,
+                        {pt:`🏥 Você começa o ano em recuperação: perde as ${S.missRaces} primeiras corridas.`}));
+    }
+  }
+  /* ⚫ EL ACCIDENTE QUE CAMBIÓ LA F1 se decide AQUÍ, antes de correr el año, no después. Es lo que
+     permite que ocurra en la tercera carrera —como Imola'94— y que eso signifique algo: tu temporada se
+     corta ahí de verdad, con los puntos que llevabas. Estando antes que `maybeInjury`, su guarda
+     (`crashRace!=null`) evita además encadenarte dos lesiones el mismo año. */
+  maybeAccidenteEra(row);
   maybeInjury(row); // lesión grave rara (1 año fuera, asiento en peligro) antes de simular la temporada
   let result;
   if(S.cat==="F1") result = simF1(row,st);
+  else if(S.cat==="TP") result = simTP(row);   // 🧑‍💼 tu equipo corre con dos NPC; simTP llama a bgF1Season
   else if(S.cat==="TEST"){ result = simTest(row,st); bgF1Season(row); }
   else if(S.cat==="ADV"){ result = simAdventure(row); bgF1Season(row); }
   else { result = simJunior(row,st); bgF1Season(row); }
@@ -5348,10 +5486,13 @@ function simSeason(){
     S.regBet=null; S.regBetGrade=null; S.regBetRefused=null;
     S.regReveal=null;
   }
-  maybeAccidenteEra(row);   // ⚫ el accidente que cambió la F1 (solo en las eras que lo permiten)
   tickSeguridadEra(row);    // 🛡️ y el invierno siguiente, las reglas nuevas
-  if(S.retired) { S.seasons.push(row); renderTimeline(); renderF1State(); return; }
-  if(S.cat!=="ADV" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero
+  /* ⚫ TE HAS RETIRADO A MITAD DE TEMPORADA (hoy solo el accidente de época lo hace). Antes se guardaba
+     la temporada y se salía… y ahí se acababa todo: `startSeasonRun` ve `S.retired` y también se va, así
+     que NADIE abría la pantalla final. El juego se quedaba clavado en «Temporada 1994 en curso…» sin un
+     solo botón, con la carrera muerta y sin resumen. La pantalla final se abre aquí. */
+  if(S.retired) { S.seasons.push(row); renderTimeline(); renderF1State(); endCareer(); return; }
+  if(S.cat!=="ADV" && S.cat!=="TP" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero (ni en el muro: esos son de piloto)
   mktReset();             // 🔒 nadie se ha movido todavía en el mercado de este invierno
   evolveF1(row);
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
@@ -5365,7 +5506,8 @@ function simSeason(){
   // crecimiento con rendimientos decrecientes: cuanto más alto, más cuesta.
   // el techo real ronda 88-93; solo un talento excepcional roza el 95.
   let g;
-  if(S.cat==="ADV"){
+  if(S.cat==="TP"){ g=0; } // 🧑‍💼 el jefe no tiene OVR que crecer: su "nivel" es el prestigio y se mueve en simTP
+  else if(S.cat==="ADV"){
     const sr=SERIES[S.advSeries];
     if(S.youngDetour && S.age<=28){
       // 🌏 joven curtiéndose en Super Fórmula/Indy/FE: NO te oxidas, sigues creciendo (así te ganas el billete a la F1)
@@ -5400,8 +5542,8 @@ function simSeason(){
     if(g>0) g*=Math.max(.13,(95-S.ovr)/22); // el techo se vuelve casi vertical hacia el 92
   }
   S.ovr = Math.max(40, Math.min(95, Math.round(S.ovr+g)));
-  row.ovr=S.ovr;
-  S.missRaces=0; S.crashRace=null; S.dnpSeason=false;
+  row.ovr = S.cat==="TP" ? S.tpPrest : S.ovr;  // en TP la columna OVR de la trayectoria es tu PRESTIGIO
+  S.missRaces=0; S.crashRace=null; S.backAt=null; S.dnpSeason=false;
   S.seasons.push(row);
   renderTimeline();
   renderF1State();
@@ -5412,7 +5554,8 @@ function evolveF1(row){
   F1_TEAMS.forEach(t=>{
     // los proyectos cambian de rumbo pocas veces → eras que duran varios años.
     // (evolveF1) el nuevo objetivo se fija respecto al nivel actual, creando arcos sostenidos.
-    if(Math.random()<.17) S.f1target[t.name]=Math.max(61,Math.min(95, S.f1perf[t.name]+rnd(-17,17)));
+    // 🧑‍💼 en TP el rumbo de TU equipo lo marcas tú cada invierno: el dado no te lo puede pisar
+    if(!tpManaged(t.name) && Math.random()<.17) S.f1target[t.name]=Math.max(61,Math.min(95, S.f1perf[t.name]+rnd(-17,17)));
     const cur=S.f1perf[t.name], tgt=S.f1target[t.name];
     // deriva (0.28) y poco ruido (±1) → la parrilla se reordena y ningún coche domina eternamente
     S.f1perf[t.name]=Math.max(60,Math.min(96, cur+(tgt-cur)*.28+rnd(-1,1)));
@@ -5693,13 +5836,14 @@ const CACHE_SEED = {
 };
 /* 💰 un equipo con un cochazo desaprovechado sale al mercado y se lleva a la mejor estrella disponible */
 function poachStar(tn, row){
+  if(tpManaged(tn)) return;   // 🧑‍💼 tu equipo no sale de compras sin ti
   const slots=S.seats[tn]; if(!slots || slots.length<2) return;
   const wIdx = slots[0]==="PLAYER"?1 : slots[1]==="PLAYER"?0 : (((slots[0].skill||0)<=(slots[1].skill||0))?0:1);
   const weak=slots[wIdx]; if(!weak || weak==="PLAYER") return;
   let best=null,bT=null,bI=0;
   // …la mejor estrella QUE PUEDA VENIR: si el cochazo no tiene caché, el galáctico en su prime no viene
   // (ficha entonces al mejor 86-89 disponible, que es justo lo que hace que un underdog pueda ser campeón)
-  Object.entries(S.seats).forEach(([t,s])=>{ if(t===tn) return;
+  Object.entries(S.seats).forEach(([t,s])=>{ if(t===tn || tpManaged(t)) return;   // ni te roba a ti
     (s||[]).forEach((d,i)=>{ if(d && d!=="PLAYER" && (!best || (d.skill||0)>(best.skill||0)) && canLureStar(tn,d)){ best=d; bT=t; bI=i; } }); });
   if(!best || (best.skill||0) <= (weak.skill||0)+3) return;
   if(isRBJr(bT) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) return; // el filial no acepta veteranos
@@ -5713,6 +5857,8 @@ function alphaClash(row){
   S.alphaYears = S.alphaYears || {};
   Object.keys(S.seats).forEach(tn=>{
     const slots=S.seats[tn]; if(!slots || slots.length<2) return;
+    // 🧑‍💼 tus dos gallos no se resuelven la guerra solos (guarda de la cala): en Fase 2 será un dilema
+    if(tpManaged(tn)) return;
     // 🔒 este equipo (o alguno de sus pilotos) ya se ha movido este invierno: no se toca otra vez, o el
     // intercambio anterior se deshace y el resumen cuenta dos fichajes contrarios (lo cazó Carlos)
     if(mktMoved(tn) || slots.some(d=>mktMoved(d))) return;
@@ -5795,7 +5941,7 @@ function alphaClash(row){
     }
     // destino: el mejor equipo que NO tenga ya su propia pareja de gallos (y nunca el filial de RB)
     const posibles=F1_TEAMS
-      .filter(t=>t.name!==tn && S.seats[t.name] && S.seats[t.name].length>=2 && !isRBJr(t.name)
+      .filter(t=>t.name!==tn && S.seats[t.name] && S.seats[t.name].length>=2 && !isRBJr(t.name) && !tpManaged(t.name)
                  && !mktMoved(t.name) && S.seats[t.name].some(d=>d!=="PLAYER"))
       .sort((x,y)=>(S.f1perf[y.name]??70)-(S.f1perf[x.name]??70));
     // primero un equipo sin su propia pareja de gallos; si TODOS están llenos de estrellas,
@@ -5834,7 +5980,9 @@ function bgF1Season(row){
   const rows=[];
   F1_TEAMS.forEach(t=>{
     (S.seats[t.name]||[]).forEach(d=>{
-      if(d!=="PLAYER"){ const w=drvW(); rows.push({d,team:t.name,score:d.skill*w+S.f1perf[t.name]*(1-w)+gauss()*3.4}); }
+      // ⚠️ el null también se filtra: en TP el equipo que dejaste puede arrastrar un asiento vacío
+      // un invierno (retirada + despido/tentación en la misma ventana) hasta que el mercado lo tape
+      if(d && d!=="PLAYER"){ const w=drvW(); rows.push({d,team:t.name,score:d.skill*w+S.f1perf[t.name]*(1-w)+gauss()*3.4}); }
     });
   });
   rows.sort((a,b)=>b.score-a.score);
@@ -5892,7 +6040,8 @@ function hallRows(){
   (S.legends||LEGENDS).forEach(([n,t,f])=>{hall[n]={t,flag:f};});
   S.dpool.forEach(d=>{ if(d.titles>0 && (!hall[d.name]||d.titles>hall[d.name].t)) hall[d.name]={t:d.titles,flag:d.flag}; });
   const rows=Object.entries(hall).map(([n,o])=>({n,t:o.t,flag:o.flag,me:false}));
-  if(S.titles.f1>0) rows.push({n:pName()+" (TÚ)",t:S.titles.f1,flag:sel.flag,me:true});
+  // 🧑‍💼 en TP los mundiales «tuyos» los ganaron TUS PILOTOS (ya cuentan como NPC): tú no entras en esta tabla
+  if(S.titles.f1>0 && S.cat!=="TP") rows.push({n:pName()+" (TÚ)",t:S.titles.f1,flag:sel.flag,me:true});
   rows.sort((a,b)=>b.t-a.t);
   return rows;
 }
@@ -6062,7 +6211,9 @@ function simF1(row,st){
   for(let r=0;r<races;r++){
     // fuera si: lesión de año completo fuera de pista (dnpSeason), accidentazo que corta el año (out desde crashRace),
     // o incorporación tardía / recuperación (out en las primeras missRaces)
-    const out = S.dnpSeason || (S.crashRace!=null ? r>=S.crashRace : r<S.missRaces);
+    // 🏥 `backAt` = la carrera en la que REAPARECES: sin él, una lesión de tres meses en abril te
+    // costaba el año entero igual que una de ocho. Con él, el hueco es el que dura la baja.
+    const out = S.dnpSeason || (S.crashRace!=null ? (r>=S.crashRace && (S.backAt==null || r<S.backAt)) : r<S.missRaces);
     if(!out) raced++;
     const wet=Math.random()<.15;
     const chaos=Math.random()<.10;
@@ -6545,6 +6696,7 @@ function nOffers(){
   return 3;
 }
 function nextOffers(){
+  if(S.cat==="TP"){ tpWinter(); return; }   // 🧑‍💼 el invierno del jefe: consejo, asientos, rumbo
   // 🤝 el dilema del debut YA decidió dónde corres: ese invierno no hay mercado, solo la confirmación.
   if(S.lockTeam && !S.forceMove && !S.retired){
     const t=F1_TEAMS.find(x=>x.name===S.lockTeam); S.lockTeam=null;
@@ -7026,7 +7178,8 @@ function renderTimeline(){
     const catLbl=r.cat==="TEST"?L("Probador F1","F1 Reserve",{pt:"Testes F1"}):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series, r.year)||L("Aventura","Adventure",{pt:"Aventura"})):catName(r.cat);
     const constr=r.constrPos?`🏭 ${L("Constructores","Constructors",{pt:"Construtores"})}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best",{pt:"melhor"})} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
-    const ptsTxt=r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator",{pt:"TL1 + simulador"})):r.cat==="ADV"?"":`${r.pts} pts`;
+    const ptsTxt=r.cat==="TP"?(r.tpLine||"")   // 🧑‍💼 debajo del equipo van TUS DOS PILOTOS con su puesto en el mundial
+      :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator",{pt:"TL1 + simulador"})):r.cat==="ADV"?"":`${r.pts} pts`;
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
     // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
     const advR=r.advResult;
@@ -7265,7 +7418,9 @@ function renderPatrons(){
     const list=SUPPORTERS.filter(s=>(s.t||1)===t);
     if(!list.length) return;
     html+=`<div class="pt-tier">${LA(TIER_NAME[t])}</div>`;
-    html+=list.map(s=>`<div class="pt-row">${s.f?`<span>${s.f}</span>`:""}<span>${s.n}</span></div>`).join("");
+    // en el MURO no se pintan banderas (decisión de Carlos, 11-ago): el nick del mecenas va a secas.
+    // La bandera (s.f) sigue en los datos porque es la de SU PILOTO dentro del juego (SUP_DRIVERS).
+    html+=list.map(s=>`<div class="pt-row"><span>${s.n}</span></div>`).join("");
   });
   html+=`<div class="pt-empty">${L("Gracias por mantener esto en marcha. 🧡","Thanks for keeping this running. 🧡",{pt:"Obrigado por manter isto de pé. 🧡"})}</div>`;
   el.innerHTML=html;
@@ -7354,6 +7509,15 @@ function renderLocal(){
   renderRankRows(a.slice(0,100).map((e,i)=>({rank:i+1, name:e.n, flag:e.f, gloria:e.g})), null, true);
 }
 function endCareer(){
+  if(S.cat==="TP"){ endTPCareer(); return; }   // 🧑‍💼 el veredicto del jefe es propio (y no puntúa en el ranking de pilotos)
+  // la pantalla final de TP reescribe la rejilla de estadísticas (sin los ids eGP/eW/…): si la sesión
+  // anterior fue de jefe, se restaura la rejilla clásica antes de rellenarla (cazado en regresión)
+  if(window._endStatsTP){ window._endStatsTP=false;
+    try{ const g=document.querySelector("#endModal .end-stats"); if(g&&window._endStats0) g.innerHTML=window._endStats0;
+      const sb=$("shareBtn"); if(sb) sb.style.display="";
+      const rb=$("rankBtn"); if(rb) rb.style.display="";
+      $("endAdv").style.display=""; const cm=$("careerMap"); if(cm) cm.style.display="";
+    }catch(e){} }
   S.retired=true;
   const result = S.titles.f1>=2?"multi_champion" : S.titles.f1===1?"champion" : S.titles.constr>0?"constructors_champion"
     : S.subcamp>0?"runner_up" : S.wins>0?"race_winner" : S.f1Seasons>0?"f1_driver" : "prospect";
@@ -7610,6 +7774,809 @@ function printCareer(){
   window.print();
   $("endModal").style.display="flex";
 }
+/* ============================================================
+   🧑‍💼 MODO TEAM PRINCIPAL (Fase 1, solo PREVIEW) — girar la cámara.
+   El mundo es el del modo clásico; aquí no hay PLAYER en ningún asiento:
+   tus dos pilotos son NPC y tu partida es consejo + asientos + rumbo.
+   ============================================================ */
+let TP_MODE=false;
+// ¿es este el equipo gestionado por el jugador en una partida de TP? (la guarda de la cala)
+function tpManaged(tn){ return typeof S!=="undefined" && S && S.cat==="TP" && S.tpTeam===tn; }
+
+function initTPCard(){
+  if(!PREVIEW) return;   // Fase 1 en pruebas: el público sigue viendo «Próximamente»
+  const c=document.getElementById("tpCard"); if(!c) return;
+  c.classList.remove("soon");
+  const b=document.getElementById("badgeTP");
+  if(b){ b.className="new-badge";
+    b.dataset.es="🔒 SOLO TÚ"; b.dataset.en="🔒 YOU ONLY"; b.dataset.pt="🔒 SÓ VOCÊ"; b.dataset.pl="🔒 TYLKO TY"; b.dataset.fr="🔒 TOI SEUL";
+    b.textContent=L("🔒 SOLO TÚ","🔒 YOU ONLY",{pt:"🔒 SÓ VOCÊ"}); }
+  c.style.cursor="pointer";
+  c.onclick=startTPFlow;
+}
+function startTPFlow(){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA="2026"; track("mode_selected",{era:"tp"}); showIdentity(); }
+
+function initTPState(){
+  S.cat="TP";
+  // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
+  S.age=0; S.startAge=0;
+  S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false;
+  S.tpFired=false; S.tpFiredBy=null; S.tpTemptY=null;
+  S.tpOverSum=0; S.tpBestPos=99; S.tpStints=[];
+  S.deathsOn=false;
+  window._tpUiDirty=true;  // al volver al clásico en la misma sesión, la tarjeta se restaura
+}
+const TP_OWNERS=[
+  {k:"win",
+   lab:()=>L("🏆 Dueño ganador","🏆 Winner owner",{pt:"🏆 Dono vencedor"}),
+   intro:()=>L("El dueño viene de ganarlo todo y no ha comprado esto para pasearse: exige más que nadie.",
+               "The owner has won everything and didn't buy this to cruise: he demands more than anyone.",
+               {pt:"O dono vem de ganhar tudo e não comprou isto para passear: exige mais do que ninguém."})},
+  {k:"cut",
+   lab:()=>L("📊 Dueño tecnócrata","📊 Technocrat owner",{pt:"📊 Dono tecnocrata"}),
+   intro:()=>L("Al mando hay un tecnócrata de datos y recortes «inteligentes»: pide resultados que cuadren en su hoja de cálculo.",
+               "In charge is a technocrat of data and «smart» cuts: he wants results that balance his spreadsheet.",
+               {pt:"No comando há um tecnocrata de dados e cortes «inteligentes»: quer resultados que fechem na planilha."})},
+  {k:"young",
+   lab:()=>L("🌱 Dueño paciente","🌱 Patient owner",{pt:"🌱 Dono paciente"}),
+   intro:()=>L("La junta es joven y cree en los proyectos largos: te darán aire… mientras vean una dirección.",
+               "The board is young and believes in long projects: they'll give you air… as long as they see a direction.",
+               {pt:"A direção é jovem e acredita em projetos longos: vão te dar ar… enquanto virem um rumo."})},
+];
+function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
+
+/* tarjeta del jefe: prestigio en vez de OVR, humor del consejo en vez de fama, dueño en vez de estilo */
+function tpRefreshCard(){
+  window._tpUiDirty=true;
+  $("ovrNum").textContent=S.tpPrest;
+  // «PRESTIGIO» entero no cabe en la insignia redonda del OVR (se recortaba): abreviado universal
+  const bl=$("ovrBadge").querySelector(".l"); if(bl) bl.textContent="PRES";
+  $("ovrBadge").style.background=ovrColor(Math.max(55,Math.min(96,55+S.tpPrest*.42)));
+  if(sel.flag) $("tagNat").textContent = sel.flag+" "+natCode(sel.flag);
+  $("tagNum").style.display="none";
+  $("tagStyle").textContent=tpOwnerLabel();
+  $("ageV").textContent=(S.age+1);
+  const lbls=document.querySelectorAll("#driverCard .agev .lbl");
+  if(lbls[0]) lbls[0].textContent=L("TEMPORADA","SEASON",{pt:"TEMPORADA"});
+  if(lbls[1]) lbls[1].textContent=L("CONSEJO","BOARD",{pt:"CONSELHO"});
+  const mood = S.tpMissStreak>=1 ? [L("🚨 Ultimátum","🚨 Ultimatum",{pt:"🚨 Ultimato"}),"#d43f3f"]
+    : S.tpLastMet===false ? [L("😮‍💨 Con aire","😮‍💨 Breathing",{pt:"😮‍💨 Com ar"}),"#c98a1e"]
+    : [L("😊 Contento","😊 Happy",{pt:"😊 Contente"}),"#12923f"];
+  $("valV").textContent=mood[0]; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
+  const ks=document.querySelectorAll("#driverCard .stats-row .k");
+  if(ks[0]) ks[0].textContent=L("Temporadas","Seasons",{pt:"Temporadas"});
+  if(ks[3]) ks[3].textContent=L("Títulos","Titles",{pt:"Títulos"});
+  $("stGP").textContent=S.age; $("stW").textContent=S.wins; $("stP").textContent=S.podiums;
+  $("stPP").textContent=(S.titles.constr+S.titles.f1);
+  if(S.team){
+    $("teamName").textContent=S.team.name;
+    $("teamRole").textContent="TEAM PRINCIPAL";
+    const d=$("teamDot"); const _lg=logoFor(S.team.name);
+    if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
+    else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
+    $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
+  } else {
+    $("teamName").textContent=L("Sin equipo","No team",{pt:"Sem equipe"}); $("teamRole").textContent="";
+  }
+  const tc=$("trophyCase"); const shelf=[];
+  for(let i=0;i<S.titles.constr;i++) shelf.push("🏎️");
+  for(let i=0;i<S.titles.f1;i++) shelf.push("🏆");
+  if(shelf.length){
+    const caps=[];
+    if(S.titles.constr) caps.push(S.titles.constr+L("× Constructores","× Constructors",{pt:"× Construtores"}));
+    if(S.titles.f1) caps.push(S.titles.f1+L("× Mundial de tus pilotos","× Drivers' title (your drivers)",{pt:"× Mundial dos seus pilotos"}));
+    tc.innerHTML=`<div class="shelf">${shelf.join("")}</div><div class="cap">${caps.join(" · ")}</div>`;
+  } else tc.innerHTML=`<div class="empty">${L("🏆 Vitrina vacía","🏆 Empty trophy case",{pt:"🏆 Vitrine vazia"})}</div>`;
+}
+
+/* pantalla de arranque: CUALQUIERA de los proyectos de 2026 — la libertad se paga en exigencia */
+function tpChooseTeam(){
+  const box=$("offerList");
+  setDecision(L("🧑‍💼 Elige tu escudería","🧑‍💼 Choose your team",{pt:"🧑‍💼 Escolha a sua equipe"}),
+    L("Cualquiera de los "+F1_TEAMS.length+" proyectos de 2026 puede ser tuyo. Ojo: la exigencia del consejo escala con el coche — en un grande es el título o la calle; en un colista te darán tiempo.",
+      "Any of the "+F1_TEAMS.length+" projects on the 2026 grid can be yours. Careful: the board's demands scale with the car — at a giant it's title-or-sack; at a backmarker they'll give you time.",
+      {pt:"Qualquer um dos "+F1_TEAMS.length+" projetos de 2026 pode ser seu. Atenção: a exigência do conselho cresce com o carro — numa grande é título ou rua; numa lanterna vão te dar tempo."}));
+  $("decRecap").style.display="none";
+  box.innerHTML="";
+  box.appendChild(tpGridBtn());
+  [...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).forEach(t=>{
+    const b=document.createElement("button"); b.className="offer";
+    b.style.border="2px solid "+t.color; b.style.borderLeftWidth="6px";
+    const dr=(S.seats[t.name]||[]).filter(d=>d&&d!=="PLAYER").map(d=>`${d.flag||"🏁"} ${surname(d.name)}`).join(" · ");
+    b.innerHTML=`${badge(t,"dot")}
+      <span class="info"><span class="name">${t.name}</span>
+      <span class="sub" style="display:block">${dr}</span>
+      <span class="sub" style="display:block">${tpTierLabel(t.name)}</span></span>
+      <span class="perfwrap"><span class="perf">${tpStars(t.name)}</span></span>`;
+    b.onclick=()=>tpSignTeam(t,"start");
+    box.appendChild(b);
+  });
+  scrollToDecision();
+}
+function tpStars(tn){ const perf=S.f1perf[tn]??75; const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-60)/36)));
+  return "★".repeat(n5)+"☆".repeat(5-n5); }
+function tpTierLabel(tn){
+  const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+  const p=ord.indexOf(tn)+1, n=ord.length;
+  if(p<=3) return L("🎯 Exigencia máxima: aquí se pelea el Mundial","🎯 Maximum demands: here you fight for the title",{pt:"🎯 Exigência máxima: aqui se briga pelo Mundial"});
+  if(p>=n-2) return L("🎯 Proyecto: sacar al equipo del fondo, con tiempo","🎯 Project: lift the team off the floor, with time",{pt:"🎯 Projeto: tirar a equipe do fundo, com tempo"});
+  return L("🎯 Media tabla: puntos, podios y cabeza","🎯 Midfield: points, podiums and a cool head",{pt:"🎯 Meio do grid: pontos, pódios e cabeça"});
+}
+function tpSignTeam(t, how){
+  // al dejar un equipo: sus contratos internos se limpian y ningún asiento se queda a null
+  if(S.tpTeam && S.tpTeam!==t.name && S.seats[S.tpTeam]){
+    const old=S.tpTeam, sl=S.seats[old];
+    sl.forEach((d,i)=>{ if(d&&d!=="PLAYER") delete d.tpc; if(!d) sl[i]=mkRookie(isRBJr(old), old); });
+  }
+  S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
+  S.tpTeam=S.team.name;
+  S.tpOwner=TP_OWNERS[irnd(0,2)];
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
+  // contratos escalonados al llegar (1 y 2 años): así toca UNA decisión de asiento casi cada invierno
+  const sl=S.seats[S.tpTeam]||[]; const flip=ch(.5);
+  sl.forEach((d,i)=>{ if(d&&d!=="PLAYER") d.tpc=((i===0)===flip)?1:2; });
+  S.tpStints.push({team:S.tpTeam, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
+  if(how==="start"){
+    track("career_started",{mode:"tp", team:S.tpTeam, lang:LANG, era:"2026"});
+    S.pendingEvents.push(L(`🧑‍💼 ${S.tpTeam} te presenta como su nuevo Team Principal. ${S.tpOwner.intro()}`,
+      `🧑‍💼 ${S.tpTeam} unveils you as their new Team Principal. ${S.tpOwner.intro()}`,
+      {pt:`🧑‍💼 A ${S.tpTeam} te apresenta como novo Team Principal. ${S.tpOwner.intro()}`}));
+  } else {
+    S.pendingEvents.push(L(`🧑‍💼 Nueva etapa: te sientas en el muro de ${S.tpTeam}. ${S.tpOwner.intro()}`,
+      `🧑‍💼 A new chapter: you take over the ${S.tpTeam} pit wall. ${S.tpOwner.intro()}`,
+      {pt:`🧑‍💼 Nova etapa: você assume o muro da ${S.tpTeam}. ${S.tpOwner.intro()}`}));
+  }
+  refreshCard();
+  tpYearStart();
+}
+
+/* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
+function tpYearStart(){
+  if(S.retired) return;
+  S._tpSeatQ=[];
+  const sl=S.seats[S.tpTeam]||[];
+  sl.forEach((d,i)=>{ if(!d || d==="PLAYER" || (d.tpc||0)<=0) S._tpSeatQ.push(i); });
+  tpNextSeat();
+}
+function tpNextSeat(){
+  if(S.retired) return;
+  if(!S._tpSeatQ.length){ tpRumboScreen(); return; }
+  const i=S._tpSeatQ[0];
+  const sl=S.seats[S.tpTeam], cur=sl[i];
+  const cands=tpTerna(i);
+  const libre = !cur || cur==="PLAYER";
+  setDecision(L(`✍️ Asiento ${i+1} · ${yearNow()}`,`✍️ Seat ${i+1} · ${yearNow()}`,{pt:`✍️ Vaga ${i+1} · ${yearNow()}`})+" · "+S.tpTeam,
+    libre ? L("El asiento está libre y el mercado es una terna: nadie más va a decidir por ti.",
+              "The seat is open and the market is a shortlist of three: nobody else decides for you.",
+              {pt:"A vaga está livre e o mercado é uma lista de três: ninguém mais decide por você."})
+          : L(`El contrato de ${surname(cur.name)} se acaba: renuévalo o ficha de la terna.`,
+              `${surname(cur.name)}'s contract is up: renew him or sign from the shortlist.`,
+              {pt:`O contrato de ${surname(cur.name)} acabou: renove ou contrate da lista.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  box.appendChild(tpGridBtn());
+  cands.forEach(c=>{
+    const b=document.createElement("button"); b.className="offer";
+    let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️";
+    if(c.kind==="renew"){
+      nm=`${c.d.flag||"🏁"} ${c.d.name}`;
+      sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${L("Nivel","Level",{pt:"Nível"})} ${Math.round(c.d.skill)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub2=(c.d.age>=34)?L("Un año más: la veteranía no firma largo","One more year: veterans don't sign long",{pt:"Mais um ano: veterania não assina longo"})
+                        :L("Dos temporadas más de contrato","Two more seasons on the contract",{pt:"Mais duas temporadas de contrato"});
+      dotTxt="🤝";
+    } else if(c.kind==="fichar"){
+      nm=`${c.d.flag||"🏁"} ${c.d.name}`;
+      sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${L("Nivel","Level",{pt:"Nível"})} ${Math.round(c.d.skill)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub2=((c.d.age||30)<=24 && (c.d.ceil||0)>=88)
+        ? L("Joven con techo: contrato de proyecto (3 años)","High-ceiling youngster: project deal (3 years)",{pt:"Jovem com teto: contrato de projeto (3 anos)"})
+        : L("Fichaje directo (2 años)","Straight signing (2 years)",{pt:"Contratação direta (2 anos)"});
+    } else {
+      nm=L("🎓 Apostar por la cantera","🎓 Bet on the academy",{pt:"🎓 Apostar na base"});
+      sub1=L("Un debutante: nivel por confirmar, techo por descubrir","A rookie: level unproven, ceiling unknown",{pt:"Um estreante: nível a confirmar, teto a descobrir"});
+      sub2=S.tpGem?L("⭐ Tu inversión en la academia apunta a un fenómeno","⭐ Your academy investment points to a phenom",{pt:"⭐ O seu investimento na base aponta para um fenômeno"})
+                  :L("Contrato de proyecto (3 años). El generador de historias.","Project deal (3 years). Where stories come from.",{pt:"Contrato de projeto (3 anos). É daqui que saem as histórias."});
+      dotTxt="🎓";
+    }
+    b.innerHTML=`<span class="team-dot dot" style="${dotStyle}">${dotTxt}</span>
+      <span class="info"><span class="name">${nm}</span>
+      <span class="sub" style="display:block">${sub1}</span>
+      <span class="sub" style="display:block">${sub2}</span></span>`;
+    b.onclick=()=>tpSignDriver(i,c);
+    box.appendChild(b);
+  });
+  scrollToDecision();
+}
+/* la TERNA: renovar (si se puede) + el mejor que te aceptaría + la cantera. Nunca mercado abierto:
+   ves a todos en la parrilla (modal 👥), pero solo eliges entre los que dirían que sí. */
+function tpTerna(i){
+  const tn=S.tpTeam, sl=S.seats[tn], cur=sl[i], other=sl[1-i];
+  const myPerf=S.f1perf[tn]||75, myCache=S.cache[tn]||60;
+  const cands=[];
+  if(cur && cur!=="PLAYER") cands.push({kind:"renew", d:cur});
+  const pool=[];
+  Object.entries(S.seats).forEach(([t,s])=>{
+    if(t===tn || !Array.isArray(s)) return;
+    s.forEach((d,j)=>{
+      if(!d || d==="PLAYER" || mktMoved(d) || d.beast) return;
+      if(other && other!=="PLAYER" && d.name===other.name) return;
+      if((S.f1perf[t]||70) > myPerf+3) return;        // no deja un coche claramente mejor que el tuyo
+      if(!canLureStar(tn,d)) return;                  // el caché sigue mandando con los galácticos
+      if(((S.cache[t]||60)-myCache) > 12) return;     // ni baja un escalón grande de prestigio
+      pool.push({kind:"fichar", d, from:t, j});
+    });
+  });
+  pool.sort((a,b)=>(b.d.skill||0)-(a.d.skill||0));
+  const best=pool[0];
+  if(best) cands.push(best);
+  if(cands.length<2){
+    const alt=pool.find(c=>c!==best && (c.d.age||30)<=25);
+    if(alt) cands.push(alt);
+  }
+  cands.push({kind:"rookie"});
+  return cands.slice(0,3);
+}
+function tpSignDriver(i,c){
+  const tn=S.tpTeam, sl=S.seats[tn], yN=yearNow();
+  let d;
+  if(c.kind==="renew"){
+    d=c.d; d.tpc=(d.age>=34)?1:2;
+    S.pendingEvents.push(L(`🤝 Renuevas a ${surname(d.name)}${d.age>=34?" un año más":" dos temporadas"}.`,
+      `🤝 You renew ${surname(d.name)}${d.age>=34?" for one more year":" for two seasons"}.`,
+      {pt:`🤝 Você renova ${surname(d.name)}${d.age>=34?" por mais um ano":" por duas temporadas"}.`}));
+  } else if(c.kind==="fichar"){
+    d=c.d;
+    // su equipo tapa el hueco con un canterano (mismo patrón que el desplazado de occupySeat)
+    S.seats[c.from][c.j]=mkRookie(isRBJr(c.from), c.from);
+    d.tpc=((d.age||30)<=24 && (d.ceil||0)>=88)?3:2; d.yrs=0;
+    S.pendingEvents.push(L(`✍️ Fichaje: ${surname(d.name)} deja ${c.from} y correrá contigo en ${yN}.`,
+      `✍️ Signing: ${surname(d.name)} leaves ${c.from} to race for you in ${yN}.`,
+      {pt:`✍️ Contratação: ${surname(d.name)} deixa a ${c.from} e vai correr com você em ${yN}.`}));
+  } else {
+    d=mkRookie(false, tn); d.tpc=3;
+    if(S.tpGem){ d.ceil=Math.max(d.ceil||0, irnd(93,96)); d.skill=Math.max(d.skill, 78); S.tpGem=false;
+      S.pendingEvents.push(L(`🎓 Debuta ${d.name}, la joya de tu academia. El paddock ya habla de él.`,
+        `🎓 ${d.name} debuts — your academy's crown jewel. The paddock is already talking.`,
+        {pt:`🎓 Estreia ${d.name}, a joia da sua base. O paddock já comenta.`}));
+    } else {
+      S.pendingEvents.push(L(`🎓 Apuestas por la cantera: debuta ${d.name} (nivel ${Math.round(d.skill)}, techo por ver).`,
+        `🎓 You bet on the academy: ${d.name} debuts (level ${Math.round(d.skill)}, ceiling unknown).`,
+        {pt:`🎓 Você aposta na base: estreia ${d.name} (nível ${Math.round(d.skill)}, teto a descobrir).`}));
+    }
+  }
+  sl[i]=d;
+  S._tpSeatQ.shift();
+  tpNextSeat();
+}
+
+/* la DECISIÓN DE RUMBO: el mando que en el clásico era el dilema `nuevoJefe` — aquí el jefe eres tú */
+function tpRumboScreen(){
+  if(S.retired) return;
+  const tn=S.tpTeam, perf=Math.round(S.f1perf[tn]||75);
+  const ti=trendInfo(tn);
+  setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`})+" · "+tn,
+    L(`Nivel actual del coche: ${perf} · ${ti.a} ${ti.t}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
+      `Current car level: ${perf} · ${ti.a} ${ti.t}. Where you push the factory shows over 2-3 seasons.`,
+      {pt:`Nível atual do carro: ${perf} · ${ti.a} ${ti.t}. Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  box.appendChild(tpGridBtn());
+  const mk=(dot,nm,sub,fn)=>{
+    const b=document.createElement("button"); b.className="offer dilemma";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${dot}</span>
+      <span class="info"><span class="name">${nm}</span><span class="sub" style="display:block">${sub}</span></span>`;
+    b.onclick=()=>{ fn(); tpAnnounce(); };
+    box.appendChild(b);
+  };
+  /* ⚖️ los objetivos se ANCLAN al nivel actual (como hace evolveF1 con los NPC): sin ancla, sumar
+     target año tras año dejaba un grande clavado en 95 para siempre (medido: 14 constructores
+     seguidos de Red Bull en la primera tanda de pruebas). Elegir rumbo mueve, no garantiza. */
+  mk("⚡",L("Exprimir ESTE coche","Squeeze THIS car",{pt:"Espremer ESTE carro"}),
+    L("Toda la fábrica al coche de este año. El que viene pagará la factura.","The whole factory on this year's car. Next year's will pay the bill.",{pt:"Toda a fábrica no carro deste ano. O do ano que vem paga a conta."}),
+    ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(1.5,3)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(4,8));
+      S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
+  mk("🏗️",L("Proyecto a dos años","Two-year project",{pt:"Projeto de dois anos"}),
+    L("Sacrificar presente para construir un coche grande. El consejo tendrá que aguantar.","Sacrifice the present to build a big car. The board will have to hold its nerve.",{pt:"Sacrificar o presente para construir um carrão. O conselho vai ter que aguentar."}),
+    ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
+      S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+(ch(.75)?rnd(8,12):rnd(-2,4)));
+      if(ch(.35)) S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(.5,1.5));
+      S.pendingEvents.push(L("🏗️ Pones la fábrica a construir el coche de pasado mañana: el proyecto apunta alto.","🏗️ You set the factory on the car after next: the project aims high.",{pt:"🏗️ Você põe a fábrica no carro de depois de amanhã: o projeto mira alto."})); });
+  mk("⚖️",L("Continuidad y pulido","Continuity and polish",{pt:"Continuidade e polimento"}),
+    L("Evolucionar lo que funciona, sin volantazos.","Evolve what works, no sudden swerves.",{pt:"Evoluir o que funciona, sem cavalos-de-pau."}),
+    ()=>{ S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+rnd(2,5));
+      S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
+  // retirada voluntaria: siempre disponible, nunca escondida
+  const r=document.createElement("button"); r.className="offer retire";
+  r.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
+    <span class="info"><span class="name">${L("Dejar el muro","Leave the pit wall",{pt:"Deixar o muro"})}</span>
+    <span class="sub" style="display:block">${L("Retirarte y cerrar tu etapa de Team Principal","Retire and close your Team Principal era",{pt:"Aposentar-se e fechar a sua era de Team Principal"})}</span></span>`;
+  r.onclick=endCareer;
+  box.appendChild(r);
+  scrollToDecision();
+}
+
+/* ── EL CONSEJO: objetivo anual por percentil REAL del coche, coloreado por el dueño ── */
+function tpGoalFor(){
+  const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+  const n=ord.length, p=ord.indexOf(S.tpTeam)+1;
+  let target;
+  if(p<=3) target=2;                                  // grande: pelea el título
+  else if(p>=n-2) target=n-1;                         // colista: no seáis últimos
+  else target=Math.min(n-2, Math.ceil(n*.55));        // medio: mitad alta
+  if(S.tpOwner && S.tpOwner.k==="win") target=Math.max(1,target-1);      // el ganador aprieta
+  if(S.tpOwner && S.tpOwner.k==="young") target=Math.min(n-1,target+1);  // el paciente da aire
+  const meta = target===1 ? L("el título de constructores","the constructors' title",{pt:"o título de construtores"})
+    : L(`terminar ${target}º de constructores o mejor`,`P${target} in the constructors or better`,{pt:`terminar em ${target}º dos construtores ou melhor`});
+  const voz = !S.tpOwner? "" : S.tpOwner.k==="win"
+    ? L("«He ganado en todo lo que he tocado. Aquí no va a ser distinto.»","«I've won at everything I've touched. This will be no different.»",{pt:"«Ganhei em tudo em que toquei. Aqui não vai ser diferente.»"})
+    : S.tpOwner.k==="cut"
+    ? L("«Los números no discuten. Cúmplelos y nos llevaremos bien.»","«Numbers don't argue. Hit them and we'll get along.»",{pt:"«Os números não discutem. Cumpra-os e vamos nos entender.»"})
+    : L("«Cree en el proyecto. Nosotros creemos en ti… de momento.»","«Believe in the project. We believe in you… for now.»",{pt:"«Acredite no projeto. Nós acreditamos em você… por enquanto.»"});
+  return {target, exp:p, year:yearNow(),
+    txt:L(`El consejo fija el listón de ${yearNow()}: ${meta}. ${voz}`,`The board sets the ${yearNow()} bar: ${meta}. ${voz}`,{pt:`O conselho fixa a meta de ${yearNow()}: ${meta}. ${voz}`}),
+    short:"🎯 "+L(`Objetivo del consejo: ${meta}.`,`Board target: ${meta}.`,{pt:`Meta do conselho: ${meta}.`})};
+}
+function tpAnnounce(){
+  if(S.retired) return;
+  const g=tpGoalFor(); S.tpGoal=g;
+  S.pendingEvents.push(g.short);
+  setDecision(L(`🎯 El consejo fija el listón · ${yearNow()}`,`🎯 The board sets the bar · ${yearNow()}`,{pt:`🎯 O conselho fixa a meta · ${yearNow()}`})+" · "+S.tpTeam, g.txt);
+  const box=$("offerList"); box.innerHTML="";
+  const b=document.createElement("button"); b.className="offer dilemma";
+  b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
+    <span class="info"><span class="name">${L("Empezar la temporada","Start the season",{pt:"Começar a temporada"})}</span></span>`;
+  b.onclick=()=>{ const dl=pickTPDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); };
+  box.appendChild(b);
+  scrollToDecision();
+}
+
+/* ── LA TEMPORADA DEL JEFE: bgF1Season da el mundo entero; aquí se derivan TUS números ── */
+function simTP(row){
+  const tn=S.tpTeam;
+  row.age=S.age+1;   // en la trayectoria, la «edad» del jefe es su temporada nº
+  (S.seats[tn]||[]).forEach(d=>{ if(d&&d!=="PLAYER"&&d.tpc!=null) d.tpc--; });
+  bgF1Season(row);
+  const races=racesIn(row.year);
+  const nT=Object.keys(S.rankC).length||F1_TEAMS.length;
+  const cPos=S.rankC[tn]||nT;
+  const myDrv=(S.seats[tn]||[]).filter(d=>d&&d!=="PLAYER");
+  // números narrativos de tus dos pilotos, derivados de su puesto REAL en el mundial de ese año
+  let tWins=0,tPods=0,champDrv=null; const parts=[];
+  myDrv.forEach(d=>{
+    const r=S.rankD[d.name]||20;
+    const w = r===1?irnd(6,11): r===2?irnd(3,7): r===3?irnd(1,4): r<=5?irnd(0,2): r<=8?(ch(.3)?1:0):0;
+    const po = Math.min(races, w + (r<=2?irnd(7,10): r===3?irnd(5,8): r<=5?irnd(3,6): r<=8?irnd(1,3): r<=11?(ch(.4)?irnd(1,2):0):0));
+    tWins+=w; tPods+=po;
+    parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º`);
+    if(r===1) champDrv=d;
+  });
+  if(tWins>races){ const f=races/tWins; tWins=Math.round(tWins*f); tPods=Math.round(tPods*f); }
+  S.wins+=tWins; S.podiums+=tPods; S.gp+=races;
+  row.wins=tWins; row.pods=tPods; row.pos=cPos; row.pts=null; row.constrPos=null;
+  row.tpLine=parts.join(" · ");
+  const st=S.tpStints.at(-1); if(st) st.y1=row.year;
+  const constrChamp=(row.top3c && row.top3c[0])===tn;
+  if(constrChamp){ S.titles.constr++; if(st) st.constr++;
+    row.events.push(L(`🏭 ¡CAMPEONES DE CONSTRUCTORES! ${tn} conquista el Mundial bajo tu mando.`,
+      `🏭 CONSTRUCTORS' CHAMPIONS! ${tn} takes the title under your command.`,
+      {pt:`🏭 CAMPEÕES DE CONSTRUTORES! A ${tn} conquista o Mundial sob o seu comando.`})); }
+  if(champDrv){ S.titles.f1++; if(st) st.drv++;
+    row.events.push(L(`👑 ${surname(champDrv.name)} se proclama campeón del mundo con tu equipo.`,
+      `👑 ${surname(champDrv.name)} is crowned world champion with your team.`,
+      {pt:`👑 ${surname(champDrv.name)} é campeão mundial com a sua equipe.`})); }
+  // veredicto del consejo: cumplir/incumplir el listón anunciado (2 seguidos = destitución)
+  const G=S.tpGoal||{target:Math.ceil(nT*.55), exp:Math.ceil(nT/2)};
+  const met=cPos<=G.target;
+  const delta=(G.exp-cPos);
+  S.tpOverSum=(S.tpOverSum||0)+delta;
+  S.tpBestPos=Math.min(S.tpBestPos||99, cPos);
+  if(met){
+    S.tpMissStreak=0; S.tpLastMet=true;
+    row.events.push(delta>=2
+      ? L(`✅ Sobre-rendimiento: el coche era el ${G.exp}º de la parrilla y acabáis ${cPos===1?"campeones":cPos+"º"}. Tu nombre suena en todo el paddock.`,
+          `✅ Overachievement: the car was the grid's ${G.exp}th best and you finish ${cPos===1?"champions":"P"+cPos}. Your name echoes through the paddock.`,
+          {pt:`✅ Superação: o carro era o ${G.exp}º do grid e vocês terminam ${cPos===1?"campeões":"em "+cPos+"º"}. O seu nome corre o paddock.`})
+      : L(`✅ ${cPos===1?"Campeones":cPos+"º"} de constructores: objetivo cumplido, el consejo respira.`,
+          `✅ ${cPos===1?"Champions":"P"+cPos} in the constructors: target met, the board breathes.`,
+          {pt:`✅ ${cPos===1?"Campeões":cPos+"º"} de construtores: meta cumprida, o conselho respira.`}));
+  } else if(S.tpGrace){
+    S.tpGrace=false; S.tpLastMet=false;
+    row.events.push(L(`🛡️ ${cPos}º: por debajo del listón, pero tu jugada en los despachos te compra un año de aire.`,
+      `🛡️ P${cPos}: below the bar, but your boardroom play buys you a year of air.`,
+      {pt:`🛡️ ${cPos}º: abaixo da meta, mas a sua jogada nos bastidores compra um ano de ar.`}));
+  } else {
+    S.tpMissStreak=(S.tpMissStreak||0)+1; S.tpLastMet=false;
+    if(S.tpMissStreak>=2){
+      S.tpFired=true; S.tpFiredBy=tn;
+      row.events.push(L(`🚪 Segundo año sin cumplir: el consejo de ${tn} te destituye.`,
+        `🚪 A second year below target: the ${tn} board removes you.`,
+        {pt:`🚪 Segundo ano sem cumprir: o conselho da ${tn} te destitui.`}));
+    } else {
+      row.events.push(L(`❌ ${cPos}º: por debajo del listón del consejo (${G.target}º). Otro año así y rodarán cabezas — la tuya.`,
+        `❌ P${cPos}: below the board's bar (P${G.target}). Another year like this and heads will roll — yours.`,
+        {pt:`❌ ${cPos}º: abaixo da meta do conselho (${G.target}º). Mais um ano assim e cabeças vão rolar — a sua.`}));
+    }
+  }
+  /* 🌪️ FATIGA DEL CICLO GANADOR. Al equipo gestionado le quitamos el dado de evolveF1 (el rumbo es
+     tuyo), pero sin ese dado un grande no caía NUNCA: 19 constructores de 20 en la tanda de pruebas.
+     En la F1 real los ciclos se agotan (Red Bull '14, Mercedes '22): cuantos más años seguidos arriba,
+     más probable que el invierno te pille a contrapié — y toque reconstruir. */
+  if((S.f1perf[tn]||75)>=88) S.tpTopYears=(S.tpTopYears||0)+1; else S.tpTopYears=0;
+  if(S.tpTopYears>=3 && ch(Math.min(.45,.12*(S.tpTopYears-2)))){
+    S.f1perf[tn]=Math.max(62,(S.f1perf[tn]||75)-rnd(3,7));
+    S.f1target[tn]=Math.max(61,S.f1perf[tn]-rnd(2,8));
+    S.tpTopYears=0;
+    row.events.push(roll(
+      [4,()=>L("🌪️ El ciclo se agota: tu director técnico firma con un rival y media oficina de diseño se va con él. Toca reconstruir.","🌪️ The cycle runs dry: your technical director signs for a rival and half the design office follows. Time to rebuild.",{pt:"🌪️ O ciclo se esgota: o seu diretor técnico assina com uma rival e meio escritório de projeto vai junto. Hora de reconstruir."})],
+      [3,()=>L("🌪️ El reglamento nuevo os pilla a contrapié: lo que os hacía rápidos ya no vale, y los rivales huelen sangre.","🌪️ The new rulebook catches you out: what made you fast no longer applies, and your rivals smell blood.",{pt:"🌪️ O regulamento novo pega vocês no contrapé: o que os fazia rápidos já não vale, e os rivais sentem o cheiro de sangue."})],
+      [3,()=>L("🌪️ Años de exprimir el mismo concepto pasan factura: el coche nuevo nace viejo y la fábrica lo sabe.","🌪️ Years of squeezing the same concept take their toll: the new car is born old and the factory knows it.",{pt:"🌪️ Anos espremendo o mesmo conceito cobram o preço: o carro novo nasce velho e a fábrica sabe."})]));
+  }
+  // prestigio (espejo del OVR): manda el SOBRE-RENDIMIENTO — ganar con Ferrari puntúa menos
+  // que meter a un Sauber en el podio; incumplir resta siempre
+  let dp = delta*2.2 + (met?2:-3) + (constrChamp?(G.exp<=2?4:7):0) + (champDrv?(G.exp<=2?2:4):0);
+  if(constrChamp) dp=Math.max(dp,3);   // un año de campeones JAMÁS te baja el prestigio
+  S.tpPrest=Math.round(Math.max(5,Math.min(99,S.tpPrest+dp)));
+  // 🏆 colchón del palmarés: a un jefe con vitrina el paddock no lo olvida del todo (medido: sin esto,
+  // un 5× campeón de constructores acababa con prestigio 35 y nadie lo rescataba — irreal)
+  S.tpPrest=Math.max(S.tpPrest, Math.min(62, 18+(S.titles.constr+S.titles.f1)*7));
+  row.ovr=S.tpPrest;
+  return {pos:cPos};
+}
+
+/* ── EL INVIERNO DEL JEFE: tope de etapa → despido/rescate → tentación → un año más ── */
+function tpWinter(){
+  if(S.retired) return;
+  if(S.age>=20){ endCareer(); return; }   // tope duro: dos décadas en el muro (espejo de la edad del piloto)
+  if(S.tpFired){ tpFiredScreen(); return; }
+  if(tpTemptCheck()) return;
+  tpYearStart();
+}
+function tpFiredScreen(){
+  S.tpFired=false;
+  const from=S.tpFiredBy||S.tpTeam; S.tpFiredBy=null;
+  const myPerf=S.f1perf[from]||75;
+  const cands=[...F1_TEAMS].filter(t=>t.name!==from)
+    .sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70));
+  let offers=[];
+  const pickN=(arr,n)=>{const c=[...arr];const o=[];while(o.length<n&&c.length){o.push(c.splice(irnd(0,c.length-1),1)[0]);}return o;};
+  if(S.tpPrest>=58) offers=pickN(cands.filter(t=>(S.f1perf[t.name]||70)<=myPerf+4),2);
+  else if(S.tpPrest>=42) offers=pickN(cands.slice(-4),1);
+  if(!offers.length){
+    setDecision(L("🚪 Despedido","🚪 Sacked",{pt:"🚪 Demitido"}),
+      L("El teléfono no suena: sin prestigio, nadie te ofrece otro muro. Tu etapa de Team Principal acaba aquí.",
+        "The phone stays silent: without prestige, nobody offers you another pit wall. Your Team Principal era ends here.",
+        {pt:"O telefone não toca: sem prestígio, ninguém te oferece outro muro. A sua era de Team Principal acaba aqui."}));
+    $("offerList").innerHTML="";
+    setTimeout(endCareer,1600);
+    return;
+  }
+  setDecision(L("🚪 Despedido… y el teléfono suena","🚪 Sacked… and the phone rings",{pt:"🚪 Demitido… e o telefone toca"}),
+    L(`${from} te ha destituido, pero tu prestigio te mantiene vivo en el paddock: hay quien quiere tu experiencia en su muro.`,
+      `${from} removed you, but your prestige keeps you alive in the paddock: someone wants your experience on their pit wall.`,
+      {pt:`A ${from} te destituiu, mas o seu prestígio te mantém vivo no paddock: tem quem queira a sua experiência no muro.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  box.appendChild(tpGridBtn());
+  offers.forEach(t=>{
+    const b=document.createElement("button"); b.className="offer";
+    b.style.border="2px solid "+t.color; b.style.borderLeftWidth="6px";
+    b.innerHTML=`${badge(t,"dot")}<span class="info"><span class="name">${t.name}</span>
+      <span class="sub" style="display:block">${L("Te rescata: quieren tu experiencia","A rescue: they want your experience",{pt:"Um resgate: querem a sua experiência"})}</span>
+      <span class="sub" style="display:block">${tpTierLabel(t.name)}</span></span>
+      <span class="perfwrap"><span class="perf">${tpStars(t.name)}</span></span>`;
+    b.onclick=()=>tpSignTeam(t,"rescate");
+    box.appendChild(b);
+  });
+  const r=document.createElement("button"); r.className="offer retire";
+  r.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
+    <span class="info"><span class="name">${L("Retirarse","Retire",{pt:"Aposentar-se"})}</span>
+    <span class="sub" style="display:block">${L("Cerrar tu etapa con la cabeza alta","Close your era with your head held high",{pt:"Fechar a sua era de cabeça erguida"})}</span></span>`;
+  r.onclick=endCareer;
+  box.appendChild(r);
+  scrollToDecision();
+}
+/* la TENTACIÓN: solo llega si sobre-rindes — la otra puerta del cambio de equipo (1-3 por partida) */
+function tpTemptCheck(){
+  const last=S.seasons.at(-1); if(!last || last.cat!=="TP") return false;
+  const G=S.tpGoal||{}; const delta=(G.exp||6)-(last.pos||6);
+  // dos puertas: sobre-rendimiento claro, o llevar a un equipo medio/pequeño al podio de constructores
+  const brillas = (delta>=2 && S.tpPrest>=60) || ((G.exp||6)>=4 && (last.pos||6)<=3 && S.tpPrest>=55);
+  if(!brillas) return false;
+  if(S.tpTemptY && yearNow()-S.tpTemptY<2) return false;   // no dos inviernos seguidos
+  const myPerf=S.f1perf[S.tpTeam]||70;
+  const cands=F1_TEAMS.filter(t=>t.name!==S.tpTeam && (S.f1perf[t.name]||70)>=myPerf+6 && (S.cache[t.name]||0)>=78);
+  if(!cands.length || !ch(.45)) return false;
+  const t=cands[irnd(0,cands.length-1)];
+  S.tpTemptY=yearNow();
+  setDecision(L("📞 Un grande llama a tu puerta","📞 A giant comes knocking",{pt:"📞 Uma grande bate à sua porta"}),
+    L(`Tu trabajo en ${S.tpTeam} no ha pasado desapercibido: ${t.name} quiere que TÚ lleves su muro. Tu consejo promete pelear por retenerte.`,
+      `Your work at ${S.tpTeam} hasn't gone unnoticed: ${t.name} wants YOU on their pit wall. Your board vows to fight to keep you.`,
+      {pt:`O seu trabalho na ${S.tpTeam} não passou despercebido: a ${t.name} quer VOCÊ no muro. O seu conselho promete brigar para te segurar.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  box.appendChild(tpGridBtn());
+  const b=document.createElement("button"); b.className="offer";
+  b.style.border="2px solid "+t.color; b.style.borderLeftWidth="6px";
+  b.innerHTML=`${badge(t,"dot")}<span class="info"><span class="name">${t.name}</span>
+    <span class="sub" style="display:block">${L("Aceptar: un coche mejor y un listón más alto","Accept: a better car and a higher bar",{pt:"Aceitar: um carro melhor e uma meta mais alta"})}</span></span>
+    <span class="perfwrap"><span class="perf">${tpStars(t.name)}</span></span>`;
+  b.onclick=()=>tpSignTeam(t,"tentacion");
+  box.appendChild(b);
+  const s=document.createElement("button"); s.className="offer dilemma";
+  s.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">🤝</span>
+    <span class="info"><span class="name">${L("Quedarte y terminar el trabajo","Stay and finish the job",{pt:"Ficar e terminar o trabalho"})}</span>
+    <span class="sub" style="display:block">${L("La lealtad también cotiza en el paddock","Loyalty is worth something in the paddock too",{pt:"A lealdade também vale no paddock"})}</span></span>`;
+  s.onclick=()=>{ S.tpPrest=Math.min(99,S.tpPrest+2);
+    S.pendingEvents.push(L(`🤝 Rechazas a ${t.name}: te quedas a terminar el trabajo. El paddock toma nota de tu palabra.`,
+      `🤝 You turn ${t.name} down: you stay to finish the job. The paddock takes note of your word.`,
+      {pt:`🤝 Você recusa a ${t.name}: fica para terminar o trabalho. O paddock anota a sua palavra.`}));
+    tpYearStart(); };
+  box.appendChild(s);
+  scrollToDecision();
+  return true;
+}
+
+/* ── DILEMAS PROPIOS DEL MURO (semilla Fase 1) — regla de GPD: la decisión no otorga el
+   resultado, ALTERA LAS CONDICIONES; la simulación es el juez. Efectos pequeños, historia grande. ── */
+const TPRE=n=>{S.tpPrest=Math.round(Math.max(5,Math.min(99,S.tpPrest+n)));};
+const TPCAR=n=>{ if(S.f1perf[S.tpTeam]!=null) S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+n)); };
+const TPTGT=n=>{ if(S.f1target[S.tpTeam]!=null) S.f1target[S.tpTeam]=Math.max(61,Math.min(95,S.f1target[S.tpTeam]+n)); };
+function tpDrvs(){ return (S.seats[S.tpTeam]||[]).filter(d=>d&&d!=="PLAYER"); }
+function tpDrvSkill(name,n){ const d=tpDrvs().find(x=>x.name===name); if(d){ d.skill=Math.max(68,Math.min(d.ceil||97,(d.skill||75)+n)); } }
+const TP_DILEMAS=[
+ {id:"tpOrdenes",
+  t:()=>L("Órdenes desde el muro","Orders from the pit wall",{pt:"Ordens do muro"}),
+  d:()=>{ const a=tpDrvs(); const n1=a[0]?surname(a[0].name):"tu Nº1", n2=a[1]?surname(a[1].name):"tu Nº2";
+    return L(`${n1} y ${n2} llegan a la última vuelta peleando por la misma posición, rueda contra rueda. La radio espera tu voz.`,
+             `${n1} and ${n2} reach the final lap fighting for the same position, wheel to wheel. The radio waits for your voice.`,
+             {pt:`${n1} e ${n2} chegam à última volta brigando pela mesma posição, roda com roda. O rádio espera a sua voz.`}); },opts:[
+   {l:()=>L("«Mantened posiciones»","«Hold positions»",{pt:"«Mantenham posições»"}),r:()=>roll(
+     [5,()=>{TPRE(1.5); const a=tpDrvs(), w=a.length>1?((a[0].skill||0)<=(a[1].skill||0)?a[0]:a[1]):null; if(w) tpDrvSkill(w.name,-1);
+       return L("Los puntos llegan intactos y el consejo aplaude tu frialdad… pero el que iba detrás no olvida la orden. +prestigio, −moral de tu segundo",
+                "The points come home intact and the board applauds your cool… but the man behind won't forget the order. +prestige, your second's morale dips",
+                {pt:"Os pontos chegam intactos e o conselho aplaude a sua frieza… mas quem vinha atrás não esquece a ordem. +prestígio, −moral do segundo"});}],
+     [3,()=>(TPRE(-1.5),L("La afición te cruje por matar la carrera y la prensa habla de «teledirigidos». −prestigio","The fans roast you for killing the race and the press cries «remote control». −prestige",{pt:"A torcida te detona por matar a corrida e a imprensa fala em «carros teleguiados». −prestígio"}))])},
+   {l:()=>L("«Dejadlos correr»","«Let them race»",{pt:"«Deixem correr»"}),r:()=>roll(
+     [5,()=>(TPRE(2),L("Se baten en un duelo limpio que abre telediarios: el paddock celebra a un jefe con agallas. +prestigio","They fight a clean duel that leads the news: the paddock salutes a boss with guts. +prestige",{pt:"Eles duelam limpo e abrem os telejornais: o paddock celebra um chefe com coragem. +prestígio"}))],
+     [4,()=>(TPRE(-2.5),TPCAR(-.5),L("Se tocan y los dos coches vuelven en grúa. El consejo te mira fijamente. −prestigio, −coche","They collide and both cars come home on a truck. The board stares right at you. −prestige, −car",{pt:"Eles se tocam e os dois carros voltam de guincho. O conselho te encara. −prestígio, −carro"}))])}]},
+ {id:"tpPago", cond:()=>(S.f1perf[S.tpTeam]||75)<=80,
+  t:()=>L("El patrocinador exige","The sponsor demands",{pt:"O patrocinador exige"}),
+  d:()=>L("Tu patrocinador principal pone sobre la mesa una ampliación millonaria… con condición: un asiento para su piloto protegido, más maleta que talento.",
+          "Your title sponsor offers a huge extension… with a condition: a seat for their protégé, more suitcase than talent.",
+          {pt:"O seu patrocinador principal põe na mesa uma extensão milionária… com condição: uma vaga para o piloto protegido deles, mais mala do que talento."}),opts:[
+   {l:()=>L("Aceptar el dinero","Take the money",{pt:"Aceitar o dinheiro"}),r:()=>(TPCAR(2),TPRE(-2),
+     L("El túnel de viento estrena piezas pagadas con esa maleta, pero el paddock murmura que tu parrilla se compra. +coche, −prestigio","The wind tunnel gets parts paid with that suitcase, but the paddock mutters your grid is for sale. +car, −prestige",{pt:"O túnel de vento estreia peças pagas com aquela mala, mas o paddock murmura que a sua vaga se compra. +carro, −prestígio"}))},
+   {l:()=>L("«Aquí se corre por mérito»","«Here you earn your seat»",{pt:"«Aqui se corre por mérito»"}),r:()=>roll(
+     [6,()=>(TPRE(1.5),L("La frase se hace camiseta entre la afición. El presupuesto sufre, tu autoridad no. +prestigio","The line ends up on fan T-shirts. The budget suffers, your authority doesn't. +prestige",{pt:"A frase vira camiseta na torcida. O orçamento sofre, a sua autoridade não. +prestígio"}))],
+     [4,()=>(TPRE(1),TPCAR(-1),L("El patrocinador se lleva parte del dinero y el desarrollo se resiente… pero el vestuario te compraría entradas. +prestigio, −coche","The sponsor pulls part of the money and development suffers… but the garage would buy tickets to watch you. +prestige, −car",{pt:"O patrocinador leva parte do dinheiro e o desenvolvimento sofre… mas a garagem pagaria ingresso por você. +prestígio, −carro"}))])}]},
+ {id:"tpAcademia",
+  t:()=>L("La joya de la academia","The academy jewel",{pt:"A joia da base"}),
+  d:()=>L("Tu academia tiene un chaval que gana todo lo que toca. Un rival ofrece una fortuna por su contrato; tus ingenieros piden paciencia e inversión.",
+          "Your academy has a kid who wins everything he touches. A rival offers a fortune for his contract; your engineers ask for patience and investment.",
+          {pt:"A sua base tem um garoto que ganha tudo o que toca. Uma rival oferece uma fortuna pelo contrato; os seus engenheiros pedem paciência e investimento."}),opts:[
+   {l:()=>L("Invertir en el chaval","Invest in the kid",{pt:"Investir no garoto"}),r:()=>{ S.tpGem=true;
+     return L("Le pagas simulador, ingeniero propio y calendario a medida: tu próxima apuesta de cantera será ÉL — y llega afilado.","You fund simulator time, a personal engineer and a tailored calendar: your next academy bet will be HIM — and he arrives sharp.",{pt:"Você paga simulador, engenheiro próprio e calendário sob medida: a sua próxima aposta da base será ELE — e chega afiado."}); }},
+   {l:()=>L("Vender su contrato","Sell his contract",{pt:"Vender o contrato"}),r:()=>(TPCAR(1.5),
+     L("El dinero entra directo en el túnel de viento. Si el chaval acaba ganando mundiales, que no sea contra ti. +coche","The money goes straight into the wind tunnel. If the kid ends up winning titles, pray it isn't against you. +car",{pt:"O dinheiro entra direto no túnel de vento. Se o garoto acabar ganhando mundiais, tomara que não seja contra você. +carro"}))}]},
+ {id:"tpProtesta", cond:()=>S.age>=1 && F1_TEAMS.some(t=>t.name!==S.tpTeam&&(S.f1perf[t.name]||0)>(S.f1perf[S.tpTeam]||0)+3),
+  t:()=>L("El coche ilegal","The illegal car",{pt:"O carro ilegal"}),
+  d:()=>{ const riv=dilVar("tpProt",()=>{ const c=F1_TEAMS.filter(t=>t.name!==S.tpTeam&&(S.f1perf[t.name]||0)>(S.f1perf[S.tpTeam]||0)+3); return c.length?c[irnd(0,c.length-1)].name:null; });
+    return L(`Tus ingenieros juran que el alerón de ${riv} incumple el reglamento. Protestar es señalar a un grande delante del mundo… y fallar tiene precio.`,
+             `Your engineers swear ${riv}'s wing is illegal. Protesting means pointing at a giant in front of the world… and missing has a price.`,
+             {pt:`Os seus engenheiros juram que a asa da ${riv} fere o regulamento. Protestar é apontar para uma grande diante do mundo… e errar tem preço.`}); },opts:[
+   {l:()=>L("Presentar la protesta","File the protest",{pt:"Apresentar o protesto"}),r:()=>{ const riv=S._dilVars&&S._dilVars.tpProt; return roll(
+     [5,()=>{ if(riv&&S.f1perf[riv]!=null) S.f1perf[riv]=Math.max(60,S.f1perf[riv]-2); TPRE(2);
+       return L(`La FIA te da la razón: ${riv} rehace el alerón y tú quedas como el jefe que vio lo que nadie veía. +prestigio`,`The FIA rules your way: ${riv} rebuilds the wing and you're the boss who saw what nobody else did. +prestige`,{pt:`A FIA te dá razão: a ${riv} refaz a asa e você fica como o chefe que viu o que ninguém via. +prestígio`}); }],
+     [4,()=>(TPRE(-2.5),L("Protesta desestimada: pareces un mal perdedor y el paddock te lo recuerda en cada rueda de prensa. −prestigio","Protest dismissed: you look like a sore loser and the paddock reminds you at every press conference. −prestige",{pt:"Protesto negado: você parece mau perdedor e o paddock te lembra disso em cada coletiva. −prestígio"}))]); }},
+   {l:()=>L("Guardar el informe en el cajón","Keep the report in the drawer",{pt:"Guardar o relatório na gaveta"}),r:()=>L("Callas y copias la idea en tu próximo paquete de mejoras. En la F1 también se gana así.","You stay quiet and copy the idea in your next upgrade package. That's also how you win in F1.",{pt:"Você se cala e copia a ideia no próximo pacote de melhorias. Na F1 também se ganha assim."})}]},
+ {id:"tpLia",
+  t:()=>L("Tu piloto la lía","Your driver blows up",{pt:"O seu piloto apronta"}),
+  d:()=>{ const nm=dilVar("tpLia",()=>{ const a=tpDrvs(); return a.length?surname(a[irnd(0,a.length-1)].name):"tu piloto"; });
+    return L(`${nm} sale de fiesta entre carreras, insulta a un comisario por redes y el vídeo es portada mundial. El consejo pide sangre; su ingeniero pide calma.`,
+             `${nm} parties between races, insults a steward online and the video makes global headlines. The board wants blood; his engineer begs for calm.`,
+             {pt:`${nm} sai de festa entre corridas, insulta um comissário nas redes e o vídeo vira manchete mundial. O conselho quer sangue; o engenheiro dele pede calma.`}); },opts:[
+   {l:()=>L("Defenderle en público","Defend him publicly",{pt:"Defendê-lo em público"}),r:()=>{ const a=tpDrvs(); if(a.length) tpDrvSkill(a[0].name,0);
+     const nm=S._dilVars&&S._dilVars.tpLia; const d=tpDrvs().find(x=>surname(x.name)===nm); if(d) tpDrvSkill(d.name,1); TPRE(-1.5);
+     return L(`Te comes la rueda de prensa por él. ${nm} se deja el alma por ti el resto del año. −prestigio, +su rendimiento`,`You take the press conference bullets for him. ${nm} drives his heart out for you all year. −prestige, +his level`,{pt:`Você segura a coletiva por ele. ${nm} se entrega por você o resto do ano. −prestígio, +rendimento dele`}); }},
+   {l:()=>L("Multa y disculpa pública","Fine him and force an apology",{pt:"Multa e desculpa pública"}),r:()=>{ const nm=S._dilVars&&S._dilVars.tpLia; const d=tpDrvs().find(x=>surname(x.name)===nm); if(d) tpDrvSkill(d.name,-1); TPRE(1.5);
+     return L(`El consejo aplaude tu mano firme. ${nm} paga, se disculpa… y te tacha de su lista de Navidad. +prestigio, −su rendimiento`,`The board applauds your firm hand. ${nm} pays, apologises… and crosses you off his Christmas list. +prestige, −his level`,{pt:`O conselho aplaude a mão firme. ${nm} paga, pede desculpas… e te risca da lista de Natal. +prestígio, −rendimento dele`}); }}]},
+ {id:"tpSustituto", cond:()=>S.tpMissStreak>=1,
+  t:()=>L("El consejo busca sustituto","The board shops for your successor",{pt:"O conselho procura substituto"}),
+  d:()=>L("Un periodista de confianza te enseña un mensaje: tu consejo ha sondeado a otro Team Principal «por si acaso». Todavía no es oficial. Todavía.",
+          "A trusted journalist shows you a message: your board has sounded out another Team Principal «just in case». It's not official yet. Yet.",
+          {pt:"Um jornalista de confiança te mostra uma mensagem: o seu conselho sondou outro Team Principal «por via das dúvidas». Ainda não é oficial. Ainda."}),opts:[
+   {l:()=>L("Encarar al dueño","Confront the owner",{pt:"Encarar o dono"}),r:()=>roll(
+     [5,()=>{ S.tpGrace=true; return L("Pones tu cargo sobre la mesa y ganas el pulso: compromiso renovado y UN AÑO de aire aunque el listón se caiga.","You put your job on the table and win the standoff: renewed backing and ONE YEAR of air even if the bar slips.",{pt:"Você põe o cargo na mesa e vence o braço de ferro: apoio renovado e UM ANO de ar mesmo se a meta escapar."}); }],
+     [4,()=>(TPRE(-2),L("El dueño no niega nada y además no olvida el pulso. Ahora sí que estás en el disparadero. −prestigio","The owner denies nothing — and doesn't forget the standoff. Now you really are in the crosshairs. −prestige",{pt:"O dono não nega nada — e não esquece o embate. Agora sim você está na mira. −prestígio"}))])},
+   {l:()=>L("Callar y trabajar","Say nothing and work",{pt:"Calar e trabalhar"}),r:()=>L("Guardas el mensaje y aprietas los dientes: la única respuesta que vale está en la pista.","You pocket the message and grit your teeth: the only answer that counts is on track.",{pt:"Você guarda a mensagem e cerra os dentes: a única resposta que vale está na pista."})}]},
+ {id:"tpNumeroUno", cond:()=>{ const a=tpDrvs(); return a.length>1 && Math.abs((a[0].skill||0)-(a[1].skill||0))<=3 && Math.min(a[0].skill||0,a[1].skill||0)>=84; },
+  t:()=>L("¿Nº1 oficial o guerra abierta?","Official No.1 or open war?",{pt:"Nº1 oficial ou guerra aberta?"}),
+  d:()=>{ const a=tpDrvs(); return L(`${surname(a[0].name)} y ${surname(a[1].name)} están a nada el uno del otro y los dos exigen la prioridad en estrategia. Tu garaje es una olla a presión.`,
+      `${surname(a[0].name)} and ${surname(a[1].name)} are inches apart and both demand strategic priority. Your garage is a pressure cooker.`,
+      {pt:`${surname(a[0].name)} e ${surname(a[1].name)} estão colados e os dois exigem prioridade na estratégia. A sua garagem é uma panela de pressão.`}); },opts:[
+   {l:()=>L("Nombrar un Nº1","Name a No.1",{pt:"Nomear um Nº1"}),r:()=>{ const a=[...tpDrvs()].sort((x,y)=>(y.skill||0)-(x.skill||0));
+     if(a[0]) tpDrvSkill(a[0].name,1); if(a[1]) tpDrvSkill(a[1].name,-1);
+     return L(`${surname(a[0].name)} recibe los galones y el equipo entero rema en su dirección. ${surname(a[1].name)} sonríe en las fotos. Solo en las fotos.`,`${surname(a[0].name)} gets the stripes and the whole team rows his way. ${surname(a[1].name)} smiles in the photos. Only in the photos.`,{pt:`${surname(a[0].name)} recebe os galões e a equipe inteira rema na direção dele. ${surname(a[1].name)} sorri nas fotos. Só nas fotos.`}); }},
+   {l:()=>L("Que lo decida la pista","Let the track decide",{pt:"Que a pista decida"}),r:()=>roll(
+     [5,()=>(TPRE(2),L("La rivalidad interna eleva a los dos y tu equipo es el espectáculo del año. +prestigio","The internal rivalry lifts them both and your team is the show of the season. +prestige",{pt:"A rivalidade interna eleva os dois e a sua equipe é o show do ano. +prestígio"}))],
+     [4,()=>(TPRE(-2),L("Sin jerarquía, las estrategias se pisan y los puntos se escapan entre los dos boxes. −prestigio","With no pecking order, strategies collide and points leak between the two garages. −prestige",{pt:"Sem hierarquia, as estratégias se atropelam e os pontos escapam entre os dois boxes. −prestígio"}))])}]},
+ {id:"tpFabricante", cond:()=>S.age>=3 && (S.cache[S.tpTeam]||60)<86,
+  t:()=>L("El fabricante quiere comprar","The manufacturer wants to buy",{pt:"A montadora quer comprar"}),
+  d:()=>L("Un gigante del automóvil ofrece comprar el equipo: fábrica nueva, presupuesto de otro planeta… y sus propias ideas sobre quién manda aquí.",
+          "A car giant offers to buy the team: a new factory, a budget from another planet… and its own ideas about who runs things here.",
+          {pt:"Uma gigante do automóvel oferece comprar a equipe: fábrica nova, orçamento de outro planeta… e ideias próprias sobre quem manda aqui."}),opts:[
+   {l:()=>L("Apoyar la venta","Back the sale",{pt:"Apoiar a venda"}),r:()=>{ S.cache[S.tpTeam]=Math.min(96,(S.cache[S.tpTeam]||60)+8); TPTGT(6); S.tpOwner=TP_OWNERS[0];
+     return L("La venta se cierra: dinero y músculo de fábrica… y un dueño nuevo que solo entiende de títulos. El proyecto apunta arriba y el listón, también.","The sale closes: factory money and muscle… and a new owner who only understands titles. The project aims up — and so does the bar.",{pt:"A venda sai: dinheiro e músculo de fábrica… e um dono novo que só entende de títulos. O projeto mira para cima — e a meta também."}); }},
+   {l:()=>L("Defender la independencia","Defend independence",{pt:"Defender a independência"}),r:()=>(TPRE(1.5),
+     L("Convences al consejo de seguir siendo dueños de su destino. El paddock respeta a los últimos independientes. +prestigio","You convince the board to stay masters of their own fate. The paddock respects the last independents. +prestige",{pt:"Você convence o conselho a seguir dono do próprio destino. O paddock respeita os últimos independentes. +prestígio"}))}]},
+ {id:"tpMotor", cond:()=>{ const p=S.f1perf[S.tpTeam]||75; return p>=65&&p<=88; },
+  t:()=>L("El pulso del motorista","The engine supplier squeezes",{pt:"O braço de ferro do motor"}),
+  d:()=>L("Tu proveedor de motores sube el precio y ofrece la «spec de fábrica» solo si firmas exclusividad plurianual. Tu director técnico echa humo.",
+          "Your engine supplier raises the price and offers the works spec only if you sign a multi-year exclusive. Your technical director is fuming.",
+          {pt:"O seu fornecedor de motores sobe o preço e oferece a «spec de fábrica» só com exclusividade de vários anos. O seu diretor técnico solta fumaça."}),opts:[
+   {l:()=>L("Firmar la exclusividad","Sign the exclusive",{pt:"Assinar a exclusividade"}),r:()=>(TPCAR(1.5),TPTGT(3),TPRE(-1),
+     L("Motor de fábrica desde ya: empujón real, pero el paddock sabe quién manda en tu trasera. +coche, −prestigio","Works engine from now on: a real push, but the paddock knows who owns your rear end. +car, −prestige",{pt:"Motor de fábrica desde já: empurrão de verdade, mas o paddock sabe quem manda na sua traseira. +carro, −prestígio"}))},
+   {l:()=>L("Plantarte en la mesa","Stand your ground",{pt:"Bater o pé na mesa"}),r:()=>roll(
+     [5,()=>(TPRE(2),L("El farol funciona: mantienen precio y specs por miedo a perderte. En el paddock se corre la voz de que contigo no se juega. +prestigio","The bluff works: they keep price and spec for fear of losing you. Word spreads that nobody plays games with you. +prestige",{pt:"O blefe funciona: mantêm preço e spec com medo de te perder. Corre a voz de que com você não se brinca. +prestígio"}))],
+     [4,()=>(TPCAR(-1.5),L("Te dejan la spec del año pasado y lo notas en cada recta. Dignidad intacta; cronómetro, no tanto. −coche","They hand you last year's spec and you feel it on every straight. Dignity intact; stopwatch, not so much. −car",{pt:"Te deixam com a spec do ano passado e você sente em cada reta. Dignidade intacta; cronômetro, nem tanto. −carro"}))])}]},
+];
+function pickTPDilemma(){
+  if(!ch(.55)) return null;
+  const pool=TP_DILEMAS.filter(d=>!S.usedDilemmas[d.id] && (!d.cond || d.cond()));
+  if(!pool.length) return null;
+  return pool[irnd(0,pool.length-1)];
+}
+
+/* ── 👥 PARRILLA COMPLETA + POOL DE RESERVAS (añadido de Carlos, 11-ago): la capa de información
+   del mercado. VER a todos no contradice la terna: una cosa es ver y otra que todos te digan que sí. ── */
+function tpGridBtn(){
+  const b=document.createElement("button"); b.className="offer dilemma";
+  b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3671C6,#1C2A4F)">👥</span>
+    <span class="info"><span class="name">${L("Ver parrilla y mercado","View grid & market",{pt:"Ver grid e mercado"})}</span>
+    <span class="sub" style="display:block">${L("Los 20+ pilotos con su nivel, y quién espera fuera","All 20+ drivers with their level, and who waits outside",{pt:"Os 20+ pilotos com o nível, e quem espera fora"})}</span></span>`;
+  b.onclick=(e)=>{ e.preventDefault(); openTPGrid(); };
+  return b;
+}
+function openTPGrid(){ renderTPGrid(); $("tpGridModal").style.display="flex"; }
+function closeTPGrid(){ $("tpGridModal").style.display="none"; }
+function renderTPGrid(){
+  const el=$("tpGridList"); if(!el) return;
+  const ranked=S.rankC && Object.keys(S.rankC).length;
+  const ord=[...F1_TEAMS].sort((a,b)=> ranked
+    ? ((S.rankC[a.name]||99)-(S.rankC[b.name]||99))
+    : ((S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)));
+  let html=`<div class="pt-tier">🏁 ${L("La parrilla","The grid",{pt:"O grid"})}${ranked?` · ${L("orden de constructores","constructors' order",{pt:"ordem de construtores"})} ${S.lastTop3?S.lastTop3.year:""}`:""}</div>`;
+  ord.forEach(t=>{
+    const mine=tpManaged(t.name);
+    const dr=(S.seats[t.name]||[]).map(d=>{
+      if(!d) return `<span style="opacity:.6">🪑 ${L("asiento libre","open seat",{pt:"vaga livre"})}</span>`;
+      if(d==="PLAYER") return "";
+      const rk=S.rankD&&S.rankD[d.name]?` · ${S.rankD[d.name]}º`:"";
+      const con=(mine&&d.tpc!=null)?` · 📜${Math.max(0,d.tpc)}`:"";
+      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)} <b>${Math.round(d.skill)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
+    }).join(" ");
+    const pos=ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"";
+    html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;${mine?"outline:2px solid #e10600;border-radius:10px":""}">
+      ${badge(t,"dot")}<b>${t.name}</b><span style="color:var(--muted);font-size:12px">${pos}${tpStars(t.name)}</span>
+      <div style="width:100%;display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px">${dr}</div></div>`;
+  });
+  const resv=tpReservePool();
+  if(resv.length){
+    html+=`<div class="pt-tier">🧢 ${L("Reservas y cantera","Reserves & academy",{pt:"Reservas e base"})}</div>`;
+    html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;font-size:12.5px">`+resv.map(x=>`<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${x}</span>`).join(" ")+`</div>`;
+  }
+  el.innerHTML=html;
+}
+function tpReservePool(){
+  const out=[];
+  const seated=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") seated.add(d.name); }));
+  // libres con nivel (vía Albon) y jóvenes del pool sin asiento
+  (S.freeAgents||[]).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${Math.round(d.skill)}</b> · ${L("libre","free",{pt:"livre"})}`));
+  (S.dpool||[]).filter(d=>d&&d.name&&!seated.has(d.name)&&(d.age||99)<=28&&(d.skill||0)>=74&&!(S.freeAgents||[]).some(f=>f.name===d.name))
+    .slice(0,4).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${Math.round(d.skill)}</b> · ${d.age}`));
+  // las promesas de la cantera aún sin debutar: nombre y bandera; su nivel se descubre al firmar
+  const yr=yearNow();
+  (S.rookies||[]).filter(r=>!r[2]||yr>=r[2]).slice(0,6)
+    .forEach(r=>out.push(`${r[1]||"🏁"} ${r[0]} · ${L("promesa","prospect",{pt:"promessa"})}`));
+  return out.slice(0,12);
+}
+
+/* ── PANTALLA FINAL DEL JEFE: veredicto propio; NO puntúa en el ranking de pilotos (lb:tp = Fase 2) ── */
+function endTPCareer(){
+  S.retired=true;
+  const C=S.titles.constr, D=S.titles.f1, yrs=S.age, best=S.tpBestPos===99?null:S.tpBestPos;
+  const teams=[...new Set((S.tpStints||[]).map(s=>s.team))];
+  track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
+  const m=$("endModal"); m.style.display="flex";
+  $("endName").textContent=sel.flag+" "+pName();
+  $("endYears").textContent="🧑‍💼 Team Principal · "+L(`Al mando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} escudería${teams.length===1?"":"s"}`,
+    `In charge: ${S.baseYear||2026} – ${yearNow()} · ${yrs} season${yrs===1?"":"s"} · ${teams.length} team${teams.length===1?"":"s"}`,
+    {pt:`No comando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} equipe${teams.length===1?"":"s"}`});
+  // rejilla de estadísticas propia del jefe (reescribe las celdas del piloto — guardando el original
+  // para que una carrera CLÁSICA posterior en la misma sesión recupere sus ids eGP/eW/…)
+  const grid=document.querySelector("#endModal .end-stats");
+  if(grid && !window._endStats0) window._endStats0=grid.innerHTML;
+  window._endStatsTP=true;
+  if(grid) grid.innerHTML=[
+    [yrs, L("Temporadas","Seasons",{pt:"Temporadas"})],
+    [teams.length, L("Escuderías","Teams",{pt:"Equipes"})],
+    [C, L("Constructores","Constructors",{pt:"Construtores"}), C>=1],
+    [D, L("Mundiales de tus pilotos","Your drivers' titles",{pt:"Mundiais dos seus pilotos"}), D>=1],
+    [S.wins, L("Victorias del equipo","Team wins",{pt:"Vitórias da equipe"})],
+    [S.podiums, L("Podios","Podiums",{pt:"Pódios"})],
+    [best?best+"º":"—", L("Mejor puesto","Best finish",{pt:"Melhor posição"})],
+    [S.tpPrest, L("Prestigio final","Final prestige",{pt:"Prestígio final"})],
+  ].map(x=>`<div class="${x[2]?"gold":""}${(x[0]>=3&&x[2])?" shiny":""}"><div class="v">${x[0]}</div><div class="k">${x[1]}</div></div>`).join("");
+  const shelf=[]; for(let i=0;i<C;i++)shelf.push("🏎️"); for(let i=0;i<D;i++)shelf.push("🏆");
+  $("endShelf").textContent=shelf.join("")||"—";
+  $("endAdv").style.display="none"; $("endAdv").innerHTML="";
+  const cm=$("careerMap"); if(cm){ cm.style.display="none"; cm.innerHTML=""; }
+  // tus etapas, equipo a equipo (en vez del palmarés de pilotos)
+  const stMap={}; (S.tpStints||[]).forEach(s=>{ const k=s.team; (stMap[k]=stMap[k]||{y0:s.y0,y1:s.y1,constr:0,drv:0}); stMap[k].y1=s.y1; stMap[k].constr+=s.constr; stMap[k].drv+=s.drv; });
+  $("hallFame").innerHTML="<h4>"+L("🧑‍💼 Tus etapas en el muro","🧑‍💼 Your pit-wall chapters",{pt:"🧑‍💼 As suas etapas no muro"})+"</h4>"+
+    (S.tpStints||[]).map(s=>`<div class="hrow"><span class="nm">${teamBadge(s.team,s.y0)||""} ${s.team} <span style="color:var(--muted)">'${String(s.y0).slice(2)}–'${String(s.y1).slice(2)}</span></span><span class="tt">${s.constr?"🏎️×"+s.constr+" ":""}${s.drv?"🏆×"+s.drv:""}${(!s.constr&&!s.drv)?"—":""}</span></div>`).join("");
+  const avgOver=(S.tpOverSum||0)/Math.max(1,yrs);
+  let legacy,verdict;
+  if(C>=3 || (C>=2&&D>=2)){ legacy=L("ARQUITECTO DE UNA DINASTÍA","ARCHITECT OF A DYNASTY",{pt:"ARQUITETO DE UMA DINASTIA"});
+    verdict=L(`${C} títulos de constructores llevan tu firma. Los libros de la F1 ya no hablan de tus pilotos: hablan del equipo que TÚ construiste.`,
+      `${C} constructors' titles carry your signature. The F1 history books no longer talk about your drivers: they talk about the team YOU built.`,
+      {pt:`${C} títulos de construtores levam a sua assinatura. Os livros da F1 já não falam dos seus pilotos: falam da equipe que VOCÊ construiu.`}); }
+  else if(C>=1&&D>=1){ legacy=L("CAMPEÓN TOTAL","THE COMPLETE CHAMPION",{pt:"CAMPEÃO TOTAL"});
+    verdict=L("Constructores y pilotos: las dos coronas pasaron por tu muro. Muy pocos jefes pueden contar lo mismo.",
+      "Constructors and drivers: both crowns passed across your pit wall. Very few bosses can say the same.",
+      {pt:"Construtores e pilotos: as duas coroas passaram pelo seu muro. Pouquíssimos chefes podem dizer o mesmo."}); }
+  else if(C>=1){ legacy=L("CAMPEÓN DE CONSTRUCTORES","CONSTRUCTORS' CHAMPION",{pt:"CAMPEÃO DE CONSTRUTORES"});
+    verdict=L("Llevaste a tu fábrica a lo más alto del mundial. El trofeo duerme en la vitrina del equipo, pero todos saben de quién fue la mano.",
+      "You took your factory to the top of the world. The trophy sleeps in the team's cabinet, but everyone knows whose hand it was.",
+      {pt:"Você levou a sua fábrica ao topo do mundial. O troféu dorme na vitrine da equipe, mas todos sabem de quem foi a mão."}); }
+  else if(D>=1){ legacy=L("EL JEFE DEL CAMPEÓN","THE CHAMPION'S BOSS",{pt:"O CHEFE DO CAMPEÃO"});
+    verdict=L("Tu piloto levantó la corona y en su discurso te nombró primero. Los campeones pasan; quien los construye, queda.",
+      "Your driver lifted the crown and named you first in his speech. Champions come and go; the ones who build them remain.",
+      {pt:"O seu piloto ergueu a coroa e te citou primeiro no discurso. Campeões passam; quem os constrói, fica."}); }
+  else if(best&&best<=2){ legacy=L("ETERNO ASPIRANTE DEL MURO","THE PIT WALL'S ETERNAL CONTENDER",{pt:"ETERNO CANDIDATO DO MURO"});
+    verdict=L("Rozaste la gloria con los dedos: subcampeones y siempre en la pelea. El paddock sabe que mereciste al menos una.",
+      "You brushed glory with your fingertips: runners-up and always in the fight. The paddock knows you deserved at least one.",
+      {pt:"Você roçou a glória com os dedos: vice-campeões e sempre na briga. O paddock sabe que você mereceu pelo menos uma."}); }
+  else if(avgOver>=1 && yrs>=6){ legacy=L("EL ALQUIMISTA DEL PADDOCK","THE PADDOCK ALCHEMIST",{pt:"O ALQUIMISTA DO PADDOCK"});
+    verdict=L("Año tras año tus coches acabaron por encima de lo que valían. Sin coronas, pero con la reputación que más cuesta ganar: hacer oro con hojalata.",
+      "Year after year your cars finished above their station. No crowns, but the hardest-earned reputation of all: turning tin into gold.",
+      {pt:"Ano após ano os seus carros terminaram acima do que valiam. Sem coroas, mas com a reputação mais difícil de ganhar: fazer ouro de lata."}); }
+  else if(yrs>=10){ legacy=L("UN CLÁSICO DEL PADDOCK","A PADDOCK INSTITUTION",{pt:"UM CLÁSSICO DO PADDOCK"});
+    verdict=L(`${yrs} temporadas sobreviviendo a consejos, dueños y reglamentos. En la F1, durar también es ganar.`,
+      `${yrs} seasons surviving boards, owners and rulebooks. In F1, lasting is also winning.`,
+      {pt:`${yrs} temporadas sobrevivendo a conselhos, donos e regulamentos. Na F1, durar também é vencer.`}); }
+  else { legacy=L("UN PASO POR EL MURO","A SPELL ON THE PIT WALL",{pt:"UMA PASSAGEM PELO MURO"});
+    verdict=L("El muro es el asiento más caliente del paddock y tú lo ocupaste. No todos los proyectos cuajan, pero pocos se atreven siquiera a intentarlo.",
+      "The pit wall is the hottest seat in the paddock and you sat in it. Not every project comes off, but few even dare to try.",
+      {pt:"O muro é o assento mais quente do paddock e você sentou nele. Nem todo projeto vinga, mas poucos sequer ousam tentar."}); }
+  $("endLegacy").textContent=legacy; S.legacyTxt=legacy;
+  $("endVerdict").textContent=verdict;
+  // puntos de gloria del jefe (fórmula candidata para el futuro lb:tp — el sobre-rendimiento pesa,
+  // que con arranque libre el ranking no puede ser un desfile de partidas-Ferrari)
+  const score=C*150 + D*90 + S.wins*2 + Math.round(S.podiums*.5) + Math.max(0,Math.round((S.tpOverSum||0)*8)) + yrs*3;
+  const TIERS=[
+    {min:0, name:L("Aspirante","Aspirant",{pt:"Aspirante"}), bg:"linear-gradient(135deg,#eef1f6,#e2e7ef)", ink:"#5a6373"},
+    {min:150, name:L("Jefe de F1","F1 Boss",{pt:"Chefe de F1"}), bg:"linear-gradient(135deg,#e7effc,#d2e3fa)", ink:"#245a99"},
+    {min:400, name:L("Estratega","Strategist",{pt:"Estrategista"}), bg:"linear-gradient(135deg,#e6f7ee,#c9edd7)", ink:"#177a3f"},
+    {min:800, name:L("Figura del muro","Pit-wall figure",{pt:"Figura do muro"}), bg:"linear-gradient(135deg,#f0eafd,#e2d6fb)", ink:"#6d28d9"},
+    {min:1200, name:L("Leyenda del muro","Pit-wall legend",{pt:"Lenda do muro"}), bg:"linear-gradient(135deg,#fdf0c8,#f6d97f)", ink:"#8a6706"},
+    {min:1700, name:L("Inmortal","Immortal",{pt:"Imortal"}), bg:"linear-gradient(135deg,#ffdd82,#ffb52e)", ink:"#7a3b00", shiny:true},
+  ];
+  let tier=TIERS[0]; TIERS.forEach(t=>{ if(score>=t.min) tier=t; });
+  const ls=$("legendScore");
+  ls.className="legend-score"+(tier.shiny?" shiny":"");
+  ls.style.background=tier.bg; ls.style.borderColor="transparent"; ls.style.color=tier.ink;
+  ls.innerHTML=`<div><div class="ls-k">${L("🏅 Puntos de gloria","🏅 Glory points",{pt:"🏅 Pontos de glória"})}</div><div class="ls-tier">${tier.name}</div></div><div class="ls-v">${score}</div>`;
+  // Fase 1: sin tarjeta compartible ni tabla online (lb:tp espera a que el equilibrio esté medido)
+  const sb=$("shareBtn"); if(sb) sb.style.display="none";
+  const rb=$("rankBtn"); if(rb) rb.style.display="none";
+  $("printHeader").innerHTML=`<h2>${sel.flag} ${pName()} · Team Principal</h2>
+    <div class="pl">${legacy}</div>
+    <div class="ps"><span><b>${yrs}</b> ${L("temporadas","seasons",{pt:"temporadas"})}</span><span><b>${C}</b> ${L("Constructores","Constructors",{pt:"Construtores"})}</span>
+    <span><b>${D}</b> ${L("Mundiales de pilotos","Drivers' titles",{pt:"Mundiais de pilotos"})}</span><span><b>${S.wins}</b> ${L("victorias","wins",{pt:"vitórias"})}</span>
+    <span>${S.baseYear||2026}–${yearNow()}</span></div>`;
+}
+
 /* 🇧🇷 EL PORTUGUÉS YA ESTÁ ABIERTO (10-ago-2026): 1.300 de 1.300 llamadas traducidas, incluidas las
    tablas de datos, y el filtro de nombres del ranking sabe portugués. El polaco y el francés siguen
    en obras: cada idioma sale del candado cuando esté entero, no antes y no todos a la vez. */
@@ -7623,6 +8590,7 @@ applyLang(); // aplicar el idioma guardado al cargar (ya con el candado del port
 applyTheme(); // aplicar el tema guardado al cargar
 initSecretDecades();    // ⏳ pegatinas y desbloqueo por fecha (la de 2000 se abre sola el 10-ago)
 initSecretChallenges(); // 📅 el modo Reto se abre solo el 17-ago (o ya, con el preview activo)
+initTPCard();           // 🧑‍💼 modo Team Principal: jugable SOLO con el preview (el público ve «Próximamente»)
 initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 try{ pendRetry(); }catch(e){}  // 📮 ¿quedó alguna carrera sin enviar la última vez? va ahora
 </script>
