@@ -4773,7 +4773,13 @@ const DILEMAS=[
     const t=(S.f1Seasons||0), camp=(S.titles.f1||0)>0;
     if(t < (camp?3:5) || S.age<25) return false;
     return chavalDelAno()!=null; },
-  t:()=>L("¿Qué te parece el chaval?","What do you make of the kid?",{pt:"O que você acha do moleque?"}),
+  /* 📛 EN EL RESUMEN DE LA TEMPORADA SE LE NOMBRA (petición de Carlos): meses después, leyendo tu
+     trayectoria, «¿Qué te parece Hamilton?» cuenta algo y «¿qué te parece el chaval?» no cuenta nada.
+     `chavalDelAno()` es DETERMINISTA (el mayor techo de la parrilla que cumple), así que aquí y en el
+     texto del dilema sale el mismo piloto. */
+  t:()=>{ const c=chavalDelAno(), n=c?surname(c.name):null;
+    return n ? L(`¿Qué te parece ${n}?`,`What do you make of ${n}?`,{pt:`O que você acha de ${n}?`})
+             : L("¿Qué te parece el chaval?","What do you make of the kid?",{pt:"O que você acha do moleque?"}); },
   d:()=>{ const c=chavalDelAno(); S._chaval=c?c.name:null;
     const n=c?surname(c.name):L("el novato","the rookie",{pt:"o novato"});
     const e=c?(c.age||20):20;
