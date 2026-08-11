@@ -6054,7 +6054,10 @@ function alphaClash(row){
       // además veía ofertas de Nº2 justo después de leer que no pensaba ser escudero de nadie).
       const stayCampeon = stays!=="PLAYER" && S.lastChampName && stays.name===S.lastChampName;
       const esTxt =
-        rupturaCampeon    ? `Ganas el Mundial y aun así la convivencia con ${stayName} está rota: ${tn} se queda con él y tú sales al mercado. No serías el primer campeón que se va por la puerta de atrás.`
+        /* ⚠️ SIN INVENTARSE EL MOTIVO (corrección de Carlos): «la convivencia está rota» no vale para
+           todos los casos —puede ser simplemente que traten mejor al otro, como Rosberg con Hamilton—.
+           El texto dice que hay tensión y se acaba ahí. */
+        rupturaCampeon    ? `Ganas el Mundial y aun así la convivencia en el equipo es tensa: ${tn} se queda con ${stayName} y tú sales al mercado.`
       : modo==="peor"     ? `${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
       : (modo==="mejor" && stayCampeon) ? `${tn} se vuelca en ${stayName} tras su Mundial y quiere un Nº2 que no le discuta nada. Ese ya no eres tú: te toca buscar asiento.`
       : modo==="mejor"    ? `Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
@@ -6064,14 +6067,14 @@ function alphaClash(row){
          juzgar el año: el equipo apuesta por el otro, y punto. */
                           : `${tn} decide apostar por ${stayName} y su veteranía: te toca buscar nuevo equipo.`;
       const enTxt =
-        rupturaCampeon    ? `You win the title and even so, living with ${stayName} has become impossible: ${tn} keeps him and you hit the market. You wouldn't be the first champion to leave by the back door.`
+        rupturaCampeon    ? `You win the title and even so, the mood inside the team is tense: ${tn} keeps ${stayName} and you hit the market.`
       : modo==="peor"     ? `${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
       : (modo==="mejor" && stayCampeon) ? `${tn} throws everything behind ${stayName} after his title and wants a No.2 who won't argue. That's no longer you: time to find a seat.`
       : modo==="mejor"    ? `You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
       : modo==="veterano" ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
                           : `${tn} decides to build around ${stayName} and his experience: time to find a new team.`;
       const ptTxt =
-        rupturaCampeon    ? `Você ganha o Mundial e mesmo assim a convivência com ${stayName} está quebrada: a ${tn} fica com ele e você vai ao mercado. Não seria o primeiro campeão a sair pela porta dos fundos.`
+        rupturaCampeon    ? `Você ganha o Mundial e mesmo assim o clima na equipe está tenso: a ${tn} fica com ${stayName} e você vai ao mercado.`
       : modo==="peor"     ? `A ${tn} aposta em ${stayName} como Nº1 e te mostra a porta: hora de procurar vaga.`
       : (modo==="mejor" && stayCampeon) ? `A ${tn} se volta toda para ${stayName} depois do Mundial dele e quer um Nº2 que não conteste nada. Esse já não é você: hora de procurar vaga.`
       : modo==="mejor"    ? `Você é o melhor da garagem e não pretende ser escudeiro de ninguém: vai ao mercado atrás do seu próprio projeto.`
