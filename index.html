@@ -3398,6 +3398,27 @@ function promoteFromReserve(){
 // incidentes de pista: elige un rival que NO sea tu compañero; guarda su nombre completo por si acaban a hostias
 // pilotos EN ACTIVO (con asiento ahora mismo): para toques, enemigos y demás — un retirado no puede tocarte en pista
 function seatedPool(){ const out=[]; Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") out.push(d); })); return out; }
+/* 🤝 EL VETERANO QUE SE JUEGA EL MUNDIAL, y que de verdad se lo juega. Carlos: «ESTO TIENE QUE SER
+   VERDAD». Nada de pronósticos —ese fue el error del «desinfle»—, así que las tres cosas que dice el
+   texto se comprueban con datos ya ocurridos:
+     · lleva títulos DE VERDAD           → d.titles, que es su palmarés real en tu partida
+     · es un veterano DE VERDAD          → 30 años o más
+     · se juega el Mundial DE VERDAD     → está en uno de los tres mejores coches Y acabó entre los
+                                           tres primeros el año PASADO (S.rankD, ya calculado)
+   Y del otro lado: tú NO puedes estar en un coche de los tres mejores, porque entonces la pelea
+   también sería tuya y el favor no tendría ningún sentido. */
+function veteranoEnLucha(){
+  const mine=(S.team&&S.team.name)||"";
+  const top3=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).slice(0,3).map(t=>t.name);
+  if(top3.includes(mine)) return null;
+  const out=[];
+  Object.entries(S.seats||{}).forEach(([tn,sl])=>{
+    if(!top3.includes(tn) || !Array.isArray(sl)) return;
+    sl.forEach(d=>{ if(d && d!=="PLAYER" && (d.titles||0)>=1 && (d.age||0)>=30
+      && ((S.rankD && S.rankD[d.name]) || 99) <= 3) out.push(d); });
+  });
+  return out.length ? out[irnd(0,out.length-1)] : null;
+}
 function incidentRival(){
   const pool=seatedPool().filter(d=>d.name && d.name!=="TÚ" && d.name!==S.roleMate);
   const d=pool.length?pool[irnd(0,pool.length-1)]:null;
@@ -3985,6 +4006,18 @@ function signContract(o){
   if(o.team.cat==="F1" && !sameSeat) S.pendingEvents.push(L("✍️ Firmas por "+o.team.name+".","✍️ You sign for "+o.team.name+".",{pt:"✍️ Você assina com "+o.team.name+"."}));
   // años consecutivos en el mismo equipo (para que el coche se adapte a ti con el tiempo)
   S.yearsAtTeam = o.team.cat==="F1" ? (sameSeat ? (S.yearsAtTeam||1)+1 : 1) : 0;
+  /* 🎓 EL PADRINO TE ENSEÑA (matiz de Carlos): si le hiciste el favor y acabas en SU equipo, algo se
+     te pega — pero solo mientras seas joven. «Si ya eres veterano cuando te unes a él, poco te puede
+     enseñar». No siempre: es un consejo a tiempo, no una clase particular. Una sola vez por partida. */
+  if(o.team.cat==="F1" && S.mentor && !S.mentorDone && S.age<=26){
+    const m=(S.seats[o.team.name]||[]).find(d=>d && d!=="PLAYER" && d.name===S.mentor.name);
+    if(m && ch(.6)){
+      S.mentorDone=true; OVR(1);
+      S.pendingEvents.push(L(`🎓 Compartes garaje con ${surname(m.name)}, al que un día echaste un cable: te sienta delante de la telemetría y te enseña cosas que no se aprenden solo. +1 OVR`,
+                             `🎓 You share a garage with ${surname(m.name)}, the man you once did a favour: he sits you in front of the telemetry and teaches you things you don't learn alone. +1 OVR`,
+                             {pt:`🎓 Você divide a garagem com ${surname(m.name)}, para quem um dia deu uma mão: ele te senta na frente da telemetria e te ensina coisas que não se aprendem sozinho. +1 OVR`}));
+    }
+  }
   if(o.team.cat==="F1"){
     occupySeat(o.team.name);
     S.youngDetour=false; // llegaste a la F1: la vía joven de escape ya cumplió su papel
@@ -4585,6 +4618,43 @@ const DILEMAS=[
    {l:()=>L("Callar con humildad","Stay humble and quiet",{pt:"Calar com humildade"}),r:()=>roll(
      [4,()=>(VAL(1.08),L("«Es una leyenda, le respeto». Tu elegancia gusta. +fama leve","«He's a legend, I respect him». Your grace goes down well. slight +fame",{pt:"«É uma lenda, eu respeito». A sua elegância agrada. +fama leve"}))],
      [3,()=>L("Algunos interpretan que le das la razón, pero tú sigues a lo tuyo. Sin cambios.","Some read it as you conceding the point, but you carry on. No change.",{pt:"Alguns entendem que você deu razão a ele, mas você segue no seu. Sem mudanças."})])}]},
+ /* 🤝 EL FAVOR DEL VETERANO (diseñado con Carlos, 11-ago). Eres un novato en media tabla y un campeón
+    que SÍ se juega el Mundial te pide paso. Es la fábrica de aliados que le faltaba al juego: hoy los
+    enemigos bloquean fichajes y tienen memoria, y los `respects` apenas hacían nada.
+    ⚠️ REGLA DE ORO DEL TEXTO (Carlos): «no nos pillamos los dedos — pase lo que pase, él no gana ni
+    pierde el campeonato por nuestra decisión». El dilema se decide ANTES de simular el año, así que
+    ningún desenlace puede afirmar cómo acaba su Mundial. Solo se cuenta lo que pasa ENTRE VOSOTROS. */
+ {id:"favorVeterano",stage:"f1",
+  cond:()=>S.cat==="F1" && (S.f1Seasons||0)<=1 && (S.titles.f1||0)===0 && !!veteranoEnLucha(),
+  t:()=>L("El favor del veterano","The veteran's favour",{pt:"O favor do veterano"}),
+  d:()=>{ const v=veteranoEnLucha(); S._favorV=v||null;
+    const n=v?surname(v.name):L("un campeón","a champion",{pt:"um campeão"}), t=v?(v.titles||1):1;
+    return L(`${n} se está jugando el Mundial y tú andas por media tabla. Te busca en el paddock, sin cámaras: «Cuando me veas por el retrovisor, no me hagas perder tres décimas. No te pido que te apartes, te pido que no me compliques una pelea que no es tuya». Tú eres un novato. Él lleva ${t} ${t>1?"títulos":"título"} en la vitrina.`,
+             `${n} is fighting for the title and you're mid-table. He finds you in the paddock, no cameras around: «When you see me in your mirrors, don't cost me three tenths. I'm not asking you to move over, I'm asking you not to complicate a fight that isn't yours». You're a rookie. He has ${t} ${t>1?"titles":"title"} on the shelf.`,
+             {pt:`${n} está brigando pelo Mundial e você anda no meio do pelotão. Ele te procura no paddock, sem câmeras: «Quando me vir pelo retrovisor, não me faça perder três décimos. Não estou pedindo que saia da frente, estou pedindo que não complique uma briga que não é sua». Você é um novato. Ele tem ${t} ${t>1?"títulos":"título"} na estante.`}); },
+  opts:[
+   {l:()=>L("Ayudarle","Help him out",{pt:"Ajudar ele"}),r:()=>{
+     const v=S._favorV, n=v?surname(v.name):L("él","him",{pt:"ele"});
+     // en los dos desenlaces acaba debiéndote una: eso es lo que abre el dilema de la devolución
+     if(v){ S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===v.name)) S.respects.push({name:v.name, year:yearNow()});
+            S.mentor={name:v.name}; S.favorIOU={name:v.name, year:yearNow()}; }
+     return roll(
+      [6,()=>(VAL(1.06),L(`Cumples sin aspavientos, y ${n} no es de los que olvidan: a partir de ahí te nombra en las ruedas de prensa y te dice que te abrirá puertas. Te has echado un padrino. +fama leve`,
+                          `You do it without any fuss, and ${n} isn't the forgetting type: from then on he name-drops you in press conferences and tells you he'll open doors for you. You've got yourself a godfather. slight +fame`,
+                          {pt:`Você cumpre sem alarde, e ${n} não é de esquecer: a partir daí te cita nas coletivas e diz que vai te abrir portas. Você arrumou um padrinho. +fama leve`}))],
+      [4,()=>(VAL(.95),L(`Cumples… y alguien del muro rival lo ve raro. La prensa habla de «amiguismo» un par de semanas. −fama leve, pero él te lo debe.`,
+                         `You do it… and someone on a rival pit wall finds it odd. The press talks about «favouritism» for a couple of weeks. slight −fame, but he owes you one.`,
+                         {pt:`Você cumpre… e alguém do muro rival acha estranho. A imprensa fala em «amizinha» por umas duas semanas. −fama leve, mas ele fica te devendo.`}))]); }},
+   {l:()=>L("Competir sin regalar nada","Race him for every inch",{pt:"Competir sem dar nada"}),r:()=>{
+     const v=S._favorV, n=v?surname(v.name):L("él","him",{pt:"ele"});
+     return roll(
+      [5,()=>(VAL(1.1),L(`Le peleas cada metro como si te jugaras lo mismo que él. No le gusta, pero el paddock entero toma nota: ese novato no se achanta ante nadie. +fama`,
+                         `You race him for every inch as if you had as much at stake as he does. He doesn't like it, but the whole paddock takes note: that rookie doesn't back down for anyone. +fame`,
+                         {pt:`Você briga cada metro como se estivesse em jogo o mesmo que ele. Ele não gosta, mas o paddock inteiro anota: esse novato não se acovarda diante de ninguém. +fama`}))],
+      [5,()=>{ if(v){ S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===v.name)) S.feuds.push({name:v.name, year:yearNow()}); }
+        return L(`Te cruzas en su pelea y le haces sudar. No te lo va a perdonar: te has ganado un enemigo con galones.`,
+                 `You get in the middle of his fight and make him sweat. He won't forgive that: you've made yourself an enemy with stripes.`,
+                 {pt:`Você se mete na briga dele e o faz suar. Ele não vai perdoar: você arrumou um inimigo graduado.`}); }]); }}]},
  // 💥 versión GRAVE y RARA de un incidente (heredera de `toqueCulpable`): mandas a un rival al HOSPITAL. Sin perdón → enemigo garantizado.
  {id:"pesoCulpa",stage:"f1",cond:()=>S.cat==="F1"&&S.ovr>=84&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate)&&ch(.5),
   t:()=>L("El peso de la culpa","The weight of guilt",{pt:"O peso da culpa"}),
@@ -5232,6 +5302,10 @@ let P_GOMAS=.5, P_TOQUE=.06;
 // padrino antes de los 20. Sin prioridad salían en el 1% y el 2% (medido).
 // el del chaval salía en el 2% sin prioridad y en el 55% con .18 — la misma curva empinada que ya me
 // pilló con el del debut. Con .05 queda en torno al 25%.
+/* 🤝 el favor del veterano vive en una ventana de DOS temporadas (eres novato, sin títulos y en media
+   tabla) y compitiendo con los ~56 dilemas de F1 salía 1 vez cada 60 carreras: o va con prioridad o no
+   existe. Como constante, para poder medirla A/B como las demás. */
+let P_FAVOR=.3;
 let P_DEBUT=.2, P_PATRON=.26, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // el mecenas: .55 -> 48% de las carreras, .5 -> 21%. Sigue siendo demasiado para «la llamada que te cambia la vida»: se busca ~1 de cada 10
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
@@ -5255,7 +5329,7 @@ function pickDilemma(){
   }
   // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
   //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
-  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL]]){
+  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL],["favorVeterano",P_FAVOR]]){
     if(S.usedDilemmas[id]) continue;
     if((S.age-S.lastDilemmaAge<1) && id!=="debutGrande" && id!=="patronContrato") continue;
     const d=DILEMAS.find(x=>x.id===id);
