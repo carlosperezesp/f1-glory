@@ -1192,6 +1192,11 @@ const CROSSOVERS_1990 = [
      dejó parapléjico ese mismo año). Mismo criterio que con Ratzenberger — el juego simula accidentes
      graves y un bote de nombres al azar no puede repetírselos a quien ya los sufrió de verdad. */
   {name:"J. Boesel", flag:"🇧🇷", born:1957, base:80, ceil:83},
+  /* 🏁 ESTRELLAS DE OTRO MUNDO, no cantera (auditoría del 11-ago): estaban metidos como promesas del
+     junior y en 1990 los dos tenían 34 años y una carrera hecha fuera de los monoplazas. Aquí sí
+     encajan: gente consagrada en otra disciplina que, con otra mano de cartas, podría cruzar a la F1. */
+  {name:"J. Nielsen", flag:"🇩🇰", born:1956, base:82, ceil:85},    // ganó Le Mans en 1990
+  {name:"T. Tsuchiya", flag:"🇯🇵", born:1956, base:80, ceil:84},   // el «Drift King», dos veces ganador de clase en Le Mans
   {name:"M. Baldi", flag:"🇮🇹", born:1954, base:79, ceil:82},
 ];
 const CROSSOVERS = [
@@ -1533,7 +1538,7 @@ const ROOKIE_2000 = [
 // escalera junior de 2000: Karting → Fórmula Renault → F3 (británica o alemana, en paralelo) → F3000 → F1
 // (la GP2 no existe hasta 2005 y la GP3 hasta 2010; la F3000 internacional corrió de 1985 a 2004)
 const FREN_2000 = [
-  {name:"Manor Motorsport", color:"#111318", color2:"#c0392b", perf:58},{name:"Cram Competition", color:"#e30613", color2:"#7a0309", perf:57},
+  {name:"Manor Motorsport", color:"#111318", color2:"#c0392b", perf:58},{name:"Prema Powerteam", color:"#dd0022", color2:"#6b0011", perf:59},{name:"Cram Competition", color:"#e30613", color2:"#7a0309", perf:57},
   {name:"JD Motorsport", color:"#0e7a5f", color2:"#063d2f", perf:55},{name:"Team DFR", color:"#1a3a6b", color2:"#0d1f3a", perf:53},
   {name:"Motaworld Racing", color:"#e6a01e", color2:"#8a5f0f", perf:51},{name:"GM Motorsport", color:"#888888", color2:"#444444", perf:52},
   {name:"SL Formula Racing", color:"#7a1fa2", color2:"#3d0f52", perf:50}];
@@ -1542,10 +1547,14 @@ const F3BR_2000 = [ // F3 británica 2000
   {name:"Stewart Racing", color:"#f5f5f5", color2:"#1a3d7c", perf:63},{name:"Promatecme UK", color:"#0a9bd8", color2:"#065a7d", perf:60},
   {name:"Fortec F3", color:"#e6a01e", color2:"#8a5f0f", perf:58},{name:"Alan Docking Racing", color:"#2a2a35", color2:"#101018", perf:56},
   {name:"Team Avanti", color:"#0e7a5f", color2:"#063d2f", perf:55}];
-const F3DE_2000 = [ // F3 alemana 2000
+const F3DE_2000 = [ /* F3 alemana 2000.
+     🔍 REVISADO 11-ago: PREMA POWERTEAM se ha movido de aquí a la Fórmula Renault. Prema es italiano y
+     en 2000 empezó justo en Fórmula Renault (ganó el título de equipos del Eurocup al año siguiente) y
+     en la F3 italiana; en la alemana no corría. ✅ El resto, correctos: los dos equipos Opel, Van
+     Amersfoort, Team Rosberg, Josef Kaufmann y Jo Zeller. */
   {name:"Opel Team KMS", color:"#f5d800", color2:"#8a7400", perf:66},{name:"Opel Team BSR", color:"#e30613", color2:"#7a0309", perf:63},
   {name:"Van Amersfoort F3", color:"#e30613", color2:"#7a0309", perf:61},{name:"Team Rosberg", color:"#0a4ea2", color2:"#062f61", perf:60},
-  {name:"Prema Powerteam", color:"#dd0022", color2:"#6b0011", perf:62},{name:"Josef Kaufmann F3", color:"#c9a227", color2:"#6b5210", perf:57},
+  {name:"Josef Kaufmann F3", color:"#c9a227", color2:"#6b5210", perf:57},
   {name:"Jo Zeller Racing", color:"#888888", color2:"#444444", perf:55}];
 const F3000_2000 = [ // F3000 internacional 2000 (campo real)
   {name:"Super Nova F3000", color:"#0a4ea2", color2:"#062f61", perf:76},{name:"Petrobras Junior", color:"#0e7a5f", color2:"#063d2f", perf:75},
@@ -1719,23 +1728,34 @@ const ROOKIE_1990 = [
        André Ribeiro (1966) fue la estrella brasileña de la CART. Comparten inicial, así que lo que los
        distingue NO es el nombre sino la EDAD: con 1966, en 1995 debuta con 29 años y es inequívocamente
        André. (Matiz que trajo Carlos: «hay un Ribeiro antiguo en F1 en los 70».)
-     📌 Quedan por verificar (van sin fecha, o sea que debutan con 18-21): Apicella, Zanardi, Lavaggi,
-       Couto, Kristensen, Nielsen, Wallace, Kox, Franchitti, Firman, McCarthy, Bailey, Menu, Belmondo,
-       Gounon, Sarrazin, Minassian, Lagorce, Collard, Bourdais, Marques, Nakano, Inoue, Katayama, Noda,
-       M. Sala, Tsuchiya, Fontana, Müller, Goossens, Bouchut, Bräck, Bossy, Albers, Coronel, Badoer. */
+     ═══ SEGUNDA TANDA (11-ago, encargo de Carlos: «terminamos auditoría de los 90») ═══
+     ✅ 26 fechas de nacimiento MÁS, verificadas con fuentes, así que ya casi nadie debuta inventándose
+       la edad: Apicella 1965 · Zanardi 1966 · Lavaggi 1958 · Badoer 1971 · Kristensen 1967 · Wallace
+       1961 · Albers 1979 · Franchitti 1973 · Firman 1975 · McCarthy 1961 · Bailey 1961 · Menu 1963 ·
+       Belmondo 1963 · Gounon 1963 · Sarrazin 1975 · Lagorce 1968 · Bourdais 1979 · Collard 1971 ·
+       Marques 1976 · Nakano 1971 · Inoue 1963 · Katayama 1963 · Noda 1969 · Fontana 1975 · Bouchut
+       1966 · Bräck 1966. (Con la primera tanda: 32 de 40 con fecha real.)
+     🔄 T. TSUCHIYA y J. NIELSEN se MUEVEN a CROSSOVERS_1990: los dos nacieron en 1956, o sea que en
+       1990 tenían 34 años y una carrera hecha FUERA de los monoplazas —Nielsen ganó Le Mans ese mismo
+       año y Tsuchiya es el «Drift King»—. Como promesas del junior no se sostenían; como estrellas de
+       otra categoría que pueden cruzar, encajan perfectas.
+     ❌ M. SALA y G. BOSSY, FUERA: no corresponden a ningún piloto identificable (el único «Sala»
+       español de la época es Luis Pérez-Sala, que ya salió por veterano). Mismo criterio que G. Celso.
+     📌 Siguen sin fecha, y por tanto debutan con 18-21 (identificados pero sin dato verificado):
+       Naspetti, Couto, Coronel, Kox, Minassian, Müller, Goossens. */
   ["A. Montermini","🇮🇹",null,1964,85],["V. Sospiri","🇮🇹",null,1966,87],["E. Naspetti","🇮🇹",null,1968],
-  ["L. Badoer","🇮🇹",1992,null,86],["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹",null,null,92],["G. Lavaggi","🇮🇹",1993],
+  ["L. Badoer","🇮🇹",1992,1971,86],["M. Apicella","🇮🇹",null,1965],["A. Zanardi","🇮🇹",null,1966,92],["G. Lavaggi","🇮🇹",1993,1958],
   ["A. Couto","🇵🇹",1995],["A. García","🇪🇸",1999,1980],
-  ["T. Kristensen","🇩🇰",1993,null,90],["J. Nielsen","🇩🇰"],["A. Wallace","🇬🇧"],
-  ["C. Albers","🇳🇱",1998],["T. Coronel","🇳🇱",1994],["P. Kox","🇳🇱"],
-  ["D. Franchitti","🇬🇧",1993,null,92],["R. Firman","🇬🇧",1996],["P. McCarthy","🇬🇧",null,null,77],
-  ["J. Bailey","🇬🇧"],["A. Menu","🇨🇭"],["P. Belmondo","🇫🇷"],["J-M. Gounon","🇫🇷",1993],
-  ["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],["S. Bourdais","🇫🇷",1999,null,91],
-  ["E. Collard","🇫🇷"],
-  ["A. Ribeiro","🇧🇷",1995,1966,87],["G. Salles","🇧🇷",1997,1970,82],["T. Marques","🇧🇷",1996],
-  ["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵",null,null,77],["U. Katayama","🇯🇵",null,null,84],["H. Noda","🇯🇵",1994],
-  ["M. Sala","🇪🇸"],["T. Tsuchiya","🇯🇵"],["N. Fontana","🇦🇷",1994,null,83],["J. Müller","🇩🇪",1994],
-  ["C. Bouchut","🇫🇷"],["M. Goossens","🇧🇪",1993],["K. Bräck","🇸🇪",1992,null,89],["G. Bossy","🇨🇭"],
+  ["T. Kristensen","🇩🇰",1993,1967,90],["A. Wallace","🇬🇧",null,1961],
+  ["C. Albers","🇳🇱",1998,1979],["T. Coronel","🇳🇱",1994],["P. Kox","🇳🇱"],
+  ["D. Franchitti","🇬🇧",1993,1973,92],["R. Firman","🇬🇧",1996,1975],["P. McCarthy","🇬🇧",null,1961,77],
+  ["J. Bailey","🇬🇧",null,1961],["A. Menu","🇨🇭",null,1963],["P. Belmondo","🇫🇷",null,1963],["J-M. Gounon","🇫🇷",1993,1963],
+  ["S. Sarrazin","🇫🇷",1996,1975],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷",null,1968],["S. Bourdais","🇫🇷",1999,1979,91],
+  ["E. Collard","🇫🇷",null,1971],
+  ["A. Ribeiro","🇧🇷",1995,1966,87],["G. Salles","🇧🇷",1997,1970,82],["T. Marques","🇧🇷",1996,1976],
+  ["S. Nakano","🇯🇵",1994,1971],["T. Inoue","🇯🇵",null,1963,77],["U. Katayama","🇯🇵",null,1963,84],["H. Noda","🇯🇵",1994,1969],
+  ["N. Fontana","🇦🇷",1994,1975,83],["J. Müller","🇩🇪",1994],
+  ["C. Bouchut","🇫🇷",null,1966],["M. Goossens","🇧🇪",1993],["K. Bräck","🇸🇪",1992,1966,89],
 ];
 const LEGENDS_1990 = [["J.M. Fangio",5,"🇦🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],["N. Lauda",3,"🇦🇹"],
   ["J. Clark",2,"🇬🇧"],["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["A. Jones",1,"🇦🇺"],
@@ -1762,9 +1782,16 @@ const F3EU_1990 = [ // F3 italiana y alemana: el jugador acaba en una u otra seg
   {name:"Bertram Schäfer Racing", color:"#111318", color2:"#c0392b", perf:61, nat:"🇩🇪"},
   {name:"Josef Kaufmann Racing", color:"#c9a227", color2:"#6b5210", perf:58, nat:"🇩🇪"},
   {name:"Volkswagen Motorsport", color:"#0e7a5f", color2:"#063d2f", perf:60, nat:"🇩🇪"}];
-const F3000_1990 = [ // F3000 internacional: la antesala de verdad
+const F3000_1990 = [ /* F3000 internacional: la antesala de verdad.
+     🔍 REVISADO 11-ago-2026 (encargo de Carlos): fuera ONYX RACE ENGINEERING, que fue campeón de F3000
+     en 1987 con Modena pero en 1990 YA ERA EQUIPO DE F1 (Onyx Grand Prix) y no corría aquí. En su sitio
+     entra RSM MARKO, el equipo de Helmut Marko, que sí figura en la parrilla de 1990 — y de paso deja
+     un guiño: el hombre que décadas después dirigiría la cantera de Red Bull.
+     ✅ Verificados como correctos de esa temporada: Eddie Jordan Racing, Pacific, DAMS, First Racing,
+     Middlebridge, GA Motorsport y Crypton Engineering (equipo italiano de F3000 desde 1990, campeón en
+     1992 justo con Luca Badoer, que está en nuestra cantera disponible desde ese año). */
   {name:"Eddie Jordan Racing", color:"#2F9E2F", color2:"#111111", perf:76},{name:"Pacific Racing", color:"#2A7A8A", color2:"#f5f5f5", perf:74},
-  {name:"DAMS", color:"#0088cc", color2:"#004a70", perf:75},{name:"Onyx Race Engineering", color:"#1A6B3A", color2:"#0d3a1f", perf:71},
+  {name:"DAMS", color:"#0088cc", color2:"#004a70", perf:75},{name:"RSM Marko", color:"#1A3A6B", color2:"#c9a227", perf:71},
   {name:"First Racing", color:"#e30613", color2:"#7a0309", perf:70},{name:"Middlebridge F3000", color:"#7a1fa2", color2:"#3d0f52", perf:69},
   {name:"GA Motorsport", color:"#e6a01e", color2:"#8a5f0f", perf:68},{name:"Crypton Engineering", color:"#c0c0c8", color2:"#5a5a66", perf:67}];
 const KART_1990 = [
