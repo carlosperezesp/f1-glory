@@ -3430,7 +3430,12 @@ function veteranoEnLucha(){
   if(top3.includes(mine)) return null;
   const out=[];
   Object.entries(S.seats||{}).forEach(([tn,sl])=>{
-    if(!top3.includes(tn) || !Array.isArray(sl)) return;
+    /* 🚫 NUNCA TU COMPAÑERO (lo cazó Carlos): «no tiene sentido que te pida un favor tu compañero — el
+       equipo te da la orden y tú cumples, porque no te estás jugando el Mundial». Y tiene razón: entre
+       compañeros esto no es un favor personal, son órdenes de equipo, que ya son otro dilema.
+       Hoy además sería imposible por carambola (él tiene que estar en un top-3 y tú no), pero se deja
+       escrito y explícito para que siga siendo verdad si algún día se afloja la otra condición. */
+    if(tn===mine || !top3.includes(tn) || !Array.isArray(sl)) return;
     sl.forEach(d=>{ if(d && d!=="PLAYER" && (d.titles||0)>=1 && (d.age||0)>=30
       && ((S.rankD && S.rankD[d.name]) || 99) <= 3) out.push(d); });
   });
