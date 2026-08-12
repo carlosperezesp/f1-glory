@@ -2491,6 +2491,10 @@ function initSecretChallenges(){
 // despiertos, que son el 28% y el 27%. Si se cambia la hora, revisar que siga cuadrando en ambos husos.
 const RELEASES = {
   dec2000: { at:"2026-08-10T10:00:00Z" },   // 🕰️ la década de 2000 en el modo retro
+  /* 🕰️ la década de 1990. Fecha elegida por Carlos: VIERNES 21 de agosto a las 12:00 de España
+     (10:00Z, como todas). El plan que hay detrás: los LUNES entran los retos nuevos y los
+     VIERNES las novedades gordas —eras, modos—, para que haya algo dos veces por semana. */
+  dec1990: { at:"2026-08-21T10:00:00Z" },
   // 📅 el modo Reto semanal abre con el PRIMER reto: su fecha sale del propio registro CHALLENGES,
   //    así añadir un reto nuevo no obliga a tocar esto (cada reto trae su `at`).
   get retos(){ const f=Object.values(CHALLENGES).map(c=>c.at).filter(Boolean).sort();
@@ -2538,32 +2542,30 @@ function paintBadge(el, key){
   el.className="soon-badge"; el.textContent=L(`En ${i.dias} días`,`In ${i.dias} days`,{pt:`Em ${i.dias} dias`}); return false;
 }
 let _relTimer=null;
+/* 🕰️ PINTA EL BOTÓN DE UNA DÉCADA CON FECHA DE SALIDA. La cuenta atrás va DENTRO del botón (petición
+   de Carlos), no en la tarjeta del retro. Vale para cualquier década: basta con darle su entrada en
+   RELEASES. Devuelve true si hay que refrescar cada segundo (el último día). */
+function pintaDecada(id, era, cuando){
+  const b=document.getElementById(id); if(!b || !ERAS[era]) return false;
+  const i=relInfo(id), ok=relOpen(id);
+  b.disabled=!ok; b.classList.toggle("locked",!ok);
+  b.onclick = ok ? (()=>startCareerFlow(era)) : null;
+  let pie="", corriendo=false;
+  if(!i.live){
+    if(PREVIEW) pie=L("🔒 solo tú","🔒 you only",{pt:"🔒 só você"});
+    else if(i.dias<=0){ pie=L("en ","in ",{pt:"em "})+hms(i.ms); corriendo=true; }
+    else if(i.dias===1) pie=L("¡mañana!","tomorrow!",{pt:"amanhã!"});
+    else pie=L(`en ${i.dias} días`,`in ${i.dias} days`,{pt:`em ${i.dias} dias`});
+  } else if(i.fresco) pie=L("¡nuevo!","new!",{pt:"novo!"});
+  b.innerHTML = pie ? `${era}<small class="dec-sub">${pie}</small>` : era;
+  b.classList.toggle("dec-count", !!pie && !i.live);
+  b.title = ok ? "" : cuando;
+  return corriendo;
+}
 function refreshReleases(){
-  // 🚧 1990 EN CONSTRUCCIÓN: solo con ?preview=glory26, sin fecha de salida todavía.
-  const d90=document.getElementById("dec1990");
-  if(d90 && ERAS["1990"]){
-    d90.disabled=!PREVIEW; d90.classList.toggle("locked",!PREVIEW);
-    d90.onclick = PREVIEW ? (()=>startCareerFlow("1990")) : null;
-    d90.innerHTML = PREVIEW ? `1990<span class="decsub">${L("🔒 en obras","🔒 under construction",{pt:"🔒 em obras"})}</span>` : "1990";
-  }
-  // 🕰️ la cuenta atrás va DENTRO del botón de la década (petición de Carlos), no en la tarjeta del retro
-  const d=document.getElementById("dec2000");
   let a=false;
-  if(d && ERAS["2000"]){
-    const i=relInfo("dec2000"), ok=relOpen("dec2000");
-    d.disabled=!ok; d.classList.toggle("locked",!ok);
-    d.onclick = ok ? (()=>startCareerFlow("2000")) : null;
-    let pie="";
-    if(!i.live){
-      if(PREVIEW) pie=L("🔒 solo tú","🔒 you only",{pt:"🔒 só você"});
-      else if(i.dias<=0){ pie=L("en ","in ",{pt:"em "})+hms(i.ms); a=true; }
-      else if(i.dias===1) pie=L("¡mañana!","tomorrow!",{pt:"amanhã!"});
-      else pie=L(`en ${i.dias} días`,`in ${i.dias} days`,{pt:`em ${i.dias} dias`});
-    } else if(i.fresco) pie=L("¡nuevo!","new!",{pt:"novo!"});
-    d.innerHTML = pie ? `2000<small class="dec-sub">${pie}</small>` : "2000";
-    d.classList.toggle("dec-count", !!pie && !i.live);
-    d.title = ok ? "" : L("Disponible el 10 de agosto a las 12:00","Available 10 August at 12:00 CEST",{pt:"Disponível em 10 de agosto às 12:00"});
-  }
+  a = pintaDecada("dec2000","2000", L("Disponible el 10 de agosto a las 12:00","Available 10 August at 12:00 CEST",{pt:"Disponível em 10 de agosto às 12:00"})) || a;
+  a = pintaDecada("dec1990","1990", L("Disponible el 21 de agosto a las 12:00","Available 21 August at 12:00 CEST",{pt:"Disponível em 21 de agosto às 12:00"})) || a;
   let b=paintBadge(document.getElementById("badgeReto"), "retos");
   // ⚠️ el ¡NUEVO! del modo Reto NO puede caducar 14 días después del PRIMER reto: cada reto que entra
   // es una novedad. Si el más reciente ya publicado es fresco, se vuelve a encender la pegatina.
