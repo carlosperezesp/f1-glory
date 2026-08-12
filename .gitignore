@@ -1,3 +1,9 @@
 pilotos-f1glory.html
 Propuestas F1-glory.md
 .claude/
+
+# base de datos de pilotos exportada para revisar (se regenera cuando haga falta)
+pilotos-f1glory.csv
+
+# maquetas y referencias visuales para un futuro rediseno: NO son parte del juego
+disenos/
