@@ -1723,19 +1723,19 @@ const ROOKIE_1990 = [
        Couto, Kristensen, Nielsen, Wallace, Kox, Franchitti, Firman, McCarthy, Bailey, Menu, Belmondo,
        Gounon, Sarrazin, Minassian, Lagorce, Collard, Bourdais, Marques, Nakano, Inoue, Katayama, Noda,
        M. Sala, Tsuchiya, Fontana, Müller, Goossens, Bouchut, Bräck, Bossy, Albers, Coronel, Badoer. */
-  ["A. Montermini","🇮🇹",null,1964],["V. Sospiri","🇮🇹",null,1966],["E. Naspetti","🇮🇹",null,1968],
-  ["L. Badoer","🇮🇹",1992],["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹"],["G. Lavaggi","🇮🇹",1993],
+  ["A. Montermini","🇮🇹",null,1964,85],["V. Sospiri","🇮🇹",null,1966,87],["E. Naspetti","🇮🇹",null,1968],
+  ["L. Badoer","🇮🇹",1992,null,86],["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹",null,null,92],["G. Lavaggi","🇮🇹",1993],
   ["A. Couto","🇵🇹",1995],["A. García","🇪🇸",1999,1980],
-  ["T. Kristensen","🇩🇰",1993],["J. Nielsen","🇩🇰"],["A. Wallace","🇬🇧"],
+  ["T. Kristensen","🇩🇰",1993,null,90],["J. Nielsen","🇩🇰"],["A. Wallace","🇬🇧"],
   ["C. Albers","🇳🇱",1998],["T. Coronel","🇳🇱",1994],["P. Kox","🇳🇱"],
-  ["D. Franchitti","🇬🇧",1993],["R. Firman","🇬🇧",1996],["P. McCarthy","🇬🇧"],
+  ["D. Franchitti","🇬🇧",1993,null,92],["R. Firman","🇬🇧",1996],["P. McCarthy","🇬🇧",null,null,77],
   ["J. Bailey","🇬🇧"],["A. Menu","🇨🇭"],["P. Belmondo","🇫🇷"],["J-M. Gounon","🇫🇷",1993],
-  ["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],["S. Bourdais","🇫🇷",1999],
+  ["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],["S. Bourdais","🇫🇷",1999,null,91],
   ["E. Collard","🇫🇷"],
-  ["A. Ribeiro","🇧🇷",1995,1966],["G. Salles","🇧🇷",1997,1970],["T. Marques","🇧🇷",1996],
-  ["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵"],["U. Katayama","🇯🇵"],["H. Noda","🇯🇵",1994],
-  ["M. Sala","🇪🇸"],["T. Tsuchiya","🇯🇵"],["N. Fontana","🇦🇷",1994],["J. Müller","🇩🇪",1994],
-  ["C. Bouchut","🇫🇷"],["M. Goossens","🇧🇪",1993],["K. Bräck","🇸🇪",1992],["G. Bossy","🇨🇭"],
+  ["A. Ribeiro","🇧🇷",1995,1966,87],["G. Salles","🇧🇷",1997,1970,82],["T. Marques","🇧🇷",1996],
+  ["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵",null,null,77],["U. Katayama","🇯🇵",null,null,84],["H. Noda","🇯🇵",1994],
+  ["M. Sala","🇪🇸"],["T. Tsuchiya","🇯🇵"],["N. Fontana","🇦🇷",1994,null,83],["J. Müller","🇩🇪",1994],
+  ["C. Bouchut","🇫🇷"],["M. Goossens","🇧🇪",1993],["K. Bräck","🇸🇪",1992,null,89],["G. Bossy","🇨🇭"],
 ];
 const LEGENDS_1990 = [["J.M. Fangio",5,"🇦🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],["N. Lauda",3,"🇦🇹"],
   ["J. Clark",2,"🇬🇧"],["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["A. Jones",1,"🇦🇺"],
@@ -3012,7 +3012,7 @@ function mkRookie(noCross, forTeam){
       return d;
     }
   }
-  let name, flag, born=null;
+  let name, flag, born=null, _tech=null;   // _tech = techo propio de la ficha (5º campo), si lo trae
   // 🏎️ si a esta partida le tocó el piloto de un mecenas, entra por aquí, como una promesa más
   if(S.supDriver && ch(.15)){ name=S.supDriver[0]; flag=S.supDriver[1]; S.supDriver=null; }
   S.rookies=S.rookies.filter(r=>!S.dpool.some(d=>d.name===r[0])); // purga nombres que ya entraron por otra vía
@@ -3030,7 +3030,7 @@ function mkRookie(noCross, forTeam){
       const _alt=_avail.filter(j=>S.rookies[j][1]!=="🇪🇸");
       if(_alt.length) _i=_alt[irnd(0,_alt.length-1)];
     }
-    const _r=S.rookies.splice(_i,1)[0]; name=_r[0]; flag=_r[1]; born=_r[3]||null;
+    const _r=S.rookies.splice(_i,1)[0]; name=_r[0]; flag=_r[1]; born=_r[3]||null; _tech=_r[4]||null;
   }
   // si la entrada YA trae inicial ("J. Taylor"), se respeta tal cual: es un mecenas que ha elegido
   // con qué nombre quiere correr. El resto son apellidos y se les pone una inicial al azar.
@@ -3046,12 +3046,28 @@ function mkRookie(noCross, forTeam){
      llegar nunca a nada. Ahora manda la edad: el que debuta con 26+ es un profesional ya hecho, y el
      que debuta de chaval tiene el mismo futuro por delante que cualquier otro, sepamos su edad o no. */
   const _age = born ? Math.max(18,Math.min(34,yearNow()-born)) : irnd(18,21);
-  const gen = _age<=21 && ch(0.11);   // el «fenómeno generacional» solo puede ser un crío
+  /* 🎯 EL TALENTO LO DICE EL DATO, LA EDAD SOLO MARCA EL CAMINO (matiz de Carlos, 11-ago): «Schumacher
+     debería tener mejor OVR normalmente que Ribeiro aunque los dos debuten jóvenes. La edad sirve para
+     progresar o declinar, pero si eres malo progresarás menos». Las LLEGADAS históricas ya llevaban su
+     techo (Schumacher 97, Häkkinen 94, Barrichello 88, Lamy 76) y la cantera no: todos salían del mismo
+     sorteo 84-93, así que un desconocido podía nacer con más futuro que Barrichello.
+     Ahora la cantera admite techo propio (5º campo) y se le pone el mismo temblor por partida que a la
+     parrilla, para que siga sin estar garantizado: en una carrera Zanardi se queda en 89 y en otra roza
+     el 95. Sin dato, se mantiene el sorteo de siempre. */
+  const _techoDato = _tech ? Math.round(Math.max(78, Math.min(97, _tech + gauss()*3))) : null;
+  const gen = !_techoDato && _age<=21 && ch(0.11);   // el «fenómeno generacional» solo puede ser un crío sin ficha
   const d = gen
     ? {name, age:_age, skill:rnd(84,88), ceil:irnd(95,97), titles:0, flag, gen:true}
+    : _techoDato
+    ? {name, age:_age, skill:rnd(_age>=26?75:74, Math.min(81,_techoDato-3)), ceil:_techoDato, titles:0, flag, gen:_techoDato>=94}
     : _age>=26
     ? {name, age:_age, skill:rnd(75,81), ceil:Math.round(rnd(82,88)), titles:0, flag}
-    : {name, age:_age, skill:rnd(74,81), ceil:Math.round(rnd(84,93)), titles:0, flag};
+    /* 📉 Y EL QUE NO TIENE FICHA, MÁS ABAJO: 84-93 dejaba a un desconocido con un techo medio de 89,4,
+       o sea POR ENCIMA de Barrichello (88) y casi como Zanardi. Con 81-91 el reparto se parece al de
+       las llegadas históricas —donde la mayoría son secundarios y las estrellas son pocas—, sin cerrar
+       la puerta a la sorpresa: sigue habiendo quien roza el 91, y el «fenómeno generacional» del 11%
+       mantiene vivo el techo de la parrilla a treinta años vista. */
+    : {name, age:_age, skill:rnd(74,81), ceil:Math.round(rnd(81,91)), titles:0, flag};
   // 🎓 la cantera de los grandes: un equipo con caché alto accede a mejores promesas (Antonelli en
   // Mercedes). Sutil a propósito: +2 de techo, no un fenómeno garantizado.
   if(forTeam && !born && S.cache && (S.cache[forTeam]||0)>=85) d.ceil=Math.min(97, d.ceil+2);
