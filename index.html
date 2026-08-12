@@ -4648,8 +4648,11 @@ const DILEMAS=[
      trayectoria queda «⚡ Verstappen te pide un favor: Te niegas. Le peleas cada metro…», que se
      entiende solo. Se usa `S._favorV` porque renderDilemma llama a d() ANTES que a t(), así que aquí
      ya está elegido — y así el título nombra exactamente al mismo del texto. */
+  /* 🏷️ «EL VETERANO Norris te pide un favor»: el oficio va delante del nombre a propósito. Además de
+     leerse mejor en la trayectoria, deja el hueco preparado para la variante que quiere Carlos —que el
+     favor también pueda pedirlo un joven o alguien de tu edad—, donde solo cambiaría esa palabra. */
   t:()=>{ const v=S._favorV, n=v?surname(v.name):null;
-    return n ? L(`${n} te pide un favor`,`${n} asks you a favour`,{pt:`${n} te pede um favor`})
+    return n ? L(`El veterano ${n} te pide un favor`,`Veteran ${n} asks you a favour`,{pt:`O veterano ${n} te pede um favor`})
              : L("El favor del veterano","The veteran's favour",{pt:"O favor do veterano"}); },
   d:()=>{ const v=veteranoEnLucha(); S._favorV=v||null;
     const n=v?surname(v.name):L("un campeón","a champion",{pt:"um campeão"}), t=v?(v.titles||1):1;
