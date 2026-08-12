@@ -2875,6 +2875,21 @@ function startCareer(){
    del año pasado, la trayectoria pintada y el modo en el que estabas.
    ⚠️ ES EL CAMINO QUE EL CUADERNO MARCA COMO PELIGROSO («filtra estado entre partidas», precedente de
    Campos al 72%), así que NO se publica sin medirlo: ver la tanda de comprobación del 11-ago. */
+/* 🚪 «¿SEGURO QUE QUIERES SALIR?» — parche mientras no se pueda guardar la partida. Un jugador escribió
+   contando que actualizó la app sin querer, se le reinició la carrera y «es un garrón»: hoy una recarga
+   se lleva el trabajo de veinte minutos y el juego no avisa.
+   Solo salta si hay CARRERA VIVA de verdad (al menos una temporada corrida y sin retirarte todavía), así
+   que no molesta ni al que acaba de entrar ni al que ya terminó y le da a «Empezar de cero». El texto lo
+   pone el navegador: no se puede personalizar desde hace años. */
+window.addEventListener("beforeunload", function(e){
+  try{
+    if(typeof S==="undefined" || !S || S.retired) return;
+    if(!S.seasons || S.seasons.length<1) return;
+    e.preventDefault(); e.returnValue="";   // las dos formas: los navegadores no se ponen de acuerdo
+    return "";
+  }catch(err){}
+});
+
 function playAgainSameSettings(){
   const era = (S && S.era) || SELECTED_ERA || "2026";
   CHALLENGE=null; TP_MODE=false; SELECTED_ERA=era;   // se repite el modo CLÁSICO: los retos y el muro tienen su propia puerta
