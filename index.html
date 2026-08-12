@@ -2199,22 +2199,6 @@ function beastName(){ return L("La Bestia","The Beast",{pt:"A Fera"}); }
 /* 🧪 ESCENARIOS DE PRUEBA. Cada uno te coloca en la situación exacta y la dispara SÍ O SÍ, para poder
    revisar textos y consecuencias sin jugar 300 partidas. Se abren con ?preview=glory26&test=<id>. */
 const TESTS = {
-  quiebra: {
-    t:["Quiebra de tu equipo","Your team goes bankrupt"],
-    d:["Empiezas en un equipo modesto. Corre DOS temporadas normales y a la tercera llegará la quiebra: verás el aviso, la pantalla de mercado y la puerta de «esperar sin firmar».",
-       "You start at a modest team. Race TWO normal seasons and the collapse arrives in the third: you'll see the warning, the market screen and the «wait» door."],
-    era:"2026",
-    run(){
-      const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]||0)-(S.f1perf[b.name]||0))
-        .find(x=>!isRBJr(x.name) && S.seats[x.name]) || F1_TEAMS[0];
-      S.age=26; S.startAge=26; S.ovr=84; S.peakAge=26; S.cat="F1"; S.f1Seasons=0;
-      S.lineage=S.lineage||[];
-      // +2 años: da tiempo a coger el ritmo antes de que se hunda el barco (petición de Carlos)
-      S.lineage.push({key:t.name, cur:t.name,
-        steps:[{die:true, year:yearNow()+2, go:true, done:false, warned:false}]});
-      return t;
-    }
-  },
   // 🕰️ ATAJO PARA PROBAR LOS 90: arranca en el karting de 1990 con el catálogo ENTERO de dilemas y sin
   // ficha que rellenar. Es la década tal y como se va a jugar, solo que se entra de un clic.
   noventa: {
@@ -2224,46 +2208,32 @@ const TESTS = {
     era:"1990", jr:true,
     run(){ return null; }
   },
-  // 🧪 los CINCO dilemas de formación y nada más: el resto del catálogo queda apagado para poder
-  // recorrer una carrera entera desde el karting viéndolos salir uno detrás de otro.
-  formacion: {
-    t:["Dilemas de formación","Formation-years dilemmas"],
-    d:["Empiezas en el karting con TODOS los demás dilemas apagados: solo pueden salir los cinco de los años de formación. Juega la carrera entera y míralos aparecer — y al final, cómo queda la trayectoria.",
-       "You start in karting with every other dilemma switched off: only the five formation-years ones can fire. Play the whole career and watch them come — and at the end, how the timeline looks."],
-    era:"2026", jr:true,
-    run(){ S.lluviaOK=true; S.patronNo=false; return null; }
-  },
-  gomas: {
-    t:["Las gomas no perdonan","The tyres don't forgive"],
-    d:["Empiezas con dos años ya en un buen coche cuyo carácter CHOCA con tu pilotaje: las dos cosas que pide el dilema. Simula la temporada y saldrá.",
-       "You start with two years already at a good car whose character CLASHES with your driving: the two things the dilemma needs. Simulate the season and it will fire."],
+  /* 🤝 EL FAVOR DEL VETERANO, SOLO Y EN BANDEJA. Coloca la situación exacta que el dilema exige y apaga
+     TODOS los demás dilemas, para poder leerlo con calma sin que compita con los otros 128.
+     El escenario CUMPLE de verdad las seis condiciones (no las finge): un campeón de 36 años con 3
+     títulos que acabó 1º el año pasado, en el mejor coche de la parrilla; y tú, en tu segunda
+     temporada, sin títulos y en un coche de media tabla. */
+  favor: {
+    t:["El favor del veterano","The veteran's favour"],
+    d:["Segunda temporada en la F1, sin títulos y con un coche de media tabla. En el mejor coche hay un campeón de 36 años que viene de ganar el Mundial y este año se lo vuelve a jugar. Acepta la oferta y te buscará en el paddock. El resto de dilemas están apagados.",
+       "Second season in F1, no titles and a midfield car. In the best car there's a 36-year-old champion who won the title last year and is fighting for it again. Accept the offer and he'll come looking for you in the paddock. Every other dilemma is switched off."],
     era:"2026",
     run(){
-      const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))
-        .find(x=>!isRBJr(x.name) && S.seats[x.name]) || F1_TEAMS[0];
-      S.age=27; S.startAge=27; S.ovr=86; S.peakAge=27; S.cat="F1"; S.f1Seasons=3;
-      // el carácter del coche tiene que CHOCAR con tu estilo: se le pone el que peor encaja
-      const malo=CHARS.find(c=>((CAR_AFFINITY[c]||{})[sel.style]||0)<0) || CHARS[0];
-      S.f1char[t.name]=malo; S._testTeam=t.name;
-      return t;
+      const orden=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+      const grande=orden[0];
+      // tu equipo: de media tabla para abajo, nunca uno de los tres mejores (si no, la pelea sería tuya)
+      const mio=orden.slice(5).find(t=>!isRBJr(t.name) && S.seats[t.name]) || orden[orden.length-1];
+      const sl=S.seats[grande.name] || (S.seats[grande.name]=[]);
+      let v=sl.find(d=>d && d!=="PLAYER");
+      if(!v){ v=mkRookie(false, grande.name); sl[0]=v; }
+      v.age=36; v.skill=93; v.ceil=95; v.titles=3;
+      v.champYears=[yearNow()-3, yearNow()-2, yearNow()-1];
+      S.rankD=S.rankD||{}; S.rankD[v.name]=1;   // 👑 acabó PRIMERO el año pasado: se lo juega de verdad
+      S._testVet=v.name;
+      S.age=22; S.startAge=22; S.ovr=79; S.peakAge=22; S.cat="F1"; S.f1Seasons=1; S.titles.f1=0;
+      return mio;
     },
-    after(){ S.yearsAtTeam=2; }
-    ,dilema:'gomas'
-  },
-  toque: {
-    t:["Toque con tu compañero","Collision with your teammate"],
-    d:["Empiezas de Nº1 en un top, campeón, y con un compañero que te iguala. Simula la temporada y saltará el toque, con sus tres salidas y sus consecuencias.",
-       "You start as No.1 at a top team, a champion, with a teammate who matches you. Simulate the season and the collision fires, with its three routes and consequences."],
-    era:"2026",
-    run(){
-      const t=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0))
-        .find(x=>!isRBJr(x.name) && S.seats[x.name]) || F1_TEAMS[0];
-      S.age=29; S.startAge=29; S.ovr=90; S.peakAge=29; S.cat="F1"; S.f1Seasons=6;
-      S.titles.f1=1;   // con un título: así se ve el efecto del palmarés en la probabilidad
-      return t;
-    },
-    after(){ S.yearsAtTeam=3; S.role="1"; }
-    ,dilema:'toqueMate'
+    dilema:"favorVeterano"
   },
 };
 function testNow(){ return TEST_MODE ? TESTS[TEST_MODE] : null; }
@@ -2285,9 +2255,10 @@ function setupTest(T){
   $("decRecap").style.display="none";
   renderOffers([{team:t, role:roleFor(t.name), note:L("Empezar la prueba","Start the test",{pt:"Começar o teste"})}], false);
 }
-// 🧪 en el escenario de formación, el catálogo se reduce a los cinco nuevos
-const DIL_FORMACION=["patronContrato","gomasLluvia","licencia","caminoRaro","debutGrande"];
-function dilAllowed(id){ return TEST_MODE!=="formacion" || DIL_FORMACION.indexOf(id)>=0; }
+/* 🧪 un escenario de prueba puede REDUCIR el catálogo a los dilemas que se quieren mirar: así se lee
+   el que interesa sin que compita con los otros 128. Fuera del modo pruebas no cambia nada. */
+const DIL_SOLO={ favor:["favorVeterano"] };
+function dilAllowed(id){ const solo=DIL_SOLO[TEST_MODE]; return !solo || solo.indexOf(id)>=0; }
 /* 🇪🇸 ¿Y SI CAMPOS NO HUBIERA VENDIDO? (historia alternativa, idea de Carlos)
    En la realidad, Adrián Campos montó el proyecto «Campos Meta 1» para 2010 pero no llegó al inicio de
    temporada: vendió a José Ramón Carabante y el equipo corrió como Hispania (HRT), que murió en 2012.
