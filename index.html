@@ -1699,17 +1699,40 @@ const ROOKIE_1990 = [
      ⚠️ Se sustituyeron los nombres de relleno que me había inventado (Böhler, Werner, Belloli, Zadra,
      Kelly, Villamil, Simoni…) por pilotos verificables de la época — lo pidió Carlos al no reconocer
      a «M. Werner». Y NO se repite a nadie de ARRIVALS_1990 ni de la parrilla del 90.
-     El tercer campo es el año a partir del cual está disponible. */
-  ["A. Montermini","🇮🇹"],["V. Sospiri","🇮🇹"],["E. Naspetti","🇮🇹"],["L. Badoer","🇮🇹",1992],
-  ["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹"],["G. Lavaggi","🇮🇹",1993],["A. Tarquini","🇮🇹"],
-  ["A. Couto","🇵🇹",1995],["A. García","🇪🇸",1996],["L. Sala","🇪🇸"],
-  ["T. Kristensen","🇩🇰",1993],["J. Nielsen","🇩🇰"],["A. Wallace","🇬🇧"],["J. Krosnoff","🇺🇸"],
-  ["C. Albers","🇳🇱",1998],["T. Coronel","🇳🇱",1994],["J. Lammers","🇳🇱"],["P. Kox","🇳🇱"],
-  ["D. Franchitti","🇬🇧",1993],["R. Firman","🇬🇧",1996],["P. McCarthy","🇬🇧"],["G. Mansell","🇬🇧",1996],
+     El tercer campo es el año a partir del cual está disponible; el CUARTO, su año de nacimiento, para
+     que debute con la edad que de verdad tenía (si falta, el juego le da 18-21).
+
+     🔍 AUDITORÍA DEL 11-AGO-2026 (la pidió Carlos al ver a «Ribeiro» y dudar de su época). Verificados
+     uno a uno con fuentes; los que estaban mal salieron de la lista:
+     · ⚫ J. Krosnoff — FUERA. Jeff Krosnoff MURIÓ corriendo en Toronto en julio de 1996, y con él un
+       comisario. Es exactamente el caso de la regla permanente de este cuaderno (Greg Moore, Jason
+       Watt, Ratzenberger): a quien se dejó la vida en un coche no se le mete en un bote al azar.
+     · G. Mansell — FUERA. Es el hijo de Nigel, nacido en 1987: en 1996 tenía NUEVE años.
+     · J. Lammers — FUERA. Nacido en 1956 y piloto de F1 desde 1979; en los 90 era un veterano de 34+,
+       no una promesa.
+     · A. Tarquini — FUERA. Además la inicial estaba mal (es GABRIELE, no A.), y llevaba en la F1 desde
+       1987: tampoco era cantera.
+     · L. Sala — FUERA. Luis Pérez-Sala, nacido en 1959, ya había corrido en F1 con Minardi en 1988-89.
+     · G. Celso — FUERA. No corresponde a ningún piloto brasileño identificable; era un nombre roto.
+     · M. Salles → G. SALLES. El piloto real es Gualter Salles (1970), no «M.».
+     ⚠️ “A. Ribeiro” es AMBIGUO y por eso lleva fecha: Alex Dias Ribeiro (1948) corrió en F1 en los 70 y
+       André Ribeiro (1966) fue la estrella brasileña de la CART. Comparten inicial, así que lo que los
+       distingue NO es el nombre sino la EDAD: con 1966, en 1995 debuta con 29 años y es inequívocamente
+       André. (Matiz que trajo Carlos: «hay un Ribeiro antiguo en F1 en los 70».)
+     📌 Quedan por verificar (van sin fecha, o sea que debutan con 18-21): Apicella, Zanardi, Lavaggi,
+       Couto, Kristensen, Nielsen, Wallace, Kox, Franchitti, Firman, McCarthy, Bailey, Menu, Belmondo,
+       Gounon, Sarrazin, Minassian, Lagorce, Collard, Bourdais, Marques, Nakano, Inoue, Katayama, Noda,
+       M. Sala, Tsuchiya, Fontana, Müller, Goossens, Bouchut, Bräck, Bossy, Albers, Coronel, Badoer. */
+  ["A. Montermini","🇮🇹",null,1964],["V. Sospiri","🇮🇹",null,1966],["E. Naspetti","🇮🇹",null,1968],
+  ["L. Badoer","🇮🇹",1992],["M. Apicella","🇮🇹"],["A. Zanardi","🇮🇹"],["G. Lavaggi","🇮🇹",1993],
+  ["A. Couto","🇵🇹",1995],["A. García","🇪🇸",1999,1980],
+  ["T. Kristensen","🇩🇰",1993],["J. Nielsen","🇩🇰"],["A. Wallace","🇬🇧"],
+  ["C. Albers","🇳🇱",1998],["T. Coronel","🇳🇱",1994],["P. Kox","🇳🇱"],
+  ["D. Franchitti","🇬🇧",1993],["R. Firman","🇬🇧",1996],["P. McCarthy","🇬🇧"],
   ["J. Bailey","🇬🇧"],["A. Menu","🇨🇭"],["P. Belmondo","🇫🇷"],["J-M. Gounon","🇫🇷",1993],
   ["S. Sarrazin","🇫🇷",1996],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷"],["S. Bourdais","🇫🇷",1999],
   ["E. Collard","🇫🇷"],
-  ["A. Ribeiro","🇧🇷",1995],["M. Salles","🇧🇷"],["T. Marques","🇧🇷",1996],["G. Celso","🇧🇷"],
+  ["A. Ribeiro","🇧🇷",1995,1966],["G. Salles","🇧🇷",1997,1970],["T. Marques","🇧🇷",1996],
   ["S. Nakano","🇯🇵",1994],["T. Inoue","🇯🇵"],["U. Katayama","🇯🇵"],["H. Noda","🇯🇵",1994],
   ["M. Sala","🇪🇸"],["T. Tsuchiya","🇯🇵"],["N. Fontana","🇦🇷",1994],["J. Müller","🇩🇪",1994],
   ["C. Bouchut","🇫🇷"],["M. Goossens","🇧🇪",1993],["K. Bräck","🇸🇪",1992],["G. Bossy","🇨🇭"],
@@ -3016,12 +3039,19 @@ function mkRookie(noCross, forTeam){
   // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
   // reemplaza a los Verstappen que se retiran → cada época conserva sus estrellas y el top no se hunde con los años.
   // El resto: campo fuerte y variado (varios llegan a muy bueno / crack), como en la parrilla real.
-  const gen = !born && ch(0.11); // un probador treintañero no puede ser el «fenómeno generacional»
+  /* 🎂 EL PERFIL LO DECIDE LA EDAD, NO EL TENER FECHA DE NACIMIENTO. Antes, cualquier piloto con año de
+     nacimiento se quedaba con techo 82-88 — el molde del «probador treintañero» (Wolff, López). Eso
+     valía cuando el campo solo lo usaban ellos, pero al ponerle su fecha real a los pilotos de los 90
+     (auditoría del 11-ago) los condenaba a todos a ser secundarios: un Zanardi de 22 años no podría
+     llegar nunca a nada. Ahora manda la edad: el que debuta con 26+ es un profesional ya hecho, y el
+     que debuta de chaval tiene el mismo futuro por delante que cualquier otro, sepamos su edad o no. */
+  const _age = born ? Math.max(18,Math.min(34,yearNow()-born)) : irnd(18,21);
+  const gen = _age<=21 && ch(0.11);   // el «fenómeno generacional» solo puede ser un crío
   const d = gen
-    ? {name, age:irnd(17,19), skill:rnd(84,88), ceil:irnd(95,97), titles:0, flag, gen:true}
-    : born
-    ? {name, age:Math.max(18,Math.min(34,yearNow()-born)), skill:rnd(75,81), ceil:Math.round(rnd(82,88)), titles:0, flag}
-    : {name, age:irnd(18,21), skill:rnd(74,81), ceil:Math.round(rnd(84,93)), titles:0, flag};
+    ? {name, age:_age, skill:rnd(84,88), ceil:irnd(95,97), titles:0, flag, gen:true}
+    : _age>=26
+    ? {name, age:_age, skill:rnd(75,81), ceil:Math.round(rnd(82,88)), titles:0, flag}
+    : {name, age:_age, skill:rnd(74,81), ceil:Math.round(rnd(84,93)), titles:0, flag};
   // 🎓 la cantera de los grandes: un equipo con caché alto accede a mejores promesas (Antonelli en
   // Mercedes). Sutil a propósito: +2 de techo, no un fenómeno garantizado.
   if(forTeam && !born && S.cache && (S.cache[forTeam]||0)>=85) d.ceil=Math.min(97, d.ceil+2);
