@@ -4643,7 +4643,14 @@ const DILEMAS=[
     ningún desenlace puede afirmar cómo acaba su Mundial. Solo se cuenta lo que pasa ENTRE VOSOTROS. */
  {id:"favorVeterano",stage:"f1",
   cond:()=>S.cat==="F1" && (S.f1Seasons||0)<=1 && (S.titles.f1||0)===0 && !!veteranoEnLucha(),
-  t:()=>L("El favor del veterano","The veteran's favour",{pt:"O favor do veterano"}),
+  /* 📛 EL TÍTULO LLEVA SU NOMBRE, y los desenlaces empiezan por lo que decidiste (petición de Carlos al
+     releer una temporada: «que se sepa a qué se refiere cuando revises la partida al final»). En la
+     trayectoria queda «⚡ Verstappen te pide un favor: Te niegas. Le peleas cada metro…», que se
+     entiende solo. Se usa `S._favorV` porque renderDilemma llama a d() ANTES que a t(), así que aquí
+     ya está elegido — y así el título nombra exactamente al mismo del texto. */
+  t:()=>{ const v=S._favorV, n=v?surname(v.name):null;
+    return n ? L(`${n} te pide un favor`,`${n} asks you a favour`,{pt:`${n} te pede um favor`})
+             : L("El favor del veterano","The veteran's favour",{pt:"O favor do veterano"}); },
   d:()=>{ const v=veteranoEnLucha(); S._favorV=v||null;
     const n=v?surname(v.name):L("un campeón","a champion",{pt:"um campeão"}), t=v?(v.titles||1):1;
     return L(`${n} se está jugando el Mundial y tú andas por media tabla. Te busca en el paddock, sin cámaras: «Cuando me veas por el retrovisor, no me hagas perder tres décimas. No te pido que te apartes, te pido que no me compliques una pelea que no es tuya». Tú eres un novato. Él lleva ${t} ${t>1?"títulos":"título"} en la vitrina.`,
@@ -4656,22 +4663,22 @@ const DILEMAS=[
      if(v){ S.respects=S.respects||[]; if(!S.respects.some(r=>r.name===v.name)) S.respects.push({name:v.name, year:yearNow()});
             S.mentor={name:v.name}; S.favorIOU={name:v.name, year:yearNow()}; }
      return roll(
-      [6,()=>(VAL(1.06),L(`Cumples sin aspavientos, y ${n} no es de los que olvidan: a partir de ahí te nombra en las ruedas de prensa y te dice que te abrirá puertas. Te has echado un padrino. +fama leve`,
-                          `You do it without any fuss, and ${n} isn't the forgetting type: from then on he name-drops you in press conferences and tells you he'll open doors for you. You've got yourself a godfather. slight +fame`,
-                          {pt:`Você cumpre sem alarde, e ${n} não é de esquecer: a partir daí te cita nas coletivas e diz que vai te abrir portas. Você arrumou um padrinho. +fama leve`}))],
-      [4,()=>(VAL(.95),L(`Cumples… y alguien del muro rival lo ve raro. La prensa habla de «amiguismo» un par de semanas. −fama leve, pero él te lo debe.`,
-                         `You do it… and someone on a rival pit wall finds it odd. The press talks about «favouritism» for a couple of weeks. slight −fame, but he owes you one.`,
-                         {pt:`Você cumpre… e alguém do muro rival acha estranho. A imprensa fala em «amizinha» por umas duas semanas. −fama leve, mas ele fica te devendo.`}))]); }},
+      [6,()=>(VAL(1.06),L(`Aceptas. Cumples sin aspavientos, y ${n} no es de los que olvidan: a partir de ahí te nombra en las ruedas de prensa y te dice que te abrirá puertas. Te has echado un padrino. +fama leve`,
+                          `You accept. You do it without any fuss, and ${n} isn't the forgetting type: from then on he name-drops you in press conferences and tells you he'll open doors for you. You've got yourself a godfather. slight +fame`,
+                          {pt:`Você aceita. Cumpre sem alarde, e ${n} não é de esquecer: a partir daí te cita nas coletivas e diz que vai te abrir portas. Você arrumou um padrinho. +fama leve`}))],
+      [4,()=>(VAL(.95),L(`Aceptas. Cumples… y alguien del muro rival lo ve raro. La prensa habla de «amiguismo» un par de semanas. −fama leve, pero él te lo debe.`,
+                         `You accept. You do it… and someone on a rival pit wall finds it odd. The press talks about «favouritism» for a couple of weeks. slight −fame, but he owes you one.`,
+                         {pt:`Você aceita. Cumpre… e alguém do muro rival acha estranho. A imprensa fala em «amizinha» por umas duas semanas. −fama leve, mas ele fica te devendo.`}))]); }},
    {l:()=>L("Competir sin regalar nada","Race him for every inch",{pt:"Competir sem dar nada"}),r:()=>{
      const v=S._favorV, n=v?surname(v.name):L("él","him",{pt:"ele"});
      return roll(
-      [5,()=>(VAL(1.1),L(`Le peleas cada metro como si te jugaras lo mismo que él. No le gusta, pero el paddock entero toma nota: ese novato no se achanta ante nadie. +fama`,
-                         `You race him for every inch as if you had as much at stake as he does. He doesn't like it, but the whole paddock takes note: that rookie doesn't back down for anyone. +fame`,
-                         {pt:`Você briga cada metro como se estivesse em jogo o mesmo que ele. Ele não gosta, mas o paddock inteiro anota: esse novato não se acovarda diante de ninguém. +fama`}))],
+      [5,()=>(VAL(1.1),L(`Te niegas. Le peleas cada metro como si te jugaras lo mismo que él. No le gusta, pero el paddock entero toma nota: ese novato no se achanta ante nadie. +fama`,
+                         `You refuse. You race him for every inch as if you had as much at stake as he does. He doesn't like it, but the whole paddock takes note: that rookie doesn't back down for anyone. +fame`,
+                         {pt:`Você recusa. Briga cada metro como se estivesse em jogo o mesmo que ele. Ele não gosta, mas o paddock inteiro anota: esse novato não se acovarda diante de ninguém. +fama`}))],
       [5,()=>{ if(v){ S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===v.name)) S.feuds.push({name:v.name, year:yearNow()}); }
-        return L(`Te cruzas en su pelea y le haces sudar. No te lo va a perdonar: te has ganado un enemigo con galones.`,
-                 `You get in the middle of his fight and make him sweat. He won't forgive that: you've made yourself an enemy with stripes.`,
-                 {pt:`Você se mete na briga dele e o faz suar. Ele não vai perdoar: você arrumou um inimigo graduado.`}); }]); }}]},
+        return L(`Te niegas. Te cruzas en su pelea y le haces sudar. No te lo va a perdonar: te has ganado un enemigo con galones.`,
+                 `You refuse. You get in the middle of his fight and make him sweat. He won't forgive that: you've made yourself an enemy with stripes.`,
+                 {pt:`Você recusa. Se mete na briga dele e o faz suar. Ele não vai perdoar: você arrumou um inimigo graduado.`}); }]); }}]},
  // 💥 versión GRAVE y RARA de un incidente (heredera de `toqueCulpable`): mandas a un rival al HOSPITAL. Sin perdón → enemigo garantizado.
  {id:"pesoCulpa",stage:"f1",cond:()=>S.cat==="F1"&&S.ovr>=84&&seatedPool().some(d=>d.name!=="TÚ"&&d.name!==S.roleMate)&&ch(.5),
   t:()=>L("El peso de la culpa","The weight of guilt",{pt:"O peso da culpa"}),
