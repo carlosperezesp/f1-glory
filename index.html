@@ -1220,15 +1220,29 @@ const CROSSOVERS = [
 ];
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
+/* 💸 LA PARRILLA DE 2026 TAMBIÉN PUEDE PERDER A ALGUIEN. Hasta ahora el modo clásico tenía el linaje
+   vacío, así que NUNCA quebraba nadie: toda la maquinaria de la quiebra —el aviso, la apuesta de
+   Button, el equipo que renace con un cochazo— estaba apagada para la mayoría de la gente, que juega
+   en 2026 (medido: 0 de 60 partidas). Ahora existe, pero con cuentagotas y con criterio:
+   · HAAS es el único candidato de la parrilla actual, y no es un capricho: es el equipo más pequeño y
+     de propiedad privada del grid, el que de verdad ha coqueteado con marcharse. Ventana lejana
+     (2034-2044) y probabilidad baja: que sea un acontecimiento, no una rutina.
+   · Los FABRICANTES (Audi, Cadillac, Mercedes, Ferrari…) no quiebran: se irían de otra forma, y para
+     eso ya está el rebautizo. Racing Bulls tampoco: es el filial de Red Bull, lo absorberían.
+   · Y las guardas de siempre siguen mandando: nunca muere un top-3, nunca por debajo de 10 equipos, y
+     nunca contigo dentro sin avisarte un año antes. */
+const LINEAGE_2026 = [
+ {key:"Haas", steps:[{die:true, w:[2034,2044], p:.45}]},
+];
 const EXPANSION = [
   {range:[2032,2040], team:{name:"Hyundai", abbr:"HYU", color:"#002C5F", color2:"#00AAD2", perf:65, cat:"F1"},
-    drivers:null}, // el gigante coreano entra con talento joven del mercado
+    drivers:null, dieAfter:{w:[3,7], p:.35}}, // el gigante coreano entra con talento joven del mercado
   {range:[2030,2039], team:{name:"Lotus", abbr:"LOT", color:"#00543d", color2:"#c9a227", perf:64, cat:"F1"},
-    drivers:null}, // renace el mito británico verde y oro
+    drivers:null, dieAfter:{w:[3,8], p:.40}}, // renace el mito británico verde y oro
   {range:[2031,2041], team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:66, cat:"F1"},
-    drivers:null}, // el eterno «casi» por fin da el paso
+    drivers:null, dieAfter:{w:[4,9], p:.25}}, // el eterno «casi» por fin da el paso
   {range:[2030,2040], team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:65, cat:"F1"},
-    drivers:null}, // el gigante japonés vuelve tras su marcha de 2009
+    drivers:null, dieAfter:{w:[4,9], p:.25}}, // el gigante japonés vuelve tras su marcha de 2009
 ];
 
 /* ============================================================
@@ -1413,6 +1427,9 @@ const LINEAGE_2020 = [
  {key:"Racing Point", steps:[{to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2021,2023], p:.85}]},
  {key:"AlphaTauri", steps:[{to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2027], p:.6}]},
  {key:"Alfa Romeo", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2030], p:.65}]},
+ /* 💸 y la quiebra que faltaba: en la era 2020 tampoco se hundía nadie. Haas por el mismo motivo que en
+    2026 —el equipo más pequeño y privado de la parrilla—, con ventana lejana y probabilidad baja. */
+ {key:"Haas", steps:[{die:true, w:[2028,2038], p:.45}]},
 ];
 // equipos NUEVOS de la era (con prob por partida; independientes entre sí, salvo grupo `excl`:
 // el proyecto GM solo entra bajo UNA marca por partida — o Andretti o Cadillac, como en la realidad).
@@ -1430,15 +1447,15 @@ const ENTRIES_2010 = [
  // 🇩🇪 Porsche: el eterno «casi»
  {range:[2016,2025], prob:.22, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null},
  // 🇺🇸 proyecto GM: o Andretti o Cadillac, nunca los dos
- {range:[2022,2027], prob:.3,  team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+ {range:[2022,2027], prob:.3,  team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[3,8], p:.35}},
  {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
 ];
 const ENTRIES_2020 = [
  {range:[2024,2028], prob:.35, team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
  {range:[2025,2029], prob:.6,  team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
  // 🇩🇪 Porsche: el acuerdo con Red Bull que se rompió en 2022 — en algunas realidades se firma otro camino
- {range:[2026,2031], prob:.25, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null},
- {range:[2027,2033], prob:.2,  team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null},
+ {range:[2026,2031], prob:.25, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null, dieAfter:{w:[4,9], p:.25}},
+ {range:[2027,2033], prob:.2,  team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null, dieAfter:{w:[4,9], p:.25}},
 ];
 /* 🎬 LLEGADAS históricas: pilotos reales debutan ~cuando lo hicieron en la realidad (año ±1 por partida).
    pref = equipo por su nombre ORIGINAL de la era (se resuelve al nombre actual si el equipo mutó).
@@ -1887,7 +1904,7 @@ const ARRIVALS_2000 = [
 // registro de eras. La "2026" envuelve el mundo actual; las retro traen su parrilla/cantera/leyendas de época.
 const ERAS = {
   "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
-    lineage:[], arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
+    lineage:LINEAGE_2026, arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
   // crossovers TAMBIÉN en retro: cada estrella lleva su año de nacimiento real y solo cruza con 27-37
   // años → Palou (n. 1997) solo puede aparecer 2024-2034, empiece la partida en 2010 o en 2020. Sin anacronismos.
   "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:["Fórmula Renault","Formula Renault","Fórmula Renault"],F2:"F2"}, jr:{F4:F4_2020,F3:F3_2020,FR:FREN_2020,F2:F2_2020}, kart:null,
