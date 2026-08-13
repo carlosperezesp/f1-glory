@@ -7284,7 +7284,9 @@ function nextOffers(){
       while(o.length<Math.min(3,nOffers())){ const _p=(proved?sorted.slice(2,9):sorted);
         const extra=_p.find(t=>!o.some(x=>x.team.name===t.name)&&!mktMoved(t.name)) || _p.find(t=>!o.some(x=>x.team.name===t.name));
         if(!extra)break; o.push({team:extra,role:roleFor(extra.name)}); }
-      if(S.age<=24) o.push({team:{...own,cat:"TEST"},note:["Seguir de probador un año más","Stay as reserve one more year"]});
+      /* 🚪 …y del que te rompió la promesa, NADA: ni asiento ni banquillo. «¿Probador en Aston y luego
+         otro año de probador en Aston? No tiene sentido» (Carlos). Te falló: ese capítulo se cierra. */
+      if(S.age<=24 && S.promesaRota!==own.name) o.push({team:{...own,cat:"TEST"},note:["Seguir de probador un año más","Stay as reserve one more year"]});
       S.testProved=0; S.promesaRota=null;
     } else if(S.age>=28){ if(S.f1Seasons>0){ endCareer(); } else { washedOut(); } return; }
     else {
