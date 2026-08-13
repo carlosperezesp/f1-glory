@@ -7143,28 +7143,37 @@ function nextOffers(){
     const sube=((S.f1target[P.team]??0)-(S.f1perf[P.team]??0))>1.2;
     const otro=suyos.sort((a,b)=>(b.skill||0)-(a.skill||0))[0];
     const motivo = crack
-      ? L(`a ${P.team} le cae ${surname(crack.name)} en el mercado y no dejan pasar la ocasión`,
-          `${surname(crack.name)} lands in ${P.team}'s lap and they don't let the chance go`,
-          {pt:`cai ${surname(crack.name)} no colo da ${P.team} e eles não deixam passar`})
+      ? L(`les cae ${surname(crack.name)} en el mercado y no dejan pasar la ocasión`,
+          `${surname(crack.name)} lands in their lap and they don't let the chance go`,
+          {pt:`cai ${surname(crack.name)} no colo deles e não deixam passar`})
       : !sube
-      ? L(`el coche de ${P.team} no sube lo que prometía y el proyecto se reordena entero`,
-          `${P.team}'s car doesn't climb the way it promised and the whole project is reshuffled`,
-          {pt:`o carro da ${P.team} não sobe o que prometia e o projeto todo se reorganiza`})
+      ? L(`el coche no sube lo que prometía y el proyecto se reordena entero`,
+          `the car doesn't climb the way it promised and the whole project is reshuffled`,
+          {pt:`o carro não sobe o que prometia e o projeto todo se reorganiza`})
       : otro
       ? L(`el asiento se lo queda ${surname(otro.name)} y a ti te dan largas`,
           `the seat goes to ${surname(otro.name)} and you get fobbed off`,
           {pt:`a vaga fica com ${surname(otro.name)} e a você dão desculpas`})
-      : L(`en ${P.team} se reordena todo y tu nombre se cae de la lista`,
-          `everything is reshuffled at ${P.team} and your name drops off the list`,
-          {pt:`na ${P.team} se reorganiza tudo e o seu nome cai da lista`});
+      : L(`se reordena todo y tu nombre se cae de la lista`,
+          `everything is reshuffled and your name drops off the list`,
+          {pt:`se reorganiza tudo e o seu nome cai da lista`});
     S.testProved=Math.max(S.testProved||0,2);   // el año no ha sido en balde: has demostrado en el simulador
     /* 🚪 …pero ELLOS no te pueden ofrecer el volante que acaban de dar a otro (lo cazó Carlos: «no
        tendría sentido que me ofrecieran volver a ser probador… de Aston Martin solo estaría eso»).
        Este invierno, de ese equipo solo queda el banquillo. */
     S.promesaRota=P.team;
-    S.pendingEvents.push(L(`💔 Te prometieron el asiento y no lo cumplen: ${motivo}. Te quedas sin el volante que esperabas… pero el paddock ha visto tu año de trabajo.`,
-                           `💔 They promised you the seat and they don't deliver: ${motivo}. You're left without the drive you were waiting for… but the paddock has seen your year of work.`,
-                           {pt:`💔 Te prometeram a vaga e não cumprem: ${motivo}. Você fica sem o volante que esperava… mas o paddock viu o seu ano de trabalho.`}));
+    /* 📣 …Y TE ENTERAS AHORA, NO UN AÑO DESPUÉS. Carlos lo cazó jugando: veía desaparecer la oferta de
+       Aston Martin sin ninguna explicación, y el motivo no aparecía hasta el resumen de la temporada
+       SIGUIENTE, cuando ya había firmado en otro sitio. «Si no me van a dar el asiento, debería
+       enterarme cuando me hacen las ofertas». El mismo criterio que ya se usa cuando te echan de un
+       equipo: el motivo viaja contigo a la pantalla de mercado. */
+    S.promesaRotaTxt=[
+      `${P.team} no cumple lo que te prometió: ${motivo}.`,
+      `${P.team} don't keep their promise: ${motivo}.`,
+      `A ${P.team} não cumpre o que prometeu: ${motivo}.`];
+    S.pendingEvents.push(L(`💔 ${P.team} te prometió el asiento y no lo cumple: ${motivo}. Te quedas sin el volante que esperabas… pero el paddock ha visto tu año de trabajo.`,
+                           `💔 ${P.team} promised you the seat and don't deliver: ${motivo}. You're left without the drive you were waiting for… but the paddock has seen your year of work.`,
+                           {pt:`💔 A ${P.team} te prometeu a vaga e não cumpre: ${motivo}. Você fica sem o volante que esperava… mas o paddock viu o seu ano de trabalho.`}));
   }
   if(S.cat==="ADV"){ advOffers(); return; } // estás fuera de la F1: menú de aventura
   const o=[];
@@ -7308,12 +7317,25 @@ function nextOffers(){
       /* 🚪 …y del que te rompió la promesa, NADA: ni asiento ni banquillo. «¿Probador en Aston y luego
          otro año de probador en Aston? No tiene sentido» (Carlos). Te falló: ese capítulo se cierra. */
       if(S.age<=24 && S.promesaRota!==own.name) o.push({team:{...own,cat:"TEST"},note:["Seguir de probador un año más","Stay as reserve one more year"]});
+      if(S.promesaRotaTxt){   // 📣 el porqué, aquí y ahora
+        title=L("💔 El asiento prometido se cae","💔 The promised seat falls through",{pt:"💔 A vaga prometida cai"});
+        sub=LA(S.promesaRotaTxt)+L(" Tu año de trabajo no ha pasado desapercibido: estas puertas siguen abiertas.",
+                                   " Your year of work hasn't gone unnoticed: these doors are still open.",
+                                   {pt:" O seu ano de trabalho não passou despercebido: estas portas continuam abertas."});
+        S.promesaRotaTxt=null;
+      }
       S.testProved=0; S.promesaRota=null;
     } else if(S.age>=28){ if(S.f1Seasons>0){ endCareer(); } else { washedOut(); } return; }
     else {
       title=L("Otro año de probador","Another year as reserve",{pt:"Mais um ano de piloto de testes"});
       sub=L("El asiento titular se resiste. Sigues de reserva: FP1, simulador y alguna carrera si surge.","The race seat is elusive. You stay a reserve: FP1, simulator and the odd race if it comes up.",{pt:"A vaga de titular resiste. Você segue como reserva: TL1, simulador e alguma corrida se surgir."});
       pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
+      if(S.promesaRotaTxt){
+        title=L("💔 El asiento prometido se cae","💔 The promised seat falls through",{pt:"💔 A vaga prometida cai"});
+        sub=LA(S.promesaRotaTxt)+L(" Sigues siendo probador: toca esperar otra oportunidad."," You're still a reserve: another chance will have to come."
+              ,{pt:" Você segue como piloto de testes: vai ter que esperar outra chance."});
+        S.promesaRotaTxt=null;
+      }
       if(S.age>=22&&S.age<=26&&ch(.45)){ o.push(youngEscapeOption()); sub+=L(" O cansado de esperar, vete a competir fuera y gánate el salto."," Or, tired of waiting, go race elsewhere and earn your leap.",{pt:" Ou, cansado de esperar, vá competir fora e conquiste o salto."}); }
     }
   }
