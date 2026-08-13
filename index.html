@@ -6866,10 +6866,13 @@ function esperarTrasQuiebraOption(exEquipo){
       renderOffers(test, S.age>=31);
     }};
 }
+/* 🛡️ Si la opción especial va de un EQUIPO concreto, se pinta con su escudo y sus colores, como
+   cualquier otra oferta (lo pidió Carlos en el año en blanco: «mejor el logo del equipo, ¿para qué
+   cambiar?»). Las que no tienen equipo —irse a otra categoría, esperar sin firmar— siguen con su emoji. */
 function specialOfferBtn(o){
   const b=document.createElement("button"); b.className="offer";
-  b.style.border="2px solid "+(o.color||"#888"); b.style.borderLeftWidth="6px";
-  b.innerHTML=`<span class="team-dot dot" style="background:${o.color||'#888'}">${o.em||"🌎"}</span>
+  b.style.border="2px solid "+(o.team? o.team.color : (o.color||"#888")); b.style.borderLeftWidth="6px";
+  b.innerHTML=`${o.team ? badge(o.team,"dot") : `<span class="team-dot dot" style="background:${o.color||'#888'}">${o.em||"🌎"}</span>`}
     <span class="info"><span class="name">${o.name}</span><span class="sub" style="display:block">${o.sub||""}</span></span>`;
   b.onclick=o.onClick; return b;
 }
@@ -6948,7 +6951,7 @@ function equipoEnAscension(){
 }
 function promesaProbadorOption(t){
   const ti=trendInfo(t.name);
-  return {special:true, em:"⏸️", color:"#0e7a5f",
+  return {special:true, team:t,
     name:L(`${t.name}: un año de probador y luego el asiento`,`${t.name}: a year as reserve, then the seat`,{pt:`${t.name}: um ano de testes e depois a vaga`}),
     sub:L(`Su proyecto está ${ti.t}. Te quieren de probador este año y de titular el que viene. Firmas por los dos: no hay marcha atrás.`,
           `Their project is ${ti.t}. They want you as reserve this year and as a race driver the next. You sign for both: no way back.`,
