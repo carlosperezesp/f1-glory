@@ -1000,39 +1000,57 @@ function setTheme(t){
    siempre c[0], porque de ahí cuelgan NAT_AFFINITY, el cameo de Alonso y el país del ranking.
    El inglés es solo para MOSTRAR y BUSCAR (un neozelandés escribe "New Zealand", no "Nueva Zelanda"). */
 const COUNTRIES = [
-  ["Alemania","🇩🇪","Germany"],["Angola","🇦🇴","Angola"],["Arabia Saudita","🇸🇦","Saudi Arabia"],["Argelia","🇩🇿","Algeria"],["Argentina","🇦🇷","Argentina"],
-  ["Armenia","🇦🇲","Armenia"],["Australia","🇦🇺","Australia"],["Austria","🇦🇹","Austria"],["Azerbaiyán","🇦🇿","Azerbaijan"],["Bélgica","🇧🇪","Belgium"],
-  ["Bielorrusia","🇧🇾","Belarus"],["Bolivia","🇧🇴","Bolivia"],["Bosnia","🇧🇦","Bosnia"],["Brasil","🇧🇷","Brazil"],["Bulgaria","🇧🇬","Bulgaria"],
-  ["Camerún","🇨🇲","Cameroon"],["Canadá","🇨🇦","Canada"],["Catar","🇶🇦","Qatar"],["Chequia","🇨🇿","Czechia"],["Chile","🇨🇱","Chile"],
-  ["China","🇨🇳","China"],["Chipre","🇨🇾","Cyprus"],["Colombia","🇨🇴","Colombia"],["Corea del Sur","🇰🇷","South Korea"],["Costa de Marfil","🇨🇮","Ivory Coast"],
-  ["Costa Rica","🇨🇷","Costa Rica"],["Croacia","🇭🇷","Croatia"],["Cuba","🇨🇺","Cuba"],["Dinamarca","🇩🇰","Denmark"],["Ecuador","🇪🇨","Ecuador"],
-  ["Egipto","🇪🇬","Egypt"],["El Salvador","🇸🇻","El Salvador"],["Emiratos Árabes","🇦🇪","United Arab Emirates"],["Eslovaquia","🇸🇰","Slovakia"],["Eslovenia","🇸🇮","Slovenia"],
-  ["España","🇪🇸","Spain"],["Estados Unidos","🇺🇸","United States"],["Estonia","🇪🇪","Estonia"],["Etiopía","🇪🇹","Ethiopia"],["Filipinas","🇵🇭","Philippines"],
-  ["Finlandia","🇫🇮","Finland"],["Francia","🇫🇷","France"],["Georgia","🇬🇪","Georgia"],["Ghana","🇬🇭","Ghana"],["Grecia","🇬🇷","Greece"],
-  ["Guatemala","🇬🇹","Guatemala"],["Guinea Ecuatorial","🇬🇶","Equatorial Guinea"],["Honduras","🇭🇳","Honduras"],["Hungría","🇭🇺","Hungary"],["India","🇮🇳","India"],["Indonesia","🇮🇩","Indonesia"],
-  ["Irán","🇮🇷","Iran"],["Irlanda","🇮🇪","Ireland"],["Islandia","🇮🇸","Iceland"],["Israel","🇮🇱","Israel"],["Italia","🇮🇹","Italy"],
-  ["Jamaica","🇯🇲","Jamaica"],["Japón","🇯🇵","Japan"],["Kazajistán","🇰🇿","Kazakhstan"],["Kenia","🇰🇪","Kenya"],["Kuwait","🇰🇼","Kuwait"],
-  ["Letonia","🇱🇻","Latvia"],["Líbano","🇱🇧","Lebanon"],["Lituania","🇱🇹","Lithuania"],["Luxemburgo","🇱🇺","Luxembourg"],["Malasia","🇲🇾","Malaysia"],
-  ["Malta","🇲🇹","Malta"],["Marruecos","🇲🇦","Morocco"],["México","🇲🇽","Mexico"],["Mónaco","🇲🇨","Monaco"],["Montenegro","🇲🇪","Montenegro"],
-  ["Nicaragua","🇳🇮","Nicaragua"],["Nigeria","🇳🇬","Nigeria"],["Noruega","🇳🇴","Norway"],["Nueva Zelanda","🇳🇿","New Zealand"],["Países Bajos","🇳🇱","Netherlands"],["Pakistán","🇵🇰","Pakistan"],
-  ["Panamá","🇵🇦","Panama"],["Paraguay","🇵🇾","Paraguay"],["Perú","🇵🇪","Peru"],["Polonia","🇵🇱","Poland"],["Portugal","🇵🇹","Portugal"],["Puerto Rico","🇵🇷","Puerto Rico"],
-  ["Reino Unido","🇬🇧","United Kingdom"],["Rep. Dominicana","🇩🇴","Dominican Republic"],["Rumanía","🇷🇴","Romania"],["Rusia","🇷🇺","Russia"],["Senegal","🇸🇳","Senegal"],
-  ["Serbia","🇷🇸","Serbia"],["Singapur","🇸🇬","Singapore"],["Sudáfrica","🇿🇦","South Africa"],["Suecia","🇸🇪","Sweden"],["Suiza","🇨🇭","Switzerland"],
-  ["Tailandia","🇹🇭","Thailand"],["Taiwán","🇹🇼","Taiwan"],["Túnez","🇹🇳","Tunisia"],["Turquía","🇹🇷","Turkey"],["Ucrania","🇺🇦","Ukraine"],
-  ["Uruguay","🇺🇾","Uruguay"],["Uzbekistán","🇺🇿","Uzbekistan"],["Venezuela","🇻🇪","Venezuela"],["Vietnam","🇻🇳","Vietnam"],
-  // ampliación ago-2026 (+28)
-  ["Afganistán","🇦🇫","Afghanistan"],["Albania","🇦🇱","Albania"],["Andorra","🇦🇩","Andorra"],["Bahréin","🇧🇭","Bahrain"],["Bangladés","🇧🇩","Bangladesh"],
-  ["Barbados","🇧🇧","Barbados"],["Haití","🇭🇹","Haiti"],["Hong Kong","🇭🇰","Hong Kong"],["Irak","🇮🇶","Iraq"],["Jordania","🇯🇴","Jordan"],
-  ["Kosovo","🇽🇰","Kosovo"],["Liechtenstein","🇱🇮","Liechtenstein"],["Macao","🇲🇴","Macau"],["Macedonia del Norte","🇲🇰","North Macedonia"],["Moldavia","🇲🇩","Moldova"],
-  ["Mongolia","🇲🇳","Mongolia"],["Mozambique","🇲🇿","Mozambique"],["Namibia","🇳🇦","Namibia"],["Nepal","🇳🇵","Nepal"],["Omán","🇴🇲","Oman"],
-  ["Ruanda","🇷🇼","Rwanda"],["San Marino","🇸🇲","San Marino"],["Sri Lanka","🇱🇰","Sri Lanka"],["Tanzania","🇹🇿","Tanzania"],["Trinidad y Tobago","🇹🇹","Trinidad and Tobago"],
-  ["Uganda","🇺🇬","Uganda"],["Zambia","🇿🇲","Zambia"],["Zimbabue","🇿🇼","Zimbabwe"]
+  // [ español, bandera, inglés, portugués ] · la CLAVE INTERNA es siempre el español
+  // 207 entradas: los 206 comités olímpicos + Macao (que compite fuera de los JJOO).
+  // Nombres tomados del CLDR de Unicode; los muy largos se acortan al criterio de la casa.
+  ["Alemania","🇩🇪","Germany","Alemanha"],["Angola","🇦🇴","Angola","Angola"],["Arabia Saudita","🇸🇦","Saudi Arabia","Arábia Saudita"],["Argelia","🇩🇿","Algeria","Argélia"],["Argentina","🇦🇷","Argentina","Argentina"],
+  ["Armenia","🇦🇲","Armenia","Armênia"],["Australia","🇦🇺","Australia","Austrália"],["Austria","🇦🇹","Austria","Áustria"],["Azerbaiyán","🇦🇿","Azerbaijan","Azerbaijão"],["Bélgica","🇧🇪","Belgium","Bélgica"],
+  ["Bielorrusia","🇧🇾","Belarus","Bielorrússia"],["Bolivia","🇧🇴","Bolivia","Bolívia"],["Bosnia","🇧🇦","Bosnia","Bósnia"],["Brasil","🇧🇷","Brazil","Brasil"],["Bulgaria","🇧🇬","Bulgaria","Bulgária"],
+  ["Camerún","🇨🇲","Cameroon","Camarões"],["Canadá","🇨🇦","Canada","Canadá"],["Catar","🇶🇦","Qatar","Catar"],["Chequia","🇨🇿","Czechia","Tchéquia"],["Chile","🇨🇱","Chile","Chile"],
+  ["China","🇨🇳","China","China"],["Chipre","🇨🇾","Cyprus","Chipre"],["Colombia","🇨🇴","Colombia","Colômbia"],["Corea del Sur","🇰🇷","South Korea","Coreia do Sul"],["Costa de Marfil","🇨🇮","Ivory Coast","Costa do Marfim"],
+  ["Costa Rica","🇨🇷","Costa Rica","Costa Rica"],["Croacia","🇭🇷","Croatia","Croácia"],["Cuba","🇨🇺","Cuba","Cuba"],["Dinamarca","🇩🇰","Denmark","Dinamarca"],["Ecuador","🇪🇨","Ecuador","Equador"],
+  ["Egipto","🇪🇬","Egypt","Egito"],["El Salvador","🇸🇻","El Salvador","El Salvador"],["Emiratos Árabes","🇦🇪","United Arab Emirates","Emirados Árabes"],["Eslovaquia","🇸🇰","Slovakia","Eslováquia"],["Eslovenia","🇸🇮","Slovenia","Eslovênia"],
+  ["España","🇪🇸","Spain","Espanha"],["Estados Unidos","🇺🇸","United States","Estados Unidos"],["Estonia","🇪🇪","Estonia","Estônia"],["Etiopía","🇪🇹","Ethiopia","Etiópia"],["Filipinas","🇵🇭","Philippines","Filipinas"],
+  ["Finlandia","🇫🇮","Finland","Finlândia"],["Francia","🇫🇷","France","França"],["Georgia","🇬🇪","Georgia","Geórgia"],["Ghana","🇬🇭","Ghana","Gana"],["Grecia","🇬🇷","Greece","Grécia"],
+  ["Guatemala","🇬🇹","Guatemala","Guatemala"],["Guinea Ecuatorial","🇬🇶","Equatorial Guinea","Guiné Equatorial"],["Honduras","🇭🇳","Honduras","Honduras"],["Hungría","🇭🇺","Hungary","Hungria"],["India","🇮🇳","India","Índia"],
+  ["Indonesia","🇮🇩","Indonesia","Indonésia"],["Irán","🇮🇷","Iran","Irã"],["Irlanda","🇮🇪","Ireland","Irlanda"],["Islandia","🇮🇸","Iceland","Islândia"],["Israel","🇮🇱","Israel","Israel"],
+  ["Italia","🇮🇹","Italy","Itália"],["Jamaica","🇯🇲","Jamaica","Jamaica"],["Japón","🇯🇵","Japan","Japão"],["Kazajistán","🇰🇿","Kazakhstan","Cazaquistão"],["Kenia","🇰🇪","Kenya","Quênia"],
+  ["Kuwait","🇰🇼","Kuwait","Kuwait"],["Letonia","🇱🇻","Latvia","Letônia"],["Líbano","🇱🇧","Lebanon","Líbano"],["Lituania","🇱🇹","Lithuania","Lituânia"],["Luxemburgo","🇱🇺","Luxembourg","Luxemburgo"],
+  ["Malasia","🇲🇾","Malaysia","Malásia"],["Malta","🇲🇹","Malta","Malta"],["Marruecos","🇲🇦","Morocco","Marrocos"],["México","🇲🇽","Mexico","México"],["Mónaco","🇲🇨","Monaco","Mônaco"],
+  ["Montenegro","🇲🇪","Montenegro","Montenegro"],["Nicaragua","🇳🇮","Nicaragua","Nicarágua"],["Nigeria","🇳🇬","Nigeria","Nigéria"],["Noruega","🇳🇴","Norway","Noruega"],["Nueva Zelanda","🇳🇿","New Zealand","Nova Zelândia"],
+  ["Países Bajos","🇳🇱","Netherlands","Países Baixos"],["Pakistán","🇵🇰","Pakistan","Paquistão"],["Panamá","🇵🇦","Panama","Panamá"],["Paraguay","🇵🇾","Paraguay","Paraguai"],["Perú","🇵🇪","Peru","Peru"],
+  ["Polonia","🇵🇱","Poland","Polônia"],["Portugal","🇵🇹","Portugal","Portugal"],["Puerto Rico","🇵🇷","Puerto Rico","Porto Rico"],["Reino Unido","🇬🇧","United Kingdom","Reino Unido"],["Rep. Dominicana","🇩🇴","Dominican Republic","Rep. Dominicana"],
+  ["Rumanía","🇷🇴","Romania","Romênia"],["Rusia","🇷🇺","Russia","Rússia"],["Senegal","🇸🇳","Senegal","Senegal"],["Serbia","🇷🇸","Serbia","Sérvia"],["Singapur","🇸🇬","Singapore","Singapura"],
+  ["Sudáfrica","🇿🇦","South Africa","África do Sul"],["Suecia","🇸🇪","Sweden","Suécia"],["Suiza","🇨🇭","Switzerland","Suíça"],["Tailandia","🇹🇭","Thailand","Tailândia"],["Taiwán","🇹🇼","Taiwan","Taiwan"],
+  ["Túnez","🇹🇳","Tunisia","Tunísia"],["Turquía","🇹🇷","Turkey","Turquia"],["Ucrania","🇺🇦","Ukraine","Ucrânia"],["Uruguay","🇺🇾","Uruguay","Uruguai"],["Uzbekistán","🇺🇿","Uzbekistan","Uzbequistão"],
+  ["Venezuela","🇻🇪","Venezuela","Venezuela"],["Vietnam","🇻🇳","Vietnam","Vietnã"],["Afganistán","🇦🇫","Afghanistan","Afeganistão"],["Albania","🇦🇱","Albania","Albânia"],["Andorra","🇦🇩","Andorra","Andorra"],
+  ["Bahréin","🇧🇭","Bahrain","Barein"],["Bangladés","🇧🇩","Bangladesh","Bangladesh"],["Barbados","🇧🇧","Barbados","Barbados"],["Haití","🇭🇹","Haiti","Haiti"],["Hong Kong","🇭🇰","Hong Kong","Hong Kong"],
+  ["Irak","🇮🇶","Iraq","Iraque"],["Jordania","🇯🇴","Jordan","Jordânia"],["Kosovo","🇽🇰","Kosovo","Kosovo"],["Liechtenstein","🇱🇮","Liechtenstein","Liechtenstein"],["Macao","🇲🇴","Macau","Macau"],
+  ["Macedonia del Norte","🇲🇰","North Macedonia","Macedônia do Norte"],["Moldavia","🇲🇩","Moldova","Moldávia"],["Mongolia","🇲🇳","Mongolia","Mongólia"],["Mozambique","🇲🇿","Mozambique","Moçambique"],["Namibia","🇳🇦","Namibia","Namíbia"],
+  ["Nepal","🇳🇵","Nepal","Nepal"],["Omán","🇴🇲","Oman","Omã"],["Ruanda","🇷🇼","Rwanda","Ruanda"],["San Marino","🇸🇲","San Marino","San Marino"],["Sri Lanka","🇱🇰","Sri Lanka","Sri Lanka"],
+  ["Tanzania","🇹🇿","Tanzania","Tanzânia"],["Trinidad y Tobago","🇹🇹","Trinidad and Tobago","Trinidad e Tobago"],["Uganda","🇺🇬","Uganda","Uganda"],["Zambia","🇿🇲","Zambia","Zâmbia"],["Zimbabue","🇿🇼","Zimbabwe","Zimbábue"],
+  ["Antigua y Barbuda","🇦🇬","Antigua & Barbuda","Antígua e Barbuda"],["Aruba","🇦🇼","Aruba","Aruba"],["Samoa Americana","🇦🇸","American Samoa","Samoa Americana"],["Bahamas","🇧🇸","Bahamas","Bahamas"],["Burundi","🇧🇮","Burundi","Burundi"],
+  ["Benín","🇧🇯","Benin","Benin"],["Bermudas","🇧🇲","Bermuda","Bermudas"],["Bután","🇧🇹","Bhutan","Butão"],["Belice","🇧🇿","Belize","Belize"],["Botsuana","🇧🇼","Botswana","Botsuana"],
+  ["Brunéi","🇧🇳","Brunei","Brunei"],["Burkina Faso","🇧🇫","Burkina Faso","Burquina Faso"],["República Centroafricana","🇨🇫","Central African Republic","República Centro-Africana"],["Camboya","🇰🇭","Cambodia","Camboja"],["Islas Caimán","🇰🇾","Cayman Islands","Ilhas Cayman"],
+  ["Congo","🇨🇬","Congo","Congo"],["Chad","🇹🇩","Chad","Chade"],["RD Congo","🇨🇩","DR Congo","Rep. Dem. do Congo"],["Islas Cook","🇨🇰","Cook Islands","Ilhas Cook"],["Comoras","🇰🇲","Comoros","Comores"],
+  ["Cabo Verde","🇨🇻","Cape Verde","Cabo Verde"],["Yibuti","🇩🇯","Djibouti","Djibuti"],["Dominica","🇩🇲","Dominica","Dominica"],["Eritrea","🇪🇷","Eritrea","Eritreia"],["Fiyi","🇫🇯","Fiji","Fiji"],
+  ["Micronesia","🇫🇲","Micronesia","Micronésia"],["Gabón","🇬🇦","Gabon","Gabão"],["Gambia","🇬🇲","Gambia","Gâmbia"],["Guinea-Bisáu","🇬🇼","Guinea-Bissau","Guiné-Bissau"],["Granada","🇬🇩","Grenada","Granada"],
+  ["Guinea","🇬🇳","Guinea","Guiné"],["Guam","🇬🇺","Guam","Guam"],["Guyana","🇬🇾","Guyana","Guiana"],["Islas Vírgenes EE. UU.","🇻🇮","US Virgin Islands","Ilhas Virgens dos EUA"],["Islas Vírgenes Brit.","🇻🇬","British Virgin Islands","Ilhas Virgens Brit."],
+  ["Kirguistán","🇰🇬","Kyrgyzstan","Quirguistão"],["Kiribati","🇰🇮","Kiribati","Quiribati"],["Laos","🇱🇦","Laos","Laos"],["Libia","🇱🇾","Libya","Líbia"],["Liberia","🇱🇷","Liberia","Libéria"],
+  ["Santa Lucía","🇱🇨","St. Lucia","Santa Lúcia"],["Lesoto","🇱🇸","Lesotho","Lesoto"],["Madagascar","🇲🇬","Madagascar","Madagascar"],["Malaui","🇲🇼","Malawi","Malaui"],["Maldivas","🇲🇻","Maldives","Maldivas"],
+  ["Islas Marshall","🇲🇭","Marshall Islands","Ilhas Marshall"],["Mali","🇲🇱","Mali","Mali"],["Mauricio","🇲🇺","Mauritius","Maurício"],["Mauritania","🇲🇷","Mauritania","Mauritânia"],["Myanmar","🇲🇲","Myanmar","Mianmar"],
+  ["Níger","🇳🇪","Niger","Níger"],["Nauru","🇳🇷","Nauru","Nauru"],["Palestina","🇵🇸","Palestine","Palestina"],["Palaos","🇵🇼","Palau","Palau"],["Papúa Nueva Guinea","🇵🇬","Papua New Guinea","Papua-Nova Guiné"],
+  ["Corea del Norte","🇰🇵","North Korea","Coreia do Norte"],["Samoa","🇼🇸","Samoa","Samoa"],["Seychelles","🇸🇨","Seychelles","Seicheles"],["San Cristóbal y Nieves","🇰🇳","St. Kitts & Nevis","São Cristóvão e Névis"],["Sierra Leona","🇸🇱","Sierra Leone","Serra Leoa"],
+  ["Islas Salomón","🇸🇧","Solomon Islands","Ilhas Salomão"],["Somalia","🇸🇴","Somalia","Somália"],["Sudán del Sur","🇸🇸","South Sudan","Sudão do Sul"],["Santo Tomé y Príncipe","🇸🇹","São Tomé & Príncipe","São Tomé e Príncipe"],["Sudán","🇸🇩","Sudan","Sudão"],
+  ["Surinam","🇸🇷","Suriname","Suriname"],["Esuatini","🇸🇿","Eswatini","Essuatíni"],["Siria","🇸🇾","Syria","Síria"],["Tonga","🇹🇴","Tonga","Tonga"],["Tayikistán","🇹🇯","Tajikistan","Tadjiquistão"],
+  ["Turkmenistán","🇹🇲","Turkmenistan","Turcomenistão"],["Timor-Leste","🇹🇱","Timor-Leste","Timor-Leste"],["Togo","🇹🇬","Togo","Togo"],["Tuvalu","🇹🇻","Tuvalu","Tuvalu"],["Vanuatu","🇻🇺","Vanuatu","Vanuatu"],
+  ["San Vicente y las Granadinas","🇻🇨","St. Vincent & Grenadines","São Vicente e Granadinas"],["Yemen","🇾🇪","Yemen","Iêmen"]
 ];
 // nombre del país en el idioma activo (la clave interna sigue siendo siempre el español)
-function countryLabel(c){ return (LANG==="en" && c[2]) ? c[2] : c[0]; }
+function countryLabel(c){ if(LANG==="en") return c[2]||c[0]; if(LANG==="pt") return c[3]||c[0]; return c[0]; }
 // sin acentos y en minúsculas: "mexico" encuentra "México" y "banglades" encuentra "Bangladés"
 function sinTildes(s){ return (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
-function sortCountries(){ COUNTRIES.sort((a,b)=>countryLabel(a).localeCompare(countryLabel(b), LANG==="en"?"en":"es")); }
+function sortCountries(){ COUNTRIES.sort((a,b)=>countryLabel(a).localeCompare(countryLabel(b), LANG)); }
 sortCountries();
 
 // código de nacionalidad de 3 letras (estándar IOC/F1, igual en todos los idiomas),
@@ -1049,6 +1067,15 @@ const NAT_CODE={
   PL:"POL",PT:"POR",PR:"PUR",GB:"GBR",DO:"DOM",RO:"ROU",RU:"RUS",SN:"SEN",RS:"SRB",SG:"SGP",
   ZA:"RSA",SE:"SWE",CH:"SUI",TH:"THA",TW:"TPE",TN:"TUN",TR:"TUR",UA:"UKR",UY:"URU",UZ:"UZB",
   VE:"VEN",VN:"VIE",
+  // ampliación oct-2026: los 77 comités olímpicos que faltaban
+  AG:"ANT",AW:"ARU",AS:"ASA",BS:"BAH",BI:"BDI",BJ:"BEN",BM:"BER",BT:"BHU",BZ:"BIZ",BW:"BOT",
+  BN:"BRU",BF:"BUR",CF:"CAF",KH:"CAM",KY:"CAY",CG:"CGO",TD:"CHA",CD:"COD",CK:"COK",KM:"COM",
+  CV:"CPV",DJ:"DJI",DM:"DMA",ER:"ERI",FJ:"FIJ",FM:"FSM",GA:"GAB",GM:"GAM",GW:"GBS",GD:"GRN",
+  GN:"GUI",GU:"GUM",GY:"GUY",VI:"ISV",VG:"IVB",KG:"KGZ",KI:"KIR",LA:"LAO",LY:"LBA",LR:"LBR",
+  LC:"LCA",LS:"LES",MG:"MAD",MW:"MAW",MV:"MDV",MH:"MHL",ML:"MLI",MU:"MRI",MR:"MTN",MM:"MYA",
+  NE:"NIG",NR:"NRU",PS:"PLE",PW:"PLW",PG:"PNG",KP:"PRK",WS:"SAM",SC:"SEY",KN:"SKN",SL:"SLE",
+  SB:"SOL",SO:"SOM",SS:"SSD",ST:"STP",SD:"SUD",SR:"SUR",SZ:"SWZ",SY:"SYR",TO:"TGA",TJ:"TJK",
+  TM:"TKM",TL:"TLS",TG:"TOG",TV:"TUV",VU:"VAN",VC:"VIN",YE:"YEM",
   // ampliación ago-2026 (códigos IOC; Kosovo y Macao usan el de sus comités olímpicos)
   AF:"AFG",AL:"ALB",AD:"AND",BH:"BRN",BD:"BAN",BB:"BAR",HT:"HAI",HK:"HKG",IQ:"IRQ",JO:"JOR",
   XK:"KOS",LI:"LIE",MO:"MAC",MK:"MKD",MD:"MDA",MN:"MGL",MZ:"MOZ",NA:"NAM",NP:"NEP",OM:"OMA",
@@ -2717,6 +2744,12 @@ function initInstallHint(){
 }
 function showIdentity(){
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
+  /* 🔎 con 207 países, la lista ya no se recorre a ojo: el buscador pasa a ser la vía normal.
+     Se le da el foco SOLO con ratón: en el móvil abriría el teclado de golpe y taparía media
+     pantalla antes de que el jugador haya visto siquiera que hay que rellenar una ficha. */
+  if(window.matchMedia && window.matchMedia("(pointer:fine)").matches){
+    const _b=$("inCountry"); if(_b) setTimeout(()=>_b.focus({preventScroll:true}), 0);
+  }
   /* ⚫ ERAS EN LAS QUE SE PODÍA MORIR. En vez de decidir por el jugador, se le pregunta al entrar, con
      el motivo por delante. Idea de Carlos: que sea suya la decisión y que sepa exactamente qué elige. */
   const _era=ERAS[SELECTED_ERA]||ERAS["2026"], _dOpt=$("deathOpt");
@@ -2798,9 +2831,11 @@ function idChanged(){
 function renderCountries(){
   const q = sinTildes($("inCountry").value);
   const list = $("countryList"); list.innerHTML="";
-  // se busca por el nombre en ESPAÑOL, en INGLÉS y por el código de nacionalidad (NZL, GER…),
-  // todo sin acentos: "mexico", "New Zealand" y "NZL" llegan al mismo sitio.
+  // se busca por el nombre en ESPAÑOL, INGLÉS y PORTUGUÉS y por el código de nacionalidad
+  // (NZL, GER…), todo sin acentos: "mexico", "New Zealand", "Espanha" y "NZL" llegan al mismo
+  // sitio SEA CUAL SEA el idioma activo — un brasileño escribe "Alemanha" jugando en español.
   COUNTRIES.filter(c=> !q || sinTildes(c[0]).includes(q) || sinTildes(c[2]||"").includes(q)
+                        || sinTildes(c[3]||"").includes(q)
                         || sinTildes(natCode(c[1])).includes(q)).forEach(c=>{
     const b=document.createElement("button");
     b.innerHTML = `<span>${c[1]}</span> ${countryLabel(c)}`;
