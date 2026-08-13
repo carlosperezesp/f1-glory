@@ -2275,6 +2275,24 @@ const TESTS = {
     era:"1990", jr:true,
     run(){ return null; }
   },
+  /* ⏸️ EL AÑO EN BLANCO, EN BANDEJA. Te coloca en el último invierno de la F2, con el título en el
+     bolsillo y un equipo de mediocampo con el proyecto claramente al alza, para que la oferta salga en
+     la primera pantalla en vez de tener que subir ocho temporadas de escalera. */
+  blanco: {
+    t:["El año en blanco","The blank year"],
+    d:["Campeón de F2 y con la F1 llamando. Entre las ofertas hay una distinta: un equipo del mediocampo cuyo proyecto va hacia arriba te quiere de probador este año y de titular el siguiente… y te ata a las dos temporadas. Acéptala y verás si cumplen (lo hacen 3 de cada 4 veces).",
+       "F2 champion with F1 calling. Among the offers there's a different one: a midfield team on the up wants you as reserve this year and as a race driver the next… and ties you to both seasons. Take it and see if they deliver (they do 3 times out of 4)."],
+    era:"2026", directo:true,
+    run(){
+      S.age=21; S.startAge=16; S.ovr=77; S.peakAge=21; S.cat="F2"; S.titles.f2=1; S.f1Seasons=0;
+      S.promesaUsada=false; S.patron=null;
+      // un equipo de mediocampo con el proyecto claramente al alza, que es lo que exige la oferta
+      const orden=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+      const t=orden[4] || orden[3];
+      if(t){ S.f1target[t.name]=Math.min(94,(S.f1perf[t.name]||75)+9); S._testBlanco=t.name; }
+      return null;
+    }
+  },
   /* 🤝 EL FAVOR DEL VETERANO, SOLO Y EN BANDEJA. Coloca la situación exacta que el dilema exige y apaga
      TODOS los demás dilemas, para poder leerlo con calma sin que compita con los otros 128.
      El escenario CUMPLE de verdad las seis condiciones (no las finge): un campeón de 36 años con 3
@@ -2316,6 +2334,10 @@ function setupTest(T){
     renderOffers(juniorOffers(KART_TEAMS,"KART").slice(0,3), false);
     return;
   }
+  /* 🧪 `directo`: el escenario no empieza firmando un contrato, sino EN la pantalla de mercado —hace
+     falta para probar ofertas (no dilemas), que es donde vive el año en blanco. */
+  if(T.directo){ refreshCard(); nextOffers();
+    setDecision("🧪 "+LA(T.t), LA(T.d)); return; }
   S.cat="F1";
   refreshCard();
   setDecision("🧪 "+LA(T.t), LA(T.d));
@@ -7201,7 +7223,7 @@ function nextOffers(){
       pick(sorted.slice(lo,hi),nOffers()).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio
       /* ⏸️ …y enfrente, el año en blanco: correr YA en lo que haya, o parar un año por un coche mejor */
-      if(!S.promesaUsada && !S.patron && ch(P_BLANCO)){ const eq=equipoEnAscension();
+      if(!S.promesaUsada && !S.patron && (TEST_MODE==="blanco" || ch(P_BLANCO))){ const eq=equipoEnAscension();
         if(eq){ S.promesaUsada=true; o.push(promesaProbadorOption(eq));
           sub+=L(" O para un año: hay quien te quiere de probador ahora y de titular después."," Or stop for a year: someone wants you as reserve now and as a racer later.",{pt:" Ou pare um ano: tem quem te queira de testes agora e de titular depois."}); } }
     } else if(S.ovr>=72){
@@ -7212,7 +7234,7 @@ function nextOffers(){
       patronDoor(o, false);  // 📜 aquí el padrino te da el banquillo, que es lo que prometió
       /* ⏸️ aquí el trato es otro: vas a ser probador de todas formas, así que lo que se decide es
          libertad (probador suelto, eliges el año que viene) contra seguridad (atado, pero con asiento) */
-      if(!S.promesaUsada && !S.patron && ch(P_BLANCO)){ const eq=equipoEnAscension();
+      if(!S.promesaUsada && !S.patron && (TEST_MODE==="blanco" || ch(P_BLANCO))){ const eq=equipoEnAscension();
         if(eq){ S.promesaUsada=true; o.push(promesaProbadorOption(eq));
           sub+=L(" Y uno de ellos va más lejos: te firma también el asiento del año siguiente."," And one of them goes further: they'll sign next year's seat too.",{pt:" E um deles vai além: assina também a vaga do ano seguinte."}); } }
       if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(` O quédate un año más en la ${catName("F2")} a por el título.`,` Or stay one more year in ${catName("F2")} to go for the title.`,{pt:` Ou fique mais um ano na ${catName("F2")} atrás do título.`}); }
