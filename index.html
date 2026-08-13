@@ -2280,17 +2280,18 @@ const TESTS = {
      la primera pantalla en vez de tener que subir ocho temporadas de escalera. */
   blanco: {
     t:["El año en blanco","The blank year"],
-    d:["Campeón de F2 y con la F1 llamando. Entre las ofertas hay una distinta: un equipo del mediocampo cuyo proyecto va hacia arriba te quiere de probador este año y de titular el siguiente… y te ata a las dos temporadas. Acéptala y verás si cumplen (lo hacen 3 de cada 4 veces).",
-       "F2 champion with F1 calling. Among the offers there's a different one: a midfield team on the up wants you as reserve this year and as a race driver the next… and ties you to both seasons. Take it and see if they deliver (they do 3 times out of 4)."],
-    era:"2026", directo:true,
+    d:["Arrancas en tu ÚLTIMA temporada de F2, ya con el título del año pasado. Corre el año y, al llegar el invierno, entre las ofertas de F1 habrá una distinta: un equipo del mediocampo cuyo proyecto va hacia arriba te quiere de probador un año y de titular al siguiente… y te ata a las dos temporadas. Acéptala y verás si cumplen (lo hacen 3 de cada 4); recházala y a veces te cierran esa puerta.",
+       "You start in your LAST F2 season, already holding last year's title. Race the year and, when winter comes, among the F1 offers there'll be a different one: a midfield team on the up wants you as reserve for a year and as a race driver the next… and ties you to both seasons. Take it and see if they deliver (3 times out of 4); turn it down and sometimes that door shuts."],
+    era:"2026", cat:"F2",
     run(){
-      S.age=21; S.startAge=16; S.ovr=77; S.peakAge=21; S.cat="F2"; S.titles.f2=1; S.f1Seasons=0;
+      S.age=20; S.startAge=16; S.ovr=75; S.peakAge=20; S.cat="F2"; S.titles.f2=1; S.f1Seasons=0;
       S.promesaUsada=false; S.patron=null;
       // un equipo de mediocampo con el proyecto claramente al alza, que es lo que exige la oferta
       const orden=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
       const t=orden[4] || orden[3];
       if(t){ S.f1target[t.name]=Math.min(94,(S.f1perf[t.name]||75)+9); S._testBlanco=t.name; }
-      return null;
+      // ⚠️ con su `cat`: los equipos junior no la llevan en su ficha, se la pone juniorOffers()
+      return {...F2_TEAMS[irnd(0,Math.min(2,F2_TEAMS.length-1))], cat:"F2"};   // corres tu última temporada de F2
     }
   },
   /* 🤝 EL FAVOR DEL VETERANO, SOLO Y EN BANDEJA. Coloca la situación exacta que el dilema exige y apaga
@@ -2334,15 +2335,15 @@ function setupTest(T){
     renderOffers(juniorOffers(KART_TEAMS,"KART").slice(0,3), false);
     return;
   }
-  /* 🧪 `directo`: el escenario no empieza firmando un contrato, sino EN la pantalla de mercado —hace
-     falta para probar ofertas (no dilemas), que es donde vive el año en blanco. */
-  if(T.directo){ refreshCard(); nextOffers();
-    setDecision("🧪 "+LA(T.t), LA(T.d)); return; }
-  S.cat="F1";
+  /* 🧪 un escenario puede arrancar en OTRA categoría (`cat`), no solo en la F1: el año en blanco se
+     prueba desde la última temporada de F2 para verlo entero — corres el año y la oferta llega en el
+     invierno, que es justo como se lo encuentra el jugador. */
+  S.cat=T.cat||"F1";
   refreshCard();
   setDecision("🧪 "+LA(T.t), LA(T.d));
   $("decRecap").style.display="none";
-  renderOffers([{team:t, role:roleFor(t.name), note:L("Empezar la prueba","Start the test",{pt:"Começar o teste"})}], false);
+  const _nota=L("Empezar la prueba","Start the test",{pt:"Começar o teste"});
+  renderOffers([ S.cat==="F1" ? {team:t, role:roleFor(t.name), note:_nota} : {team:t, note:_nota} ], false);
 }
 /* 🧪 un escenario de prueba puede REDUCIR el catálogo a los dilemas que se quieren mirar: así se lee
    el que interesa sin que compita con los otros 128. Fuera del modo pruebas no cambia nada. */
