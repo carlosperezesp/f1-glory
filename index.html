@@ -40,13 +40,25 @@
 <meta name="twitter:title" content="F1 Glory 🏁 Construye tu carrera · Build your F1 career">
 <meta name="twitter:description" content="Del karting a la gloria. ¿Hasta dónde llegarás? · From karting to glory. How far will you go?">
 <meta name="twitter:image" content="https://f1-glory.com/f1-glory.jpg">
+<link rel="preload" href="TwemojiCountryFlags.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* 🏁 Windows no trae dibujos de banderas: pinta «ES», «BR», «IT» en vez de 🇪🇸 🇧🇷 🇮🇹.
+   Esta fuente SOLO contiene los glifos de bandera (76 KB), así que el resto del texto y
+   los demás emoji (🥇 👑 🏆) los sigue pintando el sistema. La cargamos en todos los
+   dispositivos a propósito: así el juego se ve igual en Mac, Windows, Android y Linux,
+   y la tarjeta que se comparte en redes también.
+   Dibujos: Twemoji © Twitter, Inc. y colaboradores — CC BY 4.0. Crédito en el aviso legal. */
+@font-face{
+  font-family:'Twemoji Country Flags';
+  src:url('TwemojiCountryFlags.woff2') format('woff2'); /* relativa: index.html vive en la raíz, y así también funciona abriendo el archivo en local */
+  font-display:block; /* mejor un parpadeo corto que ver la bandera cambiar delante del jugador */
+}
 :root{
   --bg:#f5f5f9; --panel:#ffffff; --panel2:#f2f2f7; --line:#e6e6ee;
   --text:#15151e; --muted:#70707c; --accent:#e10600; --accent2:#ff7a00; --gold:#c98f00;
   --shadow:0 10px 30px rgba(21,21,30,.08), 0 2px 8px rgba(21,21,30,.05);
 }
-*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Twemoji Country Flags',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 body{color:var(--text);min-height:100vh;background:
   radial-gradient(900px 500px at 85% -5%, rgba(225,6,0,.07), transparent 60%),
   radial-gradient(700px 500px at -10% 100%, rgba(255,122,0,.06), transparent 55%),
@@ -655,8 +667,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     <span class="il-sep">·</span>
     <a onclick="openPatrons()" data-es="☕ Muro de mecenas" data-pt="☕ Mural de mecenas" data-pl="☕ Ściana patronów" data-fr="☕ Mur des mécènes" data-pt="☕ Mural de apoiantes" data-en="☕ Wall of supporters">☕ Muro de mecenas</a></p>
   <p class="legal"
-     data-es="Proyecto personal de un aficionado, sin relación con la Fórmula 1. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares." data-pt="Projeto pessoal de um fã, sem relação com a Fórmula 1. Não é afiliado nem endossado pela Fórmula 1, pela FIA nem por nenhuma equipe. Os nomes, marcas e escudos pertencem aos seus respectivos titulares." data-pl="Prywatny projekt kibica, bez związku z Formułą 1. Nie jest powiązany z Formułą 1, FIA ani żadnym zespołem i nie ma ich poparcia. Nazwy, znaki i loga należą do ich właścicieli." data-fr="Projet personnel d'un passionné, sans lien avec la Formule 1. Ni affilié ni approuvé par la Formule 1, la FIA ou une quelconque écurie. Les noms, marques et logos appartiennent à leurs détenteurs respectifs." data-pt="Projeto pessoal de um adepto, sem qualquer ligação à Fórmula 1. Não é afiliado nem apoiado pela Fórmula 1, pela FIA nem por nenhuma equipa."
-     data-en="A personal fan project, unconnected to Formula 1. Not affiliated with or endorsed by Formula 1, the FIA or any team. All names, trademarks and badges belong to their respective owners.">Proyecto personal de un aficionado, sin relación con la Fórmula 1. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares.</p>
+     data-es="Proyecto personal de un aficionado, sin relación con la Fórmula 1. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares. Banderas: <a href='https://github.com/jdecked/twemoji' target='_blank' rel='noopener'>Twemoji</a> &copy; Twitter, Inc. y colaboradores, con licencia <a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener'>CC BY 4.0</a>; se usa un subconjunto con solo las banderas." data-pt="Projeto pessoal de um fã, sem relação com a Fórmula 1. Não é afiliado nem endossado pela Fórmula 1, pela FIA nem por nenhuma equipe. Os nomes, marcas e escudos pertencem aos seus respectivos titulares. Bandeiras: <a href='https://github.com/jdecked/twemoji' target='_blank' rel='noopener'>Twemoji</a> &copy; Twitter, Inc. e colaboradores, sob licen&ccedil;a <a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener'>CC BY 4.0</a>; &eacute; usado um subconjunto apenas com as bandeiras." data-pl="Prywatny projekt kibica, bez związku z Formułą 1. Nie jest powiązany z Formułą 1, FIA ani żadnym zespołem i nie ma ich poparcia. Nazwy, znaki i loga należą do ich właścicieli. Flagi: <a href='https://github.com/jdecked/twemoji' target='_blank' rel='noopener'>Twemoji</a> &copy; Twitter, Inc. i wsp&oacute;&#322;tw&oacute;rcy, na licencji <a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener'>CC BY 4.0</a>; u&#380;yto podzbioru zawieraj&#261;cego wy&#322;&#261;cznie flagi." data-fr="Projet personnel d'un passionné, sans lien avec la Formule 1. Ni affilié ni approuvé par la Formule 1, la FIA ou une quelconque écurie. Les noms, marques et logos appartiennent à leurs détenteurs respectifs. Drapeaux&nbsp;: <a href='https://github.com/jdecked/twemoji' target='_blank' rel='noopener'>Twemoji</a> &copy; Twitter, Inc. et contributeurs, sous licence <a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener'>CC BY 4.0</a>; un sous-ensemble limit&eacute; aux drapeaux est utilis&eacute;." data-pt="Projeto pessoal de um adepto, sem qualquer ligação à Fórmula 1. Não é afiliado nem apoiado pela Fórmula 1, pela FIA nem por nenhuma equipa."
+     data-en="A personal fan project, unconnected to Formula 1. Not affiliated with or endorsed by Formula 1, the FIA or any team. All names, trademarks and badges belong to their respective owners. Flags: <a href='https://github.com/jdecked/twemoji' target='_blank' rel='noopener'>Twemoji</a> &copy; Twitter, Inc. and other contributors, licensed under <a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener'>CC BY 4.0</a>; a flags-only subset is used.">Proyecto personal de un aficionado, sin relación con la Fórmula 1. No está afiliado ni respaldado por la Fórmula 1, la FIA ni ninguna escudería. Los nombres, marcas y escudos pertenecen a sus respectivos titulares. Banderas: <a href='https://github.com/jdecked/twemoji' target='_blank' rel='noopener'>Twemoji</a> &copy; Twitter, Inc. y colaboradores, con licencia <a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener'>CC BY 4.0</a>; se usa un subconjunto con solo las banderas.</p>
 </section>
 
 <!-- ========== IDENTITY ========== -->
@@ -8166,6 +8178,9 @@ function preloadLogos(){
 /* 📸 tarjeta compartible de la carrera: dibuja un PNG con Canvas 2D (sin librerías, CSP-safe) */
 function drawCareerCard(){
   const W=1080;
+  /* 🏁 el canvas NO hereda el font-family del CSS: hay que nombrar la fuente de banderas
+     aquí también, o la tarjeta compartida desde Windows saldría con «ES» en vez de 🇪🇸 */
+  const CARD_FF="'Twemoji Country Flags', Arial, sans-serif";
   // años de campeón (piloto, pos 1) agrupados por equipo
   const seas=S.seasons||[];
   const champByTeam={}; seas.filter(s=>s.cat==="F1"&&s.pos===1).forEach(s=>{ const n=s.team&&s.team.name; if(n){ (champByTeam[n]=champByTeam[n]||[]).push(s.year); } });
@@ -8179,7 +8194,7 @@ function drawCareerCard(){
   const x=c.getContext("2d");
   const rr=(px,py,w,h,r)=>{ x.beginPath(); x.moveTo(px+r,py); x.arcTo(px+w,py,px+w,py+h,r); x.arcTo(px+w,py+h,px,py+h,r); x.arcTo(px,py+h,px,py,r); x.arcTo(px,py,px+w,py,r); x.closePath(); };
   const checker=(y,h)=>{ const s=h; for(let i=0;i*s<W;i++){ x.fillStyle=i%2?"#15151e":"#e6e6ee"; x.fillRect(i*s,y,s,h); } };
-  const fit=(text,y,maxW,size,color,weight)=>{ x.fillStyle=color; let f=size; do{ x.font=`${weight} ${f}px Arial, sans-serif`; }while(x.measureText(text).width>maxW && (f-=2)>15); x.textAlign="center"; x.fillText(text, W/2, y); };
+  const fit=(text,y,maxW,size,color,weight)=>{ x.fillStyle=color; let f=size; do{ x.font=`${weight} ${f}px ${CARD_FF}`; }while(x.measureText(text).width>maxW && (f-=2)>15); x.textAlign="center"; x.fillText(text, W/2, y); };
   x.textBaseline="alphabetic";
   x.fillStyle="#16161e"; x.fillRect(0,0,W,H);
   const bg=x.createLinearGradient(0,0,W,380); bg.addColorStop(0,"#15151e"); bg.addColorStop(.55,"#2b0a08"); bg.addColorStop(1,"#e10600");
@@ -8195,8 +8210,8 @@ function drawCareerCard(){
   fit(L(`Carrera ${S.baseYear||2026}–${yearNow()}`,`Career ${S.baseYear||2026}–${yearNow()}`,{pt:`Carreira ${S.baseYear||2026}–${yearNow()}`}), 320, W-90, 28, "rgba(255,255,255,.7)", "500");
   const cell=(cx,cy,w,h,val,lab,gold)=>{
     rr(cx,cy,w,h,18); x.fillStyle=gold?"#f3c866":"#262a34"; x.fill();
-    x.fillStyle=gold?"#5a3f00":"#fff"; x.font="900 50px Arial, sans-serif"; x.textAlign="center"; x.fillText(String(val), cx+w/2, cy+62);
-    x.fillStyle=gold?"#7c5e0f":"#9aa0ae"; let lf=21; do{ x.font=`700 ${lf}px Arial, sans-serif`; }while(x.measureText(lab).width>w-14 && (lf-=1)>13);
+    x.fillStyle=gold?"#5a3f00":"#fff"; x.font="900 50px "+CARD_FF; x.textAlign="center"; x.fillText(String(val), cx+w/2, cy+62);
+    x.fillStyle=gold?"#7c5e0f":"#9aa0ae"; let lf=21; do{ x.font=`700 ${lf}px ${CARD_FF}`; }while(x.measureText(lab).width>w-14 && (lf-=1)>13);
     x.fillText(lab, cx+w/2, cy+95);
   };
   const M=60, GAP=20, CW=(W-2*M-3*GAP)/4, CH=110;
@@ -8205,38 +8220,41 @@ function drawCareerCard(){
   r1.forEach((s,i)=>cell(M+i*(CW+GAP),440,CW,CH,s[1],s[0],s[2]));
   r2.forEach((s,i)=>cell(M+i*(CW+GAP),575,CW,CH,s[1],s[0],s[2]));
   // estante de trofeos: TODOS los mundiales de piloto (auto-ajuste de tamaño para que quepan, aunque sean 14)
-  if(S.titles.f1>0){ const tro="🏆 ".repeat(Math.min(S.titles.f1,20)).trim(); x.fillStyle="#fff"; x.textAlign="center"; let tf=54; do{ x.font=`${tf}px Arial, sans-serif`; }while(x.measureText(tro).width>W-90 && (tf-=3)>22); x.fillText(tro, W/2, 775); }
+  if(S.titles.f1>0){ const tro="🏆 ".repeat(Math.min(S.titles.f1,20)).trim(); x.fillStyle="#fff"; x.textAlign="center"; let tf=54; do{ x.font=`${tf}px ${CARD_FF}`; }while(x.measureText(tro).width>W-90 && (tf-=3)>22); x.fillText(tro, W/2, 775); }
   // 🏆 CAMPEÓN CON: escudo + equipo + años (o TU TRAYECTORIA si no hay títulos de piloto)
   if(champList.length){
-    x.fillStyle="rgba(255,255,255,.5)"; x.textAlign="center"; x.font="700 24px Arial, sans-serif"; x.fillText(L("CAMPEÓN CON","CHAMPION WITH",{pt:"CAMPEÃO COM"}), W/2, BLOCK_TOP);
+    x.fillStyle="rgba(255,255,255,.5)"; x.textAlign="center"; x.font="700 24px "+CARD_FF; x.fillText(L("CAMPEÓN CON","CHAMPION WITH",{pt:"CAMPEÃO COM"}), W/2, BLOCK_TOP);
     champList.slice(0,8).forEach(([name,years],i)=>{
       const cy=BLOCK_TOP+52+i*ROW_H;
       const ys=[...new Set(years)].sort((a,b)=>a-b);
       // muchos años seguidos → rango compacto ('42–'54); pocos → se listan ('36 '37)
       const yrs = ys.length>3 ? ("'"+String(ys[0]).slice(-2)+"–'"+String(ys[ys.length-1]).slice(-2)) : ys.map(y=>"'"+String(y).slice(-2)).join(" ");
       const LB=50, G=18;
-      x.font="800 32px Arial, sans-serif"; const nameW=x.measureText(name).width;
-      x.font="700 30px Arial, sans-serif"; const yTxt="   "+yrs; const yW=x.measureText(yTxt).width;
+      x.font="800 32px "+CARD_FF; const nameW=x.measureText(name).width;
+      x.font="700 30px "+CARD_FF; const yTxt="   "+yrs; const yW=x.measureText(yTxt).width;
       const sx=W/2-(LB+G+nameW+yW)/2, boxY=cy-38;
       const img=TEAM_LOGO_IMGS[name];
       if(img&&img.complete&&img.naturalWidth){ x.drawImage(img,sx,boxY,LB,LB); } // logo tal cual, sin recuadro
-      else { const t=F1_TEAMS.find(f=>f.name===name)||{}; rr(sx,boxY,LB,LB,12); x.fillStyle=t.color||"#666"; x.fill(); x.fillStyle="#fff"; x.font="800 18px Arial, sans-serif"; x.textAlign="center"; x.fillText((t.abbr||name.slice(0,3)).toUpperCase(),sx+LB/2,boxY+LB/2+6); }
+      else { const t=F1_TEAMS.find(f=>f.name===name)||{}; rr(sx,boxY,LB,LB,12); x.fillStyle=t.color||"#666"; x.fill(); x.fillStyle="#fff"; x.font="800 18px "+CARD_FF; x.textAlign="center"; x.fillText((t.abbr||name.slice(0,3)).toUpperCase(),sx+LB/2,boxY+LB/2+6); }
       x.textAlign="left";
-      x.fillStyle="#fff"; x.font="800 32px Arial, sans-serif"; x.fillText(name, sx+LB+G, cy);
-      x.fillStyle="#ffce3a"; x.font="700 30px Arial, sans-serif"; x.fillText(yTxt, sx+LB+G+nameW, cy);
+      x.fillStyle="#fff"; x.font="800 32px "+CARD_FF; x.fillText(name, sx+LB+G, cy);
+      x.fillStyle="#ffce3a"; x.font="700 30px "+CARD_FF; x.fillText(yTxt, sx+LB+G+nameW, cy);
     });
   } else if(f1Teams.length){
     fit(L("TU TRAYECTORIA","YOUR JOURNEY",{pt:"A SUA TRAJETÓRIA"}), BLOCK_TOP, W-120, 22, "rgba(255,255,255,.5)", "700");
     fit(f1Teams.slice(0,4).join("   ·   "), BLOCK_TOP+45, W-120, 34, "#fff", "800");
   }
   checker(H-14,14); x.textAlign="center";
-  x.fillStyle="#fff"; x.font="italic 900 52px Arial, sans-serif"; x.fillText("🏁 F1 GLORY", W/2, H-150);
-  x.fillStyle="#ff5a1a"; x.font="800 34px Arial, sans-serif"; x.fillText("f1-glory.com", W/2, H-100);
-  x.fillStyle="rgba(255,255,255,.75)"; x.font="600 30px Arial, sans-serif"; x.fillText(L("¿Superas mi legado?","Can you beat my legacy?",{pt:"Você supera o meu legado?"}), W/2, H-50);
+  x.fillStyle="#fff"; x.font="italic 900 52px "+CARD_FF; x.fillText("🏁 F1 GLORY", W/2, H-150);
+  x.fillStyle="#ff5a1a"; x.font="800 34px "+CARD_FF; x.fillText("f1-glory.com", W/2, H-100);
+  x.fillStyle="rgba(255,255,255,.75)"; x.font="600 30px "+CARD_FF; x.fillText(L("¿Superas mi legado?","Can you beat my legacy?",{pt:"Você supera o meu legado?"}), W/2, H-50);
   return c;
 }
 function shareCareer(){
-  preloadLogos().then(runShareCard).catch(runShareCard);
+  /* 🏁 además de los escudos, hay que esperar a la fuente de banderas: si el canvas dibuja
+     antes de que cargue, la tarjeta sale con «ES» en vez de 🇪🇸 y ya no hay vuelta atrás */
+  const fuentes = (document.fonts && document.fonts.ready) || Promise.resolve();
+  Promise.all([preloadLogos(), fuentes]).then(runShareCard).catch(runShareCard);
 }
 function runShareCard(){
   let c; try{ c=drawCareerCard(); }catch(e){ return; }
