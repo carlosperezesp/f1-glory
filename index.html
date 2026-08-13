@@ -5384,6 +5384,7 @@ let P_GOMAS=.5, P_TOQUE=.06;
    tabla) y compitiendo con los ~56 dilemas de F1 salía 1 vez cada 60 carreras: o va con prioridad o no
    existe. Como constante, para poder medirla A/B como las demás. */
 let P_FAVOR=.3;
+let P_BLANCO=.45;   // ⏸️ cada cuánto asoma la oferta del año en blanco en la puerta de la F1
 let P_DEBUT=.2, P_PATRON=.26, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // el mecenas: .55 -> 48% de las carreras, .5 -> 21%. Sigue siendo demasiado para «la llamada que te cambia la vida»: se busca ~1 de cada 10
 function pickDilemma(){
   // ⚠️ EL SUELO DE 18 SIGUE VALIENDO PARA TODO EL CATÁLOGO. Solo los dilemas que traen su propio
@@ -6889,6 +6890,44 @@ function returnChance(){
   return Math.max(0.08, Math.min(0.92, c));
 }
 // 🌏 escape joven: te atascas en la escalera → Super Fórmula/IndyCar/Fórmula E a ganarte la vuelta a la F1
+/* ⏸️ EL AÑO EN BLANCO (Alonso, 2002 · diseño cerrado con Carlos el 11-ago). A Alonso le IMPUSIERON un
+   año entero de probador en Renault en vez de dejarle correr; aquí la decisión es tuya. Un equipo que
+   NO es de los tres grandes pero cuyo proyecto va hacia arriba te ofrece el trato: este año de
+   probador, el que viene coche de verdad como segundo piloto. Y te ata: no puedes escaparte.
+   · Que el equipo esté «en ascensión» NO es palabrería: se mide con `trendInfo` (su objetivo va por
+     encima de su nivel actual) y el jugador ve esa flecha en la propia pantalla de ofertas.
+   · El precio es real: un año de probador multiplica tu crecimiento por 0,7 y te deja sin competir.
+   · Y CUMPLEN 3 DE CADA 4 VECES (decisión de Carlos). Si fuera seguro no sería un dilema, sería un
+     regalo. Cuando la rompen, se cuenta el motivo y no te dejan tirado: el año cuenta como probado. */
+function equipoEnAscension(){
+  const orden=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70));
+  /* ⚖️ NI LOS TRES DE ARRIBA NI LOS DE LA COLA. Los grandes no te hacen esperar un año; y un colista
+     prometiéndote «un coche guapo» no se lo cree nadie —medido: sin este filtro el trato te lo ofrecían
+     Minardi y Footwork—. El trato solo tiene sentido desde el MEDIOCAMPO que sube. */
+  const top3=orden.slice(0,3).map(t=>t.name);
+  const cola=orden.slice(-3).map(t=>t.name);
+  const cand=orden.filter(t=>!top3.includes(t.name) && !cola.includes(t.name) && !isRBJr(t.name)
+    && !S.burned[t.name] && !teamHasFeud(t.name)
+    && ((S.f1target[t.name]??0)-(S.f1perf[t.name]??0))>1.2);
+  return cand.length ? cand[0] : null;   // el de mejor coche entre los que suben
+}
+function promesaProbadorOption(t){
+  const ti=trendInfo(t.name);
+  return {special:true, em:"⏸️", color:"#0e7a5f",
+    name:L(`${t.name}: un año de probador y luego el asiento`,`${t.name}: a year as reserve, then the seat`,{pt:`${t.name}: um ano de testes e depois a vaga`}),
+    sub:L(`Su proyecto está ${ti.t}. Te quieren de probador este año y de titular el que viene. Firmas por los dos: no hay marcha atrás.`,
+          `Their project is ${ti.t}. They want you as reserve this year and as a race driver the next. You sign for both: no way back.`,
+          {pt:`O projeto deles está ${ti.t}. Te querem de testes este ano e de titular no que vem. Você assina pelos dois: sem volta atrás.`}),
+    onClick:()=>{
+      const cumple=ch(.75);
+      S.promesaAsiento={team:t.name, year:yearNow()+1, cumple};
+      S.commitTeam=t.name; S.commitYears=1;
+      S.pendingEvents.push(L(`⏸️ Firmas con ${t.name} un año de probador con la promesa de un asiento titular para ${yearNow()+1}. Un año sin competir, a cambio de un coche que promete.`,
+                             `⏸️ You sign a reserve year with ${t.name} on the promise of a race seat for ${yearNow()+1}. A year without racing, in exchange for a car that promises.`,
+                             {pt:`⏸️ Você assina com a ${t.name} um ano de testes com a promessa de uma vaga de titular para ${yearNow()+1}. Um ano sem competir, em troca de um carro que promete.`}));
+      signContract({team:{...t, cat:"TEST"}, note:["⏸️ El año en blanco","⏸️ The blank year"]});
+    }};
+}
 function youngEscapeOption(){
   return {special:true, em:"🌏", name:L("Buscarte la vida en otra categoría","Make your name in another series",{pt:"Se virar em outra categoria"}),
     sub:L("Super Fórmula, IndyCar o Fórmula E… y ganarte el salto a la F1","Super Formula, IndyCar or Formula E… and earn your leap to F1",{pt:"Super Fórmula, IndyCar ou Fórmula E… e conquistar o salto para a F1"}),
@@ -7035,8 +7074,34 @@ function nextOffers(){
   if(S.age>=44){ endCareer(); return; } // tope duro: solo los excepcionales llegan tan lejos
   // 🤝 el compromiso solo tiene sentido con un asiento titular de F1: si estás de reserva, de aventura
   // fuera, o ya no corres para ellos, el contrato decae (si no, quedaría colgado el resto de la partida)
-  if(S.commitTeam && (S.cat!=="F1" || !S.team || (S.team.name!==S.commitTeam && S.regBet!==S.commitTeam))){
+  /* ⏸️ …salvo el año en blanco: ese compromiso se cumple JUSTAMENTE de probador, así que aquí no vale
+     la regla de arriba. Sin esta excepción el candado se soltaba solo y el trato no ataba a nadie. */
+  if(S.commitTeam && !S.promesaAsiento && (S.cat!=="F1" || !S.team || (S.team.name!==S.commitTeam && S.regBet!==S.commitTeam))){
     S.commitTeam=null; S.commitYears=0;
+  }
+  /* ⏸️ EL AÑO EN BLANCO, SEGUNDA PARTE: llegó el invierno del asiento prometido. Va ANTES de repartir
+     por categorías porque el jugador está de probador y su rama no sabe nada de esto. */
+  if(S.promesaAsiento && yearNow()>=S.promesaAsiento.year){
+    const P=S.promesaAsiento; S.promesaAsiento=null; S.commitTeam=null; S.commitYears=0;
+    const t=F1_TEAMS.find(x=>x.name===P.team);
+    if(t && P.cumple){
+      setDecision(L("⏸️ Cumplen su palabra","⏸️ They keep their word",{pt:"⏸️ Cumprem a palavra"}),
+        L(`Un año entero mirando desde el muro, y ${t.name} cumple: el asiento es tuyo. Ahora toca demostrar que la espera valía la pena.`,
+          `A whole year watching from the pit wall, and ${t.name} delivers: the seat is yours. Now you have to prove the wait was worth it.`,
+          {pt:`Um ano inteiro olhando do muro, e a ${t.name} cumpre: a vaga é sua. Agora é provar que a espera valeu a pena.`}));
+      $("decRecap").style.display="none";
+      renderOffers([{team:t, role:"2", note:["⏸️ Lo prometido","⏸️ As promised"]}], false);
+      scrollToDecision(); return;
+    }
+    // 💔 la rompen — con motivo, y sin dejarte tirado: el año cuenta como probado y se te abren mejores puertas
+    const motivo=roll(
+      [4,()=>L(`cambia el jefe de ${P.team} y el nuevo llega con su propia lista`,`${P.team} changes team principal and the new one arrives with his own list`,{pt:`muda o chefe da ${P.team} e o novo chega com a própria lista`})],
+      [3,()=>L(`a ${P.team} le cae una estrella en el mercado y no dejan pasar la ocasión`,`a star lands on ${P.team}'s lap in the market and they don't let it go`,{pt:`cai uma estrela no colo da ${P.team} e eles não deixam passar`})],
+      [3,()=>L(`el coche de ${P.team} no sube lo que prometía y el proyecto se reordena entero`,`${P.team}'s car doesn't climb the way it promised and the whole project is reshuffled`,{pt:`o carro da ${P.team} não sobe o que prometia e o projeto todo se reorganiza`})]);
+    S.testProved=Math.max(S.testProved||0,2);   // el año no ha sido en balde: has demostrado en el simulador
+    S.pendingEvents.push(L(`💔 Te prometieron el asiento y no lo cumplen: ${motivo}. Te quedas sin el volante que esperabas… pero el paddock ha visto tu año de trabajo.`,
+                           `💔 They promised you the seat and they don't deliver: ${motivo}. You're left without the drive you were waiting for… but the paddock has seen your year of work.`,
+                           {pt:`💔 Te prometeram a vaga e não cumprem: ${motivo}. Você fica sem o volante que esperava… mas o paddock viu o seu ano de trabalho.`}));
   }
   if(S.cat==="ADV"){ advOffers(); return; } // estás fuera de la F1: menú de aventura
   const o=[];
@@ -7135,12 +7200,21 @@ function nextOffers(){
       if(ped>=4) sub+=L(` Tu palmarés (${pedigreeLabel()}) te abre las puertas de los mejores.`,` Your record (${pedigreeLabel()}) opens the doors of the best.`,{pt:` Os seus títulos (${pedigreeLabel()}) te abrem as portas dos melhores.`});
       pick(sorted.slice(lo,hi),nOffers()).forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       patronDoor(o, true);   // 📜 el que te pagó la escalera te debe un sitio
+      /* ⏸️ …y enfrente, el año en blanco: correr YA en lo que haya, o parar un año por un coche mejor */
+      if(!S.promesaUsada && !S.patron && ch(P_BLANCO)){ const eq=equipoEnAscension();
+        if(eq){ S.promesaUsada=true; o.push(promesaProbadorOption(eq));
+          sub+=L(" O para un año: hay quien te quiere de probador ahora y de titular después."," Or stop for a year: someone wants you as reserve now and as a racer later.",{pt:" Ou pare um ano: tem quem te queira de testes agora e de titular depois."}); } }
     } else if(S.ovr>=72){
       title=L("El banquillo de la F1","The F1 reserve bench",{pt:"O banco da F1"});
       sub=L(`Nadie te da un volante titular aún, pero en la Fórmula 1 te quieren de piloto probador: FP1, ${yearNow()>=2005?"simulador":"test privados"} y paciencia.`,`No race seat yet, but Formula 1 wants you as a reserve driver: FP1, ${yearNow()>=2005?"simulator":"private testing"} and patience.`,{pt:`Ninguém te dá um volante de titular ainda, mas na Fórmula 1 te querem como piloto de testes: TL1, ${yearNow()>=2005?"simulador":"testes privados"} e paciência.`});
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
       pick(F1_TEAMS, Math.min(stayOK2?2:3, Math.max(1,nOffers()))).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       patronDoor(o, false);  // 📜 aquí el padrino te da el banquillo, que es lo que prometió
+      /* ⏸️ aquí el trato es otro: vas a ser probador de todas formas, así que lo que se decide es
+         libertad (probador suelto, eliges el año que viene) contra seguridad (atado, pero con asiento) */
+      if(!S.promesaUsada && !S.patron && ch(P_BLANCO)){ const eq=equipoEnAscension();
+        if(eq){ S.promesaUsada=true; o.push(promesaProbadorOption(eq));
+          sub+=L(" Y uno de ellos va más lejos: te firma también el asiento del año siguiente."," And one of them goes further: they'll sign next year's seat too.",{pt:" E um deles vai além: assina também a vaga do ano seguinte."}); } }
       if(stayOK2){ o.push(stayOffer(F2_TEAMS,"F2")); sub+=L(` O quédate un año más en la ${catName("F2")} a por el título.`,` Or stay one more year in ${catName("F2")} to go for the title.`,{pt:` Ou fique mais um ano na ${catName("F2")} atrás do título.`}); }
     } else if(S.age>=26){ stuckDeadEnd(); return; }
     else {
