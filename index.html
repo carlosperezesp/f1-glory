@@ -2319,6 +2319,33 @@ const TESTS = {
      la primera pantalla en vez de tener que subir ocho temporadas de escalera. */
   /* 🧑‍💼 LOS DOS DILEMAS NUEVOS DEL MODO JEFE, EN BANDEJA. Ambos se apoyan en la parrilla REAL de 2026:
      no hace falta trucar nada, basta con sentarte en el muro correcto. */
+  /* 💰 «TE PAGAN POR IRTE», EN BANDEJA: tercera temporada en un equipo grande, con un año flojo
+     detrás, que es exactamente cuando la historia real ocurre. */
+  pagan: {
+    t:["Necesitan tu asiento","They need your seat"],
+    d:["Arrancas en un equipo grande viniendo de un año discreto. Corre el año y, cuando llegue el dilema, la directiva te sentará para decirte que necesita tu asiento para una estrella de otro equipo. Tres salidas: por las buenas, por las malas, o negociar. La negociación tiene abanico y está cableada a lo que pesas ahí: antigüedad, resultados, títulos y si mandas tú en el garaje. Salgas como salgas, la estrella se sienta de verdad en el coche — el traspaso ocurre, no es una frase.",
+       "You start at a big team coming off a quiet year. Race the year and, when the dilemma comes, the board will sit you down to say they need your seat for a star from another team. Three ways out: on good terms, slamming the door, or negotiating. The negotiation has a spread, wired to how much you weigh there: years, results, titles and whether you run the garage. However you leave, the star really does take the car — the transfer happens, it isn't a line of text."],
+    era:"2026", cat:"F1", dilema:"necesitanTuAsiento",
+    run(){
+      /* 🎚️ CON BAGAJE (petición de Carlos, para ver la cara BUENA del abanico). Cuatro temporadas en
+         el equipo, un campeonato en las vitrinas y un podio el año pasado → pesoEnElEquipo() = 9 de 9:
+         antigüedad 3 + resultados 3 + título 2 + mandas en el garaje 1. Con ese peso la negociación
+         sale 5-3-2: la mitad de las veces la directiva descarta el fichaje y apuesta por ti.
+         Para ver la cara MALA basta con jugarlo normal: recién llegado y a media tabla, sale 1-2-7. */
+      S.age=31; S.startAge=16; S.ovr=87; S.peakAge=29; S.cat="F1"; S.f1Seasons=6; S.yearsAtTeam=4;
+      S.titles.f1=1;
+      const orden=[...F1_TEAMS].filter(t=>S.f1perf[t.name]!=null).sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
+      const t=orden[1]||orden[0];
+      S.f1perf[t.name]=Math.max(88,S.f1perf[t.name]||88);
+      // cuatro años ahí, y el último en el podio del Mundial (pero SIN pelear el título: 3º)
+      [4,3,2,1].forEach((atras,i)=>{
+        S.seasons.push({age:S.age-atras, year:yearNow()-atras, team:{...t}, cat:"F1",
+          pos: atras===4?5 : atras===3?1 : atras===2?4 : 3,
+          wins: atras===3?5:1, pods: atras===3?12:6, pts: atras===3?310:180, events:[]});
+      });
+      return t;
+    }
+  },
   jefeEstrella: {
     t:["Jefe · Vienen a por tu estrella","Boss · They come for your star"],
     d:["Te sientas en el muro de Williams en 2026, con Sainz en el coche y Ferrari —que tiene bastante mejor coche que tú— mirándolo de cerca. Pasa la pantalla de rumbo y llegará la llamada: le dejas ir cobrando el traspaso, le bloqueas con el contrato o igualas la oferta. Si le dejas ir, corre esta temporada contigo y el año que viene lo verás en la parrilla de Ferrari.",
@@ -3512,6 +3539,28 @@ function spawnBeast(row){
   row.events.push(L(`🐲 Debuta ${d.name}: 99 de nivel, en ${t.name}, el mismo año que tú. El paddock no había visto nada igual.`,
                     `🐲 ${d.name} debuts: rated 99, at ${t.name}, the same year as you. The paddock has never seen anything like it.`,{pt:`🐲 Estreia ${d.name}: 99 de nível, na ${t.name}, no mesmo ano que você. O paddock nunca tinha visto nada igual.`}));
 }
+/* 💰 «TE PAGAN POR IRTE» · localiza a la estrella pactada ESTÉ DONDE ESTÉ y la sienta en `destino[j]`.
+   Buscarla solo en el equipo del que salía fallaba 2 de cada 10 veces: el mercado NPC del invierno la
+   había movido ANTES de que tú firmaras, y el traspaso prometido se quedaba en nada. Devuelve el
+   nombre del equipo del que sale, o null si ya no está en ninguna parrilla (se retiró, por ejemplo). */
+function sentarEstrellaPactada(destino, j, relleno){
+  const pac=S.pactoEstrella; if(!pac) return null;
+  let de=null, k=-1;
+  Object.entries(S.seats||{}).forEach(([tn,sl])=>{
+    if(de || !Array.isArray(sl)) return;
+    const i=sl.findIndex(x=>x&&x!=="PLAYER"&&x.name===pac.name);
+    if(i>=0){ de=tn; k=i; }
+  });
+  if(de===null || de===destino) return null;
+  const star=S.seats[de][k];
+  S.seats[destino][j]=star;
+  S.seats[de][k]=relleno || mkRookie(isRBJr(de), de);
+  S.pactoEstrella=null;
+  S.pendingEvents.push(L(`✍️ ${destino} cierra lo que buscaba: ${surname(star.name)} deja ${de} y se sienta en el que era tu coche.`,
+    `✍️ ${destino} land what they wanted: ${surname(star.name)} leaves ${de} and takes what was your car.`,
+    {pt:`✍️ A ${destino} fecha o que queria: ${surname(star.name)} deixa a ${de} e senta no que era o seu carro.`}));
+  return de;
+}
 function occupySeat(teamName){
   // BLINDADO: localiza TODOS los asientos con "PLAYER" (robusto ante duplicados o mySeatTeam desfasado)
   const spots=[]; Object.entries(S.seats).forEach(([tn,sl])=>{ if(Array.isArray(sl)) sl.forEach((d,j)=>{ if(d==="PLAYER") spots.push([tn,j]); }); });
@@ -3525,8 +3574,14 @@ function occupySeat(teamName){
     slots[wIdx]="PLAYER";
     if(spots.length){
       const [tn,j]=spots[0];
+      /* 💰 «TE PAGAN POR IRTE»: si vendiste tu asiento, no lo hereda el descarte de tu nuevo equipo —
+         lo hereda LA ESTRELLA por la que te cambiaron, que es lo que prometía el texto del dilema.
+         El descarte baja al equipo del que sale ella, así que nadie se queda sin coche. Sin esto, el
+         traspaso era una frase bonita: medido, Ferrari acababa con otro piloto cualquiera. */
+      const pac=S.pactoEstrella;
+      const hecho = !!(pac && tn===pac.team && sentarEstrellaPactada(tn, j, displaced));
       // RB no hereda veteranos: si dejas Racing Bulls y el descarte de tu nuevo equipo es un veterano/crossover, RB mete a un joven
-      S.seats[tn][j] = (isRBJr(tn) && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true, tn) : displaced;
+      if(!hecho) S.seats[tn][j] = (isRBJr(tn) && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true, tn) : displaced;
     }
   }
   // limpia cualquier "PLAYER" residual en otros equipos (herencia de bugs pasados) con un joven
@@ -3541,11 +3596,17 @@ function occupySeat(teamName){
 function releasePlayerSeat(row){
   Object.entries(S.seats||{}).forEach(([tn,sl])=>{ if(!Array.isArray(sl)) return;
     sl.forEach((d,i)=>{ if(d==="PLAYER"){
+      /* 💰 «TE PAGAN POR IRTE»: si aceptaste la compra de tu contrato, tu asiento NO se lo queda un
+         canterano cualquiera — se lo queda la estrella por la que te cambiaron, con nombre y apellido.
+         El texto del dilema lo prometía; esto es lo que lo hace verdad, y se ve en la parrilla. */
+      const pac=S.pactoEstrella;
+      if(pac && pac.team===tn && sentarEstrellaPactada(tn, i, null)) return;
       const sub=mkRookie(isRBJr(tn), tn); sl[i]=sub;
       if(row && row.events) row.events.push(L(`🪑 Tu asiento en ${tn} no espera a nadie: se queda con él ${sub.name}.`,
         `🪑 Your seat at ${tn} waits for nobody: ${sub.name} takes it.`,{pt:`🪑 A sua vaga na ${tn} não espera por ninguém: fica com ela ${sub.name}.`}));
     }});
   });
+  S.pactoEstrella=null;   // si el asiento se liberó por otra vía, el pacto caduca: no se arrastra
   S.mySeatTeam=null;
 }
 // call-up de reserva a mitad de temporada: pasas de probador a piloto de F1 ESE año (te subiste
@@ -4115,6 +4176,17 @@ function renderOffers(offers, withRetire){
 function signContract(o){
   S.regUnknown=false;
   const prev=S.team, prevCat=S.cat;
+  /* 🤝 DEUDA DE LEALTAD («necesitan tu asiento», rama en la que la directiva APUESTA POR TI y descarta
+     el fichaje). Si al invierno siguiente te largas igual, no lo entienden — y con razón. */
+  if(S.lealtadDebe && o.team && o.team.name!==S.lealtadDebe.team && yearNow()<=S.lealtadDebe.y+2){
+    const eq=S.lealtadDebe.team; S.lealtadDebe=null;
+    if(F1_TEAMS.some(t=>t.name===eq)){
+      S.neverHire[eq]=true; VAL(.9);
+      S.pendingEvents.push(L(`💔 En ${eq} descartaron un fichazo para apostar por ti, y te has ido igual. Esa puerta se cierra para siempre. Fama −10%`,
+        `💔 ${eq} turned down a marquee signing to back you, and you left anyway. That door closes for good. Fame −10%`,
+        {pt:`💔 Na ${eq} descartaram uma contratação de peso para apostar em você, e você foi embora do mesmo jeito. Essa porta se fecha para sempre. Fama −10%`}));
+    }
+  } else if(S.lealtadDebe && o.team && o.team.name===S.lealtadDebe.team){ S.lealtadDebe=null; }
   // traiciones: dejar un equipo de F1 deja cicatrices, seas héroe o lastre
   // solo te "queman" si PUDISTE quedarte (te ofrecieron renovar) y te fuiste igual → traición.
   // Si te ECHARON (sin renovación) no hay traición. Y a un CAMPEÓN se le respeta: rara vez se queman puentes.
@@ -4806,6 +4878,100 @@ const DILEMAS=[
     ⚠️ REGLA DE ORO DEL TEXTO (Carlos): «no nos pillamos los dedos — pase lo que pase, él no gana ni
     pierde el campeonato por nuestra decisión». El dilema se decide ANTES de simular el año, así que
     ningún desenlace puede afirmar cómo acaba su Mundial. Solo se cuenta lo que pasa ENTRE VOSOTROS. */
+ /* 🪑 «NECESITAN TU ASIENTO» (Kimi–Ferrari 2009, adaptado al juego que tenemos). La primera versión
+    daba por hecho un contrato de varios años y el jugador NO tiene contrato: lo cazó Carlos. Reescrito
+    con la palanca que sí existe —el asiento lo ocupas tú— y con su abanico de la negociación.
+    La estrella es REAL y, si sales, se sienta de verdad en tu coche (ver sentarEstrellaPactada). */
+ {id:"necesitanTuAsiento",stage:"f1",
+  cond:()=>!!equipoQuiereEstrella(),
+  t:()=>L("Necesitan tu asiento","They need your seat",{pt:"Precisam da sua vaga"}),
+  d:()=>{ const c=equipoQuiereEstrella(); if(!c) return "";
+    return L(`Entrabas en los planes de ${c.team} para el año que viene. Ya no: quieren a ${surname(c.star.name)}, hoy en ${c.from}, y no pueden sentarlo mientras tú ocupes ese sitio. Te sientan con la directiva.`,
+             `You were in ${c.team}'s plans for next year. Not any more: they want ${surname(c.star.name)}, currently at ${c.from}, and they can't seat him while you're in that spot. The board sits you down.`,
+             {pt:`Você entrava nos planos da ${c.team} para o ano que vem. Já não: querem ${surname(c.star.name)}, hoje na ${c.from}, e não podem sentá-lo enquanto você ocupar esse lugar. A diretoria te chama para conversar.`}); },opts:[
+   /* ── 1 · POR LAS BUENAS ─────────────────────────────────────────────────────────────────── */
+   {l:()=>L("Salir por las buenas","Leave on good terms",{pt:"Sair pela porta da frente"}),r:()=>{
+     const c=equipoQuiereEstrella(); if(!c) return "";
+     S.forceMove=true; S.forceReasonYear=yearNow(); S.forceOutTeam=c.team;
+     S.pactoEstrella={name:c.star.name, from:c.from, team:c.team};
+     S.forceReasonTxt=[`Dejaste ${c.team} de buenas maneras para que pudieran fichar a ${surname(c.star.name)}.`,
+                       `You left ${c.team} on good terms so they could sign ${surname(c.star.name)}.`,
+                       `Você deixou a ${c.team} em bons termos para que pudessem contratar ${surname(c.star.name)}.`];
+     return roll(
+      [4,()=>{ VAL(1.06);
+        /* ⚠️ NO PROMETER LO QUE NO HAY (aviso de Carlos): «mueven un par de teléfonos por ti» solo se
+           puede decir si existe DE VERDAD una puerta cerrada que abrir. Si no tienes ningún equipo
+           vetado, el favor no tiene dónde aplicarse y el texto lo dice tal cual. */
+        const abierta=Object.keys(S.burned||{})[0];
+        if(abierta){
+          delete S.burned[abierta];
+          return L(`Te levantas sin dar un portazo y la directiva no lo olvida: mueven un par de teléfonos por ti. En ${abierta} vuelven a cogerte el teléfono. Fama +6%`,
+                   `You get up without slamming the door and the board doesn't forget it: they make a couple of calls for you. ${abierta} take your calls again. Fame +6%`,
+                   {pt:`Você se levanta sem bater a porta e a diretoria não esquece: movem alguns contatos por você. Na ${abierta} voltam a te atender. Fama +6%`});
+        }
+        return L("Te levantas sin dar un portazo y la directiva lo agradece de verdad. No hay puertas cerradas que abrirte —no te sobran enemigos—, así que queda en un apretón de manos y en que nadie del paddock oiga una mala palabra sobre ti. Fama +6%",
+                 "You get up without slamming the door and the board genuinely appreciates it. There are no closed doors to open for you —you don't have enemies to spare— so it comes down to a handshake and nobody in the paddock hearing a bad word about you. Fame +6%",
+                 {pt:"Você se levanta sem bater a porta e a diretoria agradece de verdade. Não há portas fechadas para te abrir —você não tem inimigos de sobra—, então fica num aperto de mão e em ninguém no paddock ouvir uma má palavra sobre você. Fama +6%"});}],
+      [3,()=>{ VAL(1.14);
+        return L("Sales sin una mala palabra y eso corre por el paddock: media parrilla quiere en su garaje al piloto que no monta un circo. Fama +14%",
+                 "You leave without a bad word and the paddock notices: half the grid wants the driver who doesn't make a circus. Fame +14%",
+                 {pt:"Você sai sem uma palavra ruim e o paddock percebe: meio grid quer na garagem o piloto que não faz circo. Fama +14%"});}],
+      [3,()=>{ VAL(.94);
+        return L("Te vas tan callado que nadie escribe una línea. Ni enemigos ni titulares: sales al mercado siendo un nombre más de la lista. Fama −6%",
+                 "You leave so quietly nobody writes a line. No enemies, no headlines: you hit the market as one more name on the list. Fame −6%",
+                 {pt:"Você sai tão calado que ninguém escreve uma linha. Nem inimigos nem manchetes: chega ao mercado como mais um nome na lista. Fama −6%"});}]);}},
+   /* ── 2 · POR LAS MALAS ──────────────────────────────────────────────────────────────────── */
+   {l:()=>L("Salir por las malas","Leave slamming the door",{pt:"Sair batendo a porta"}),r:()=>{
+     const c=equipoQuiereEstrella(); if(!c) return "";
+     S.forceMove=true; S.forceReasonYear=yearNow(); S.forceOutTeam=c.team;
+     S.pactoEstrella={name:c.star.name, from:c.from, team:c.team};
+     S.neverHire[c.team]=true;   // ese equipo NO volverá a ofrecerte un asiento en toda la carrera
+     S.forceReasonTxt=[`Saliste de ${c.team} por la puerta de atrás y quemando el puente: ahí ya no vuelves.`,
+                       `You left ${c.team} through the back door and burned the bridge: you're not going back.`,
+                       `Você saiu da ${c.team} pela porta dos fundos e queimou a ponte: ali você não volta.`];
+     return roll(
+      [4,()=>{ VAL(1.28);
+        return L(`Lo cuentas todo y la entrevista da la vuelta al mundo. ${c.team} no volverá a llamarte jamás, pero tu nombre no ha sonado tanto en años. Fama +28%`,
+                 `You tell all and the interview travels the world. ${c.team} will never call again, but your name hasn't been this loud in years. Fame +28%`,
+                 {pt:`Você conta tudo e a entrevista dá a volta ao mundo. A ${c.team} nunca mais vai te ligar, mas o seu nome não soava tão alto há anos. Fama +28%`});}],
+      [4,()=>{ VAL(.88);
+        const grandes=[...F1_TEAMS].filter(t=>t.name!==c.team && S.f1perf[t.name]!=null)
+          .sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]).slice(0,2);
+        grandes.forEach(t=>{ S.burned[t.name]=S.age; });
+        return L(`El numerito sale caro: en ${grandes.map(t=>t.name).join(" y ")} toman nota. ${c.team} no volverá a llamarte. Fama −12%`,
+                 `The scene costs you: ${grandes.map(t=>t.name).join(" and ")} take note. ${c.team} won't call again. Fame −12%`,
+                 {pt:`O showzinho sai caro: na ${grandes.map(t=>t.name).join(" e ")} tomam nota. A ${c.team} não vai mais te ligar. Fama −12%`});}]);}},
+   /* ── 3 · NEGOCIAR ───────────────────────────────────────────────────────────────────────── */
+   {l:()=>L("Negociar con la directiva","Negotiate with the board",{pt:"Negociar com a diretoria"}),r:()=>{
+     const c=equipoQuiereEstrella(); if(!c) return "";
+     const p=pesoEnElEquipo();
+     // el abanico se CABLEA a lo que pesas: antigüedad, resultados, títulos y mando en el garaje
+     const wQuedarte = p>=6?5 : p>=3?2 : 1;
+     const wOtro     = p>=6?3 : p>=3?3 : 2;
+     const wFuera    = p>=6?2 : p>=3?5 : 7;
+     return roll(
+      [wQuedarte,()=>{ S.lealtadDebe={team:c.team, y:yearNow()};
+        return L(`Te sientas y hablas de lo que has construido aquí. Funciona: la directiva descarta el fichaje y apuesta por ti, sin peros. El coche que desarrollaste lo conduces tú. (Si el año que viene te largas, no lo van a entender)`,
+                 `You sit down and talk about what you've built here. It works: the board drops the signing and backs you, no strings. The car you developed, you drive. (If you walk out next year, they won't understand)`,
+                 {pt:`Você senta e fala do que construiu ali. Funciona: a diretoria descarta a contratação e aposta em você, sem ressalvas. O carro que você desenvolveu, você pilota. (Se no ano que vem você sair, não vão entender)`});}],
+      [wOtro,()=>{ S.pactoEstrella={name:c.star.name, from:c.from, team:c.team, alCompanero:true};
+        S.sinRenovar={team:c.team, desde:yearNow()+1};
+        const m=teammateOf(c.team);
+        return L(`Sales del despacho con tu asiento intacto: el que se va es ${m?surname(m.name):"tu compañero"}, y ${surname(c.star.name)} se sienta a tu lado. Nadie te lo dice, pero lo sabes: el año que viene no habrá renovación.`,
+                 `You leave the office with your seat intact: it's ${m?surname(m.name):"your teammate"} who goes, and ${surname(c.star.name)} lines up beside you. Nobody says it out loud, but you know: next year there'll be no renewal.`,
+                 {pt:`Você sai da sala com a sua vaga intacta: quem vai embora é ${m?surname(m.name):"o seu companheiro"}, e ${surname(c.star.name)} senta ao seu lado. Ninguém diz, mas você sabe: no ano que vem não haverá renovação.`});}],
+      [wFuera,()=>{ S.forceMove=true; S.forceReasonYear=yearNow(); S.forceOutTeam=c.team;
+        S.pactoEstrella={name:c.star.name, from:c.from, team:c.team};
+        S.forceReasonTxt=[`Peleaste tu sitio en ${c.team} y perdiste: firmaron a ${surname(c.star.name)} igual.`,
+                          `You fought for your place at ${c.team} and lost: they signed ${surname(c.star.name)} anyway.`,
+                          `Você brigou pelo seu lugar na ${c.team} e perdeu: contrataram ${surname(c.star.name)} do mesmo jeito.`];
+        VAL(1.18);
+        const grandes=[...F1_TEAMS].filter(t=>t.name!==c.team && S.f1perf[t.name]!=null)
+          .sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]).slice(0,2);
+        grandes.forEach(t=>{ S.burned[t.name]=S.age; });
+        return L(`La reunión se te va de las manos y acabas diciendo lo que piensas. Firman a ${surname(c.star.name)} igual y tú sales con estruendo: mucho ruido, mucha fama, y en ${grandes.map(t=>t.name).join(" y ")} se enfrían contigo. Fama +18%`,
+                 `The meeting gets away from you and you end up saying what you think. They sign ${surname(c.star.name)} anyway and you go out with a bang: plenty of noise, plenty of fame, and ${grandes.map(t=>t.name).join(" and ")} cool on you. Fame +18%`,
+                 {pt:`A reunião foge do seu controle e você acaba dizendo o que pensa. Contratam ${surname(c.star.name)} do mesmo jeito e você sai com estrondo: muito barulho, muita fama, e na ${grandes.map(t=>t.name).join(" e ")} esfriam com você. Fama +18%`});}]);}}]},
  {id:"favorVeterano",stage:"f1",
   cond:()=>S.cat==="F1" && (S.f1Seasons||0)<=1 && (S.titles.f1||0)===0 && !!veteranoEnLucha(),
   /* 📛 EL TÍTULO LLEVA SU NOMBRE, y los desenlaces empiezan por lo que decidiste (petición de Carlos al
@@ -5435,6 +5601,68 @@ function reinventionDilemma(){
 }
 
 // el mejor equipo de la parrilla que podría ficharte (para el dilema de romper contrato)
+/* 🪑 ¿NECESITAN TU ASIENTO? Devuelve {star, from, team} o null. Determinista.
+   ⚠️ AQUÍ NO HAY CONTRATO. El jugador no tiene contrato modelado —cada invierno elige entre ofertas—,
+   así que la palanca NO es un papel que romper: es que el asiento lo estás OCUPANDO TÚ y no pueden
+   sentar a nadie hasta que te levantes. Eso es negociación de verdad sin inventarse nada.
+   Condiciones: equipo con coche que una estrella querría (84+), al menos una temporada tuya allí
+   («entrabas en sus planes»), que no vengas de pelear el título —a ese no lo mueve nadie— y una
+   estrella REAL, mejor que tú, a la que tu equipo podría fichar (canLureStar manda). */
+function equipoQuiereEstrella(){
+  if(S.cat!=="F1" || !S.team || !S.seats[S.team.name]) return null;
+  const mi=S.team.name, miPerf=S.f1perf[mi]??75;
+  if(miPerf < 84) return null;
+  if((S.yearsAtTeam||1) < 1) return null;
+  const ult=S.seasons.length?S.seasons[S.seasons.length-1]:null;
+  if(!ult || ult.cat!=="F1" || (ult.pos??20) <= 2) return null;
+  let best=null,bT=null;
+  Object.entries(S.seats).forEach(([t,sl])=>{
+    if(t===mi || isRBJr(t) || !Array.isArray(sl)) return;
+    sl.forEach(d=>{
+      if(!d || d==="PLAYER" || d.beast) return;
+      if((d.skill||0) < S.ovr+2) return;
+      if(!canLureStar(mi,d)) return;
+      if(!best || (d.skill||0)>(best.skill||0) || ((d.skill||0)===(best.skill||0) && d.name<best.name)){ best=d; bT=t; }
+    });
+  });
+  return best ? {star:best, from:bT, team:mi} : null;
+}
+/* ⚖️ CUÁNTO PESAS EN ESE GARAJE (0-9). Es lo que decide el abanico de la negociación, tal y como lo
+   pidió Carlos: «si llevas mucho tiempo y por fin desarrollas el coche tú, tienes derecho a conducirlo;
+   si acabas de llegar o no eres muy bueno, se entiende que no pintas mucho». */
+/* años SEGUIDOS en ese garaje. Se lee del historial y no solo del contador `yearsAtTeam`, porque ese
+   contador se reinicia al firmar (y en los escenarios de prueba arrancaba siempre a 1, escondiendo la
+   cara buena del abanico). El historial no miente: cuenta las temporadas encadenadas ahí. */
+function anosEnEseGaraje(){
+  if(!S.team) return 0;
+  let n=0;
+  for(let i=S.seasons.length-1;i>=0;i--){
+    const r=S.seasons[i];
+    if(r.cat!=="F1" || !r.team || r.team.name!==S.team.name) break;
+    n++;
+  }
+  return Math.max(n, S.yearsAtTeam||0);
+}
+function pesoEnElEquipo(){
+  let p=0;
+  const yrs=Math.max(1, anosEnEseGaraje());
+  p += yrs>=4?3 : yrs>=3?2 : yrs>=2?1 : 0;                      // antigüedad: el coche lo desarrollaste tú
+  const pos=((S.seasons.length?S.seasons[S.seasons.length-1]:{}).pos)??20;
+  p += pos<=3?3 : pos<=6?2 : pos<=10?1 : 0;                     // resultados del último año
+  p += (S.titles.f1||0)>0 ? 2 : 0;                              // un campeón siempre pesa
+  const m=S.team?teammateOf(S.team.name):null;
+  if(m && (S.ovr-(m.skill||0))>=2) p += 1;                      // ¿eres tú el que manda en el garaje?
+  return p;
+}
+/* el asiento de consolación de la tercera opción: peor que el tuyo, pero no la cola de la parrilla */
+function destinoDeConsuelo(){
+  if(!S.team) return null;
+  const p=S.f1perf[S.team.name]??75;
+  const c=F1_TEAMS.filter(t=>t.name!==S.team.name && !S.neverHire[t.name] && !isRBJr(t.name)
+      && S.f1perf[t.name]!=null && S.f1perf[t.name] < p-2 && S.f1perf[t.name] >= p-15)
+    .sort((a,b)=>(S.f1perf[b.name]-S.f1perf[a.name]) || a.name.localeCompare(b.name));
+  return c.length ? c[0].name : null;
+}
 function bestPoachTeam(){
   if(!S.team) return null;
   const c=F1_TEAMS.filter(t=>t.name!==S.team.name && !S.burned[t.name] && !S.neverHire[t.name] && S.f1perf[t.name]!=null)
@@ -5783,6 +6011,31 @@ function simSeason(){
      motivo sobrevivía escondido hasta reaparecer dos temporadas después. */
   if(S.forceReasonYear && S.forceReasonYear!==yearNow()){
     S.forceReasonTxt=null; S.forceReasonYear=null; S.forceOutTeam=null;
+    /* el traspaso pactado se cierra ESE invierno o no se cierra. Si la estrella se retiró o salió de
+       la parrilla por el camino, el juego NO se lo calla: el jugador pagó su asiento por ese fichaje
+       y merece saber que se cayó. Medido: pasa 1 de cada 12 veces. */
+    if(S.pactoEstrella && !S.pactoEstrella.alCompanero){
+      const pe=S.pactoEstrella; S.pactoEstrella=null;
+      S.pendingEvents.push(L(`💨 El fichaje por el que dejaste ${pe.team} se cayó: ${surname(pe.name)} no llegó a sentarse en tu antiguo coche.`,
+        `💨 The signing you gave up ${pe.team} for fell through: ${surname(pe.name)} never sat in your old car.`,
+        {pt:`💨 A contratação pela qual você deixou a ${pe.team} caiu: ${surname(pe.name)} nunca sentou no seu antigo carro.`}));
+    }
+  }
+  /* 🪑 «NECESITAN TU ASIENTO» · rama «que echen al otro». Negociaste quedarte y el que sale es tu
+     compañero: la estrella se sienta A TU LADO, no en tu sitio. Es un intercambio limpio —el
+     compañero baja al equipo del que sale ella—, así que nadie se queda sin coche. */
+  if(S.pactoEstrella && S.pactoEstrella.alCompanero && S.team && Array.isArray(S.seats[S.team.name])){
+    const tn=S.team.name, sl=S.seats[tn];
+    const j=sl.findIndex(d=>d && d!=="PLAYER");
+    if(j<0 || !sentarEstrellaPactada(tn, j, sl[j])) S.pactoEstrella=null;
+  }
+  /* …y la parte que no se dijo en voz alta: al invierno siguiente, ese equipo no te ofrece renovar. */
+  if(S.sinRenovar && yearNow()>=S.sinRenovar.desde){
+    S.burned[S.sinRenovar.team]=S.age;
+    S.pendingEvents.push(L(`🚪 En ${S.sinRenovar.team} no habrá renovación: lo sabías desde el día que negociaste tu asiento.`,
+      `🚪 There'll be no renewal at ${S.sinRenovar.team}: you've known since the day you negotiated your seat.`,
+      {pt:`🚪 Na ${S.sinRenovar.team} não haverá renovação: você sabia desde o dia em que negociou a sua vaga.`}));
+    S.sinRenovar=null;
   }
   const st=STYLES[sel.style];
   // ⚠️ el equipo se guarda como FOTO ({...}), no como referencia: si años después se renombra (Force India→
@@ -7556,7 +7809,11 @@ function nextOffers(){
         }
       }
       const cur=F1_TEAMS.find(t=>t.name===S.team.name)||S.team;
-      if(rbOk(cur)){ o.push({team:cur,note:["✍️ Renovación","✍️ Contract renewal"],role:roleFor(cur.name)}); S.couldStay=true; }
+      /* 🐞 ESTA RAMA IGNORABA `burned`/`neverHire` y la otra (la del mercado corto) sí los mira. Se
+         cazó midiendo el dilema «necesitan tu asiento»: negocias quedarte a cambio de que el año
+         siguiente no te renueven… y te renovaban igual. Un equipo quemado NO te ofrece renovar. */
+      if(rbOk(cur) && !S.burned[cur.name] && !S.neverHire[cur.name]){
+        o.push({team:cur,note:["✍️ Renovación","✍️ Contract renewal"],role:roleFor(cur.name)}); S.couldStay=true; }
       others.forEach(t=>o.push({team:t, role:roleFor(t.name)}));
       title=L("Mercado de fichajes ","Silly season ",{pt:"Mercado de transferências "})+(yearNow());
       sub=(sub||"")+L("Silly season: los contratos están sobre la mesa.","Silly season: the contracts are on the table.",{pt:"Silly season: os contratos estão em cima da mesa."});
