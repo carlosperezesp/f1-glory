@@ -8400,8 +8400,9 @@ function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
 function tpRefreshCard(){
   window._tpUiDirty=true;
   $("ovrNum").textContent=S.tpPrest;
-  // «PRESTIGIO» entero no cabe en la insignia redonda del OVR (se recortaba): abreviado universal
-  const bl=$("ovrBadge").querySelector(".l"); if(bl) bl.textContent="PRES";
+  // «PRESTIGIO» no cabe en la insignia redonda del OVR. Carlos: mejor FAMA, que es lo que de verdad
+  // mide —cuánto pesa tu nombre en el paddock— y además cabe entero en los tres idiomas.
+  const bl=$("ovrBadge").querySelector(".l"); if(bl) bl.textContent=L("FAMA","FAME",{pt:"FAMA"});
   $("ovrBadge").style.background=ovrColor(Math.max(55,Math.min(96,55+S.tpPrest*.42)));
   if(sel.flag) $("tagNat").textContent = sel.flag+" "+natCode(sel.flag);
   $("tagNum").style.display="none";
@@ -8464,6 +8465,30 @@ function tpChooseTeam(){
   });
   scrollToDecision();
 }
+/* 🏷️ EL NIVEL DE UN PILOTO, EN PALABRAS. Un jefe de equipo no lee «93» en ninguna parte: lee informes.
+   Se parte en DOS lecturas porque son decisiones distintas (petición de Carlos): lo que rinde HOY y
+   hasta dónde puede llegar. Así ficha un «De cola · 🌱 Joya por pulir» a sabiendas de lo que compra.
+   El número exacto sigue existiendo en el motor; simplemente deja de enseñarse en el modo jefe.
+   💡 A futuro: que el informe pueda EQUIVOCARSE según lo que inviertas en ojeadores. */
+function tpNivel(d){
+  const k=Math.round((d&&d.skill)||0);
+  return k>=93 ? L("Fuera de serie","Generational",{pt:"Fora de série"})
+       : k>=90 ? L("Ganador","Race winner",{pt:"Vencedor"})
+       : k>=86 ? L("De podio","Podium level",{pt:"De pódio"})
+       : k>=82 ? L("De puntos","Points scorer",{pt:"De pontos"})
+       : k>=78 ? L("Media tabla","Midfield",{pt:"Meio do grid"})
+       :         L("De cola","Backmarker",{pt:"Fundo do grid"});
+}
+function tpProy(d){
+  if(!d) return "";
+  const edad=d.age||30, margen=((d.ceil||97)-Math.round(d.skill||0));
+  if(edad>=34)               return L("🕰️ En la recta final","🕰️ Final stretch",{pt:"🕰️ Na reta final"});
+  if(margen>=8 && edad<=24)  return L("🌱 Joya por pulir","🌱 Rough diamond",{pt:"🌱 Joia por lapidar"});
+  if(margen>=4)              return L("📈 Con recorrido","📈 Room to grow",{pt:"📈 Com margem"});
+  if(margen<=1)              return L("🔒 En su techo","🔒 At his ceiling",{pt:"🔒 No seu teto"});
+  return "";
+}
+function tpEtiqueta(d){ const pr=tpProy(d); return tpNivel(d)+(pr?" · "+pr:""); }
 function tpStars(tn){ const perf=S.f1perf[tn]??75; const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-60)/36)));
   return "★".repeat(n5)+"☆".repeat(5-n5); }
 function tpTierLabel(tn){
@@ -8560,13 +8585,13 @@ function tpNextSeat(){
     let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️";
     if(c.kind==="renew"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
-      sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${L("Nivel","Level",{pt:"Nível"})} ${Math.round(c.d.skill)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=(c.d.age>=34)?L("Un año más: la veteranía no firma largo","One more year: veterans don't sign long",{pt:"Mais um ano: veterania não assina longo"})
                         :L("Dos temporadas más de contrato","Two more seasons on the contract",{pt:"Mais duas temporadas de contrato"});
       dotTxt="🤝";
     } else if(c.kind==="fichar"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
-      sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${L("Nivel","Level",{pt:"Nível"})} ${Math.round(c.d.skill)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=((c.d.age||30)<=24 && (c.d.ceil||0)>=88)
         ? L("Joven con techo: contrato de proyecto (3 años)","High-ceiling youngster: project deal (3 years)",{pt:"Jovem com teto: contrato de projeto (3 anos)"})
         : L("Fichaje directo (2 años)","Straight signing (2 years)",{pt:"Contratação direta (2 anos)"});
@@ -8638,9 +8663,9 @@ function tpSignDriver(i,c){
         `🎓 ${d.name} debuts — your academy's crown jewel. The paddock is already talking.`,
         {pt:`🎓 Estreia ${d.name}, a joia da sua base. O paddock já comenta.`}));
     } else {
-      S.pendingEvents.push(L(`🎓 Apuestas por la cantera: debuta ${d.name} (nivel ${Math.round(d.skill)}, techo por ver).`,
-        `🎓 You bet on the academy: ${d.name} debuts (level ${Math.round(d.skill)}, ceiling unknown).`,
-        {pt:`🎓 Você aposta na base: estreia ${d.name} (nível ${Math.round(d.skill)}, teto a descobrir).`}));
+      S.pendingEvents.push(L(`🎓 Apuestas por la cantera: debuta ${d.name}. Los informes lo ven ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`,
+        `🎓 You bet on the academy: ${d.name} debuts. The reports read him as ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`,
+        {pt:`🎓 Você aposta na base: estreia ${d.name}. Os relatórios o veem ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`}));
     }
   }
   sl[i]=d;
@@ -9180,7 +9205,7 @@ function renderTPGrid(){
       if(d==="PLAYER") return "";
       const rk=S.rankD&&S.rankD[d.name]?` · ${S.rankD[d.name]}º`:"";
       const con=(mine&&d.tpc!=null)?` · 📜${Math.max(0,d.tpc)}`:"";
-      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)} <b>${Math.round(d.skill)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
+      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)} <b>${tpNivel(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}<br><span style="opacity:.72;font-size:11.5px">${tpProy(d)||"&nbsp;"}</span></span>`;
     }).join(" ");
     const pos=ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"";
     html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;${mine?"outline:2px solid #e10600;border-radius:10px":""}">
@@ -9198,9 +9223,9 @@ function tpReservePool(){
   const out=[];
   const seated=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") seated.add(d.name); }));
   // libres con nivel (vía Albon) y jóvenes del pool sin asiento
-  (S.freeAgents||[]).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${Math.round(d.skill)}</b> · ${L("libre","free",{pt:"livre"})}`));
+  (S.freeAgents||[]).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpNivel(d)}</b> · ${L("libre","free",{pt:"livre"})}`));
   (S.dpool||[]).filter(d=>d&&d.name&&!seated.has(d.name)&&(d.age||99)<=28&&(d.skill||0)>=74&&!(S.freeAgents||[]).some(f=>f.name===d.name))
-    .slice(0,4).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${Math.round(d.skill)}</b> · ${d.age}`));
+    .slice(0,4).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpNivel(d)}</b> · ${d.age}${tpProy(d)?" · "+tpProy(d):""}`));
   // las promesas de la cantera aún sin debutar: nombre y bandera; su nivel se descubre al firmar
   const yr=yearNow();
   (S.rookies||[]).filter(r=>!r[2]||yr>=r[2]).slice(0,6)
