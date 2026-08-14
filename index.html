@@ -2317,6 +2317,22 @@ const TESTS = {
   /* ⏸️ EL AÑO EN BLANCO, EN BANDEJA. Te coloca en el último invierno de la F2, con el título en el
      bolsillo y un equipo de mediocampo con el proyecto claramente al alza, para que la oferta salga en
      la primera pantalla en vez de tener que subir ocho temporadas de escalera. */
+  /* 🧑‍💼 LOS DOS DILEMAS NUEVOS DEL MODO JEFE, EN BANDEJA. Ambos se apoyan en la parrilla REAL de 2026:
+     no hace falta trucar nada, basta con sentarte en el muro correcto. */
+  jefeEstrella: {
+    t:["Jefe · Vienen a por tu estrella","Boss · They come for your star"],
+    d:["Te sientas en el muro de Williams en 2026, con Sainz en el coche y Ferrari —que tiene bastante mejor coche que tú— mirándolo de cerca. Pasa la pantalla de rumbo y llegará la llamada: le dejas ir cobrando el traspaso, le bloqueas con el contrato o igualas la oferta. Si le dejas ir, corre esta temporada contigo y el año que viene lo verás en la parrilla de Ferrari.",
+       "You take over the Williams pit wall in 2026, with Sainz in the car and Ferrari —who have a distinctly better car— watching him closely. Get past the direction screen and the call comes: let him go for a transfer fee, block him with his contract, or match the offer. If you let him go, he races this season for you and next year you'll see him on Ferrari's grid."],
+    era:"2026", tp:true, team:"Williams", tpDilema:"tpEstrella",
+    run(){ return null; }
+  },
+  jefeGallos: {
+    t:["Jefe · Dos gallos en el corral","Boss · Two roosters, one yard"],
+    d:["Te sientas en el muro de McLaren en 2026: Norris y Piastri, dos números uno en el mismo garaje. Pasa la pantalla de rumbo y tendrás que decidir: nombras un Nº1 (y puede pedirte salir), los dejas pelear en pista, o vendes a uno mientras su precio está alto. La venta se ejecuta el invierno siguiente y el asiento te aparece vacío, con su terna.",
+       "You take over the McLaren pit wall in 2026: Norris and Piastri, two number ones in the same garage. Get past the direction screen and you must decide: name a No.1 (and he may ask out), let them race, or cash in on one while his price is high. The sale goes through the following winter and the seat comes back to you empty, with its shortlist."],
+    era:"2026", tp:true, team:"McLaren", tpDilema:"tpDosGallos",
+    run(){ return null; }
+  },
   blanco: {
     t:["El año en blanco","The blank year"],
     d:["Arrancas en tu ÚLTIMA temporada de F2, ya con el título del año pasado. Corre el año y, al llegar el invierno, entre las ofertas de F1 habrá una distinta: un equipo del mediocampo cuyo proyecto va hacia arriba te quiere de probador un año y de titular al siguiente… y te ata a las dos temporadas. Acéptala y verás si cumplen (lo hacen 3 de cada 4); recházala y a veces te cierran esa puerta.",
@@ -2364,6 +2380,17 @@ const TESTS = {
 function testNow(){ return TEST_MODE ? TESTS[TEST_MODE] : null; }
 /* arranca la partida de prueba: coloca al jugador y le da un botón para simular el año */
 function setupTest(T){
+  /* 🧪 ESCENARIOS DEL MODO JEFE: aquí no hay asiento de piloto que colocar, sino un muro. Se firma el
+     equipo donde la situación existe DE VERDAD en la parrilla de 2026 —Sainz en Williams con Ferrari
+     mirándolo; Norris y Piastri en el mismo garaje— y el año arranca solo. El texto del escenario va
+     a los eventos del año para que se lea justo antes del dilema, en vez de perderse al repintar. */
+  if(T.tp){
+    T.run();
+    $("identity").style.display="none"; $("career").style.display="block";
+    S.pendingEvents.push("🧪 "+LA(T.d));
+    tpSignTeam(F1_TEAMS.find(x=>x.name===T.team) || F1_TEAMS[0], "start");
+    return;
+  }
   const t=T.run();
   $("identity").style.display="none"; $("career").style.display="block";
   // 🧪 los escenarios de FORMACIÓN arrancan donde arranca todo el mundo: en el karting.
@@ -2963,7 +2990,12 @@ function startCareer(){
   S.supDriver = pickSupDriver();  // 🏎️ ¿corre el piloto de algún mecenas en esta partida?
   /* 🧑‍💼 MODO TEAM PRINCIPAL: mismo mundo, la cámara al otro lado. El estado y la parrilla de arriba
      valen tal cual; a partir de aquí no hay karting ni asiento de piloto — se elige escudería. */
-  if(TP_MODE){ initTPState(); tpChooseTeam(); return; }
+  if(TP_MODE){
+    initTPState();
+    const _TT=testNow();
+    if(_TT && _TT.tp){ setupTest(_TT); return; }   // 🧪 escenario de jefe: equipo ya elegido
+    tpChooseTeam(); return;
+  }
   // 📅 RETO que revive a alguien: en vez del karting, arrancas directamente en su asiento.
   //    Los retos de REGLAS (La Bestia) no tienen `who`: se juegan como una carrera normal desde el
   //    karting, y su regla se aplica sola cuando toca (spawnBeast al llegar a la F1).
@@ -2972,7 +3004,7 @@ function startCareer(){
   if(_CH) S.challenge=_CH.id;
   // 🧪 escenario de prueba: coloca la situación exacta y salta el karting
   const _T = testNow();
-  if(_T){ setupTest(_T); return; }
+  if(_T && !_T.tp){ setupTest(_T); return; }   // los escenarios de jefe no valen para una carrera de piloto
   refreshCard();
   offerAcademies();
 }
@@ -9110,6 +9142,12 @@ const TP_DILEMAS=[
                  {pt:`O valor vaza e com ele a leitura: você desmontou a melhor dupla que tinha por dinheiro. O vestiário demora meses a perdoar. +carro, −−prestígio`});}]);}}]},
 ];
 function pickTPDilemma(){
+  // 🧪 en un escenario de prueba manda EL dilema que se quiere revisar (mismo criterio que pickDilemma)
+  const _T=testNow();
+  if(_T && _T.tpDilema && !S.usedDilemmas[_T.tpDilema]){
+    const d=TP_DILEMAS.find(x=>x.id===_T.tpDilema);
+    if(d && (!d.cond || d.cond())) return d;
+  }
   if(!ch(.55)) return null;
   const pool=TP_DILEMAS.filter(d=>!S.usedDilemmas[d.id] && (!d.cond || d.cond()));
   if(!pool.length) return null;
