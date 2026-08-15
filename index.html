@@ -198,16 +198,7 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .driver-meta .tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
 .tag{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700;white-space:nowrap}
 /* comparación del reto (tú contra el palmarés real): duelo con barra de progreso */
-.cmp-row{display:grid;grid-template-columns:1fr 52px 52px;gap:10px;align-items:center;padding:7px 12px;font-size:14px;font-weight:700}
-.cmp-row .cmp-el,.cmp-row .cmp-yo{text-align:center;font-variant-numeric:tabular-nums}
-.cmp-row .cmp-el{color:var(--muted)}
-.cmp-head{font-size:10px;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase;font-weight:800;padding:0 12px 2px}
-.cmp-bar{grid-column:1/-1;height:5px;border-radius:99px;background:var(--panel2);overflow:hidden;margin-top:-2px}
-.cmp-bar i{display:block;height:100%;border-radius:99px;transition:width .6s ease}
-.cmp-item{border-radius:10px;padding:2px 0 6px}
-.cmp-item+.cmp-item{margin-top:3px}
-.cmp-item.win{background:linear-gradient(90deg,rgba(74,222,128,.13),transparent)}
-.cmp-item.lose{background:linear-gradient(90deg,rgba(248,113,113,.11),transparent)}
+/* (las reglas .cmp-* de la tabla «lo has hecho mejor que él» se fueron con ella el 14-ago) */
 .tag.red{background:linear-gradient(135deg,rgba(225,6,0,.12),rgba(255,122,0,.10));border-color:rgba(225,6,0,.3);color:#b30500}
 #teamLine{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:800;min-width:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 #teamLine .tname{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1584,11 +1575,12 @@ const ROOKIE_2000 = [
      Estos 40 nombres NO tenían año de nacimiento, así que mkRookie les inventaba 18-21 años: por eso
      Minassian —nacido en 1973— se presentaba como «el chaval de 19 años» en 2006. Nacimientos sacados
      uno a uno de Wikipedia (36 de 40). Donde ya había un `desdeAño` curado, se respeta.
-     ⚠️ CUATRO SIN DATO FIABLE (M. Hynes, A. Müller, D. Uboldi, C. Costoya): se quedan como estaban,
-     con edad inventada. NO se han rellenado a ojo. Pendiente: buscar el dato o quitarlos. */
-  ["B. Junqueira","🇧🇷",1994,1976],["N. Minassian","🇫🇷",1991,1973],["D. Manning","🇬🇧",1993,1975],["T. Scheckter","🇿🇦",1998,1980],["M. Hynes","🇬🇧"],
+     Los cuatro que Wikipedia no dio (M. Hynes 1978, A. Müller 1979, D. Uboldi 1973, C. Costoya 2010)
+     los aportó Carlos el 14-ago. ⚠️ OJO CON A. MÜLLER: el extractor lo confundió con Alexandre Prémat
+     (1982), que es otra persona. Los 40 tienen ya nacimiento y año de debut. */
+  ["B. Junqueira","🇧🇷",1994,1976],["N. Minassian","🇫🇷",1991,1973],["D. Manning","🇬🇧",1993,1975],["T. Scheckter","🇿🇦",1998,1980],["M. Hynes","🇬🇧",1996,1978],
   ["J. Cochet","🇫🇷",1995,1977],["A. Priaulx","🇬🇧",1992,1974],["A. Couto","🇵🇹",1994,1976],["S. Mücke","🇩🇪",1999,1981],["P. Kaffer","🇩🇪",1994,1976],
-  ["A. Müller","🇩🇪"],["D. Uboldi","🇮🇹"],["R. Mauricio","🇧🇷",1997,1979],["M. Pavlović","🇷🇸",2000,1982],["C. Zwolsman","🇳🇱",1997,1979],
+  ["A. Müller","🇩🇪",1997,1979],["D. Uboldi","🇮🇹",1991,1973],["R. Mauricio","🇧🇷",1997,1979],["M. Pavlović","🇷🇸",2000,1982],["C. Zwolsman","🇳🇱",1997,1979],
   ["B. Wirdheim","🇸🇪",2003,1980],["A. Farfus","🇧🇷",2002,1983],["É. Salignon","🇫🇷",2002,1982],["R. Dalziel","🇬🇧",2002,1982],
   ["B. Collins","🇬🇧",2002,1975],
   // promesas de las décadas siguientes (una partida de 2000 llega hasta los 2020)
@@ -1596,7 +1588,7 @@ const ROOKIE_2000 = [
   ["L. Razia","🇧🇷",2010,1989],["S. Coletti","🇲🇨",2011,1989],["F. Leimer","🇨🇭",2011,1989],["D. Valsecchi","🇮🇹",2011,1987],
   ["R. Marciello","🇮🇹",2013,1994],["F. Rosenqvist","🇸🇪",2012,1991],["J. Calado","🇬🇧",2011,1989],["D. Clos","🇪🇸",2011,1988],
   ["S. Sirotkin","🇷🇺",2017,1995],["N. de Vries","🇳🇱",2019,1995],["C. Ilott","🇬🇧",2020,1998],["R. Shwartzman","🇷🇺",2020,1999],
-  ["T. Pourchaire","🇫🇷",2021,2003],["F. Vesti","🇩🇰",2021,2002],["A. Dunne","🇮🇪",2023,2005],["C. Costoya","🇪🇸",2026]];
+  ["T. Pourchaire","🇫🇷",2021,2003],["F. Vesti","🇩🇰",2021,2002],["A. Dunne","🇮🇪",2023,2005],["C. Costoya","🇪🇸",2028,2010]];
 // escalera junior de 2000: Karting → Fórmula Renault → F3 (británica o alemana, en paralelo) → F3000 → F1
 // (la GP2 no existe hasta 2005 y la GP3 hasta 2010; la F3000 internacional corrió de 1985 a 2004)
 const FREN_2000 = [
@@ -4871,10 +4863,26 @@ const DILEMAS=[
      if(k==="win"){ S.f1target[t]=Math.min(94,(S.f1target[t]||75)+rnd(8,12)); return L("Te conviertes en su hombre de confianza y vuelca los recursos en el título: el coche apunta hacia arriba los próximos años. 📈","You become his trusted man and he throws resources at the title: the car trends upward over the coming years. 📈",{pt:"Você vira a pessoa de confiança e os recursos vão todos para o título: o carro aponta para cima nos próximos anos. 📈"}); }
      if(k==="cut"){ S.f1target[t]=Math.max(62,(S.f1target[t]||75)-rnd(2,4)); return ch(.6)?(OVR(1),L("Recorta en todo… menos en ti: te blinda como líder del proyecto. El coche sufrirá algo, pero tu estatus sube. +1 OVR","He cuts everywhere… except you: he shields you as project leader. The car will suffer a little, but your status rises. +1 OVR",{pt:"Cortam em tudo… menos em você: te blindam como líder do projeto. O carro vai sofrer um pouco, mas o seu status sobe. +1 OVR"})):L("Te alineas con el recorte: el equipo aprieta el cinturón y el coche se resiente a medio plazo.","You align with the cuts: the team tightens its belt and the car suffers in the medium term.",{pt:"Você embarca no corte: a equipe aperta o cinto e o carro sofre no médio prazo."}); }
      return ch(.5)?(S.f1target[t]=Math.min(93,(S.f1target[t]||75)+rnd(6,10)),L("Su revolución cuaja y os arrastra hacia arriba. El coche mejorará. 📈","His revolution clicks and drags you upward. The car will improve. 📈",{pt:"A revolução pega e puxa vocês para cima. O carro vai melhorar. 📈"})):(S.f1target[t]=Math.max(62,(S.f1target[t]||75)-rnd(4,7)),L("Su experimento sale rana y el proyecto se tambalea. El coche pagará el precio. 📉","His experiment backfires and the project wobbles. The car will pay for it. 📉",{pt:"O experimento dá errado e o projeto balança. O carro vai pagar o preço. 📉"})); }},
-   {l:()=>L("Mantener las distancias","Keep your distance",{pt:"Manter distância"}),r:()=>{ const t=S.team.name, k=S._jefe.k;
-     if(k==="win"){ return ch(.5)?(VAL(1.05),L("Escéptico pero educado. Él confía en tu compañero para su cruzada; tú, a lo tuyo. +fama leve","Sceptical but polite. He backs your teammate for his crusade; you do your own thing. slight +fame",{pt:"Cético, mas educado. A cruzada fica com o seu companheiro; você, no seu canto. +fama leve"})):(CAR(-.5),L("Le pareces tibio y desvía atención (y piezas) al otro box. −coche","He finds you lukewarm and diverts attention (and parts) to the other garage. −car",{pt:"Você parece morno e a atenção (e as peças) vão para o outro box. −carro"})); }
-     if(k==="cut"){ return (VAL(1.05),L("No te mojas con el nuevo régimen: ni ganas ni pierdes galones, pero conservas tu independencia. +fama leve","You don't commit to the new regime: no gain, no loss in standing, but you keep your independence. slight +fame",{pt:"Você não se molha com o novo regime: nem ganha nem perde galões, mas mantém a sua independência. +fama leve"})); }
-     return L("Prefieres ver antes de creer. El tiempo dirá si el joven acierta. Sin cambios.","You'd rather see it before believing it. Time will tell if the kid gets it right. No change.",{pt:"Você prefere ver para crer. O tempo dirá se a aposta jovem acerta. Sem mudanças."}); }}]},
+   /* ⚖️ ANTES ERA «Mantener las distancias» Y NO TENÍA INCENTIVO NINGUNO (lo cazó Carlos): con el jefe
+      joven no pasaba literalmente nada, y con el ganador salía perdiendo la mitad de las veces. Nadie
+      elige eso. Ahora es una postura de verdad —le plantas cara— y por tanto una apuesta con premio y
+      con castigo en las tres versiones del jefe. */
+   {l:()=>L("Enseñarle quién manda aquí","Show him who runs this place",{pt:"Mostrar quem manda aqui"}),r:()=>{ const t=S.team.name, k=S._jefe.k;
+     if(k==="win"){ return ch(.55)
+       ? (S.f1target[t]=Math.min(94,(S.f1target[t]||75)+rnd(6,10)), VAL(1.08),
+          L("Viene de ganar y respeta a quien no agacha la cabeza. Sales del despacho siendo el eje del proyecto: el coche apunta hacia arriba. 📈 +fama","He comes from winning and respects anyone who won't bow. You leave that office as the axis of the project: the car trends upward. 📈 +fame",{pt:"Ele vem de ganhar e respeita quem não abaixa a cabeça. Você sai do escritório como eixo do projeto: o carro aponta para cima. 📈 +fama"}))
+       : (CAR(-1), VAL(.95),
+          L("Dos gallos en el mismo corral. Él también viene de mandar, y no ha llegado para que le digan cómo se hacen las cosas: las piezas nuevas empiezan a llegar al otro box. −coche, −fama","Two roosters, one yard. He's used to being in charge too, and he didn't come here to be told how things are done: the new parts start landing in the other garage. −car, −fame",{pt:"Dois galos no mesmo terreiro. Ele também vem de mandar e não chegou para ouvir como se fazem as coisas: as peças novas passam a chegar no outro box. −carro, −fama"})); }
+     if(k==="cut"){ return ch(.5)
+       ? (S.f1target[t]=Math.min(93,(S.f1target[t]||75)+rnd(4,8)),
+          L("Le paras el recorte en seco delante del consejo: los números están muy bien, pero el que se sube al coche eres tú. Salvas el presupuesto de desarrollo. 📈","You stop the cuts dead in front of the board: the numbers are lovely, but you're the one who gets in the car. You save the development budget. 📈",{pt:"Você trava o corte na frente do conselho: os números são lindos, mas quem entra no carro é você. Salva o orçamento de desenvolvimento. 📈"}))
+       : (CAR(-1.2), VAL(.93),
+          L("Para un hombre de hojas de cálculo, tú acabas de convertirte en una línea de gasto que discute. Te etiqueta de resistencia al cambio y el recorte cae igual, empezando por tu lado del garaje. −coche, −fama","To a spreadsheet man, you've just become a cost line that answers back. He files you under resistance-to-change and the cuts land anyway, starting on your side of the garage. −car, −fame",{pt:"Para um homem de planilhas, você virou uma linha de custo que responde. Ele te rotula de resistência à mudança e o corte vem igual, começando pelo seu lado da garagem. −carro, −fama"})); }
+     return ch(.5)
+       ? (OVR(1), S.f1target[t]=Math.min(92,(S.f1target[t]||75)+rnd(3,6)),
+          L("El chaval tiene galones nuevos y enfrente a alguien que lleva años ahí. Recula, escucha y el equipo se ordena a tu alrededor. +1 OVR 📈","The kid has fresh stripes and in front of him someone who's been there for years. He backs down, listens, and the team organises itself around you. +1 OVR 📈",{pt:"O garoto tem galões novos e à frente alguém que está ali há anos. Recua, escuta e a equipe se organiza em torno de você. +1 OVR 📈"}))
+       : (CAR(-1), VAL(.94),
+          L("Le humillas delante de su gente el primer día, y eso no se olvida. Construye su revolución con tu compañero y a ti te deja mirando. −coche, −fama","You humiliate him in front of his own people on day one, and that isn't forgotten. He builds his revolution around your teammate and leaves you watching. −car, −fame",{pt:"Você o humilha diante da equipe dele no primeiro dia, e isso não se esquece. Ele constrói a revolução com o seu companheiro e te deixa olhando. −carro, −fama"})); }}]},
  // 🗣️ un MULTICAMPEÓN mayor que tú te llama «blando» en prensa (nombre real de TU partida, nunca inventado ni del karting)
  {id:"ataqueLeyenda",stage:"f1",cond:()=>S.cat==="F1"&&!!oldChampion(),
   t:()=>L("El desprecio de la leyenda","The legend's disdain",{pt:"O desprezo da lenda"}),
@@ -6610,7 +6618,9 @@ function alphaClash(row){
       : modo==="peor"     ? `${tn} apuesta por ${stayName} como su Nº1 y a ti te enseñan la puerta: te toca buscar asiento.`
       : (modo==="mejor" && stayCampeon) ? `${tn} se vuelca en ${stayName} tras su Mundial y quiere un Nº2 que no le discuta nada. Ese ya no eres tú: te toca buscar asiento.`
       : modo==="mejor"    ? `Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
-      : modo==="veterano" ? `${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
+      : modo==="veterano" ? ((stays!=="PLAYER" && (stays.age||30)<=27)
+          ? `${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
+          : `${tn} se queda con ${stayName}, más joven que tú: agradecen tus servicios y te quedas sin asiento.`)
       /* ⚠️ NADA DE «QUIEREN EL TÍTULO YA» (lo cazó Carlos): esa frase da por hecho que el equipo no lo
          estaba peleando… y se leía justo debajo de «¡¡CAMPEÓN DEL MUNDO!!». El motivo se cuenta sin
          juzgar el año: el equipo apuesta por el otro, y punto. */
@@ -6620,7 +6630,9 @@ function alphaClash(row){
       : modo==="peor"     ? `${tn} builds around ${stayName} as their No.1 and shows you the door: time to find a seat.`
       : (modo==="mejor" && stayCampeon) ? `${tn} throws everything behind ${stayName} after his title and wants a No.2 who won't argue. That's no longer you: time to find a seat.`
       : modo==="mejor"    ? `You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
-      : modo==="veterano" ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
+      : modo==="veterano" ? ((stays!=="PLAYER" && (stays.age||30)<=27)
+          ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
+          : `${tn} keeps ${stayName}, younger than you: thanks for everything, your seat is gone.`)
                           : `${tn} decides to build around ${stayName} and his experience: time to find a new team.`;
       const ptTxt =
         rupturaCampeon    ? `Você ganha o Mundial e mesmo assim o clima na equipe está tenso: a ${tn} fica com ${stayName} e você vai ao mercado.`
@@ -6662,14 +6674,25 @@ function alphaClash(row){
     // o «para acompañar a TÚ» no son español (lo cazó Carlos). Cada variante tiene su forma propia.
     const yo = stays==="PLAYER";
     const yN=nextY(row);
+    /* 🐞 «APUESTA POR TU JUVENTUD» A LOS 36. El modo "veterano" echa al MÁS VIEJO de los dos, así que
+       el que se queda es el más joven… aunque tenga 36 y el otro 40. Carlos lo vio jugando el reto de
+       Alonso: «Arrows apuesta por tu juventud» con 36 años. La comparación es cierta; la palabra
+       «juventud» no. Solo se usa si el que se queda tiene 27 o menos; si no, se dice lo que pasa de
+       verdad: que escogen al más joven de los dos. */
+    const _edadQueda = stays==="PLAYER" ? S.age : ((stays&&stays.age)||30);
+    const _joven = _edadQueda<=27;
     row.events.push(L(
       modo==="peor"     ? `🥊 ${tn} construirá ${yo?"sobre ti":"sobre "+stayName} y dejará marchar a ${va}, que firma por ${dest.name} para ${yN}. ${vuelve} ocupará su asiento.`
     : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se irá a ${dest.name} en ${yN} buscando ser el número uno. ${vuelve} llegará a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
-    : modo==="veterano" ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`
+    : modo==="veterano" ? (_joven
+        ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`
+        : `🥊 ${tn} se queda con ${yo?"el menos veterano de los dos":"el menos veterano de los dos, "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`)
                         : `🥊 ${tn} apuesta por ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marchará a ${dest.name} y en ${yN} entrará ${vuelve} en ${tn}.`,
       modo==="peor"     ? `🥊 ${tn} will build around ${yo?"you":stayName} and let ${va} go: he signs for ${dest.name} for ${yN}. ${vuelve} takes the seat.`
     : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a ${yN} move to ${dest.name} to be the undisputed No.1. ${vuelve} will arrive at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
-    : modo==="veterano" ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`
+    : modo==="veterano" ? (_joven
+        ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`
+        : `🥊 ${tn} keeps the less-veteran of the two${yo?"":", "+stayName}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`)
                         : `🥊 ${tn} backs ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives at ${tn} for ${yN}.`,
       {pt:
         modo==="peor"     ? `🥊 A ${tn} vai construir ${yo?"em cima de você":"em cima de "+stayName} e deixar ${va} sair, assinando com a ${dest.name} para ${yN}. ${vuelve} vai ocupar a vaga.`
@@ -8432,41 +8455,12 @@ function endCareer(){
   else if(S.adventures && S.adventures.length){ const s=serName(mainAdvSeries()); const mq=bestMarqueeWin(); legacy=L("PROFESIONAL DEL VOLANTE","A RACING PRO",{pt:"PROFISSIONAL DO VOLANTE"});verdict=L(`La F1 se te resistió, pero te ganaste la vida compitiendo al máximo nivel en ${s}. Una carrera de verdad, lejos de los focos.`,`F1 eluded you, but you earned your living racing at the top level in ${s}. A real career, away from the spotlight.`,{pt:`A F1 resistiu, mas você ganhou a vida competindo no mais alto nível na ${s}. Uma carreira de verdade, longe dos holofotes.`})+(mq?L(` Y hasta te llevaste una joya: ${mq}.`,` And you even grabbed a jewel: ${mq}.`,{pt:` E ainda levou uma joia: ${mq}.`}):"");}
   else {legacy=L("PROMESA DEL AUTOMOVILISMO","MOTORSPORT PROSPECT",{pt:"PROMESSA DO AUTOMOBILISMO"});verdict=L("La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.","F1 stayed out of reach, but the track was your home. Not every dream ends in Monaco, and they're worth it all the same.",{pt:"A F1 ficou longe, mas o asfalto foi a sua casa. Nem todos os sonhos terminam em Mônaco, e ainda assim valem a pena."});}
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=L(" Y sí: lo de APXGP fue tan de película como suena. 🎬"," And yes: the APXGP thing was as cinematic as it sounds. 🎬",{pt:" E sim: o lance da APXGP foi tão de cinema quanto parece. 🎬"});
-  // 📅 RETO: el veredicto que de verdad importa — ¿lo has hecho mejor que él?
-  const _CHend = S.challenge && CHALLENGES[S.challenge];
-  if(_CHend && _CHend.bench){
-    const B=_CHend.bench, yo={titles:S.titles.f1, wins:S.wins, poles:S.poles, podiums:S.podiums};
-    const gano=["titles","wins","poles","podiums"].filter(k=>yo[k]> B[k]).length;
-    const igual=["titles","wins","poles","podiums"].filter(k=>yo[k]===B[k]).length;
-    const cab=gano>=3 ? L("🥇 LO HAS HECHO MEJOR QUE ÉL","🥇 YOU DID BETTER THAN HIM",{pt:"🥇 VOCÊ FEZ MELHOR QUE ELE"})
-             : gano+igual>=3 ? L("🤝 A SU ALTURA","🤝 YOU MATCHED HIM",{pt:"🤝 NO MESMO NÍVEL"})
-             : L("📉 ÉL LLEGÓ MÁS LEJOS","📉 HE WENT FURTHER",{pt:"📉 ELE CHEGOU MAIS LONGE"});
-    // tabla de TRES columnas de verdad (etiqueta · él · tú): la versión anterior apelotonaba
-    // los números en una esquina y no se leía (lo cazó Carlos)
-    const rname=Array.isArray(_CHend.benchName)?LA(_CHend.benchName):(_CHend.benchName||L("Él","Him",{pt:"Ele"}));
-    // cada línea es un duelo: cifras + barra que muestra de un vistazo cuánto le sacas o te saca
-    const fila=(et,a,b)=>{
-      const tot=Math.max(a,b,1), pa=Math.round(100*a/tot), pb=Math.round(100*b/tot);
-      const col=b>a?"#4ade80":b<a?"#f87171":"#ffce3a";
-      const cls=b>a?"win":b<a?"lose":"";
-      return `<div class="cmp-item ${cls}">`+
-        `<div class="cmp-row"><span>${et}</span><span class="cmp-el">${a}</span><span class="cmp-yo" style="color:${col}">${b}</span></div>`+
-        `<div class="cmp-row" style="padding-top:0"><span class="cmp-bar"><i style="width:${pa}%;background:var(--muted);opacity:.45"></i></span></div>`+
-        `<div class="cmp-row" style="padding-top:3px"><span class="cmp-bar"><i style="width:${pb}%;background:${col}"></i></span></div>`+
-      `</div>`;
-    };
-    $("endVerdict").innerHTML =
-      `<div style="margin-bottom:12px">${verdict}</div>`+
-      `<div class="hall" style="margin:0"><h4>${cab}</h4>`+
-      `<div class="cmp-row cmp-head"><span></span><span>${rname.toUpperCase()}</span><span>${L("TÚ","YOU",{pt:"TU"})}</span></div>`+
-      fila(L("Mundiales","Titles",{pt:"Mundiais"}), B.titles, yo.titles)+
-      fila(L("Victorias","Wins",{pt:"Vitórias"}), B.wins, yo.wins)+
-      fila(L("Poles","Poles",{pt:"Poles"}), B.poles, yo.poles)+
-      fila(L("Podios","Podiums",{pt:"Pódios"}), B.podiums, yo.podiums)+
-      `</div>`;
-  }
+  /* 📅 RETO · LA COMPARACIÓN CON EL PILOTO REAL, RETIRADA (decisión de Carlos, 14-ago-2026).
+     Enseñaba una tabla «LO HAS HECHO MEJOR QUE ÉL» con mundiales/victorias/poles/podios frente a los
+     del piloto de verdad. Se quita: el reto va de vivir OTRA versión de esa carrera, no de sacarle
+     nota. El veredicto normal se pinta igual que en una partida cualquiera. */
   $("endLegacy").textContent=legacy; S.legacyTxt=legacy;
-  if(!(_CHend && _CHend.bench)) $("endVerdict").textContent=verdict;
+  $("endVerdict").textContent=verdict;
   // casilla "Puntos de leyenda": color según la magnitud del legado (máx real ~1650, techo ~2000+)
   const LEG_TIERS=[
     {min:0,    name:L("Aspirante","Aspirant",{pt:"Aspirante"}),    bg:"linear-gradient(135deg,#eef1f6,#e2e7ef)", ink:"#5a6373"},
