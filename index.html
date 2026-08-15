@@ -524,12 +524,18 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .hall .hrow .rk{color:var(--muted);width:26px;font-weight:700}
 .hall .hrow .nm{flex:1}
 .hall .hrow .tt{font-weight:800;color:var(--gold)}
-#langToggle{position:fixed;top:12px;right:12px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
-  border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer}
+/* 🔧 LOS DOS BOTONES DE ARRIBA VAN EN UNA BARRA FLEX, NO A DEDO. Antes cada uno era `fixed` con su
+   propio `right` (12px y 70px), o sea que la separación dependía de que el botón de idioma midiera lo
+   que se suponía. Con DOS idiomas dice «EN» y cabía; en cuanto hay tres o más pasa a «🌐 ES», crece
+   28px y los botones se comían el uno al otro (medido: hueco de −3px). Lo cazó Carlos en pantalla.
+   Con flex + gap, el hueco está garantizado diga lo que diga el botón. */
+#topBtns{position:fixed;top:12px;right:12px;z-index:60;display:flex;align-items:center;gap:8px}
+#langToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
+  border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;white-space:nowrap}
 #langToggle:hover{background:#fff}
-#themeToggle{position:fixed;top:12px;right:70px;z-index:60;background:rgba(255,255,255,.92);border:1px solid var(--line);
-  border-radius:999px;width:34px;height:34px;font-size:16px;line-height:1;box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}
-@media print{#langToggle,#themeToggle{display:none}}
+#themeToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
+  border-radius:999px;width:34px;height:34px;flex:0 0 34px;font-size:16px;line-height:1;box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}
+@media print{#topBtns{display:none}}
 /* en la maqueta apilada la tarjeta ocupa todo el ancho: al hacer scroll, los botones
    fijos (idioma/tema) pasarían por encima de la edad/fama. Reservamos esa esquina. */
 @media(max-width:980px){ .agev{padding-right:84px} }
@@ -595,8 +601,10 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 </style>
 </head>
 <body>
-<button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
-<button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
+<div id="topBtns">
+  <button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
+  <button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
+</div>
 
 <!-- ========== INTRO ========== -->
 <section id="intro">
