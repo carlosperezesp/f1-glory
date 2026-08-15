@@ -1799,17 +1799,17 @@ const ROOKIE_1990 = [
        Naspetti, Couto, Coronel, Kox, Minassian, Müller, Goossens. */
   ["A. Montermini","🇮🇹",null,1964,85],["V. Sospiri","🇮🇹",null,1966,87],["E. Naspetti","🇮🇹",null,1968],
   ["L. Badoer","🇮🇹",1992,1971,86],["M. Apicella","🇮🇹",null,1965],["A. Zanardi","🇮🇹",null,1966,92],["G. Lavaggi","🇮🇹",1993,1958],
-  ["A. Couto","🇵🇹",1995],["A. García","🇪🇸",1999,1980],
+  ["A. Couto","🇵🇹",1995,1976],["A. García","🇪🇸",1999,1980],
   ["T. Kristensen","🇩🇰",1993,1967,90],["A. Wallace","🇬🇧",null,1961],
-  ["C. Albers","🇳🇱",1998,1979],["T. Coronel","🇳🇱",1994],["P. Kox","🇳🇱"],
+  ["C. Albers","🇳🇱",1998,1979],["T. Coronel","🇳🇱",1994,1972],["P. Kox","🇳🇱",1982,1964],
   ["D. Franchitti","🇬🇧",1993,1973,92],["R. Firman","🇬🇧",1996,1975],["P. McCarthy","🇬🇧",null,1961,77],
   ["J. Bailey","🇬🇧",null,1961],["A. Menu","🇨🇭",null,1963],["P. Belmondo","🇫🇷",null,1963],["J-M. Gounon","🇫🇷",1993,1963],
   ["S. Sarrazin","🇫🇷",1996,1975],["N. Minassian","🇫🇷",1997,1973],["F. Lagorce","🇫🇷",null,1968],["S. Bourdais","🇫🇷",1999,1979,91],
   ["E. Collard","🇫🇷",null,1971],
   ["A. Ribeiro","🇧🇷",1995,1966,87],["G. Salles","🇧🇷",1997,1970,82],["T. Marques","🇧🇷",1996,1976],
   ["S. Nakano","🇯🇵",1994,1971],["T. Inoue","🇯🇵",null,1963,77],["U. Katayama","🇯🇵",null,1963,84],["H. Noda","🇯🇵",1994,1969],
-  ["N. Fontana","🇦🇷",1994,1975,83],["J. Müller","🇩🇪",1994],
-  ["C. Bouchut","🇫🇷",null,1966],["M. Goossens","🇧🇪",1993],["K. Bräck","🇸🇪",1992,1966,89],
+  ["N. Fontana","🇦🇷",1994,1975,83],["J. Müller","🇩🇪",1994,1969],
+  ["C. Bouchut","🇫🇷",null,1966],["M. Goossens","🇧🇪",1993,1969],["K. Bräck","🇸🇪",1992,1966,89],
 ];
 const LEGENDS_1990 = [["J.M. Fangio",5,"🇦🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],["N. Lauda",3,"🇦🇹"],
   ["J. Clark",2,"🇬🇧"],["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["A. Jones",1,"🇦🇺"],
@@ -6620,7 +6620,7 @@ function alphaClash(row){
       : modo==="mejor"    ? `Eres el mejor del garaje y no piensas ser el escudero de nadie: sales al mercado buscando tu proyecto.`
       : modo==="veterano" ? ((stays!=="PLAYER" && (stays.age||30)<=27)
           ? `${tn} apuesta por la juventud de ${stayName}: agradecen tus servicios y te quedas sin asiento.`
-          : `${tn} se queda con ${stayName}, más joven que tú: agradecen tus servicios y te quedas sin asiento.`)
+          : `${tn} prefiere quedarse a ${stayName}: agradecen tus servicios y te quedas sin asiento.`)
       /* ⚠️ NADA DE «QUIEREN EL TÍTULO YA» (lo cazó Carlos): esa frase da por hecho que el equipo no lo
          estaba peleando… y se leía justo debajo de «¡¡CAMPEÓN DEL MUNDO!!». El motivo se cuenta sin
          juzgar el año: el equipo apuesta por el otro, y punto. */
@@ -6632,7 +6632,7 @@ function alphaClash(row){
       : modo==="mejor"    ? `You're the best in the garage and you won't play anyone's wingman: you hit the market for your own project.`
       : modo==="veterano" ? ((stays!=="PLAYER" && (stays.age||30)<=27)
           ? `${tn} bets on ${stayName}'s youth: thanks for everything, your seat is gone.`
-          : `${tn} keeps ${stayName}, younger than you: thanks for everything, your seat is gone.`)
+          : `${tn} would rather keep ${stayName}: thanks for everything, your seat is gone.`)
                           : `${tn} decides to build around ${stayName} and his experience: time to find a new team.`;
       const ptTxt =
         rupturaCampeon    ? `Você ganha o Mundial e mesmo assim o clima na equipe está tenso: a ${tn} fica com ${stayName} e você vai ao mercado.`
@@ -6686,13 +6686,13 @@ function alphaClash(row){
     : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se irá a ${dest.name} en ${yN} buscando ser el número uno. ${vuelve} llegará a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
     : modo==="veterano" ? (_joven
         ? `🥊 ${tn} apuesta por ${yo?"tu juventud":"la juventud de "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`
-        : `🥊 ${tn} se queda con ${yo?"el menos veterano de los dos":"el menos veterano de los dos, "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`)
+        : `🥊 ${tn} prefiere quedarse ${yo?"contigo":"a "+stayName}: ${va} hará las maletas rumbo a ${dest.name} y en ${yN} llegará ${vuelve} a ${tn}.`)
                         : `🥊 ${tn} apuesta por ${yo?"tu veteranía":"la veteranía de "+stayName}: ${va} se marchará a ${dest.name} y en ${yN} entrará ${vuelve} en ${tn}.`,
       modo==="peor"     ? `🥊 ${tn} will build around ${yo?"you":stayName} and let ${va} go: he signs for ${dest.name} for ${yN}. ${vuelve} takes the seat.`
     : modo==="mejor"    ? `🥊 Bombshell: ${va} announces a ${yN} move to ${dest.name} to be the undisputed No.1. ${vuelve} will arrive at ${tn} ${yo?"as your teammate":"alongside "+stayName}.`
     : modo==="veterano" ? (_joven
         ? `🥊 ${tn} bets on ${yo?"your youth":stayName+"'s youth"}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`
-        : `🥊 ${tn} keeps the less-veteran of the two${yo?"":", "+stayName}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`)
+        : `🥊 ${tn} would rather keep ${yo?"you":stayName}: ${va} packs his bags for ${dest.name} and ${vuelve} joins ${tn} for ${yN}.`)
                         : `🥊 ${tn} backs ${yo?"your experience":stayName+"'s experience"}: ${va} leaves for ${dest.name} and ${vuelve} arrives at ${tn} for ${yN}.`,
       {pt:
         modo==="peor"     ? `🥊 A ${tn} vai construir ${yo?"em cima de você":"em cima de "+stayName} e deixar ${va} sair, assinando com a ${dest.name} para ${yN}. ${vuelve} vai ocupar a vaga.`
