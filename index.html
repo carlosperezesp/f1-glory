@@ -1580,17 +1580,23 @@ const LEGENDS_2000 = [["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["J
 // cantera 2000: promesas reales de F3000/F3/F.Renault de 1999-2002 que NO llegaron a la F1
 // (los que sí llegaron van en ARRIVALS_2000, con su año real). 3er campo = disponible desde.
 const ROOKIE_2000 = [
-  ["B. Junqueira","🇧🇷"],["N. Minassian","🇫🇷"],["D. Manning","🇬🇧"],["T. Scheckter","🇿🇦"],["M. Hynes","🇬🇧"],
-  ["J. Cochet","🇫🇷"],["A. Priaulx","🇬🇧"],["A. Couto","🇵🇹"],["S. Mücke","🇩🇪"],["P. Kaffer","🇩🇪"],
-  ["A. Müller","🇩🇪"],["D. Uboldi","🇮🇹"],["R. Mauricio","🇧🇷"],["M. Pavlović","🇷🇸"],["C. Zwolsman","🇳🇱"],
-  ["B. Wirdheim","🇸🇪",2003],["A. Farfus","🇧🇷",2002],["É. Salignon","🇫🇷",2002],["R. Dalziel","🇬🇧",2002],
-  ["B. Collins","🇬🇧",2002],
+  /* [ nombre, bandera, desdeAño, nacimiento ] — AUDITADO 14-ago-2026 (lo cazó Carlos jugando).
+     Estos 40 nombres NO tenían año de nacimiento, así que mkRookie les inventaba 18-21 años: por eso
+     Minassian —nacido en 1973— se presentaba como «el chaval de 19 años» en 2006. Nacimientos sacados
+     uno a uno de Wikipedia (36 de 40). Donde ya había un `desdeAño` curado, se respeta.
+     ⚠️ CUATRO SIN DATO FIABLE (M. Hynes, A. Müller, D. Uboldi, C. Costoya): se quedan como estaban,
+     con edad inventada. NO se han rellenado a ojo. Pendiente: buscar el dato o quitarlos. */
+  ["B. Junqueira","🇧🇷",1994,1976],["N. Minassian","🇫🇷",1991,1973],["D. Manning","🇬🇧",1993,1975],["T. Scheckter","🇿🇦",1998,1980],["M. Hynes","🇬🇧"],
+  ["J. Cochet","🇫🇷",1995,1977],["A. Priaulx","🇬🇧",1992,1974],["A. Couto","🇵🇹",1994,1976],["S. Mücke","🇩🇪",1999,1981],["P. Kaffer","🇩🇪",1994,1976],
+  ["A. Müller","🇩🇪"],["D. Uboldi","🇮🇹"],["R. Mauricio","🇧🇷",1997,1979],["M. Pavlović","🇷🇸",2000,1982],["C. Zwolsman","🇳🇱",1997,1979],
+  ["B. Wirdheim","🇸🇪",2003,1980],["A. Farfus","🇧🇷",2002,1983],["É. Salignon","🇫🇷",2002,1982],["R. Dalziel","🇬🇧",2002,1982],
+  ["B. Collins","🇬🇧",2002,1975],
   // promesas de las décadas siguientes (una partida de 2000 llega hasta los 2020)
-  ["R. Frijns","🇳🇱",2010],["A. Félix da Costa","🇵🇹",2010],["S. Bird","🇬🇧",2010],["O. Turvey","🇬🇧",2010],
-  ["L. Razia","🇧🇷",2010],["S. Coletti","🇲🇨",2011],["F. Leimer","🇨🇭",2011],["D. Valsecchi","🇮🇹",2011],
-  ["R. Marciello","🇮🇹",2013],["F. Rosenqvist","🇸🇪",2012],["J. Calado","🇬🇧",2011],["D. Clos","🇪🇸",2011],
-  ["S. Sirotkin","🇷🇺",2017],["N. de Vries","🇳🇱",2019],["C. Ilott","🇬🇧",2020],["R. Shwartzman","🇷🇺",2020],
-  ["T. Pourchaire","🇫🇷",2021],["F. Vesti","🇩🇰",2021],["A. Dunne","🇮🇪",2023],["C. Costoya","🇪🇸",2026]];
+  ["R. Frijns","🇳🇱",2010,1991],["A. Félix da Costa","🇵🇹",2010,1991],["S. Bird","🇬🇧",2010,1987],["O. Turvey","🇬🇧",2010,1987],
+  ["L. Razia","🇧🇷",2010,1989],["S. Coletti","🇲🇨",2011,1989],["F. Leimer","🇨🇭",2011,1989],["D. Valsecchi","🇮🇹",2011,1987],
+  ["R. Marciello","🇮🇹",2013,1994],["F. Rosenqvist","🇸🇪",2012,1991],["J. Calado","🇬🇧",2011,1989],["D. Clos","🇪🇸",2011,1988],
+  ["S. Sirotkin","🇷🇺",2017,1995],["N. de Vries","🇳🇱",2019,1995],["C. Ilott","🇬🇧",2020,1998],["R. Shwartzman","🇷🇺",2020,1999],
+  ["T. Pourchaire","🇫🇷",2021,2003],["F. Vesti","🇩🇰",2021,2002],["A. Dunne","🇮🇪",2023,2005],["C. Costoya","🇪🇸",2026]];
 // escalera junior de 2000: Karting → Fórmula Renault → F3 (británica o alemana, en paralelo) → F3000 → F1
 // (la GP2 no existe hasta 2005 y la GP3 hasta 2010; la F3000 internacional corrió de 1985 a 2004)
 const FREN_2000 = [
@@ -1806,7 +1812,7 @@ const ROOKIE_1990 = [
   ["C. Albers","🇳🇱",1998,1979],["T. Coronel","🇳🇱",1994],["P. Kox","🇳🇱"],
   ["D. Franchitti","🇬🇧",1993,1973,92],["R. Firman","🇬🇧",1996,1975],["P. McCarthy","🇬🇧",null,1961,77],
   ["J. Bailey","🇬🇧",null,1961],["A. Menu","🇨🇭",null,1963],["P. Belmondo","🇫🇷",null,1963],["J-M. Gounon","🇫🇷",1993,1963],
-  ["S. Sarrazin","🇫🇷",1996,1975],["N. Minassian","🇫🇷",1997],["F. Lagorce","🇫🇷",null,1968],["S. Bourdais","🇫🇷",1999,1979,91],
+  ["S. Sarrazin","🇫🇷",1996,1975],["N. Minassian","🇫🇷",1997,1973],["F. Lagorce","🇫🇷",null,1968],["S. Bourdais","🇫🇷",1999,1979,91],
   ["E. Collard","🇫🇷",null,1971],
   ["A. Ribeiro","🇧🇷",1995,1966,87],["G. Salles","🇧🇷",1997,1970,82],["T. Marques","🇧🇷",1996,1976],
   ["S. Nakano","🇯🇵",1994,1971],["T. Inoue","🇯🇵",null,1963,77],["U. Katayama","🇯🇵",null,1963,84],["H. Noda","🇯🇵",1994,1969],
@@ -3195,7 +3201,15 @@ function mkRookie(noCross, forTeam){
   // en una partida retro, las promesas de cada década van entrando cuando la línea temporal llega a su época.
   // Y r[3] = año de NACIMIENTO (probadores tipo Wolff/López): debutan con su edad real, no como chavales.
   const _yr=yearNow();
-  const _avail=S.rookies.map((r,i)=>i).filter(i=>!S.rookies[i][2] || _yr>=S.rookies[i][2]);
+  /* ⏳ …y la promesa también CADUCA. Sin tope por arriba, un piloto nacido en 1973 seguía saliendo
+     como novato en 2020: mkRookie le recorta la edad a 34 y el juego acaba presentando como chaval a
+     alguien que tendría 47. Con año de nacimiento, deja de estar disponible pasados los 34. */
+  const _avail=S.rookies.map((r,i)=>i).filter(i=>{
+    const r=S.rookies[i];
+    if(r[2] && _yr<r[2]) return false;           // aún no le toca
+    if(r[3] && (_yr-r[3])>34) return false;      // ya se le pasó el arroz
+    return true;
+  });
   if(name){ /* ya lo puso el bloque del mecenas */ }
   else if(_avail.length){
     let _i=_avail[irnd(0,_avail.length-1)];
