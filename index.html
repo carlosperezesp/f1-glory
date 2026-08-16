@@ -369,6 +369,14 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .f1state .srow .xt{color:var(--muted);font-size:11px;flex-shrink:0}
 .f1state .srow.me{background:linear-gradient(90deg,rgba(225,6,0,.10),transparent);font-weight:800;color:#b30500}
 .f1state .fl{font-size:13px}
+/* 🕰️ una nación desaparecida no tiene emoji de bandera: lleva su código olímpico en una pastilla */
+.fl.code{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;line-height:1;
+  padding:3px 4px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);
+  color:var(--muted);vertical-align:middle}
+/* la bandera dibujada ocupa lo MISMO que un emoji de bandera para que ninguna fila se mueva:
+   MEDIDO en el juego: un 🇪🇸 ocupa exactamente 1em de ancho, así que la dibujada también. */
+.fl.hist{display:inline-block;width:1em;vertical-align:-.18em;line-height:0}
+.fl.hist .flsvg{display:block;width:100%;height:auto;border-radius:1.5px;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
 .mini-badge{flex-shrink:0;display:inline-block;font-size:9px;font-weight:800;color:#fff;padding:2px 6px;border-radius:6px;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.55);box-shadow:inset 0 -1px 3px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.55);vertical-align:middle}
 @keyframes fsRow{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 .f1state .srow .rt2{display:flex;align-items:center;gap:5px;flex-shrink:0}
@@ -1015,6 +1023,7 @@ function setTheme(t){
 const COUNTRIES = [
   // [ español, bandera, inglés, portugués ] · la CLAVE INTERNA es siempre el español
   // 207 entradas: los 206 comités olímpicos + Macao (que compite fuera de los JJOO).
+  // + 4 NACIONES DESAPARECIDAS (ver abajo): solo elegibles en las eras en que existían.
   // Nombres tomados del CLDR de Unicode; los muy largos se acortan al criterio de la casa.
   ["Alemania","🇩🇪","Germany","Alemanha"],["Angola","🇦🇴","Angola","Angola"],["Arabia Saudita","🇸🇦","Saudi Arabia","Arábia Saudita"],["Argelia","🇩🇿","Algeria","Argélia"],["Argentina","🇦🇷","Argentina","Argentina"],
   ["Armenia","🇦🇲","Armenia","Armênia"],["Australia","🇦🇺","Australia","Austrália"],["Austria","🇦🇹","Austria","Áustria"],["Azerbaiyán","🇦🇿","Azerbaijan","Azerbaijão"],["Bélgica","🇧🇪","Belgium","Bélgica"],
@@ -1057,7 +1066,20 @@ const COUNTRIES = [
   ["Islas Salomón","🇸🇧","Solomon Islands","Ilhas Salomão"],["Somalia","🇸🇴","Somalia","Somália"],["Sudán del Sur","🇸🇸","South Sudan","Sudão do Sul"],["Santo Tomé y Príncipe","🇸🇹","São Tomé & Príncipe","São Tomé e Príncipe"],["Sudán","🇸🇩","Sudan","Sudão"],
   ["Surinam","🇸🇷","Suriname","Suriname"],["Esuatini","🇸🇿","Eswatini","Essuatíni"],["Siria","🇸🇾","Syria","Síria"],["Tonga","🇹🇴","Tonga","Tonga"],["Tayikistán","🇹🇯","Tajikistan","Tadjiquistão"],
   ["Turkmenistán","🇹🇲","Turkmenistan","Turcomenistão"],["Timor-Leste","🇹🇱","Timor-Leste","Timor-Leste"],["Togo","🇹🇬","Togo","Togo"],["Tuvalu","🇹🇻","Tuvalu","Tuvalu"],["Vanuatu","🇻🇺","Vanuatu","Vanuatu"],
-  ["San Vicente y las Granadinas","🇻🇨","St. Vincent & Grenadines","São Vicente e Granadinas"],["Yemen","🇾🇪","Yemen","Iêmen"]
+  ["San Vicente y las Granadinas","🇻🇨","St. Vincent & Grenadines","São Vicente e Granadinas"],["Yemen","🇾🇪","Yemen","Iêmen"],
+  /* 🕰️ NACIONES QUE YA NO EXISTEN. No pueden llevar bandera: los emoji de bandera son el par de letras
+     del código ISO VIGENTE, y a los códigos históricos (SU, YU, DD, CS) Unicode nunca les asignó una.
+     Medido: se dibujan como dos cajitas de letras, igual que un código inventado. Así que en vez de
+     bandera llevan su CÓDIGO OLÍMPICO REAL —URS, YUG, TCH, GDR—, que existió de verdad.
+     El 5º campo es el ÚLTIMO AÑO en que se podía elegir esa nacionalidad:
+       · RDA hasta la reunificación (3-oct-1990) · URSS hasta su disolución (26-dic-1991)
+       · Checoslovaquia hasta el 31-dic-1992    · Yugoslavia: la RFY mantuvo el nombre hasta 2002
+     Se filtran por el año en que ARRANCA la era, no por el año en curso: eliges nacionalidad al crear
+     el piloto, y luego no se te cambia a mitad de carrera. */
+  ["Unión Soviética","URS","Soviet Union","União Soviética",1991],
+  ["Yugoslavia","YUG","Yugoslavia","Iugoslávia",2002],
+  ["Checoslovaquia","TCH","Czechoslovakia","Tchecoslováquia",1992],
+  ["Alemania Oriental","GDR","East Germany","Alemanha Oriental",1990]
 ];
 // nombre del país en el idioma activo (la clave interna sigue siendo siempre el español)
 function countryLabel(c){ if(LANG==="en") return c[2]||c[0]; if(LANG==="pt") return c[3]||c[0]; return c[0]; }
@@ -1099,7 +1121,12 @@ function isoFromFlag(flag){
   return [...flag].map(c=>c.codePointAt(0)).filter(cp=>cp>=0x1F1E6&&cp<=0x1F1FF)
     .map(cp=>String.fromCharCode(65+cp-0x1F1E6)).join("");
 }
-function natCode(flag){ const iso=isoFromFlag(flag); return NAT_CODE[iso]||iso||"—"; }
+function natCode(flag){
+  // 🕰️ las naciones desaparecidas no traen emoji sino su código olímpico ya hecho ("URS", "YUG"…):
+  // isoFromFlag no saca nada de ahí, así que se devuelve el propio texto.
+  if(flag && /^[A-Z]{3}$/.test(flag)) return flag;
+  const iso=isoFromFlag(flag); return NAT_CODE[iso]||iso||"—";
+}
 
 const KART_TEAMS = [
   {name:"Academia Tony Kart", color:"#2a9d3a", color2:"#136223", perf:52, sub:"La cantera de los campeones europeos"},
@@ -2902,17 +2929,26 @@ function idChanged(){
   $("helmetNum").textContent = n;
   validateIdentity();
 }
+/* 🕰️ ¿se puede elegir esta nacionalidad en la era que se está jugando? El 5º campo es el último año
+   en que ese país existió. Se mira el año en que ARRANCA la era, no yearNow(): la nacionalidad se
+   elige al crear el piloto, antes de que empiece nada. Sin 5º campo, siempre disponible. */
+function paisVigente(c){
+  if(c[4]==null) return true;
+  const era = ERAS[SELECTED_ERA] || ERAS["2026"] || {};
+  return (era.baseYear || 2026) <= c[4];
+}
 function renderCountries(){
   const q = sinTildes($("inCountry").value);
   const list = $("countryList"); list.innerHTML="";
   // se busca por el nombre en ESPAÑOL, INGLÉS y PORTUGUÉS y por el código de nacionalidad
   // (NZL, GER…), todo sin acentos: "mexico", "New Zealand", "Espanha" y "NZL" llegan al mismo
   // sitio SEA CUAL SEA el idioma activo — un brasileño escribe "Alemanha" jugando en español.
-  COUNTRIES.filter(c=> !q || sinTildes(c[0]).includes(q) || sinTildes(c[2]||"").includes(q)
+  COUNTRIES.filter(paisVigente)
+           .filter(c=> !q || sinTildes(c[0]).includes(q) || sinTildes(c[2]||"").includes(q)
                         || sinTildes(c[3]||"").includes(q)
                         || sinTildes(natCode(c[1])).includes(q)).forEach(c=>{
     const b=document.createElement("button");
-    b.innerHTML = `<span>${c[1]}</span> ${countryLabel(c)}`;
+    b.innerHTML = `${flg(c[1])} ${countryLabel(c)}`;
     if(sel.country===c[0]) b.classList.add("sel");   // la clave guardada es SIEMPRE la española
     b.onclick=()=>{ sel.country=c[0]; sel.flag=c[1]; renderCountries(); validateIdentity(); };
     list.appendChild(b);
@@ -3104,7 +3140,7 @@ function refreshCard(){
   if(window._tpUiDirty){ window._tpUiDirty=false; try{ applyLang(); $("tagNum").style.display="";
     const _bl=$("ovrBadge").querySelector(".l"); if(_bl) _bl.textContent="OVR"; }catch(e){} }
   if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
-  if(sel.flag) $("tagNat").textContent = sel.flag+" "+natCode(sel.flag);
+  if(sel.flag) $("tagNat").textContent = natLabel();
   $("ovrNum").textContent = S.ovr;
   $("ovrBadge").style.background=ovrColor(S.ovr);
   $("ageV").textContent = S.age;
@@ -6798,7 +6834,25 @@ function teamBadge(name, year){
   const ab=(name.match(/[A-Za-zÀ-ÿ]+/g)||[]).map(w=>w[0]).join("").slice(0,3).toUpperCase() || name.slice(0,3).toUpperCase();
   return `<span class="mini-badge" style="background:#6f7078">${ab}</span>`;
 }
-const flg=f=>`<span class="fl">${f||"🏁"}</span>`;
+/* 🕰️ en la tarjeta va «🇪🇸 ESP», pero una nación desaparecida ya viene como código: sin esto salía
+   «URS URS» (se vio al probar una carrera soviética en 1990). */
+function natLabel(){ const f=sel.flag||""; const c=natCode(f); return (f===c) ? c : (f+" "+c); }
+/* 🕰️ LAS BANDERAS DE LAS NACIONES DESAPARECIDAS, DIBUJADAS A MANO. Unicode no les dio emoji (ver
+   COUNTRIES), así que se pintan en SVG en línea. Decisión de Carlos tras verlas: las cuatro con
+   bandera, porque en el juego SIEMPRE se ven a ~15 px y a ese tamaño se leen las cuatro.
+   ⚠️ El canvas de la tarjeta compartible NO sabe pintar SVG: ahí sigue saliendo el código («URS»),
+   que es correcto y legible. Convertirlas a PNG para el canvas queda como mejora opcional. */
+const HIST_FLAG={
+  URS:`<svg viewBox="0 0 60 40" class="flsvg" aria-label="URSS"><rect width="60" height="40" fill="#CE1126"/><g fill="#FFD900"><path d="M12.6 5.1l1.32 4.06h4.27l-3.46 2.51 1.33 4.06-3.46-2.51-3.46 2.51 1.33-4.06-3.46-2.51h4.27z"/><path d="M8.4 22.6c-.5-4.2 2.1-7.6 6.2-8.5-2.6 1.9-3.9 4.6-3.6 8.5z"/><path d="M9.6 21.4l8.6 5.2-1.5 2.4-8.6-5.2z"/><path d="M17.4 24.9l3.4 2-1.9 3.1-3.4-2z"/></g></svg>`,
+  YUG:`<svg viewBox="0 0 60 40" class="flsvg" aria-label="Yugoslavia"><rect width="60" height="13.34" fill="#003893"/><rect y="13.34" width="60" height="13.33" fill="#fff"/><rect y="26.67" width="60" height="13.33" fill="#D7141A"/><path d="M30 8.6l3.4 10.4h11l-8.9 6.4 3.4 10.4-8.9-6.4-8.9 6.4 3.4-10.4-8.9-6.4h11z" fill="#D7141A" stroke="#FFD900" stroke-width="1.5"/></svg>`,
+  TCH:`<svg viewBox="0 0 60 40" class="flsvg" aria-label="Checoslovaquia"><rect width="60" height="20" fill="#fff"/><rect y="20" width="60" height="20" fill="#D7141A"/><path d="M0 0l30 20L0 40z" fill="#11457E"/></svg>`,
+  GDR:`<svg viewBox="0 0 60 40" class="flsvg" aria-label="RDA"><rect width="60" height="13.34" fill="#000"/><rect y="13.34" width="60" height="13.33" fill="#DD0000"/><rect y="26.67" width="60" height="13.33" fill="#FFCE00"/><g stroke="#FFCE00" fill="none" stroke-width="1.7"><path d="M23.2 13.5a9 9 0 0 0 0 13"/><path d="M36.8 13.5a9 9 0 0 1 0 13"/></g><g fill="#FFCE00"><rect x="28.6" y="12.6" width="2.8" height="15" rx="1"/><rect x="22.8" y="18.6" width="14.4" height="2.6" rx="1.1" transform="rotate(-35 30 20)"/><circle cx="30" cy="12.4" r="2.4"/></g></svg>`
+};
+const flg=f=>{
+  if(f && HIST_FLAG[f]) return `<span class="fl hist">${HIST_FLAG[f]}</span>`;
+  return `<span class="fl${(f&&/^[A-Z]{3}$/.test(f))?" code":""}">${f||"🏁"}</span>`;
+};
+
 
 /* panel lateral: estado actual de la F1 + palmarés vivo */
 function hallRows(){
@@ -8776,7 +8830,7 @@ function tpRefreshCard(){
   // mide —cuánto pesa tu nombre en el paddock— y además cabe entero en los tres idiomas.
   const bl=$("ovrBadge").querySelector(".l"); if(bl) bl.textContent=L("FAMA","FAME",{pt:"FAMA"});
   $("ovrBadge").style.background=ovrColor(Math.max(55,Math.min(96,55+S.tpPrest*.42)));
-  if(sel.flag) $("tagNat").textContent = sel.flag+" "+natCode(sel.flag);
+  if(sel.flag) $("tagNat").textContent = natLabel();
   $("tagNum").style.display="none";
   $("tagStyle").textContent=tpOwnerLabel();
   $("ageV").textContent=(S.age+1);
