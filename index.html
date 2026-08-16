@@ -8900,8 +8900,10 @@ function initTPCard(){
   c.classList.remove("soon");
   const b=document.getElementById("badgeTP");
   if(b){ b.className="new-badge";
-    b.dataset.es="🔒 SOLO TÚ"; b.dataset.en="🔒 YOU ONLY"; b.dataset.pt="🔒 SÓ VOCÊ"; b.dataset.pl="🔒 TYLKO TY"; b.dataset.fr="🔒 TOI SEUL";
-    b.textContent=L("🔒 SOLO TÚ","🔒 YOU ONLY",{pt:"🔒 SÓ VOCÊ"}); }
+    /* 🧪 en la BETA lo ven varios probadores, así que «SOLO TÚ» no encaja */
+    if(BETA){ b.dataset.es=b.dataset.en=b.dataset.pt=b.dataset.pl=b.dataset.fr="🧪 BETA"; b.textContent="🧪 BETA"; }
+    else { b.dataset.es="🔒 SOLO TÚ"; b.dataset.en="🔒 YOU ONLY"; b.dataset.pt="🔒 SÓ VOCÊ"; b.dataset.pl="🔒 TYLKO TY"; b.dataset.fr="🔒 TOI SEUL";
+      b.textContent=L("🔒 SOLO TÚ","🔒 YOU ONLY",{pt:"🔒 SÓ VOCÊ"}); } }
   c.style.cursor="pointer";
   c.onclick=startTPFlow;
 }
