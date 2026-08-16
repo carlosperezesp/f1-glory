@@ -99,14 +99,29 @@ module.exports = async (req, res) => {
     // 🛡️ COHERENCIA interna: no puedes tener más títulos que temporadas, ni más victorias que podios (toda victoria es podio)
     if (f1 > seasons || wins > podiums) { res.status(400).json({ error: "stats incoherentes" }); return; }
 
+    /* 🛡️ COHERENCIA CON EL CALENDARIO (16-ago-2026). Los topes de arriba eran ABSOLUTOS —480 podios,
+       320 poles— y no miraban cuántas carreras habías podido disputar de verdad. Con 3 temporadas se
+       podían declarar 400 podios. Ahora se atan a las temporadas: el calendario más largo del juego
+       son 24 carreras (racesIn), y se dejan 24 de margen por las carreras de sustituto, que no salen
+       de tus temporadas como titular. */
+    const techoCarreras = seasons * 24 + 24;
+    if (podiums > techoCarreras || poles > techoCarreras || wins > techoCarreras) {
+      res.status(400).json({ error: "más resultados que carreras posibles" }); return;
+    }
+
     // misma fórmula que "Puntos de leyenda" del juego
     const gloria = f1 * 120 + constr * 30 + wins * 3 + podiums + poles + subcamp * 15;
     // 🛡️ TECHO DURO de gloria: el máximo honesto medido ronda 2500-2900; 4200 deja margen de sobra y corta los 6000+
     if (gloria > 4200) { res.status(400).json({ error: "puntuación imposible" }); return; }
 
-    // 🛡️ PLAUSIBILIDAD DE TIEMPO: una carrera real tarda minutos (cada temporada tiene delays + clics). Si llega
-    // con muchas temporadas en pocos segundos, es que se editó y envió al vuelo. (Solo si el cliente manda `secs`.)
-    if (secs > 0 && ns > 0 && secs < Math.max(12, ns * 0.8)) {
+    /* 🛡️ PLAUSIBILIDAD DE TIEMPO. Una carrera real tarda minutos: cada temporada lleva sus esperas y
+       sus clics. Si llega con muchas temporadas en pocos segundos, se editó y se envió al vuelo.
+       🐞 AGUJERO CERRADO EL 16-AGO-2026: esto decía `if (secs > 0 && ns > 0 && ...)`, o sea que
+       BASTABA CON NO MANDAR `secs` para saltarse la comprobación entera. Lo destapó un jugador que
+       avisó por email tras colar una puntuación manipulada. Ahora los dos campos son OBLIGATORIOS.
+       Comprobado que el juego siempre los envía: `secs` sale de S._t0, que se fija en startCareer. */
+    if (!(secs > 0) || !(ns > 0)) { res.status(400).json({ error: "faltan datos de la partida" }); return; }
+    if (secs < Math.max(12, ns * 0.8)) {
       res.status(400).json({ error: "carrera demasiado rápida para ser real" }); return;
     }
 
