@@ -8850,8 +8850,83 @@ function initTPCard(){
 }
 function startTPFlow(){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA="2026"; track("mode_selected",{era:"tp"}); showIdentity(); }
 
+/* ═══════════ 🔧 EL REPARTO DEL COCHE (fase 1: solo vive, todavía no afecta a nada) ═══════════
+   El coche de cada equipo sigue valiendo lo que dice `f1perf`. Lo nuevo es DE QUÉ ESTÁ HECHO ese
+   valor: un reparto de SUMA CERO dentro del propio equipo entre aerodinámica, motor y fiabilidad.
+   · Suma cero DENTRO del equipo → no depende de cuántos rivales haya (la parrilla de 2026 es de 11
+     o 12 según el año; medido). Volcarse en un eje se paga en los otros.
+   · La fuerza real de un eje es `f1perf + reparto*K`, y lo que se enseñará es tu PUESTO en esa
+     lista entre los equipos que existan ese año — no la diferencia contra una media, que cambia
+     de significado cuando entra o quiebra alguien.
+   · Así, la degradación que pedía Carlos sale gratis: tu motor no baja, pero si tres rivales suben
+     el suyo, caes puestos y pierdes estrellas sin que nadie te haya quitado nada.
+   ⚠️ SOLO EN PARTIDAS DE JEFE hasta que esté calibrado. Si S.f1prof no existe, el juego se comporta
+   exactamente como hoy. */
+const PROF_EJES=["aero","motor","fiab"];
+/* arquetipos de coche, todos de suma cero. Los extremos son minoría: la mayoría de los coches de
+   una parrilla real son equilibrados o tienen una inclinación suave. */
+const PROF_ARQUETIPOS=[
+  [0,0,0],[0,0,0],[0,0,0],
+  [1,-1,0],[1,0,-1],[0,1,-1],[-1,1,0],[-1,0,1],[0,-1,1],
+  [2,-1,-1],[-1,2,-1],[-1,-1,2]
+];
+function profNuevo(){ const a=PROF_ARQUETIPOS[irnd(0,PROF_ARQUETIPOS.length-1)];
+  return {aero:a[0], motor:a[1], fiab:a[2]}; }
+function initCarProfiles(){
+  S.f1prof={};
+  F1_TEAMS.forEach(t=>{ S.f1prof[t.name]=profNuevo(); });
+}
+/* 🏭 CÓMO EVOLUCIONAN LOS RIVALES (encargo de Carlos: «que la progresión sea realista», no un sorteo).
+   Tres reglas, y cada una tiene su porqué:
+   · Un equipo que va a MEJOR (su objetivo está por encima de su coche) está rediseñando, así que se
+     mueve más. Uno estancado repite lo que tiene.
+   · Un equipo que MANDA no toca su concepto: si funciona, no se arregla. La probabilidad baja cuanto
+     mejor es su coche.
+   · Cuando se mueve, mueve UN punto de un eje a otro. Nunca da un volantazo: los conceptos de un coche
+     de F1 tardan años en cambiar, y eso es lo que produce identidades reconocibles. */
+function evolveCarProfiles(){
+  if(!S.f1prof) return;
+  const perfs=F1_TEAMS.map(t=>S.f1perf[t.name]??75);
+  const max=Math.max(...perfs), min=Math.min(...perfs), rango=Math.max(1,max-min);
+  F1_TEAMS.forEach(t=>{
+    const tn=t.name;
+    if(!S.f1prof[tn]) S.f1prof[tn]=profNuevo();
+    if(tpManaged(tn)) return;                       // el tuyo lo repartes tú
+    const perf=S.f1perf[tn]??75, tgt=S.f1target[tn]??perf;
+    const enAscenso=Math.max(0,Math.min(1,(tgt-perf)/10));   // 0 = estancado · 1 = rediseño profundo
+    const arriba=(perf-min)/rango;                            // 0 = cola · 1 = el mejor coche
+    const p = .12 + .38*enAscenso - .20*arriba;               // entre ~4% y ~50% al año
+    if(!ch(Math.max(.03,p))) return;
+    const pr=S.f1prof[tn];
+    /* 🐞 el suelo se colaba: se filtraban los ejes por >-2 y luego se cogía `[irnd(0,1)]`, que con un
+       solo candidato devolvía undefined y caía en un `||` que ignoraba el filtro. Resultado medido:
+       un Alpine con aero −3. Ahora se sortea DENTRO de los que de verdad pueden bajar, y si no hay
+       ninguno, no se toca nada. */
+    const sube=PROF_EJES[irnd(0,2)];
+    if(pr[sube]>=2) return;
+    const puedenBajar=PROF_EJES.filter(e=>e!==sube && pr[e]>-2);
+    if(!puedenBajar.length) return;
+    const baja=puedenBajar[irnd(0,puedenBajar.length-1)];
+    pr[sube]++; pr[baja]--;
+  });
+}
+/* fuerza absoluta de un eje = nivel del coche + su inclinación. K=3 hace que el reparto valga tanto
+   como ~6 puntos de coche entre el extremo y su contrario, que es una diferencia que se nota sin
+   tapar al propio nivel del coche. */
+const PROF_K=3;
+function ejeFuerza(tn, eje){
+  const pr=(S.f1prof||{})[tn]; const base=S.f1perf[tn]??75;
+  return base + ((pr&&pr[eje])||0)*PROF_K;
+}
+/* el PUESTO en ese eje entre los equipos que existan ese año (1 = el mejor). Robusto al tamaño de la
+   parrilla, que es justo lo que preguntó Carlos. */
+function ejePuesto(tn, eje){
+  const orden=F1_TEAMS.map(t=>[t.name, ejeFuerza(t.name,eje)]).sort((a,b)=>b[1]-a[1]);
+  return orden.findIndex(x=>x[0]===tn)+1;
+}
 function initTPState(){
   S.cat="TP";
+  initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
@@ -9013,6 +9088,7 @@ function tpSignTeam(t, how){
 /* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
 function tpYearStart(){
   if(S.retired) return;
+  evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   /* 🧑‍💼 SALIDAS PACTADAS EL AÑO PASADO (dilemas «vienen a por tu estrella» y «dos gallos»). El piloto
      corrió su última temporada contigo y AHORA se va de verdad: se le vacía el asiento ANTES de armar
      la cola, para que el invierno te ofrezca la terna en vez de proponerte renovar a quien ya vendiste.
