@@ -942,6 +942,8 @@ function applyLang(){
     tg.textContent = LANGS.length<=2 ? (LANGS[(i+1)%LANGS.length]||"es").toUpperCase()
                                      : "🌐 "+LANG.toUpperCase(); }
   document.documentElement.lang = LANG;
+  // el botón de repetir lleva etiqueta propia según el modo: applyLang la pisaría al cambiar de idioma
+  try{ const _m=document.getElementById("endModal"); if(_m && _m.style.display==="flex") ajustaBotonRepetir(); }catch(e){}
 }
 /* 🌐 EL BOTÓN DE IDIOMA SE ADAPTA SOLO (petición de Carlos):
    · con DOS idiomas es un interruptor — pinchas y saltas al otro, como toda la vida.
@@ -3116,8 +3118,17 @@ window.addEventListener("beforeunload", function(e){
 });
 
 function playAgainSameSettings(){
+  /* 🔁 REPETIR NO PUEDE SACARTE DEL MODO EN EL QUE ESTABAS (lo cazó Carlos jugando el reto de Pechito:
+     le dio a repetir y apareció en una carrera normal, con ofertas de karting). Antes esto forzaba
+     `CHALLENGE=null; TP_MODE=false` a propósito, con la idea de que los retos y el muro tenían su
+     propia puerta. Es al revés: si acabas de jugar un reto, repetir es JUGAR ESE RETO otra vez.
+     El escenario de pruebas (TEST_MODE) sale de la URL, así que se conserva solo. */
   const era = (S && S.era) || SELECTED_ERA || "2026";
-  CHALLENGE=null; TP_MODE=false; SELECTED_ERA=era;   // se repite el modo CLÁSICO: los retos y el muro tienen su propia puerta
+  const retoPrevio = (S && S.challenge) || CHALLENGE || null;
+  const eraDeJefe  = !!(S && S.cat==="TP") || TP_MODE;
+  SELECTED_ERA = era;
+  TP_MODE  = eraDeJefe;
+  CHALLENGE = (retoPrevio && CHALLENGES[retoPrevio]) ? retoPrevio : null;
   try{
     $("endModal").style.display="none";
     $("reopenBtn").style.display="none";
@@ -3129,7 +3140,21 @@ function playAgainSameSettings(){
     $("tlBody").innerHTML='<div class="tl-empty">'+L("Tu historia empieza aquí…","Your story starts here…",{pt:"A sua história começa aqui…"})+'</div>';
     window.scrollTo(0,0);
   }catch(e){}
+  /* 🧑‍💼 en el muro no hay «mismo piloto»: se vuelve a elegir escudería, que es lo que abre una etapa
+     nueva de jefe. startCareer ya lo enruta —initTPState + tpChooseTeam— con TP_MODE puesto. */
   startCareer();
+}
+/* la etiqueta del botón depende del modo: «mismo piloto» no significa nada dirigiendo un equipo */
+function ajustaBotonRepetir(){
+  const b=document.getElementById("againBtn"); if(!b) return;
+  const esJefe = !!(S && S.cat==="TP");
+  const reto = S && S.challenge && CHALLENGES[S.challenge];
+  b.textContent = esJefe ? L("🔁 Otra etapa de jefe","🔁 Another spell in charge",{pt:"🔁 Outra etapa de chefe"})
+    : reto ? L("🔁 Repetir el reto","🔁 Replay the challenge",{pt:"🔁 Repetir o desafio"})
+           : L("🔁 Mismo piloto","🔁 Same driver",{pt:"🔁 Mesmo piloto"});
+  b.title = esJefe ? L("Vuelve a empezar en el muro, eligiendo escudería","Start again on the pit wall, picking a team",{pt:"Recomeça no muro, escolhendo equipe"})
+    : reto ? L("Vuelve a jugar este mismo reto","Play this same challenge again",{pt:"Jogue este mesmo desafio de novo"})
+           : L("Repite conservando apellido, dorsal, país, estilo y época","Replay keeping surname, number, country, style and era",{pt:"Repete mantendo sobrenome, número, país, estilo e época"});
 }
 
 function refreshCard(){
@@ -8541,7 +8566,7 @@ function endCareer(){
   const result = S.titles.f1>=2?"multi_champion" : S.titles.f1===1?"champion" : S.titles.constr>0?"constructors_champion"
     : S.subcamp>0?"runner_up" : S.wins>0?"race_winner" : S.f1Seasons>0?"f1_driver" : "prospect";
   track("career_ended", {result, f1_titles:S.titles.f1, constructors:S.titles.constr, f1_seasons:S.f1Seasons, wins:S.wins, retire_age:S.age, era:S.era||"2026"});
-  const m=$("endModal"); m.style.display="flex";
+  const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
   $("endName").textContent=sel.flag+" "+pName()+" #"+sel.num;
   $("eGP").textContent=S.gp; $("eW").textContent=S.wins; $("eP").textContent=S.podiums;
   $("ePP").textContent=S.poles; $("eT").textContent=S.titles.f1; $("eC").textContent=S.titles.constr;
@@ -9699,7 +9724,7 @@ function endTPCareer(){
   const C=S.titles.constr, D=S.titles.f1, yrs=S.age, best=S.tpBestPos===99?null:S.tpBestPos;
   const teams=[...new Set((S.tpStints||[]).map(s=>s.team))];
   track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
-  const m=$("endModal"); m.style.display="flex";
+  const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
   $("endName").textContent=sel.flag+" "+pName();
   $("endYears").textContent="🧑‍💼 Team Principal · "+L(`Al mando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} escudería${teams.length===1?"":"s"}`,
     `In charge: ${S.baseYear||2026} – ${yearNow()} · ${yrs} season${yrs===1?"":"s"} · ${teams.length} team${teams.length===1?"":"s"}`,
