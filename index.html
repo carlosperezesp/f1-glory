@@ -6809,7 +6809,29 @@ function bgF1Season(row){
     (S.seats[t.name]||[]).forEach(d=>{
       // ⚠️ el null también se filtra: en TP el equipo que dejaste puede arrastrar un asiento vacío
       // un invierno (retirada + despido/tentación en la misma ventana) hasta que el mercado lo tape
-      if(d && d!=="PLAYER"){ const w=drvW(); rows.push({d,team:t.name,score:d.skill*w+S.f1perf[t.name]*(1-w)+gauss()*3.4}); }
+      if(d && d!=="PLAYER"){
+        const w=drvW();
+        /* 🔧 EL REPARTO DEL COCHE, TRADUCIDO A LENGUAJE DE TEMPORADA (fase 2).
+           El modo jefe NO simula carreras: resuelve el año entero en esta línea, igual que el modo
+           clásico. Así que «la aerodinámica sube la pole» no tenía dónde agarrarse — no existe la
+           pole. Los tres ejes se expresan en lo que sí existe, y cada uno se siente distinto:
+             · MOTOR       → el ritmo bruto. Mejora segura y aburrida: más rápido, sin más.
+             · AERODINÁMICA→ el TECHO, no el suelo. Ensancha el azar: un año extraordinario o uno a
+                             medias. Es la apuesta, y no mueve la media.
+             · FIABILIDAD  → el SUELO. Compra la probabilidad de que el año se vaya al garete. No te
+                             hace ganar; evita que pierdas.
+           Cada piloto tira su propio riesgo: un coche puede romperse en un lado del garaje y no en
+           el otro. Y todo esto SOLO existe si hay reparto, o sea solo en partidas de jefe. */
+        const pr = S.f1prof && S.f1prof[t.name];
+        const coche = S.f1perf[t.name] + (pr ? pr.motor*PROF_K : 0);
+        const disp  = 3.4 + (pr ? pr.aero*0.9 : 0);          // aero ensancha, sin desplazar la media
+        let sc = d.skill*w + coche*(1-w) + gauss()*Math.max(1.2, disp);
+        if(pr){
+          const riesgo = 0.10 - pr.fiab*0.045;               // +2 → 1% · 0 → 10% · −2 → 19%
+          if(ch(Math.max(0, riesgo))) sc -= rnd(4,10);       // el año que se rompe
+        }
+        rows.push({d, team:t.name, score:sc});
+      }
     });
   });
   rows.sort((a,b)=>b.score-a.score);
@@ -8945,6 +8967,32 @@ function ejeFuerza(tn, eje){
 }
 /* el PUESTO en ese eje entre los equipos que existan ese año (1 = el mejor). Robusto al tamaño de la
    parrilla, que es justo lo que preguntó Carlos. */
+/* ⭐ EL ESTADO DE CADA EJE EN PALABRAS Y ESTRELLAS. Carlos pidió expresamente que NO fueran barras de
+   progreso: «élite / bueno / promedio / malo» se lee de un vistazo, una barra sin números no dice nada.
+   Es un PUESTO entre los equipos que existan ese año, no una diferencia contra una media: así vale
+   igual con 10 equipos que con 12, y si los rivales mejoran y tú no, pierdes estrellas sin que nadie
+   te haya quitado nada — la degradación que pedía Carlos, sin programar ningún desgaste. */
+function ejeEstrellas(tn, eje){
+  const n=F1_TEAMS.length, p=ejePuesto(tn,eje);
+  const q=(p-1)/Math.max(1,n-1);                      // 0 = el mejor · 1 = el último
+  const est = q<=.12 ? 5 : q<=.32 ? 4 : q<=.62 ? 3 : q<=.85 ? 2 : 1;
+  const lab = est===5 ? L("élite","elite",{pt:"elite"})
+            : est===4 ? L("bueno","strong",{pt:"bom"})
+            : est===3 ? L("promedio","average",{pt:"médio"})
+            : est===2 ? L("flojo","weak",{pt:"fraco"})
+            :           L("malo","poor",{pt:"ruim"});
+  return {n:est, txt:"★".repeat(est)+"☆".repeat(5-est), lab, puesto:p};
+}
+const EJE_NOMBRE={
+  aero: ()=>L("Aerodinámica","Aerodynamics",{pt:"Aerodinâmica"}),
+  motor:()=>L("Motor","Engine",{pt:"Motor"}),
+  fiab: ()=>L("Fiabilidad","Reliability",{pt:"Confiabilidade"})
+};
+const EJE_QUE_HACE={
+  aero: ()=>L("Sube el techo, no el suelo: años extraordinarios… o a medias","Raises the ceiling, not the floor: outstanding years… or wasted ones",{pt:"Sobe o teto, não o piso: anos extraordinários… ou pela metade"}),
+  motor:()=>L("Ritmo bruto. La mejora segura y aburrida","Raw pace. The safe, boring improvement",{pt:"Ritmo bruto. A melhoria segura e sem graça"}),
+  fiab: ()=>L("El seguro: evita que el año se vaya al garete","The insurance: stops the year falling apart",{pt:"O seguro: evita que o ano vá por água abaixo"})
+};
 function ejePuesto(tn, eje){
   const orden=F1_TEAMS.map(t=>[t.name, ejeFuerza(t.name,eje)]).sort((a,b)=>b[1]-a[1]);
   return orden.findIndex(x=>x[0]===tn)+1;
@@ -9274,7 +9322,7 @@ function tpRumboScreen(){
     const b=document.createElement("button"); b.className="offer dilemma";
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${dot}</span>
       <span class="info"><span class="name">${nm}</span><span class="sub" style="display:block">${sub}</span></span>`;
-    b.onclick=()=>{ fn(); tpAnnounce(); };
+    b.onclick=()=>{ fn(); tpRepartoScreen(); };   // 🔧 el rumbo fija el NIVEL; ahora toca el REPARTO
     box.appendChild(b);
   };
   /* ⚖️ los objetivos se ANCLAN al nivel actual (como hace evolveF1 con los NPC): sin ancla, sumar
@@ -9305,6 +9353,64 @@ function tpRumboScreen(){
 }
 
 /* ── EL CONSEJO: objetivo anual por percentil REAL del coche, coloreado por el dueño ── */
+/* 🔧 ¿DÓNDE PONEMOS EL ESFUERZO? La segunda decisión del año. El rumbo dice CUÁNTO invertimos; esta
+   dice EN QUÉ. Un punto se mueve de un eje a otro: nunca un volantazo, igual que hacen los rivales.
+   El sacrificio no lo elige el jugador: sale automáticamente del eje donde HOY es más fuerte, que es
+   lo que haría cualquier equipo —se recorta de donde sobra—. Así la decisión es una sola y se lee. */
+function tpRepartoScreen(){
+  if(S.retired) return;
+  const tn=S.tpTeam, pr=(S.f1prof||{})[tn];
+  if(!pr){ tpAnnounce(); return; }                 // sin reparto (partida vieja): sigue como siempre
+  const est=e=>ejeEstrellas(tn,e);
+  /* ⚖️ LAS ESTRELLAS SOLAS NO BASTAN. Son tu puesto REAL en la parrilla, y con el mejor coche del año
+     salen cinco en los tres ejes: cierto, pero inútil para decidir —repite lo que ya sabes del nivel
+     y esconde la FORMA del coche—. Así que junto a la estrella va la inclinación DENTRO de tu propio
+     coche: dónde has apostado y dónde has recortado. Eso es lo que esta pantalla decide. */
+  const incl=e=>{ const v=pr[e];
+    return v>=2 ? L("◆◆ tu gran apuesta","◆◆ your big bet",{pt:"◆◆ a sua grande aposta"})
+         : v===1 ? L("◆ apoyado","◆ favoured",{pt:"◆ favorecido"})
+         : v===0 ? L("· equilibrado","· balanced",{pt:"· equilibrado"})
+         : v===-1 ? L("▽ recortado","▽ trimmed",{pt:"▽ cortado"})
+         :          L("▽▽ sacrificado","▽▽ sacrificed",{pt:"▽▽ sacrificado"}); };
+  const resumen=PROF_EJES.map(e=>`${EJE_NOMBRE[e]()} ${est(e).txt} ${incl(e)}`).join(" · ");
+  setDecision(L(`🔧 ¿Dónde ponemos el esfuerzo? · ${yearNow()}`,`🔧 Where do we put the effort? · ${yearNow()}`,{pt:`🔧 Onde colocamos o esforço? · ${yearNow()}`})+" · "+tn,
+    L(`Tu coche hoy: ${resumen}. Empujar un frente significa recortar en otro — la fábrica no da para todo.`,
+      `Your car today: ${resumen}. Pushing one front means cutting another — the factory can't do everything.`,
+      {pt:`O seu carro hoje: ${resumen}. Empurrar uma frente significa cortar noutra — a fábrica não dá para tudo.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  box.appendChild(tpGridBtn());
+  PROF_EJES.forEach(eje=>{
+    const e=est(eje);
+    const otros=PROF_EJES.filter(x=>x!==eje && pr[x]>-2);
+    const tope = pr[eje]>=2 || !otros.length;       // ya no se puede empujar más por ahí
+    const baja = otros.sort((a,b)=>pr[b]-pr[a])[0]; // se recorta de donde hoy sobra
+    const b=document.createElement("button"); b.className="offer dilemma"+(tope?" retire":"");
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">🔧</span>
+      <span class="info"><span class="name">${EJE_NOMBRE[eje]()} ${e.txt} <span style="font-weight:600;opacity:.75">${incl(eje)}</span></span>
+      <span class="sub" style="display:block">${EJE_QUE_HACE[eje]()}</span>
+      <span class="sub" style="display:block">${tope
+        ? L("Ya está al máximo: no se puede recortar de ningún otro sitio","Already maxed: nothing left to cut elsewhere",{pt:"Já está no máximo: não há de onde cortar"})
+        : L(`Se recorta de ${EJE_NOMBRE[baja]()}`,`Cut from ${EJE_NOMBRE[baja]()}`,{pt:`Corta-se de ${EJE_NOMBRE[baja]()}`})}</span></span>`;
+    b.onclick=()=>{
+      if(!tope){ pr[eje]++; pr[baja]--;
+        S.pendingEvents.push(L(`🔧 La fábrica vuelca el año en ${EJE_NOMBRE[eje]().toLowerCase()}, a costa de ${EJE_NOMBRE[baja]().toLowerCase()}.`,
+          `🔧 The factory throws the year at ${EJE_NOMBRE[eje]().toLowerCase()}, at the cost of ${EJE_NOMBRE[baja]().toLowerCase()}.`,
+          {pt:`🔧 A fábrica joga o ano em ${EJE_NOMBRE[eje]().toLowerCase()}, à custa de ${EJE_NOMBRE[baja]().toLowerCase()}.`}));
+      }
+      tpAnnounce();
+    };
+    box.appendChild(b);
+  });
+  // no tocar nada también es una decisión: el concepto que funciona no se toca
+  const q=document.createElement("button"); q.className="offer";
+  q.innerHTML=`<span class="team-dot dot" style="background:#71717c">✋</span>
+    <span class="info"><span class="name">${L("No tocar el concepto","Leave the concept alone",{pt:"Não mexer no conceito"})}</span>
+    <span class="sub" style="display:block">${L("Si funciona, no se arregla. Otro año igual.","If it works, don't fix it. Another year the same.",{pt:"Se funciona, não se mexe. Mais um ano igual."})}</span></span>`;
+  q.onclick=()=>tpAnnounce();
+  box.appendChild(q);
+  scrollToDecision();
+}
 function tpGoalFor(){
   const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
   const n=ord.length, p=ord.indexOf(S.tpTeam)+1;
