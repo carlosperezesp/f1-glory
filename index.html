@@ -8662,6 +8662,25 @@ function reopenSummary(){
 }
 /* precarga de logos de equipo (para dibujarlos en la tarjeta; mismo origen → sin taint) */
 const TEAM_LOGO_IMGS={};
+/* 🖼️ LAS BANDERAS DIBUJADAS, PARA EL CANVAS. La tarjeta compartible se pinta con Canvas 2D, que sabe
+   dibujar imágenes pero NO SVG en línea. En vez de duplicar el dibujo en base64 —8,7 KB y dos sitios
+   que mantener— se rasteriza el MISMO SVG en el momento de compartir y se cachea. Una sola fuente
+   para el dibujo: si se retoca una bandera, la tarjeta se actualiza sola.
+   Comprobado que no contamina el canvas (toDataURL funciona), porque el SVG va en un data: URI y no
+   referencia nada de fuera. */
+const HIST_IMG={};
+function preloadHistFlags(){
+  const pend=Object.keys(HIST_FLAG).filter(k=>!HIST_IMG[k]);
+  if(!pend.length) return Promise.resolve();
+  return Promise.all(pend.map(k=>new Promise(res=>{
+    const svg=HIST_FLAG[k].replace('class="flsvg"','')
+      .replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" ');
+    const img=new Image();
+    img.onload=()=>{ HIST_IMG[k]=img; res(); };
+    img.onerror=()=>res();   // si falla, la tarjeta cae al código en texto: nunca se rompe
+    img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  })));
+}
 function preloadLogos(){
   return Promise.all(Object.entries(TEAM_LOGOS).map(([name,url])=>new Promise(res=>{
     if(TEAM_LOGO_IMGS[name]&&TEAM_LOGO_IMGS[name].complete) return res();
@@ -8692,7 +8711,21 @@ function drawCareerCard(){
   x.fillStyle="#16161e"; x.fillRect(0,0,W,H);
   const bg=x.createLinearGradient(0,0,W,380); bg.addColorStop(0,"#15151e"); bg.addColorStop(.55,"#2b0a08"); bg.addColorStop(1,"#e10600");
   x.fillStyle=bg; x.fillRect(0,0,W,380); checker(380,14);
-  fit(`${sel.flag} ${pName()} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
+  /* 🕰️ con una nación desaparecida no se puede meter la bandera DENTRO del texto (no es un carácter):
+     se mide el texto sin ella, se centra el conjunto y se dibuja la imagen a su izquierda. Si por lo
+     que sea la imagen no está lista, cae al comportamiento de siempre y sale el código («URS»). */
+  const _hf=HIST_IMG[sel.flag];
+  if(_hf){
+    const _txt=`${pName()} #${sel.num}`;
+    let _f=74; x.font=`italic 900 ${_f}px ${CARD_FF}`;
+    const _anchoBand=()=>_f*1.02, _hueco=()=>_f*.30;
+    while((x.measureText(_txt).width + _anchoBand() + _hueco()) > W-90 && (_f-=2)>15) x.font=`italic 900 ${_f}px ${CARD_FF}`;
+    const _tw=x.measureText(_txt).width, _bw=_anchoBand(), _bh=_bw*2/3;
+    const _x0=(W - (_tw+_bw+_hueco()))/2;
+    x.drawImage(_hf, _x0, 185-_f*.74, _bw, _bh);
+    x.fillStyle="#fff"; x.textAlign="left"; x.fillText(_txt, _x0+_bw+_hueco(), 185);
+    x.textAlign="center";
+  } else fit(`${sel.flag} ${pName()} #${sel.num}`, 185, W-90, 74, "#fff", "italic 900");
   fit(S.legacyTxt||"", 262, W-90, 46, "#ffce3a", "800");
   // 📅 en un reto, la tarjeta compartible dice CUÁL es (si no, nadie sabe que jugabas un escenario fijo)
   const _chC=S.challenge&&CHALLENGES[S.challenge];
@@ -8747,7 +8780,7 @@ function shareCareer(){
   /* 🏁 además de los escudos, hay que esperar a la fuente de banderas: si el canvas dibuja
      antes de que cargue, la tarjeta sale con «ES» en vez de 🇪🇸 y ya no hay vuelta atrás */
   const fuentes = (document.fonts && document.fonts.ready) || Promise.resolve();
-  Promise.all([preloadLogos(), fuentes]).then(runShareCard).catch(runShareCard);
+  Promise.all([preloadLogos(), preloadHistFlags(), fuentes]).then(runShareCard).catch(runShareCard);
 }
 function runShareCard(){
   let c; try{ c=drawCareerCard(); }catch(e){ return; }
