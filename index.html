@@ -551,6 +551,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
    que se suponía. Con DOS idiomas dice «EN» y cabía; en cuanto hay tres o más pasa a «🌐 ES», crece
    28px y los botones se comían el uno al otro (medido: hueco de −3px). Lo cazó Carlos en pantalla.
    Con flex + gap, el hueco está garantizado diga lo que diga el botón. */
+#betaBar{position:fixed;top:0;left:0;right:0;z-index:70;background:#15151e;color:#ffce3a;
+  font:600 12px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding:7px 14px;text-align:center}
+#betaBar b{color:#fff;letter-spacing:.06em}
+body.conBeta{padding-top:34px}
+body.conBeta #topBtns{top:44px}
 #topBtns{position:fixed;top:12px;right:12px;z-index:60;display:flex;align-items:center;gap:8px}
 #langToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;white-space:nowrap}
@@ -623,6 +629,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 </style>
 </head>
 <body>
+<div id="betaBar" style="display:none">🧪 <b>BETA</b> · Modo Team Principal en pruebas. Puede fallar. <span style="opacity:.75">Cuéntale a Carlos lo que veas raro.</span></div>
 <div id="topBtns">
   <button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
   <button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
@@ -896,6 +903,11 @@ const LANG_ALL = ["es","en","pt","pl","fr"];
 let LANG = (function(){ try{ const l=localStorage.getItem("f1lang")||"es"; return LANG_ALL.includes(l)?l:"es"; }catch(e){ return "es"; } })();
 // 🔒 modo PREVIEW (oculto): entra con ?preview=glory26 para activar funciones en pruebas SOLO para el dev
 // (persiste en localStorage; ?preview=off lo apaga). El resto de la gente no ve absolutamente nada distinto.
+/* 🧪 BETA: esta rama vive en su propia URL de Vercel. Producción es f1-glory.com; cualquier otro
+   host (y no un archivo local) es el despliegue de pruebas. */
+const BETA = (function(){ try{
+  return location.protocol!=="file:" && !/(^|\.)f1-glory\.com$/.test(location.hostname);
+}catch(e){ return false; } })();
 const PREVIEW = (function(){ try{
   const p=new URLSearchParams(location.search).get("preview");
   if(p==="off"){ localStorage.removeItem("f1g_preview"); return false; }
@@ -8870,7 +8882,7 @@ let TP_MODE=false;
 function tpManaged(tn){ return typeof S!=="undefined" && S && S.cat==="TP" && S.tpTeam===tn; }
 
 function initTPCard(){
-  if(!PREVIEW) return;   // Fase 1 en pruebas: el público sigue viendo «Próximamente»
+  if(!PREVIEW && !BETA) return;   // 🧪 abierto en la BETA; en main sigue tras el preview
   const c=document.getElementById("tpCard"); if(!c) return;
   c.classList.remove("soon");
   const b=document.getElementById("badgeTP");
