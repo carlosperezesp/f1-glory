@@ -6913,6 +6913,13 @@ function hallRows(){
   return rows;
 }
 function renderF1State(){
+  /* la visibilidad del ▾ se decide ANTES del early return: si no, al pasar de una carrera clásica a
+     una de jefe el botón se quedaba oculto del modo anterior hasta que corriera una temporada entera */
+  { const _tp=fsPuedeDesplegar();
+    const _bd=document.getElementById("fsMoreD"), _bc=document.getElementById("fsMoreC");
+    if(_bd) _bd.style.display=_tp?"":"none";
+    if(_bc) _bc.style.display=_tp?"":"none";
+    if(!_tp){ FS_OPEN.d=false; FS_OPEN.c=false; } }
   if(!S.lastTop3) return;
   $("f1state").style.display="block";
   $("fsYear").textContent=S.lastTop3.year;
@@ -6940,7 +6947,13 @@ function renderF1State(){
    puesto; el resto de la parrilla ya vivía en S.rankD/S.rankC —bgF1Season guarda el ranking COMPLETO,
    no solo el podio—, así que esto no calcula nada: pinta lo que ya está. */
 let FS_OPEN={d:false,c:false};
+/* ⚠️ SOLO EN EL MODO JEFE. Carlos lo pidió el 14-ago dentro de la lista de añadidos del Team Principal
+   y yo lo apliqué a los dos modos por mi cuenta: en el clásico eres piloto y la gracia es NO tener la
+   foto completa del campeonato, ver el podio y tu puesto y ya. Desde el muro sí tienes derecho a ver
+   la parrilla entera. Corregido el 16-ago. */
+function fsPuedeDesplegar(){ return typeof S!=="undefined" && S && S.cat==="TP"; }
 function fsToggle(cual){
+  if(!fsPuedeDesplegar()) return;
   FS_OPEN[cual]=!FS_OPEN[cual];
   const b=document.getElementById(cual==="d"?"fsMoreD":"fsMoreC");
   if(b) b.classList.toggle("open", FS_OPEN[cual]);
