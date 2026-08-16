@@ -29,7 +29,11 @@ module.exports = async (req, res) => {
     if (ids.length) disp = (await redis(["MGET"].concat(ids.map((x) => "pl:" + x)))) || [];
     const players = ids.map((id, i) => {
       let d = {}; try { d = JSON.parse(disp[i] || "{}"); } catch (e) {}
-      return { id, gloria: scores[i], name: d.n || "", flag: d.f || "", country: d.c || "", ts: d.ts || null };
+      /* 🔍 el volcado incluye el DESGLOSE desde el 16-ago-2026, que es lo que permite auditar una marca
+         alta: cuántos mundiales, cuántas victorias, en cuántos segundos. Las marcas anteriores a esa
+         fecha no lo tienen (el servidor no lo guardaba) y saldrán con `st: null`. */
+      return { id, gloria: scores[i], name: d.n || "", flag: d.f || "", country: d.c || "", ts: d.ts || null,
+               era: d.e || null, challenge: d.ch || null, st: d.st || null, secs: d.sc ?? null, seasons: d.ns ?? null };
     });
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Content-Disposition", 'attachment; filename="f1glory-ranking.json"');

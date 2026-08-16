@@ -140,7 +140,17 @@ module.exports = async (req, res) => {
     const now = new Date();
     const wk = "lb:w:" + isoWeekKey(now);
     const GL = "lb:global";
-    const disp = JSON.stringify({ n: nm, f: fl, c: co, g: gloria, ts: Date.now(), e: era || undefined });
+    /* 🔍 EL DESGLOSE, PARA PODER AUDITAR (16-ago-2026). Antes solo se guardaba el total, así que ante
+       una marca de 3.992 no había manera de saber si eran 20 mundiales o 8: el reparto se validaba al
+       recibirlo y se tiraba. Ahora se guarda junto al resto.
+       🔒 ES PRIVADO Y DEBE SEGUIRLO SIENDO: /api/leaderboard lee este mismo registro pero copia SOLO
+       `n`, `f` y `c` a la respuesta pública (ver leaderboard.js). ⚠️ NUNCA hacer `...d` ahí ni
+       devolver el objeto entero, o el desglose de todo el mundo se vuelve público.
+       Va dentro del mismo SET que ya existía → no cuesta ni un comando más de Redis.
+       `st` = stats · `sc` = segundos jugados · `ns` = temporadas totales. Nombres cortos porque esto
+       se guarda una vez por jugador y no hay por qué engordarlo. */
+    const disp = JSON.stringify({ n: nm, f: fl, c: co, g: gloria, ts: Date.now(), e: era || undefined,
+      st: { f1, constr, wins, podiums, poles, subcamp, seasons }, sc: secs, ns: ns, ch: ch || undefined });
     // Tablas: la GLOBAL histórica no se toca (nadie pierde su puesto) y se añaden las de época y reto,
     // que arrancan limpias. Todo en UN pipeline → sigue siendo un solo viaje a la base de datos.
     const cmds = [
