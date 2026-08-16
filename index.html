@@ -8870,11 +8870,25 @@ const PROF_ARQUETIPOS=[
   [1,-1,0],[1,0,-1],[0,1,-1],[-1,1,0],[-1,0,1],[0,-1,1],
   [2,-1,-1],[-1,2,-1],[-1,-1,2]
 ];
-function profNuevo(){ const a=PROF_ARQUETIPOS[irnd(0,PROF_ARQUETIPOS.length-1)];
-  return {aero:a[0], motor:a[1], fiab:a[2]}; }
+/* `conCaracter` = fuerza un arquetipo NO neutro. Los tres primeros de PROF_ARQUETIPOS son [0,0,0]. */
+function profNuevo(conCaracter){
+  const desde = conCaracter ? 3 : 0;
+  const a=PROF_ARQUETIPOS[irnd(desde, PROF_ARQUETIPOS.length-1)];
+  return {aero:a[0], motor:a[1], fiab:a[2]};
+}
+/* 🏆 LOS QUE MANDAN, MANDAN POR ALGO (corrección de Carlos). Al medir la fase 1, Ferrari se quedó en
+   0/0/0 doce años seguidos: la regla de «quien gana no toca lo que funciona» lo dejaba clavado en un
+   coche sin carácter, y el mejor equipo acababa siendo el más anodino. En la F1 real es al revés —Red
+   Bull era EL de la aerodinámica, Mercedes EL del motor—. Así que los mejores coches de la parrilla
+   arrancan con un concepto pronunciado; los del pelotón sí pueden ser neutros. */
 function initCarProfiles(){
   S.f1prof={};
-  F1_TEAMS.forEach(t=>{ S.f1prof[t.name]=profNuevo(); });
+  const perfs=F1_TEAMS.map(t=>S.f1perf[t.name] ?? t.perf ?? 75).sort((a,b)=>b-a);
+  const corte=perfs[Math.min(perfs.length-1, 3)];   // los ~4 mejores coches
+  F1_TEAMS.forEach(t=>{
+    const perf=S.f1perf[t.name] ?? t.perf ?? 75;
+    S.f1prof[t.name]=profNuevo(perf>=corte);
+  });
 }
 /* 🏭 CÓMO EVOLUCIONAN LOS RIVALES (encargo de Carlos: «que la progresión sea realista», no un sorteo).
    Tres reglas, y cada una tiene su porqué:
@@ -8898,12 +8912,23 @@ function evolveCarProfiles(){
     const p = .12 + .38*enAscenso - .20*arriba;               // entre ~4% y ~50% al año
     if(!ch(Math.max(.03,p))) return;
     const pr=S.f1prof[tn];
+    // un coche con un eje en el extremo puede moderarlo: se lima el sesgo hacia el centro
+    const extremo=PROF_EJES.find(e=>pr[e]===2);
+    if(extremo && ch(.30)){
+      const suben=PROF_EJES.filter(e=>e!==extremo && pr[e]<2);
+      if(suben.length){ pr[extremo]--; pr[suben[irnd(0,suben.length-1)]]++; return; }
+    }
     /* 🐞 el suelo se colaba: se filtraban los ejes por >-2 y luego se cogía `[irnd(0,1)]`, que con un
        solo candidato devolvía undefined y caía en un `||` que ignoraba el filtro. Resultado medido:
        un Alpine con aero −3. Ahora se sortea DENTRO de los que de verdad pueden bajar, y si no hay
        ninguno, no se toca nada. */
     const sube=PROF_EJES[irnd(0,2)];
     if(pr[sube]>=2) return;
+    /* 🎚️ LLEGAR AL EXTREMO CUESTA (corrección de Carlos). En la fase 1 el 56% de los coches acababa
+       con un eje en ±2, porque cada paso podía llevar un 1 hasta un 2 sin resistencia. Si casi todos
+       son radicales, ser radical no significa nada. Ahora dar ese último paso solo sale 1 de cada 3
+       veces, y además un coche ya extremo puede suavizarse: los conceptos muy sesgados se refinan. */
+    if(pr[sube]===1 && !ch(.33)) return;
     const puedenBajar=PROF_EJES.filter(e=>e!==sube && pr[e]>-2);
     if(!puedenBajar.length) return;
     const baja=puedenBajar[irnd(0,puedenBajar.length-1)];
