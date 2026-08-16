@@ -349,7 +349,21 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 @media(max-width:700px){
   .f1state .cols{gap:12px 14px}
 }
-.f1state h5{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;font-style:normal}
+.f1state h5{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;font-style:normal;display:flex;align-items:center;gap:6px}
+/* 🔽 el panel enseña el top-3 y tu puesto; el resto de la parrilla YA está en S.rankD/S.rankC,
+   así que desplegarlo no cuesta ni una consulta: es pintar lo que ya hay en memoria. */
+.fs-more{margin-left:auto;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+  border-radius:7px;width:22px;height:18px;font-size:11px;line-height:1;cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;transition:transform .18s,background .15s}
+.fs-more:hover{background:var(--line);color:var(--text)}
+.fs-more.open{transform:rotate(180deg)}
+.f1state .srow.extra{animation:none;opacity:.9}
+/* 🧑‍💼 EN EL MODO JEFE LA TABLA CUENTA OTRA COSA. Un jefe no tiene OVR ni victorias propias: lo que
+   importa es dónde acabaron sus DOS pilotos y dónde acabó el equipo. Cinco columnas en vez de seis. */
+.tl-head.tp,.tl-row.tp{grid-template-columns:52px 1fr 58px 58px 74px}
+.tl-row .num.tpdrv{font-size:12px;font-weight:800;white-space:nowrap}
+.tl-row .num.tpdrv.p1{color:#c98f00} .tl-row .num.tpdrv.top{color:#12923f} .tl-row .num.tpdrv.rest{color:var(--muted);font-weight:600}
+.tl-row.tp .ovrcell{display:none}
 .f1state .srow{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:4px 6px;border-radius:7px;gap:6px;animation:fsRow .7s both}
 .f1state .srow .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .f1state .srow .xt{color:var(--muted);font-size:11px;flex-shrink:0}
@@ -763,8 +777,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
     <div>
       <div class="card f1state" id="f1state" style="display:none">
         <div class="cols">
-          <div><h5><span data-es="👑 Mundial de pilotos" data-pt="👑 Mundial de pilotos" data-pl="👑 Mistrzostwa kierowców" data-fr="👑 Championnat pilotes" data-pt="👑 Mundial de pilotos" data-en="👑 Drivers' Championship">👑 Mundial de pilotos</span> <span id="fsYear"></span></h5><div id="fsDrivers"></div></div>
-          <div><h5 data-es="🏭 Constructores" data-pt="🏭 Construtores" data-pl="🏭 Konstruktorzy" data-fr="🏭 Constructeurs" data-pt="🏭 Construtores" data-en="🏭 Constructors">🏭 Constructores</h5><div id="fsTeams"></div></div>
+          <div><h5><span data-es="👑 Mundial de pilotos" data-pt="👑 Mundial de pilotos" data-pl="👑 Mistrzostwa kierowców" data-fr="👑 Championnat pilotes" data-pt="👑 Mundial de pilotos" data-en="👑 Drivers' Championship">👑 Mundial de pilotos</span> <span id="fsYear"></span><button class="fs-more" id="fsMoreD" onclick="fsToggle('d')" title="Ver la clasificación entera">▾</button></h5><div id="fsDrivers"></div></div>
+          <div><h5><span data-es="🏭 Constructores" data-pt="🏭 Construtores" data-pl="🏭 Konstruktorzy" data-fr="🏭 Constructeurs" data-pt="🏭 Construtores" data-en="🏭 Constructors">🏭 Constructores</span><button class="fs-more" id="fsMoreC" onclick="fsToggle('c')" title="Ver la clasificación entera">▾</button></h5><div id="fsTeams"></div></div>
         </div>
       </div>
       <div class="timeline">
@@ -6809,6 +6823,7 @@ function renderF1State(){
   let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${x.me?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.me?L("TÚ","YOU",{pt:"TU"}):x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
   if(S.lastTop3.myPos!=null && S.lastTop3.myPos>3)
     dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} ${L("TÚ","YOU",{pt:"TU"})}</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
+  if(FS_OPEN.d) dHtml+=fsResto("d");
   $("fsDrivers").innerHTML=dHtml;
   const cmv=S.lastTop3.cmv||[];
   // en la clasificación mostramos solo el movimiento de posición (▲/▼ vs el año pasado);
@@ -6816,9 +6831,47 @@ function renderF1State(){
   let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${S.cat==="F1"&&S.team&&x===S.team.name?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}</span>${mvB(cmv[i])}</div>`).join("");
   if(S.lastTop3.myConstr!=null && S.lastTop3.myConstr>3 && S.team)
     cHtml+=`<div class="srow me${mvCls(S.lastTop3.myConstrMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myConstr}º</b> ${teamBadge(S.team.name)} ${S.team.name}</span>${mvB(S.lastTop3.myConstrMv)}</div>`;
+  if(FS_OPEN.c) cHtml+=fsResto("c");
   $("fsTeams").innerHTML=cHtml;
 }
 
+/* 🔽 DESPLEGAR LA CLASIFICACIÓN ENTERA (petición de Carlos, 14-ago). El panel enseñaba el top-3 y tu
+   puesto; el resto de la parrilla ya vivía en S.rankD/S.rankC —bgF1Season guarda el ranking COMPLETO,
+   no solo el podio—, así que esto no calcula nada: pinta lo que ya está. */
+let FS_OPEN={d:false,c:false};
+function fsToggle(cual){
+  FS_OPEN[cual]=!FS_OPEN[cual];
+  const b=document.getElementById(cual==="d"?"fsMoreD":"fsMoreC");
+  if(b) b.classList.toggle("open", FS_OPEN[cual]);
+  renderF1State();
+}
+function fsResto(cual){
+  const medalTop=3;
+  if(cual==="d"){
+    const r=S.rankD||{}; const yo=(S.cat==="F1"&&S.seats[S.team&&S.team.name])?null:null;
+    const orden=Object.entries(r).sort((a,b)=>a[1]-b[1]).filter(([n,p])=>p>medalTop);
+    /* 🏳️ la bandera hay que buscarla EN TODAS PARTES, no solo entre los que tienen asiento: en la
+       clasificación de un año caben pilotos que ya se han ido, reservas y gente del pool. Si solo se
+       mira seatedPool(), a un par de nombres les sale el 🏁 genérico (se vio al probarlo). */
+    const buscaFlag=(n)=>{
+      for(const sl of Object.values(S.seats||{})){
+        const d=(sl||[]).find(x=>x&&x!=="PLAYER"&&x.name===n); if(d&&d.flag) return d.flag;
+      }
+      const p1=(S.dpool||[]).find(x=>x&&x.name===n); if(p1&&p1.flag) return p1.flag;
+      const p2=(S.freeAgents||[]).find(x=>x&&x.name===n); if(p2&&p2.flag) return p2.flag;
+      const p3=(S.legends||[]).find(x=>x&&x.name===n); if(p3&&p3.flag) return p3.flag;
+      return null;
+    };
+    return orden.map(([n,p])=>{
+      const fl=buscaFlag(n);
+      const eq=Object.entries(S.seats||{}).find(([t,sl])=>(sl||[]).some(x=>x&&x!=="PLAYER"&&x.name===n));
+      return `<div class="srow extra"><span class="nm">${p}º ${fl?flg(fl):""} ${surname(n)}</span><span class="rt2">${eq?teamBadge(eq[0]):""}</span></div>`;
+    }).join("");
+  }
+  const r=S.rankC||{};
+  return Object.entries(r).sort((a,b)=>a[1]-b[1]).filter(([t,p])=>p>medalTop)
+    .map(([t,p])=>`<div class="srow extra${tpManaged(t)||(S.team&&S.team.name===t)?" me":""}"><span class="nm">${p}º ${teamBadge(t)} ${t}</span></div>`).join("");
+}
 function simTest(row,st){
   S.testYears++;
   row.wins=0; row.pods=0; row.pts=0; row.pos=null; row.subBest=null; row.subRaces=0;
@@ -8053,10 +8106,38 @@ function regResetOffers(){
 /* ---------- línea de tiempo ---------- */
 function renderTimeline(){
   const b=$("tlBody"); b.innerHTML="";
+  /* 🧑‍💼 LA CABECERA TAMBIÉN CAMBIA EN EL MODO JEFE. Es HTML fijo, así que se reetiqueta aquí: un jefe
+     no tiene OVR ni victorias propias — tiene dos pilotos y un campeonato de constructores. */
+  const _tp = S.cat==="TP";
+  const _h = document.querySelector(".tl-head");
+  if(_h){
+    _h.classList.toggle("tp", _tp);
+    const c=_h.children;
+    if(c.length>=6){
+      c[2].style.display = _tp ? "none" : "";
+      if(_tp){
+        c[3].textContent = L("Piloto 1","Driver 1",{pt:"Piloto 1"});
+        c[4].textContent = L("Piloto 2","Driver 2",{pt:"Piloto 2"});
+        c[5].textContent = L("Constr.","Constr.",{pt:"Constr."});
+      } else {
+        c[3].textContent = L("V","W",{pt:"V"});
+        c[4].textContent = L("Pod","Pod",{pt:"Pód"});
+        c[5].textContent = L("Camp.","Champ.",{pt:"Camp."});
+      }
+    }
+  }
   // más reciente arriba, 16 años abajo (la trayectoria crece hacia arriba)
   [...S.seasons].reverse().forEach((r,idx)=>{
     const div=document.createElement("div");
-    div.className="tl-row"+(r.pos===1?" champ":"")+(idx===0?" new":"");
+    const esTP = r.cat==="TP";
+    div.className="tl-row"+(esTP?" tp":"")+(r.pos===1?" champ":"")+(idx===0?" new":"");
+    /* 🧑‍💼 en el modo jefe, las dos columnas centrales son TUS DOS PILOTOS con su puesto en el Mundial
+       (petición de Carlos: «piloto 1, piloto 2 y constructores» en vez de V-POD-CAMP). El puesto ya se
+       guarda en row.tpDrv al simular la temporada; aquí solo se pinta. */
+    const tpCel=(i)=>{ const d=(r.tpDrv||[])[i];
+      if(!d) return '<span class="num">—</span>';
+      const cls = d.pos===1?"p1" : d.pos<=3?"top" : d.pos<=10?"" : "rest";
+      return `<span class="num tpdrv ${cls}" title="${d.n}">${d.fl} ${d.pos===1?"🏆":d.pos+"º"}</span>`; };
     const raced=r.cat==="TEST"&&r.subRaces;
     const catLbl=r.cat==="TEST"?L("Probador F1","F1 Reserve",{pt:"Testes F1"}):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series, r.year)||L("Aventura","Adventure",{pt:"Aventura"})):catName(r.cat);
     const constr=r.constrPos?`🏭 ${L("Constructores","Constructors",{pt:"Construtores"})}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
@@ -8087,9 +8168,9 @@ function renderTimeline(){
         <span><span class="nm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
             : `${teamDisp(r.team, r.year)} · ${r.year} · ${catLbl}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
-      <span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>
-      <span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>
-      <span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>
+      ${esTP ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
+      ${esTP ? tpCel(0) : `<span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>`}
+      ${esTP ? tpCel(1) : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
       <span class="pos ${posCls}">${posLab}</span>
       ${top3}
       ${(r.events&&r.events.length)?`<span class="ev">${r.events.join(" · ")}</span>`:""}`;
@@ -9063,6 +9144,7 @@ function simTP(row){
     const po = Math.min(races, w + (r<=2?irnd(7,10): r===3?irnd(5,8): r<=5?irnd(3,6): r<=8?irnd(1,3): r<=11?(ch(.4)?irnd(1,2):0):0));
     tWins+=w; tPods+=po;
     parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º`);
+    (row.tpDrv=row.tpDrv||[]).push({n:surname(d.name), fl:d.flag||"🏁", pos:r});
     if(r===1) champDrv=d;
   });
   if(tWins>races){ const f=races/tWins; tWins=Math.round(tWins*f); tPods=Math.round(tPods*f); }
