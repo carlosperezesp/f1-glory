@@ -462,8 +462,19 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .end-stats div.gold .k{color:#7c5e0f}
 .end-stats div.shiny{position:relative;overflow:hidden;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 6px 20px rgba(214,164,44,.6)}
-.end-stats div.shiny .v{background:linear-gradient(92deg,#6b4a00,#a9770a,#6b4a00);background-size:200% 100%;
-  -webkit-background-clip:text;background-clip:text;color:transparent;animation:goldshift 3s linear infinite}
+/* 🐞 EL NÚMERO DESAPARECÍA EN ALGUNOS MÓVILES (captura de un jugador, 17-ago). Esto pintaba el número
+   con un degradado recortado a la forma de las letras y `color:transparent`: si el navegador no
+   soporta bien `background-clip:text` —o falla al combinarlo con la animación— el texto se queda
+   transparente sobre el fondo y el número no se ve. Lo tenía TODO el que ganaba 3+ títulos, o sea
+   justo las mejores partidas.
+   Ahora el color legible es la BASE y el degradado solo se aplica donde el recorte existe de verdad.
+   Si falla, se ve un número marrón oscuro sobre dorado: menos vistoso, perfectamente legible. */
+.end-stats div.shiny .v{color:#6f4e00}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .end-stats div.shiny .v{background:linear-gradient(92deg,#6b4a00,#a9770a,#6b4a00);background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    animation:goldshift 3s linear infinite}
+}
 .end-stats div.shiny::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;pointer-events:none;
   background:linear-gradient(105deg,transparent,rgba(255,255,255,.9),transparent);transform:skewX(-18deg);
   animation:shine 2.8s ease-in-out infinite}
@@ -666,11 +677,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   </div>
   <!-- VISIBLE. Para ocultarlo cuando las novedades caduquen, volver a poner display:none en el style. -->
   <p class="news" style="max-width:540px;margin:20px auto 0;font-size:13px;line-height:1.55;color:var(--muted)"
-     data-es="✨ <b>Últimas novedades:</b> las <b>banderas ya se ven igual en todos los dispositivos</b> — quien jugaba desde Windows veía «ES» en vez de 🇪🇸, y eso se acabó, también en las tarjetas que compartes. Ahora hay <b>207 países</b> para elegir. Y hay <b>dilemas nuevos</b> que aparecerán durante la partida. El <b>lunes 17 abre el Reto semanal</b> y el <b>viernes 21, la década de 1990</b>. Vuelve pronto. 🏗️" data-pt="✨ <b>Últimas novidades:</b> as <b>bandeiras já aparecem iguais em todos os dispositivos</b> — quem jogava no Windows via «ES» em vez de 🇪🇸, e isso acabou, também nos cartões que você compartilha. Agora há <b>207 países</b> para escolher. E há <b>dilemas novos</b> que vão aparecer durante a partida. Na <b>segunda-feira 17 abre o Desafio semanal</b> e na <b>sexta-feira 21, a década de 1990</b>. Volte logo. 🏗️" data-pl="✨ <b>Najnowsze zmiany:</b> <b>flagi wyglądają teraz tak samo na każdym urządzeniu</b> — kto grał na Windowsie, widział «ES» zamiast 🇪🇸, i to się skończyło, także na kartach, którymi się dzielisz. Do wyboru jest teraz <b>207 krajów</b>. Są też <b>nowe dylematy</b>, które pojawią się w trakcie kariery. W <b>poniedziałek 17 startuje Wyzwanie tygodnia</b>, a w <b>piątek 21 — lata 90.</b> Zaglądaj wkrótce. 🏗️" data-fr="✨ <b>Dernières nouveautés :</b> les <b>drapeaux s'affichent enfin pareil sur tous les appareils</b> — sur Windows on voyait « ES » au lieu de 🇪🇸, c'est terminé, y compris sur les cartes que tu partages. Il y a maintenant <b>207 pays</b> au choix. Et de <b>nouveaux dilemmes</b> qui surgiront en cours de partie. Le <b>lundi 17 ouvre le Défi hebdomadaire</b>, et le <b>vendredi 21, la décennie 1990</b>. Reviens vite. 🏗️"
-     data-en="✨ <b>What's new:</b> <b>flags now look the same on every device</b> — anyone playing on Windows used to see «ES» instead of 🇪🇸, and that's over, including on the cards you share. There are now <b>207 countries</b> to choose from. And there are <b>new dilemmas</b> waiting to show up during your career. The <b>Weekly Challenge opens on Monday the 17th</b>, and the <b>1990s on Friday the 21st</b>. Come back soon. 🏗️">✨ <b>Últimas novedades:</b> las <b>banderas ya se ven igual en todos los dispositivos</b> — quien jugaba desde Windows veía «ES» en vez de 🇪🇸, y eso se acabó, también en las tarjetas que compartes. Ahora hay <b>207 países</b> para elegir. Y hay <b>dilemas nuevos</b> que aparecerán durante la partida. El <b>lunes 17 abre el Reto semanal</b> y el <b>viernes 21, la década de 1990</b>. Vuelve pronto. 🏗️</p>
-  <p class="news" style="max-width:540px;margin:8px auto 0;font-size:13px;line-height:1.5;color:var(--muted)"
-     data-es="¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧" data-pt="Sugestões ou erros? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Escreva para mim!</a> 📧" data-pl="Sugestie albo błędy? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Napisz do mnie!</a> 📧" data-fr="Suggestions ou bugs ? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Écris-moi !</a> 📧" data-pt="Sugestões ou erros? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Escreve-me!</a> 📧"
-     data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
+     data-es="✨ <b>Últimas novedades:</b> ya está abierto el <b>Reto semanal</b>: cada lunes, una carrera jugada con las cartas de otro. Empezamos con <b>El Nano</b>. Además, las <b>banderas se ven ya igual en todos los dispositivos</b> y hay <b>207 países</b> para elegir. Y <b>dilemas nuevos</b>, que aparecerán durante la partida. El <b>viernes 21 abre la década de 1990</b>. Vuelve pronto. 🏗️" data-pt="✨ <b>Últimas novidades:</b> já está aberto o <b>Desafio semanal</b>: toda segunda-feira, uma carreira jogada com as cartas de outro. Começamos com <b>El Nano</b>. Além disso, as <b>bandeiras já aparecem iguais em todos os dispositivos</b> e há <b>207 países</b> para escolher. E <b>dilemas novos</b>, que vão aparecer durante a partida. Na <b>sexta-feira 21 abre a década de 1990</b>. Volte logo. 🏗️"
+     data-en="✨ <b>What's new:</b> the <b>Weekly Challenge</b> is open: every Monday, a career played with someone else's cards. We start with <b>El Nano</b>. On top of that, <b>flags now look the same on every device</b> and there are <b>207 countries</b> to choose from. Plus <b>new dilemmas</b> waiting to show up mid-career. The <b>1990s open on Friday the 21st</b>. Come back soon. 🏗️">✨ <b>Últimas novedades:</b> ya está abierto el <b>Reto semanal</b>: cada lunes, una carrera jugada con las cartas de otro. Empezamos con <b>El Nano</b>. Además, las <b>banderas se ven ya igual en todos los dispositivos</b> y hay <b>207 países</b> para elegir. Y <b>dilemas nuevos</b>, que aparecerán durante la partida. El <b>viernes 21 abre la década de 1990</b>. Vuelve pronto. 🏗️</p>
   <!-- 📲 aviso de instalar como app: solo en móvil, se puede cerrar y no vuelve (lo activa initInstallHint) -->
   <div id="installHint" style="display:none">
     <div class="ih-top">
@@ -5213,14 +5221,28 @@ const DILEMAS=[
      [3,()=>(VAL(.93),L("Los pilotos te miran distinto: cuando tocaba estar juntos, fuiste por libre. −fama","The drivers look at you differently: when unity mattered, you went alone. −fame",{pt:"Os pilotos passam a te olhar diferente: na hora de estar juntos, você foi por conta própria. −fama"}))],
      [3,()=>(OVR(-1),L("Un reventón a 300 km/h te pega el susto de tu vida. −1 OVR","A blowout at 300 km/h gives you the fright of your life. −1 OVR",{pt:"Um estouro a 300 km/h te dá o susto da sua vida. −1 OVR"}))])}]},
  // 🏁 inspirado en 2016: Rosberg ganó su PRIMER Mundial con 31 años y se retiró cinco días después
- {id:"cimaRosberg",stage:"f1",cond:()=>S.cat==="F1"&&S.titles.f1===1&&(S.seasons.at(-1)||{}).pos===1&&S.age>=30,
+ /* 🏔️ RETIRARSE EN LA CIMA (Rosberg 2016). Dos arreglos del 17-ago tras el reporte de un jugador:
+    · SALÍA CASI SIEMPRE. Medido: de 22 carreras, 5 llegaron a la situación y en 4 salió el dilema —un
+      80%—. La ventana es de un solo año (justo tras el primer título, con 30+), así que en cuanto se
+      abría, se disparaba. Ahora se sortea UNA vez por carrera y sale en ~1 de cada 3.
+      ⚠️ El sorteo se guarda en S: `cond` se evalúa muchas veces y un ch() suelto daría un resultado
+      distinto cada vez —el dilema aparecería y desaparecería según quién preguntara—.
+    · SEGUIR NO PUEDE CASTIGARTE. Antes, «aún tengo hambre» quitaba −1 OVR en 6 de cada 10 tiradas:
+      continuar tu carrera después del primer título era, en frío, una mala decisión. Retirarse debe
+      ser una elección de personaje, no la opción estadísticamente correcta. */
+ {id:"cimaRosberg",stage:"f1",
+  cond:()=>{
+    if(S.cat!=="F1" || (S.titles.f1||0)!==1 || ((S.seasons.at(-1)||{}).pos)!==1 || S.age<30) return false;
+    if(S._cimaSorteo==null) S._cimaSorteo = ch(.35);
+    return S._cimaSorteo;
+  },
   t:()=>L("¿Retirarte en la cima?","Retire on top?",{pt:"Retirares-te no auge?"}),
   d:()=>L("Lo has conseguido: campeón del mundo, después de todo el sacrificio que nadie vio. Y una voz dentro pregunta: ¿y ahora qué? Ya no queda nada que demostrar. Podrías irte como los más grandes: por la puerta de arriba.","You've done it: world champion, after sacrifices nobody saw. And a voice inside asks: now what? There's nothing left to prove. You could leave like the greats — through the top door.",{pt:"Você conseguiu: campeão mundial, depois de todo o sacrifício que ninguém viu. E uma voz por dentro pergunta: e agora? Já não há nada a provar. Você poderia sair como os maiores: pela porta da frente."}),opts:[
    {l:()=>L("Colgar el casco siendo campeón","Hang up the helmet as champion",{pt:"Pendurar o capacete sendo campeão"}),r:()=>{ endCareer(); return L("Cinco días después del título lo anuncias: te vas. El paddock se queda helado… y en pie, aplaudiendo.","Five days after the title you announce it: you're leaving. The paddock is stunned — and on its feet, applauding.",{pt:"Cinco dias depois do título você anuncia: está saindo. O paddock congela… e depois se levanta, aplaudindo."}); }},
    {l:()=>L("Seguir: aún tengo hambre","Keep going: I'm still hungry",{pt:"Continuar: ainda tenho fome"}),r:()=>roll(
-     [4,()=>L("El fuego sigue vivo. A por el siguiente.","The fire still burns. On to the next one.",{pt:"O fogo continua vivo. Rumo ao próximo."})],
-     [4,()=>(OVR(-1),L("Lo notas enseguida: sin montaña que escalar, entrenar cuesta el doble. −1 OVR","You feel it at once: with no mountain left to climb, training is twice as hard. −1 OVR",{pt:"Você sente na hora: sem montanha para escalar, treinar custa o dobro. −1 OVR"}))],
-     [2,()=>(OVR(-1),VAL(.95),L("El campeón defensor vive vigilado: cada tropiezo es portada. −1 OVR, −fama leve","The defending champion lives under a microscope: every stumble makes headlines. −1 OVR, slight −fame",{pt:"O campeão em título vive vigiado: cada tropeço é capa. −1 OVR, −fama leve"}))])}]},
+     [5,()=>L("El fuego sigue vivo. A por el siguiente.","The fire still burns. On to the next one.",{pt:"O fogo continua vivo. Rumo ao próximo."})],
+     [3,()=>(VAL(1.05),L("Nadie se explica que sigas. Esa hambre después de tenerlo todo es justo lo que el paddock respeta. +fama","Nobody understands why you're still here. That hunger after having it all is exactly what the paddock respects. +fame",{pt:"Ninguém entende por que você continua. Essa fome depois de ter tudo é o que o paddock respeita. +fama"}))],
+     [2,()=>(VAL(.95),L("El campeón defensor vive vigilado: cada tropiezo es portada. −fama leve","The defending champion lives under a microscope: every stumble makes headlines. slight −fame",{pt:"O campeão defensor vive vigiado: cada tropeço é manchete. −fama leve"}))])}]},
 
  // 🎲 LA APUESTA DEL REGLAMENTO (Hamilton→Mercedes, 2013): dejas un coche ganador por una promesa técnica.
  // Ventana de UN año (dos antes de la revolución) → va en el bloque de prioridad de pickDilemma().
