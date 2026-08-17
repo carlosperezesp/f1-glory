@@ -6311,6 +6311,7 @@ function simSeason(){
   if(S.cat!=="ADV" && S.cat!=="TP" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero (ni en el muro: esos son de piloto)
   mktReset();             // 🔒 nadie se ha movido todavía en el mercado de este invierno
   evolveF1(row);
+  tpCapFilial();   // 🅱️ tras evolucionar todos, el filial se recorta si se pasó de la madre
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
   npcSeason(row);
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
@@ -6366,6 +6367,20 @@ function simSeason(){
   S.age++;
 }
 
+/* 🅱️ EL FILIAL NUNCA SUPERA A LA MADRE (regla firme de Carlos, 17-ago). El comentario viejo prometía
+   un tope «madre − 6» que ya no se aplicaba, y mi cambio de dejar al jugador DIRIGIR Racing Bulls lo
+   agravaba: en TP el rumbo de tu equipo se salta el dado de evolveF1, así que invirtiendo podías pasar
+   a Red Bull. Este tope corta eso venga de donde venga —evolución NPC o inversión del jugador—: el B
+   se queda 4 puntos por debajo del A como mucho. */
+function tpCapFilial(){
+  F1_TEAMS.forEach(t=>{
+    const madre=JUNIOR_OF[t.name];
+    if(!madre || !jrParentAlive(t.name)) return;
+    const techoMadre=(S.f1perf[madre]??96)-4;
+    if(S.f1perf[t.name]>techoMadre) S.f1perf[t.name]=techoMadre;
+    if((S.f1target[t.name]??0)>((S.f1target[madre]??96))) S.f1target[t.name]=S.f1target[madre];
+  });
+}
 function evolveF1(row){
   F1_TEAMS.forEach(t=>{
     // los proyectos cambian de rumbo pocas veces → eras que duran varios años.
@@ -9978,7 +9993,7 @@ function tpTemptCheck(){
 /* ── DILEMAS PROPIOS DEL MURO (semilla Fase 1) — regla de GPD: la decisión no otorga el
    resultado, ALTERA LAS CONDICIONES; la simulación es el juez. Efectos pequeños, historia grande. ── */
 const TPRE=n=>{S.tpPrest=Math.round(Math.max(5,Math.min(99,S.tpPrest+n)));};
-const TPCAR=n=>{ if(S.f1perf[S.tpTeam]!=null) S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+n)); };
+const TPCAR=n=>{ if(S.f1perf[S.tpTeam]!=null){ S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+n)); tpCapFilial(); } };
 const TPTGT=n=>{ if(S.f1target[S.tpTeam]!=null) S.f1target[S.tpTeam]=Math.max(61,Math.min(95,S.f1target[S.tpTeam]+n)); };
 /* 🧢 EL PROBADOR DEL EQUIPO (playtest de Carlos: «debe ser fichable; empeora si no es titular y
    mejora si lo es — así tengo la duda de si poner a Alonso o darle la alternativa a un joven»).
