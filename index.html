@@ -9170,6 +9170,13 @@ function ejePuesto(tn, eje){
 function initTPState(){
   S.cat="TP";
   initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
+  /* 🎲 OVR VARIABLE POR PARTIDA (idea de Carlos, 18-ago). El nivel de los titulares venía FIJO del
+     dato de la era (solo el techo se sorteaba); en el modo jefe eso hacía cada partida demasiado
+     parecida: siempre los mismos buenos. ±2 por piloto, sin pasar su techo. SOLO aquí: el clásico
+     mantiene su nivel de siempre — extenderlo sería decisión aparte. */
+  Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{
+    if(d && d!=="PLAYER" && d.skill!=null) d.skill=Math.max(70, Math.min((d.ceil||97)-1, d.skill+rnd(-2,2)));
+  }));
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
@@ -9295,7 +9302,19 @@ function tpProy(d){
   if(margen<=1)              return L("🔒 En su techo","🔒 At his ceiling",{pt:"🔒 No seu teto"});
   return "";
 }
-function tpEtiqueta(d){ const pr=tpProy(d); return tpNivel(d)+(pr?" · "+pr:""); }
+/* ⭐ CALIDAD Y POTENCIAL EN ESTRELLAS (Carlos, 18-ago: «en vez de media tabla · con recorrido, que
+   sea calidad actual y potencial, en estrellas, igual que el coche — así está todo en la misma
+   escala»). Escala ABSOLUTA (un 5★ es un fuera de serie, haya los que haya), y el potencial solo se
+   enseña si supera a la calidad: «★★★☆☆ → ★★★★★» se lee solo. */
+function tpStarsN(v, esTecho){
+  const c = esTecho ? [82,86,90,94] : [78,83,88,93];
+  return v>=c[3]?5 : v>=c[2]?4 : v>=c[1]?3 : v>=c[0]?2 : 1;
+}
+function tpEtiqueta(d){
+  const c=tpStarsN(d.skill||0,false), p=Math.max(c, tpStarsN(d.ceil||0,true));
+  const est="★".repeat(c)+"☆".repeat(5-c);
+  return p>c ? est+" → "+"★".repeat(p)+"☆".repeat(5-p) : est;
+}
 function tpStars(tn){ const perf=S.f1perf[tn]??75; const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-60)/36)));
   return "★".repeat(n5)+"☆".repeat(5-n5); }
 function tpTierLabel(tn){
@@ -10393,7 +10412,7 @@ function renderTPGrid(){
       if(d==="PLAYER") return "";
       const rk=S.rankD&&S.rankD[d.name]?` · ${S.rankD[d.name]}º`:"";
       const con=(mine&&d.tpc!=null)?` · 📜${Math.max(0,d.tpc)}`:"";
-      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)} <b>${tpNivel(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}<br><span style="opacity:.72;font-size:11.5px">${tpProy(d)||"&nbsp;"}</span></span>`;
+      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
     }).join(" ");
     const pos=ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"";
     html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;${mine?"outline:2px solid #e10600;border-radius:10px":""}">
@@ -10411,9 +10430,9 @@ function tpReservePool(){
   const out=[];
   const seated=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") seated.add(d.name); }));
   // libres con nivel (vía Albon) y jóvenes del pool sin asiento
-  (S.freeAgents||[]).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpNivel(d)}</b> · ${L("libre","free",{pt:"livre"})}`));
+  (S.freeAgents||[]).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b> · ${L("libre","free",{pt:"livre"})}`));
   (S.dpool||[]).filter(d=>d&&d.name&&!seated.has(d.name)&&(d.age||99)<=28&&(d.skill||0)>=74&&!(S.freeAgents||[]).some(f=>f.name===d.name))
-    .slice(0,4).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpNivel(d)}</b> · ${d.age}${tpProy(d)?" · "+tpProy(d):""}`));
+    .slice(0,4).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b> · ${d.age}`));
   // las promesas de la cantera aún sin debutar: nombre y bandera; su nivel se descubre al firmar
   const yr=yearNow();
   (S.rookies||[]).filter(r=>!r[2]||yr>=r[2]).slice(0,6)
