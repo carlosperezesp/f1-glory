@@ -288,7 +288,9 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tl-row.champ .age{background:linear-gradient(135deg,#e10600,#ff4d1c);color:#fff;box-shadow:0 4px 10px rgba(225,6,0,.3)}
 .tl-row .club{display:flex;align-items:center;gap:8px;min-width:0}
 .tl-row .club .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tp-verdict{display:block;font-size:12px;font-weight:800;margin-top:5px;padding:4px 9px;border-radius:8px}
+/* el veredicto ocupa TODO el ancho de la fila (grid-column), como los eventos: metido en la columna
+   de 52px salía en vertical, apretado y feo — captura de Carlos */
+.tp-verdict{grid-column:2/-1;justify-self:start;display:inline-block;font-size:12px;font-weight:800;margin:4px 0 2px;padding:4px 10px;border-radius:8px}
 .tp-verdict.ok{background:rgba(18,146,63,.13);color:#12923f}
 .tp-verdict.titulo{background:linear-gradient(90deg,rgba(230,179,37,.2),transparent);color:#b3860a}
 .tp-verdict.gracia{background:rgba(201,138,30,.14);color:#b47417}
@@ -7024,7 +7026,8 @@ function renderF1State(){
   // insignia y clase de movimiento (sube/baja respecto al año pasado)
   const mvB=mv=> mv==null?"":mv>0?`<span class="mv up">▲${mv}</span>`:mv<0?`<span class="mv down">▼${-mv}</span>`:`<span class="mv eq">=</span>`;
   const mvCls=mv=> mv>0?" mv-up":mv<0?" mv-down":"";
-  let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${x.me?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.me?L("TÚ","YOU",{pt:"TU"}):x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
+  const _mio=(x)=>x.me || (S.cat==="TP" && x.team===S.tpTeam);   // 🧑‍💼 en el muro, los TUYOS destacan
+  let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${_mio(x)?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.me?L("TÚ","YOU",{pt:"TU"}):x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
   if(S.lastTop3.myPos!=null && S.lastTop3.myPos>3)
     dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} ${L("TÚ","YOU",{pt:"TU"})}</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
   if(FS_OPEN.d) dHtml+=fsResto("d");
@@ -7080,7 +7083,8 @@ function fsResto(cual){
       // el equipo con el que corrió ESE año; si no consta, se rebusca entre los asientos de ahora
       const eqAnual=(S.rankDTeam||{})[n];
       const eq=eqAnual || (Object.entries(S.seats||{}).find(([t,sl])=>(sl||[]).some(x=>x&&x!=="PLAYER"&&x.name===n))||[])[0];
-      return `<div class="srow extra"><span class="nm">${p}º ${fl?flg(fl):""} ${surname(n)}</span><span class="rt2">${eq?teamBadge(eq):""}</span></div>`;
+      const mio = S.cat==="TP" && eq===S.tpTeam;   // los míos en su color; el resto, normal
+      return `<div class="srow extra${mio?" me":""}"><span class="nm">${p}º ${fl?flg(fl):""} ${mio?`<b>${surname(n)}</b>`:surname(n)}</span><span class="rt2">${eq?teamBadge(eq):""}</span></div>`;
     }).join("");
   }
   const r=S.rankC||{};
@@ -8373,8 +8377,8 @@ function renderTimeline(){
        guarda en row.tpDrv al simular la temporada; aquí solo se pinta. */
     const tpCel=(i)=>{ const d=(r.tpDrv||[])[i];
       if(!d) return '<span class="num">—</span>';
-      const cls = d.pos===1?"p1" : d.pos<=3?"top" : d.pos<=10?"" : "rest";
-      return `<span class="num tpdrv ${cls}" title="${d.n}">${d.fl} ${d.pos===1?"🏆":d.pos+"º"}</span>`; };
+      // pastilla de color como la de constructores (petición de Carlos, capturas del 18-ago)
+      return `<span class="pos ${posClass(d.pos)}" title="${d.n}" style="font-size:12px;padding:4px 6px">${d.fl} ${d.pos===1?"🏆 1º":d.pos+"º"}</span>`; };
     const raced=r.cat==="TEST"&&r.subRaces;
       /* 🧑‍💼 en el modo jefe, poner «Team Principal» en CADA fila es ruido: ya se sabe a qué juegas
        (aviso de Carlos). La fila queda «Aston Martin · 2029» y se lee mucho mejor. */
@@ -9219,7 +9223,14 @@ function tpRefreshCard(){
   const bl=$("ovrBadge").querySelector(".l"); if(bl) bl.textContent=L("FAMA","FAME",{pt:"FAMA"});
   $("ovrBadge").style.background=ovrColor(Math.max(55,Math.min(96,55+S.tpPrest*.42)));
   if(sel.flag) $("tagNat").textContent = natLabel();
-  $("tagNum").style.display="none";
+  /* 📄🎯 lo que Carlos echaba de menos JUGANDO: cuántos años de contrato le quedan y qué le exige el
+     consejo, visibles en todo momento. El chip del dorsal (sin uso en el muro) pasa a ser el contrato,
+     y el objetivo vigente acompaña al humor del consejo. */
+  const _tn2=$("tagNum");
+  if(S.tpContract!=null && S.tpContract>0){
+    _tn2.style.display="";
+    _tn2.textContent="📄 "+S.tpContract+" "+(S.tpContract===1?L("año","yr",{pt:"ano"}):L("años","yrs",{pt:"anos"}));
+  } else _tn2.style.display="none";
   $("tagStyle").textContent=tpOwnerLabel();
   $("ageV").textContent=(S.age+1);
   const lbls=document.querySelectorAll("#driverCard .agev .lbl");
@@ -9228,7 +9239,9 @@ function tpRefreshCard(){
   const mood = S.tpMissStreak>=1 ? [L("🚨 Ultimátum","🚨 Ultimatum",{pt:"🚨 Ultimato"}),"#d43f3f"]
     : S.tpLastMet===false ? [L("😮‍💨 Con aire","😮‍💨 Breathing",{pt:"😮‍💨 Com ar"}),"#c98a1e"]
     : [L("😊 Contento","😊 Happy",{pt:"😊 Contente"}),"#12923f"];
-  $("valV").textContent=mood[0]; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
+  const _goal=(S.tpGoal && S.tpGoal.year===yearNow() && S.tpGoal.target!=null)
+    ? " · 🎯 "+(S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º") : "";
+  $("valV").textContent=mood[0]+_goal; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
   const ks=document.querySelectorAll("#driverCard .stats-row .k");
   if(ks[0]) ks[0].textContent=L("Temporadas","Seasons",{pt:"Temporadas"});
   if(ks[3]) ks[3].textContent=L("Títulos","Titles",{pt:"Títulos"});
