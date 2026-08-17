@@ -792,8 +792,8 @@ body.conBeta #topBtns{top:44px}
     <div>
       <div class="card f1state" id="f1state" style="display:none">
         <div class="cols">
-          <div><h5><span data-es="👑 Mundial de pilotos" data-pt="👑 Mundial de pilotos" data-pl="👑 Mistrzostwa kierowców" data-fr="👑 Championnat pilotes" data-pt="👑 Mundial de pilotos" data-en="👑 Drivers' Championship">👑 Mundial de pilotos</span> <span id="fsYear"></span><button class="fs-more" id="fsMoreD" onclick="fsToggle('d')" title="Ver la clasificación entera">▾</button></h5><div id="fsDrivers"></div></div>
-          <div><h5><span data-es="🏭 Constructores" data-pt="🏭 Construtores" data-pl="🏭 Konstruktorzy" data-fr="🏭 Constructeurs" data-pt="🏭 Construtores" data-en="🏭 Constructors">🏭 Constructores</span><button class="fs-more" id="fsMoreC" onclick="fsToggle('c')" title="Ver la clasificación entera">▾</button></h5><div id="fsTeams"></div></div>
+          <div><h5><span data-es="👑 Mundial de pilotos" data-pt="👑 Mundial de pilotos" data-pl="👑 Mistrzostwa kierowców" data-fr="👑 Championnat pilotes" data-pt="👑 Mundial de pilotos" data-en="👑 Drivers' Championship">👑 Mundial de pilotos</span> <span id="fsYear"></span><button class="fs-more" id="fsMoreD" onclick="fsToggle()" title="Ver las dos clasificaciones enteras">▾</button></h5><div id="fsDrivers"></div></div>
+          <div><h5><span data-es="🏭 Constructores" data-pt="🏭 Construtores" data-pl="🏭 Konstruktorzy" data-fr="🏭 Constructeurs" data-pt="🏭 Construtores" data-en="🏭 Constructors">🏭 Constructores</span><button class="fs-more" id="fsMoreC" onclick="fsToggle()" title="Ver las dos clasificaciones enteras">▾</button></h5><div id="fsTeams"></div></div>
         </div>
       </div>
       <div class="timeline">
@@ -6975,11 +6975,14 @@ let FS_OPEN={d:false,c:false};
    foto completa del campeonato, ver el podio y tu puesto y ya. Desde el muro sí tienes derecho a ver
    la parrilla entera. Corregido el 16-ago. */
 function fsPuedeDesplegar(){ return typeof S!=="undefined" && S && S.cat==="TP"; }
-function fsToggle(cual){
+/* 🔁 UN SOLO INTERRUPTOR PARA LAS DOS COLUMNAS (petición de Carlos, 17-ago: «no me gusta tener que
+   desplegar pilotos por un lado y constructores por otro»). Las dos flechas siguen existiendo —una
+   por columna, donde el ojo las busca— pero cualquiera de las dos abre y cierra AMBAS. */
+function fsToggle(){
   if(!fsPuedeDesplegar()) return;
-  FS_OPEN[cual]=!FS_OPEN[cual];
-  const b=document.getElementById(cual==="d"?"fsMoreD":"fsMoreC");
-  if(b) b.classList.toggle("open", FS_OPEN[cual]);
+  const abrir = !(FS_OPEN.d && FS_OPEN.c);      // si alguna está cerrada, se abren las dos
+  FS_OPEN.d = FS_OPEN.c = abrir;
+  ["fsMoreD","fsMoreC"].forEach(id=>{ const b=document.getElementById(id); if(b) b.classList.toggle("open", abrir); });
   renderF1State();
 }
 function fsResto(cual){
