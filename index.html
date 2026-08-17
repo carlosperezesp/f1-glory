@@ -288,6 +288,15 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tl-row.champ .age{background:linear-gradient(135deg,#e10600,#ff4d1c);color:#fff;box-shadow:0 4px 10px rgba(225,6,0,.3)}
 .tl-row .club{display:flex;align-items:center;gap:8px;min-width:0}
 .tl-row .club .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-verdict{display:block;font-size:12px;font-weight:800;margin-top:5px;padding:4px 9px;border-radius:8px}
+.tp-verdict.ok{background:rgba(18,146,63,.13);color:#12923f}
+.tp-verdict.titulo{background:linear-gradient(90deg,rgba(230,179,37,.2),transparent);color:#b3860a}
+.tp-verdict.gracia{background:rgba(201,138,30,.14);color:#b47417}
+.tp-verdict.fallo{background:rgba(225,6,0,.10);color:#c62222}
+.tp-verdict.fuera{background:rgba(225,6,0,.16);color:#c62222}
+[data-theme="dark"] .tp-verdict.ok{color:#4cd07f}
+[data-theme="dark"] .tp-verdict.titulo{color:#e6b325}
+[data-theme="dark"] .tp-verdict.fallo,[data-theme="dark"] .tp-verdict.fuera{color:#ff7a72}
 .tl-row .club .cat{font-size:11px;color:var(--muted)}
 .tl-row .num{text-align:center;font-weight:700}
 .tl-row .num.w{color:#c98f00}.tl-row .num.p{color:#16a34a}
@@ -8246,6 +8255,21 @@ function regResetOffers(){
 }
 
 /* ---------- línea de tiempo ---------- */
+/* 🎯 EL VEREDICTO DEL CONSEJO, EN UNA LÍNEA PROPIA (playtest de Carlos: «se ve muy pequeño, hay que
+   dejar más claro cuándo la temporada es un fracaso o no»). En vez de perderse entre los eventos del
+   año, sale destacado con su color: verde cumplido, dorado si un título de pilotos lo rescató, ámbar
+   si te compraste un año de aire, rojo si fallaste. */
+function tpVerdictLine(r){
+  const objetivo=r.tpGoalTxt||"";
+  const cumple=(r.constrPos===1?"1º":(r.constrPos||"?")+"º");
+  switch(r.tpVerdict){
+    case "titulo": return L(`🎯 Objetivo: ${objetivo} → 🏆 rescatado por el título de pilotos`,`🎯 Target: ${objetivo} → 🏆 saved by the drivers' title`,{pt:`🎯 Meta: ${objetivo} → 🏆 salvo pelo título de pilotos`});
+    case "ok":     return L(`🎯 Objetivo: ${objetivo} → ✅ cumplido`,`🎯 Target: ${objetivo} → ✅ met`,{pt:`🎯 Meta: ${objetivo} → ✅ cumprida`});
+    case "gracia": return L(`🎯 Objetivo: ${objetivo} → 🛡️ fallado, pero te compras un año`,`🎯 Target: ${objetivo} → 🛡️ missed, but you buy a year`,{pt:`🎯 Meta: ${objetivo} → 🛡️ falhada, mas você compra um ano`});
+    case "fuera":  return L(`🎯 Objetivo: ${objetivo} → 🚪 fallado por segundo año: destituido`,`🎯 Target: ${objetivo} → 🚪 missed a second year: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada pelo segundo ano: demitido`});
+    default:       return L(`🎯 Objetivo: ${objetivo} → ❌ no cumplido, el consejo aprieta`,`🎯 Target: ${objetivo} → ❌ missed, the board tightens`,{pt:`🎯 Meta: ${objetivo} → ❌ não cumprida, o conselho aperta`});
+  }
+}
 function renderTimeline(){
   const b=$("tlBody"); b.innerHTML="";
   /* 🧑‍💼 LA CABECERA TAMBIÉN CAMBIA EN EL MODO JEFE. Es HTML fijo, así que se reetiqueta aquí: un jefe
@@ -8317,6 +8341,7 @@ function renderTimeline(){
       ${esTP ? tpCel(1) : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
       <span class="pos ${posCls}">${posLab}</span>
       ${top3}
+      ${r.cat==="TP"&&r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
       ${(r.events&&r.events.length)?`<span class="ev">${r.events.join(" · ")}</span>`:""}`;
     b.appendChild(div);
   });
@@ -9672,16 +9697,30 @@ function simTP(row){
       {pt:`👑 ${surname(champDrv.name)} é campeão mundial com a sua equipe.`})); }
   // veredicto del consejo: cumplir/incumplir el listón anunciado (2 seguidos = destitución)
   const G=S.tpGoal||{target:Math.ceil(nT*.55), exp:Math.ceil(nT/2)};
-  const met=cPos<=G.target;
+  /* 🏆 UN TÍTULO DE PILOTOS RESCATA LA TEMPORADA (decisión de Carlos, 16-ago). El listón es de
+     CONSTRUCTORES —es el campeonato del equipo— pero si uno de tus pilotos es campeón del mundo, el
+     año cuenta como cumplido aunque quedes 2º-3º de constructores: pudo haber una lesión del otro
+     piloto, un mal fin de temporada… y aun así tienes al campeón en tu coche. Un consejo de verdad
+     no te echa por eso. */
+  const rescataTitulo = !!champDrv;
+  const met=cPos<=G.target || rescataTitulo;
   const delta=(G.exp-cPos);
   S.tpOverSum=(S.tpOverSum||0)+delta;
   S.tpBestPos=Math.min(S.tpBestPos||99, cPos);
+  row.tpVerdict = met ? (rescataTitulo && cPos>G.target ? "titulo" : "ok") : (S.tpGrace ? "gracia" : (S.tpMissStreak>=1 ? "fuera" : "fallo"));
+  row.tpGoalTxt = G.target===1
+    ? L("título de constructores","constructors' title",{pt:"título de construtores"})
+    : L(`${G.target}º de constructores o mejor`,`P${G.target} constructors or better`,{pt:`${G.target}º de construtores ou melhor`});
   if(met){
     S.tpMissStreak=0; S.tpLastMet=true;
     row.events.push(delta>=2
       ? L(`✅ Sobre-rendimiento: el coche era el ${G.exp}º de la parrilla y acabáis ${cPos===1?"campeones":cPos+"º"}. Tu nombre suena en todo el paddock.`,
           `✅ Overachievement: the car was the grid's ${G.exp}th best and you finish ${cPos===1?"champions":"P"+cPos}. Your name echoes through the paddock.`,
           {pt:`✅ Superação: o carro era o ${G.exp}º do grid e vocês terminam ${cPos===1?"campeões":"em "+cPos+"º"}. O seu nome corre o paddock.`})
+      : (rescataTitulo && cPos>G.target)
+      ? L(`✅ ${cPos}º de constructores, por debajo del listón… pero tienes al CAMPEÓN DEL MUNDO en tu coche. El consejo no discute un título de pilotos.`,
+          `✅ P${cPos} in the constructors, below the bar… but you have the WORLD CHAMPION in your car. The board doesn't argue with a drivers' title.`,
+          {pt:`✅ ${cPos}º de construtores, abaixo da meta… mas você tem o CAMPEÃO MUNDIAL no seu carro. O conselho não discute um título de pilotos.`})
       : L(`✅ ${cPos===1?"Campeones":cPos+"º"} de constructores: objetivo cumplido, el consejo respira.`,
           `✅ ${cPos===1?"Champions":"P"+cPos} in the constructors: target met, the board breathes.`,
           {pt:`✅ ${cPos===1?"Campeões":cPos+"º"} de construtores: meta cumprida, o conselho respira.`}));
@@ -9784,7 +9823,17 @@ function tpContratoScreen(){
   const techo = S.tpPrest>=75 ? myPerf+10 : S.tpPrest>=58 ? myPerf+4 : myPerf-2;
   const posibles=orden.filter(t=>(S.f1perf[t.name]||70)<=techo);
   const pick=(arr,n)=>{const c=[...arr],o=[];while(o.length<n&&c.length)o.push(c.splice(irnd(0,c.length-1),1)[0]);return o;};
-  const fuera=pick(posibles.length?posibles:orden.slice(-3), S.tpPrest>=50?2:1);
+  let fuera=pick(posibles.length?posibles:orden.slice(-3), S.tpPrest>=50?2:1);
+  /* 🅱️ ASCENSO DESDE EL FILIAL (playtest de Carlos: «Racing Bulls es filial de Red Bull, te podrían
+     fichar ellos también»). Si diriges el equipo B y cumpliste, la marca madre te sube al primer
+     equipo — el camino real de un jefe de Toro Rosso a Red Bull. Va SIEMPRE en la lista, por delante. */
+  if(isRBJr(tn) && cumpliste){
+    const madre=F1_TEAMS.find(t=>t.name===JUNIOR_OF[tn]);
+    if(madre && !fuera.some(t=>t.name===madre.name)){
+      fuera=[madre, ...fuera].slice(0,2);
+      S._tpAscenso=madre.name;   // para un texto especial en el botón
+    }
+  }
   setDecision(L(`📄 Se acaba tu contrato con ${tn}`,`📄 Your contract with ${tn} is up`,{pt:`📄 Acaba o seu contrato com a ${tn}`}),
     L(`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} al mando y el papel se acaba. ${cumpliste?"Cumpliste, y eso se sabe en el paddock.":"No cumpliste, y eso también se sabe."} Decide dónde sigues.`,
       `${S.tpContractTotal} season${S.tpContractTotal===1?"":"s"} in charge and the paper runs out. ${cumpliste?"You delivered, and the paddock knows it.":"You didn't deliver, and the paddock knows that too."} Decide where you go next.`,
@@ -9799,7 +9848,8 @@ function tpContratoScreen(){
     const _lg=logoFor(t.name);
     const punto=_lg?`<span class="team-dot haslogo" style="background:#fff url(${_lg}) center/cover;border:none"></span>`
                    :`<span class="team-dot" style="${badgeStyle(t)}">${t.abbr||""}</span>`;
-    b.innerHTML=`${punto}<span class="info"><span class="name">${renov?L("Renovar con ","Renew with ",{pt:"Renovar com "}):""}${t.name} · ${tpStars(t.name)}</span>
+    const esAscenso=(t.name===S._tpAscenso);
+    b.innerHTML=`${punto}<span class="info"><span class="name">${esAscenso?"🅱️➡️ ":""}${renov?L("Renovar con ","Renew with ",{pt:"Renovar com "}):""}${t.name} · ${tpStars(t.name)}${esAscenso?" "+L("(¡el primer equipo!)","(the senior team!)",{pt:"(a equipe principal!)"}):""}</span>
       <span class="sub" style="display:block">${L(`Contrato de ${años} temporada${años===1?"":"s"}`,`${años}-season deal`,{pt:`Contrato de ${años} temporada${años===1?"":"s"}`})} · ${tpTierLabel(t.name)}</span>
       ${ultimo?`<span class="sub" style="display:block;color:var(--gold);font-weight:700">${L("⏳ Tu último trabajo en la F1: te retirarás al acabarlo","⏳ Your last job in F1: you'll retire when it ends",{pt:"⏳ O seu último trabalho na F1: vai se aposentar ao terminar"})}</span>`:""}</span>`;
     b.onclick=()=>{
