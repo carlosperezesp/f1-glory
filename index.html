@@ -3291,6 +3291,10 @@ function mkRookie(noCross, forTeam){
     const r=S.rookies[i];
     if(r[2] && _yr<r[2]) return false;           // aún no le toca
     if(r[3] && (_yr-r[3])>34) return false;      // ya se le pasó el arroz
+    /* 🐂 el asiento del FILIAL solo bebe promesas: con los años de nacimiento reales, un nombre del
+       bote podía «debutar» en Racing Bulls con 30+ (medido: hasta 34). Si ninguno cumple, cae al
+       debutante generado, que nace con 18-21. */
+    if(noCross && r[3] && (_yr-r[3])>26) return false;
     return true;
   });
   if(name){ /* ya lo puso el bloque del mecenas */ }
@@ -3412,7 +3416,7 @@ function npcSeason(row){
     // y solo con una diferencia clara → el mejor no acaba siempre en el mejor coche
     if(best && best.skill>weak.skill+4 && ch(.2) && canLureStar(order[i],best)){
       // Racing Bulls no acepta veteranos ni siquiera como descarte del mercado (crossover/mayor/campeón)
-      if(isRBJr(bTeam) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) continue;
+      if(isRBJr(bTeam) && (weak.crossover || (weak.age||0)>=27 || (weak.titles||0)>0)) continue;
       top[wIdx]=best; S.seats[bTeam][bIdx]=weak;
       best.yrs=0; weak.yrs=0;
     }
@@ -3456,6 +3460,43 @@ function mktReset(){ S._mkt=[]; }
 function mktName(x){ return (!x || x==="PLAYER") ? null : (typeof x==="string" ? x : x.name); }
 function mktMoved(x){ const n=mktName(x); return !!n && (S._mkt||[]).indexOf(n)>=0; }
 function mktMark(...xs){ S._mkt=S._mkt||[]; xs.forEach(x=>{ const n=mktName(x); if(n) S._mkt.push(n); }); }
+/* 🐂 EL FILIAL ES UNA CANTERA, NO UN RETIRO (Carlos, 17-ago: «Racing Bulls debe fichar solo promesas,
+   y si se hacen viejos, se van»). Las guardas de ENTRADA ya existían; lo que no existía era la SALIDA:
+   medido, pilotos entrando con 19-25 y envejeciendo dentro hasta los 34-38.
+   Cada invierno, un piloto del filial que cumpla 29 —o que gane un TÍTULO, con la edad que sea—:
+   · si es bueno y en la marca madre hay un asiento claramente peor → ASCIENDE (el camino Verstappen);
+   · si no → sale al mercado como agente libre, y debuta un canterano.
+   Solo NPC aquí; al PILOTO-jugador se lo aplica rbOk (no le renuevan a los 29). */
+const RB_SALIDA=29;   // y la ENTRADA está en 27 en todas las guardas del mercado: solo promesas (≤26)
+function rbCanteraInvernal(row){
+  Object.keys(S.seats).forEach(tn=>{
+    if(!isRBJr(tn) || tpManaged(tn)) return;
+    const sl=S.seats[tn]; if(!Array.isArray(sl)) return;
+    const madre=JUNIOR_OF[tn];
+    sl.forEach((d,i)=>{
+      if(!d || d==="PLAYER" || d.beast) return;
+      if((d.age||0)<RB_SALIDA && !(d.titles||0)) return;   // la edad (o el título) es regla dura
+      const ms=S.seats[madre];
+      let wi=-1, ws=999;
+      if(Array.isArray(ms) && !tpManaged(madre)) ms.forEach((x,j)=>{ if(x&&x!=="PLAYER"&&!x.beast&&(x.skill||0)<ws){ws=x.skill||0;wi=j;} });
+      if(wi>=0 && (d.skill||0)>=ws+2 && (d.skill||0)>=84){
+        const fuera=ms[wi]; ms[wi]=d; sl[i]=mkRookie(true, tn);
+        if(fuera && fuera!=="PLAYER"){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(fuera); }
+        mktMark(d, fuera, tn, madre);
+        row.events.push(L(`🐂 Ascenso interno: ${surname(d.name)} sube de ${tn} a ${madre}; debuta ${sl[i].name} en el filial.`,
+          `🐂 Internal promotion: ${surname(d.name)} steps up from ${tn} to ${madre}; ${sl[i].name} debuts at the junior team.`,
+          {pt:`🐂 Promoção interna: ${surname(d.name)} sobe da ${tn} para a ${madre}; ${sl[i].name} estreia na filial.`}));
+      } else {
+        S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d);
+        sl[i]=mkRookie(true, tn);
+        mktMark(d, tn);
+        row.events.push(L(`🐂 ${tn} renueva su cantera: ${surname(d.name)} sale con ${d.age} años y debuta ${sl[i].name}.`,
+          `🐂 ${tn} refresh their academy: ${surname(d.name)} leaves at ${d.age} and ${sl[i].name} debuts.`,
+          {pt:`🐂 A ${tn} renova a base: ${surname(d.name)} sai com ${d.age} anos e ${sl[i].name} estreia.`}));
+      }
+    });
+  });
+}
 function npcRescateTalento(row){
   const perf = t => (S.f1perf[t] ?? 75);
   const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
@@ -3480,7 +3521,7 @@ function npcRescateTalento(row){
   for(const tn of cabeza){
     if(tpManaged(tn)) continue;              // 🧑‍💼 tu equipo no rescata solo: para eso está la terna
     const sl=S.seats[tn]; if(!Array.isArray(sl)) continue;
-    if(isRBJr(tn) && ((c.d.age||0)>=32 || (c.d.titles||0)>0 || c.d.crossover)) continue;
+    if(isRBJr(tn) && ((c.d.age||0)>=27 || (c.d.titles||0)>0 || c.d.crossover)) continue;
     if(!canLureStar(tn, c.d)) continue;      // el caché sigue mandando con los galácticos
     let wi=-1, ws=999;
     sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && !x.beast && (x.skill||0)<ws){ ws=x.skill||0; wi=i; } });
@@ -3554,7 +3595,7 @@ function npcMercadoOrdinario(){
     const nuevo=()=>{ S.seats[h.tm][h.i]=mkRookie(isRBJr(h.tm), h.tm); };
     // el filial de Red Bull no ficha veteranos ni campeones tampoco por esta vía;
     // y un galáctico en su prime solo firma donde hay CACHÉ (el crepuscular va donde quiera)
-    const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=32 || (d.titles||0)>0)) && canLureStar(h.tm,d);
+    const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=27 || (d.titles||0)>0)) && canLureStar(h.tm,d);
     const cand=bolsa.filter(apto);
     if(!cand.length){ nuevo(); return; }
     const pos=Math.max(0,ord.indexOf(h.tm)), tramo=pos/Math.max(1,ord.length-1);
@@ -3678,7 +3719,7 @@ function occupySeat(teamName){
       const pac=S.pactoEstrella;
       const hecho = !!(pac && tn===pac.team && sentarEstrellaPactada(tn, j, displaced));
       // RB no hereda veteranos: si dejas Racing Bulls y el descarte de tu nuevo equipo es un veterano/crossover, RB mete a un joven
-      if(!hecho) S.seats[tn][j] = (isRBJr(tn) && displaced && (displaced.crossover||(displaced.age||0)>=32||(displaced.titles||0)>0)) ? mkRookie(true, tn) : displaced;
+      if(!hecho) S.seats[tn][j] = (isRBJr(tn) && displaced && (displaced.crossover||(displaced.age||0)>=27||(displaced.titles||0)>0)) ? mkRookie(true, tn) : displaced;
     }
   }
   // limpia cualquier "PLAYER" residual en otros equipos (herencia de bugs pasados) con un joven
@@ -3821,7 +3862,7 @@ function seatEnemyAsTeammate(){
   Object.entries(S.seats).forEach(([tn,sl])=>{ if(Array.isArray(sl)){ const j=sl.findIndex(d=>d!=="PLAYER"&&d&&d.name===nm); if(j>=0){et=tn;ei=j;} } });
   my[mi]=enemy;
   if(et!=null && ei>=0){
-    const heir=(isRBJr(et) && oldMate && (oldMate.crossover||(oldMate.age||0)>=32||(oldMate.titles||0)>0)) ? mkRookie(true, et) : oldMate;
+    const heir=(isRBJr(et) && oldMate && (oldMate.crossover||(oldMate.age||0)>=27||(oldMate.titles||0)>0)) ? mkRookie(true, et) : oldMate;
     S.seats[et][ei]=heir;
   }
   S.roleMate=enemy.name;
@@ -6309,6 +6350,7 @@ function simSeason(){
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
   npcSeason(row);
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
+  rbCanteraInvernal(row); // 🐂 el filial promociona o suelta a los que dejan de ser promesa
   beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
   maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
   alphaClash(row); // 🥊 dos gallos no caben en el mismo corral
@@ -6597,7 +6639,7 @@ function processArrivals(row){
       // que es lo que ves ANTES de firmar.
       if(tn===(S.team&&S.team.name)) continue;
       const age=Math.max(17, yr-a.b);
-      if(isRBJr(tn) && (age>=32 || (a.ti||0)>0)) continue; // el filial de RB no ficha veteranos/campeones
+      if(isRBJr(tn) && (age>=27 || (a.ti||0)>0)) continue; // el filial SOLO ficha promesas (Carlos, 17-ago)
       let wi=-1, wsk=999;
       slots.forEach((d,i)=>{ if(d!=="PLAYER" && d && !d.alonsoCameo && d.skill<wsk){ wsk=d.skill; wi=i; } });
       if(wi<0) continue;
@@ -6657,7 +6699,7 @@ function poachStar(tn, row){
   Object.entries(S.seats).forEach(([t,s])=>{ if(t===tn || tpManaged(t)) return;   // ni te roba a ti
     (s||[]).forEach((d,i)=>{ if(d && d!=="PLAYER" && (!best || (d.skill||0)>(best.skill||0)) && canLureStar(tn,d)){ best=d; bT=t; bI=i; } }); });
   if(!best || (best.skill||0) <= (weak.skill||0)+3) return;
-  if(isRBJr(bT) && (weak.crossover || (weak.age||0)>=32 || (weak.titles||0)>0)) return; // el filial no acepta veteranos
+  if(isRBJr(bT) && (weak.crossover || (weak.age||0)>=27 || (weak.titles||0)>0)) return; // el filial SOLO acepta promesas
   if(mktMoved(best) || mktMoved(weak) || mktMoved(tn) || mktMoved(bT)) return;
   mktMark(tn, bT, best, weak);
   S.seats[bT][bI]=weak; slots[wIdx]=best;
@@ -7636,7 +7678,9 @@ function returnF1Offers(){
 }
 
 // Racing Bulls es el equipo-cantera: solo ficha PROMESAS. No persigue a veteranos NI a consagrados (campeones/élite).
-function rbOk(t){ return !(t && isRBJr(t.name) && (S.age>=32 || (S.titles.f1||0)>0 || S.ovr>=87)); }
+/* 🐂 la cantera vale también para TI (Carlos, 17-ago): a los 29 el filial no te ofrece renovar,
+   aunque quieras quedarte. Antes cortaba a los 32. */
+function rbOk(t){ return !(t && isRBJr(t.name) && (S.age>=RB_SALIDA || (S.titles.f1||0)>0 || S.ovr>=87)); }
 /* 🎚️ CUÁNTAS PUERTAS SE ABREN. Antes casi siempre tres, entraras cuando entraras y estuvieras como
    estuvieras (medido: 2,91 por pantalla en las cuatro eras). Encargo de Carlos: que costar llegar se
    note, y que al final de la carrera el teléfono suene menos.
@@ -8039,6 +8083,10 @@ function nextOffers(){
         }
       }
       const cur=F1_TEAMS.find(t=>t.name===S.team.name)||S.team;
+      if(cur && isRBJr(cur.name) && S.age>=RB_SALIDA)
+        sub=(sub||"")+L("🐂 El filial no renueva a los 29: su política es promocionar o soltar. ",
+          "🐂 The junior team doesn't renew at 29: their policy is promote or release. ",
+          {pt:"🐂 A filial não renova aos 29: a política é promover ou soltar. "});
       /* 🐞 ESTA RAMA IGNORABA `burned`/`neverHire` y la otra (la del mercado corto) sí los mira. Se
          cazó midiendo el dilema «necesitan tu asiento»: negocias quedarte a cambio de que el año
          siguiente no te renueven… y te renovaban igual. Un equipo quemado NO te ofrece renovar. */
