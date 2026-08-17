@@ -9726,6 +9726,52 @@ const TPRE=n=>{S.tpPrest=Math.round(Math.max(5,Math.min(99,S.tpPrest+n)));};
 const TPCAR=n=>{ if(S.f1perf[S.tpTeam]!=null) S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+n)); };
 const TPTGT=n=>{ if(S.f1target[S.tpTeam]!=null) S.f1target[S.tpTeam]=Math.max(61,Math.min(95,S.f1target[S.tpTeam]+n)); };
 function tpDrvs(){ return (S.seats[S.tpTeam]||[]).filter(d=>d&&d!=="PLAYER"); }
+/* 👑 NOMBRAR Nº1 — LO ELIGE EL JUGADOR (petición de Carlos, 17-ago). Antes los dos dilemas que dan
+   galones ordenaban por nivel y se los daban al mejor AUTOMÁTICAMENTE: la decisión existía en el
+   texto pero no en las manos. Ahora hay un botón por piloto.
+   Carlos: «puedes elegir a quien quieras, y esa es la gracia». Así que nombrar al más lento está
+   permitido —proteger al veterano leal frente a la joven promesa es una decisión legítima— pero no
+   sale gratis: al degradado, si era el más rápido, se le puede acabar la paciencia y pedir salir.
+   La consecuencia la pone el mundo, no una prohibición. */
+function tpNombrarNumeroUno(i){
+  const a=tpDrvs(); const jefe=a[i], otro=a[1-i];
+  if(!jefe) return "";
+  const nivelJefe=jefe.skill||0, nivelOtro=otro?(otro.skill||0):0;
+  const degradasAlMejor = !!otro && nivelOtro > nivelJefe + 1.5;
+  tpDrvSkill(jefe.name, 1);
+  if(otro) tpDrvSkill(otro.name, -1);
+  const N=surname(jefe.name), O=otro?surname(otro.name):"";
+  if(!otro) return L(`${N} recibe los galones y el equipo entero rema en su dirección.`,
+                     `${N} gets the stripes and the whole team rows in his direction.`,
+                     {pt:`${N} recebe os galões e a equipe inteira rema na direção dele.`});
+  if(degradasAlMejor){
+    // el mejor piloto viendo cómo otro recibe los galones: 40% de que pida salir a final de año
+    if(ch(.40)){
+      S.tpSaleQ=(S.tpSaleQ||[]).concat([{name:otro.name,to:null}]);
+      TPRE(-1);
+      return L(`${N} recibe los galones… y ${O}, que es más rápido y lo sabe, no lo encaja: pide salir a final de temporada. −prestigio`,
+               `${N} gets the stripes… and ${O}, who is faster and knows it, won't take it: he asks to leave at season's end. −prestige`,
+               {pt:`${N} recebe os galões… e ${O}, que é mais rápido e sabe disso, não engole: pede para sair no fim da temporada. −prestígio`});
+    }
+    return L(`${N} recibe los galones por delante de un ${O} más rápido. El garaje lo comenta, ${O} se lo traga, y algo se rompe por dentro.`,
+             `${N} gets the stripes ahead of a faster ${O}. The garage talks, ${O} swallows it, and something breaks inside.`,
+             {pt:`${N} recebe os galões à frente de um ${O} mais rápido. A garagem comenta, ${O} engole, e algo se quebra por dentro.`});
+  }
+  return L(`${N} recibe los galones y el equipo entero rema en su dirección. ${O} sonríe en las fotos. Solo en las fotos.`,
+           `${N} gets the stripes and the whole team rows in his direction. ${O} smiles for the cameras. Only for the cameras.`,
+           {pt:`${N} recebe os galões e a equipe inteira rema na direção dele. ${O} sorri nas fotos. Só nas fotos.`});
+}
+/* etiqueta del botón: «Nº1 para Alonso · el más rápido» — el jugador decide con la información
+   delante, sin que el juego elija por él */
+function tpEtiquetaNumeroUno(i){
+  const a=tpDrvs(); const d=a[i], o=a[1-i];
+  if(!d) return "";
+  const masRapido = o && (d.skill||0) > (o.skill||0);
+  const marca = !o ? "" : masRapido
+    ? L(" · el más rápido"," · the faster one",{pt:" · o mais rápido"})
+    : L(" · el más lento"," · the slower one",{pt:" · o mais lento"});
+  return L(`Nº1 para ${surname(d.name)}${marca}`,`No.1 to ${surname(d.name)}${marca}`,{pt:`Nº1 para ${surname(d.name)}${marca}`});
+}
 function tpDrvSkill(name,n){ const d=tpDrvs().find(x=>x.name===name); if(d){ d.skill=Math.max(68,Math.min(d.ceil||97,(d.skill||75)+n)); } }
 /* 🎯 ¿QUIÉN VIENE DE VERDAD A POR TU ESTRELLA? Igual que con el favor del veterano, la amenaza tiene
    que ser CIERTA: un equipo que exista, con MEJOR coche que el tuyo, y con un piloto claramente peor
@@ -9833,9 +9879,8 @@ const TP_DILEMAS=[
   d:()=>{ const a=tpDrvs(); return L(`${surname(a[0].name)} y ${surname(a[1].name)} están a nada el uno del otro y los dos exigen la prioridad en estrategia. Tu garaje es una olla a presión.`,
       `${surname(a[0].name)} and ${surname(a[1].name)} are inches apart and both demand strategic priority. Your garage is a pressure cooker.`,
       {pt:`${surname(a[0].name)} e ${surname(a[1].name)} estão colados e os dois exigem prioridade na estratégia. A sua garagem é uma panela de pressão.`}); },opts:[
-   {l:()=>L("Nombrar un Nº1","Name a No.1",{pt:"Nomear um Nº1"}),r:()=>{ const a=[...tpDrvs()].sort((x,y)=>(y.skill||0)-(x.skill||0));
-     if(a[0]) tpDrvSkill(a[0].name,1); if(a[1]) tpDrvSkill(a[1].name,-1);
-     return L(`${surname(a[0].name)} recibe los galones y el equipo entero rema en su dirección. ${surname(a[1].name)} sonríe en las fotos. Solo en las fotos.`,`${surname(a[0].name)} gets the stripes and the whole team rows his way. ${surname(a[1].name)} smiles in the photos. Only in the photos.`,{pt:`${surname(a[0].name)} recebe os galões e a equipe inteira rema na direção dele. ${surname(a[1].name)} sorri nas fotos. Só nas fotos.`}); }},
+   {l:()=>tpEtiquetaNumeroUno(0), r:()=>tpNombrarNumeroUno(0)},
+   {l:()=>tpEtiquetaNumeroUno(1), r:()=>tpNombrarNumeroUno(1)},
    {l:()=>L("Que lo decida la pista","Let the track decide",{pt:"Que a pista decida"}),r:()=>roll(
      [5,()=>(TPRE(2),L("La rivalidad interna eleva a los dos y tu equipo es el espectáculo del año. +prestigio","The internal rivalry lifts them both and your team is the show of the season. +prestige",{pt:"A rivalidade interna eleva os dois e a sua equipe é o show do ano. +prestígio"}))],
      [4,()=>(TPRE(-2),L("Sin jerarquía, las estrategias se pisan y los puntos se escapan entre los dos boxes. −prestigio","With no pecking order, strategies collide and points leak between the two garages. −prestige",{pt:"Sem hierarquia, as estratégias se atropelam e os pontos escapam entre os dois boxes. −prestígio"}))])}]},
@@ -9909,17 +9954,8 @@ const TP_DILEMAS=[
     return L(`${surname(g.a.name)} y ${surname(g.b.name)} son dos números uno y los dos lo saben. El garaje se está partiendo en dos bandos y la temporada aún no ha empezado.`,
              `${surname(g.a.name)} and ${surname(g.b.name)} are both number ones and both know it. The garage is splitting into two camps and the season hasn't even started.`,
              {pt:`${surname(g.a.name)} e ${surname(g.b.name)} são dois números um e ambos sabem disso. A garagem está se partindo em dois e a temporada nem começou.`}); },opts:[
-   {l:()=>L("Nombras un Nº1: aquí hay jerarquía","Name a No.1: there is a hierarchy",{pt:"Nomeia um Nº1: aqui há hierarquia"}),r:()=>{
-     const g=tpGallos(); if(!g) return "";
-     return roll(
-      [5,()=>{tpDrvSkill(g.b.name,-2);TPRE(1.2);
-        return L(`Lo dices en voz alta y el garaje respira: se acabaron las reuniones a espaldas. ${surname(g.b.name)} lo encaja con la mandíbula apretada. +prestigio, −moral de ${surname(g.b.name)}`,
-                 `You say it out loud and the garage exhales: no more meetings behind backs. ${surname(g.b.name)} takes it with a clenched jaw. +prestige, −${surname(g.b.name)}'s morale`,
-                 {pt:`Você diz em voz alta e a garagem respira: acabaram as reuniões pelas costas. ${surname(g.b.name)} engole de queixo travado. +prestígio, −moral de ${surname(g.b.name)}`});}],
-      [4,()=>{tpDrvSkill(g.b.name,-3);TPRE(-1.2);S.tpSaleQ=(S.tpSaleQ||[]).concat([{name:g.b.name,to:null}]);
-        return L(`${surname(g.b.name)} no ha venido a ser escudero de nadie. Pide salir a final de año y no hay quien le mueva: se marcha en ${yearNow()+1}. −prestigio`,
-                 `${surname(g.b.name)} didn't come here to be anyone's wingman. He asks out at year's end and nothing shifts him: he leaves in ${yearNow()+1}. −prestige`,
-                 {pt:`${surname(g.b.name)} não veio para ser escudeiro de ninguém. Pede saída no fim do ano e ninguém o demove: sai em ${yearNow()+1}. −prestígio`});}]);}},
+   {l:()=>tpEtiquetaNumeroUno(0), r:()=>{ const t=tpNombrarNumeroUno(0); TPRE(.8); return t; }},
+   {l:()=>tpEtiquetaNumeroUno(1), r:()=>{ const t=tpNombrarNumeroUno(1); TPRE(.8); return t; }},
    {l:()=>L("Iguales. Que lo resuelvan en pista","Equal status. Let the track decide",{pt:"Iguais. Que resolvam na pista"}),r:()=>roll(
       [5,()=>{TPRE(2.5);
         return L("Se pasan el año a dos décimas el uno del otro y tu equipo abre todos los telediarios. Nadie recuerda un duelo interno tan limpio. +prestigio",
