@@ -9406,6 +9406,7 @@ function tpYearStart(){
     });
     S.tpSaleQ=[];
   }
+  S._tpTries={};   // 🎯 los intentos de fichaje se cuentan por invierno
   S._tpSeatQ=[];
   const sl=S.seats[S.tpTeam]||[];
   sl.forEach((d,i)=>{ if(!d || d==="PLAYER" || (d.tpc||0)<=0) S._tpSeatQ.push(i); });
@@ -9473,6 +9474,7 @@ function tpNextSeat(){
       /* 📞 la llamada: un fichaje puede decirte que NO (con su probabilidad a la vista). El que
          rechaza no vuelve a la lista este invierno, y la pantalla te lo dice en el momento. */
       if(c.odds!=null && c.kind!=="libre" && Math.random()>c.odds){
+        S._tpTries=S._tpTries||{}; S._tpTries[i]=((S._tpTries[i])||0)+1;
         S._tpNo=S._tpNo||{}; S._tpNo[c.d.name]=yearNow();
         S._tpNoTxt=L(`❌ ${surname(c.d.name)} te dice que no: se queda en ${c.from}.`,
           `❌ ${surname(c.d.name)} turns you down: he stays at ${c.from}.`,
@@ -9531,10 +9533,17 @@ function tpTerna(i){
       pool.push({kind:"fichar", d, from:t, j, odds:tpOdds(d,t)});
     });
   });
-  pool.sort((a,b)=>(b.d.skill||0)-(a.d.skill||0));
-  const top=pool.slice(0,4);
-  const joven=pool.find(c=>top.indexOf(c)<0 && (c.d.age||30)<=24 && (c.d.ceil||0)>=90);
-  if(joven) top.push(joven);
+  /* 🎯 EL POOL, POR PROBABILIDAD Y NO POR SKILL BRUTO (Carlos, 18-ago: «hacía ofertas a 4-5★ en
+     Cadillac y me rechazaban; filtrado con sentido + máximo de intentos»). Un coche malo NO ve a los
+     cinco mejores del mundo con «casi imposible»: ve a quien de verdad aceptaría —veteranos buenos ya
+     acabados, jóvenes sin experiencia, gente de nivel medio—. tpOdds ya modela ese «quién vendría».
+     Y hay tope de intentos: cada rechazo sube el suelo, así que insistir deja de traer imposibles. */
+  pool.sort((a,b)=>(b.odds||0)-(a.odds||0) || (b.d.skill||0)-(a.d.skill||0));
+  const _tries=(S._tpTries&&S._tpTries[i])||0;
+  const floor = _tries>=2 ? 0.45 : 0.12;
+  let top=pool.filter(c=>(c.odds||0)>=floor).slice(0,4);
+  // UNA apuesta aspiracional (el mejor por skill, aunque sea difícil) mientras no hayas gastado intentos
+  if(_tries<2){ const stretch=pool.find(c=>top.indexOf(c)<0 && (c.d.skill||0)>=88); if(stretch) top.push(stretch); }
   cands.push(...top);
   (S.freeAgents||[]).filter(d=>d&&d.name&&noY[d.name]!==yearNow() && !(other&&other!=="PLAYER"&&other.name===d.name) && (!soyFilial||esPromesa(d)))
     .slice(0,2).forEach(d=>cands.push({kind:"libre", d, odds:.9}));
@@ -9576,7 +9585,10 @@ function tpSignDriver(i,c){
       `✍️ Signing: ${surname(d.name)} leaves ${c.from} and races for you in ${yN}.`,
       {pt:`✍️ Contratação: ${surname(d.name)} deixa a ${c.from} e corre com você em ${yN}.`}));
   } else {
-    d=mkRookie(false, tn); d.tpc=3;
+    /* 🐞 O'WARD CON 36 EN «APOSTAR POR LA CANTERA» (cazado por Carlos): mkRookie(false,...) permitía
+       CROSSOVERS —pilotos reales de otras categorías, con su edad real—. Una apuesta de cantera es un
+       JOVEN por definición: noCross=true salta los crossovers y limita el bote a ≤26. */
+    d=mkRookie(true, tn); d.tpc=3;
     if(S.tpGem){ d.ceil=Math.max(d.ceil||0, irnd(93,96)); d.skill=Math.max(d.skill, 78); S.tpGem=false;
       S.pendingEvents.push(L(`🎓 Debuta ${d.name}, la joya de tu academia. El paddock ya habla de él.`,
         `🎓 ${d.name} debuts — your academy's crown jewel. The paddock is already talking.`,
@@ -9630,19 +9642,19 @@ function tpRumboScreen(){
   /* ⚖️ los objetivos se ANCLAN al nivel actual (como hace evolveF1 con los NPC): sin ancla, sumar
      target año tras año dejaba un grande clavado en 95 para siempre (medido: 14 constructores
      seguidos de Red Bull en la primera tanda de pruebas). Elegir rumbo mueve, no garantiza. */
-  mk("⚡",L("Exprimir ESTE coche","Squeeze THIS car",{pt:"Espremer ESTE carro"}),
-    L("Toda la fábrica al coche de este año. El que viene pagará la factura.","The whole factory on this year's car. Next year's will pay the bill.",{pt:"Toda a fábrica no carro deste ano. O do ano que vem paga a conta."}),
+  mk("⚡",L("Exprimir ESTE coche · a por el AÑO QUE VIENE ya","Squeeze THIS car · go for NEXT YEAR now",{pt:"Espremer ESTE carro · vai já pelo PRÓXIMO ANO"}),
+    L("Mejora rápida ya (+1,5 a +3), pero hipotecas el año siguiente. Para dar un golpe cuando estás cerca.","Fast gain now (+1.5 to +3), but you mortgage next year. To strike when you're close.",{pt:"Melhora rápida já (+1,5 a +3), mas hipoteca o próximo ano. Para dar o bote quando está perto."}),
     ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(1.5,3)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(4,8));
       S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
-  mk("🏗️",L("Proyecto a dos años","Two-year project",{pt:"Projeto de dois anos"}),
-    L("Sacrificar presente para construir un coche grande. El consejo tendrá que aguantar.","Sacrifice the present to build a big car. The board will have to hold its nerve.",{pt:"Sacrificar o presente para construir um carrão. O conselho vai ter que aguentar."})+(avisoProyecto||""),
+  mk("🏗️",L("Proyecto a dos años · el SALTO GRANDE","Two-year project · the BIG LEAP",{pt:"Projeto de dois anos · o SALTO GRANDE"}),
+    L("Sacrificas este año por un coche mucho mejor dentro de dos (o se atasca: 1 de cada 4 falla). El salto más grande, y el más arriesgado.","You sacrifice this year for a much better car in two (or it stalls: 1 in 4 fails). The biggest leap, and the riskiest.",{pt:"Sacrifica este ano por um carro muito melhor em dois (ou emperra: 1 em 4 falha). O maior salto, e o mais arriscado."})+(avisoProyecto||""),
     ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
       if(S._penProyecto) TPRE(-S._penProyecto);   // el precio de sacrificar el presente, avisado antes
       S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+(ch(.75)?rnd(8,12):rnd(-2,4)));
       if(ch(.35)) S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(.5,1.5));
       S.pendingEvents.push(L("🏗️ Pones la fábrica a construir el coche de pasado mañana: el proyecto apunta alto.","🏗️ You set the factory on the car after next: the project aims high.",{pt:"🏗️ Você põe a fábrica no carro de depois de amanhã: o projeto mira alto."})); });
-  mk("⚖️",L("Continuidad y pulido","Continuity and polish",{pt:"Continuidade e polimento"}),
-    L("Evolucionar lo que funciona, sin volantazos.","Evolve what works, no sudden swerves.",{pt:"Evoluir o que funciona, sem cavalos-de-pau."}),
+  mk("⚖️",L("Continuidad · mejora SEGURA y pequeña","Continuity · SAFE small gain",{pt:"Continuidade · melhora SEGURA e pequena"}),
+    L("Subida pequeña pero segura (+2 a +5), sin riesgo y sin hipotecar nada. El término medio: ni golpe ni sacrificio.","Small but safe gain (+2 to +5), no risk and no mortgage. The middle ground: no strike, no sacrifice.",{pt:"Subida pequena mas segura (+2 a +5), sem risco e sem hipoteca. O meio-termo: nem bote nem sacrifício."}),
     ()=>{ S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+rnd(2,5));
       S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
   // retirada voluntaria: siempre disponible, nunca escondida
@@ -10108,7 +10120,9 @@ const TPTGT=n=>{ if(S.f1target[S.tpTeam]!=null) S.f1target[S.tpTeam]=Math.max(61
    al darle la alternativa sacude el óxido y sube. Si envejece o se apaga, cuelga el mono y la
    academia te sube a otro. */
 function tpCrearProbador(silencio){
-  const d=mkRookie(isRBJr(S.tpTeam), S.tpTeam); d.probador=true; S.tpReserva=d;   // 🐂 el del filial, promesa
+  /* el probador es la promesa de la casa: siempre joven, nunca un crossover (O'Ward de 36 se colaba
+     de probador en Cadillac por la misma vía que en la cantera, cazado por Carlos). */
+  const d=mkRookie(true, S.tpTeam); d.probador=true; S.tpReserva=d;
   if(!silencio) S.pendingEvents.push(L(`🧢 ${d.name} es tu nuevo probador.`,
     `🧢 ${d.name} is your new reserve driver.`,{pt:`🧢 ${d.name} é o seu novo reserva.`}));
 }
