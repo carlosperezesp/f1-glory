@@ -8973,6 +8973,31 @@ function evolveCarProfiles(){
   if(!S.f1prof) return;
   const perfs=F1_TEAMS.map(t=>S.f1perf[t.name]??75);
   const max=Math.max(...perfs), min=Math.min(...perfs), rango=Math.max(1,max-min);
+  /* 👑 MANTENER EL TRONO CUESTA (playtest de Carlos: «llegué a 5 estrellas en todo y me duraba varias
+     temporadas; siento que voy a ganar todos los años y no sé dónde invertir»). Medido antes del
+     cambio: McLaren 14 años seguidos 1º coche y ★555 SIN invertir nada. Dos fuerzas nuevas, solo en
+     partidas de jefe (esta función no corre en otro sitio):
+     · El LÍDER se eroda: desde el 2º año en el trono, su objetivo cae — el reglamento y los rivales
+       le alcanzan. Vale TAMBIÉN para tu equipo: quedarse quieto arriba pasa a ser una decisión cara.
+     · Los PERSEGUIDORES huelen la sangre: el 2º y el 3º suben su objetivo. Solo NPC — tú inviertes
+       por el rumbo, que para eso es tuyo. */
+  const _orden=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+  const _lider=_orden[0];
+  S._liderAños=(S._liderPrev===_lider)?(S._liderAños||1)+1:1;
+  S._liderPrev=_lider;
+  if(S._liderAños>=2){
+    S.f1target[_lider]=Math.max(80,(S.f1target[_lider]??S.f1perf[_lider]??88)-rnd(1,1.8));
+    if(S._liderAños>=3) S.f1perf[_lider]=Math.max(78,(S.f1perf[_lider]||88)-rnd(.3,.7));
+    if(tpManaged(_lider) && (S._liderAños===2 || S._liderAños%3===0))
+      S.pendingEvents.push(L("🌀 Años dominando con el mismo coche pasan factura: los rivales copian tu concepto y el reglamento te recorta. Mantenerse arriba habrá que pagarlo.",
+        "🌀 Years of dominating with the same car take their toll: rivals copy your concept and the rules trim you back. Staying on top will have to be paid for.",
+        {pt:"🌀 Anos dominando com o mesmo carro cobram o preço: os rivais copiam o seu conceito e o regulamento te apara. Continuar no topo vai ter que ser pago."}));
+  }
+  _orden.slice(1,3).forEach(tn2=>{
+    if(tpManaged(tn2)) return;
+    if((S.f1perf[_lider]||0)-(S.f1perf[tn2]||0)>2 && ch(.6))
+      S.f1target[tn2]=Math.min(94,(S.f1target[tn2]??S.f1perf[tn2]??80)+rnd(.5,1.5));
+  });
   F1_TEAMS.forEach(t=>{
     const tn=t.name;
     if(!S.f1prof[tn]) S.f1prof[tn]=profNuevo();
@@ -9440,6 +9465,19 @@ function tpRumboScreen(){
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
+  /* 🎯 LA DIRECTIVA APRIETA SEGÚN EL COCHE (Carlos: «con Cadillac no le veía sentido a apostar ahora;
+     hay que hacer que la directiva te apriete — si tu equipo es malo, no tanto»). Con un coche top,
+     sacrificar el presente enfada al consejo (−prestigio, avisado ANTES de pulsar); con uno de la
+     cola te dejan construir en paz. Y el dueño financiero castiga el largo plazo SIEMPRE: por fin
+     tiene efecto mecánico, no solo nombre. */
+  const _ordenR=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+  const _pR=_ordenR.indexOf(tn)+1, _arriba=_pR<=3, _abajo=_pR>=_ordenR.length-2;
+  const _fin=S.tpOwner&&S.tpOwner.k==="cut";
+  let penProyecto=0, avisoProyecto="";
+  if(_arriba){ penProyecto+=1.5; avisoProyecto+=" ⚠️ "+L("Con este coche, el consejo quiere resultados YA: −prestigio","With this car, the board wants results NOW: −prestige",{pt:"Com este carro, o conselho quer resultados JÁ: −prestígio"}); }
+  if(_fin){ penProyecto+=1; avisoProyecto+=" 💼 "+L("Al dueño financiero no le cuadra invertir a largo: −prestigio","Long-term spending doesn't add up for the financier owner: −prestige",{pt:"Investir a longo prazo não fecha para o dono financeiro: −prestígio"}); }
+  if(_abajo && !avisoProyecto) avisoProyecto=" ✅ "+L("Con este coche, el consejo te deja construir en paz","With this car, the board lets you build in peace",{pt:"Com este carro, o conselho te deixa construir em paz"});
+  S._penProyecto=penProyecto;
   const mk=(dot,nm,sub,fn)=>{
     const b=document.createElement("button"); b.className="offer dilemma";
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${dot}</span>
@@ -9455,8 +9493,9 @@ function tpRumboScreen(){
     ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(1.5,3)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(4,8));
       S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
   mk("🏗️",L("Proyecto a dos años","Two-year project",{pt:"Projeto de dois anos"}),
-    L("Sacrificar presente para construir un coche grande. El consejo tendrá que aguantar.","Sacrifice the present to build a big car. The board will have to hold its nerve.",{pt:"Sacrificar o presente para construir um carrão. O conselho vai ter que aguentar."}),
+    L("Sacrificar presente para construir un coche grande. El consejo tendrá que aguantar.","Sacrifice the present to build a big car. The board will have to hold its nerve.",{pt:"Sacrificar o presente para construir um carrão. O conselho vai ter que aguentar."})+(avisoProyecto||""),
     ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
+      if(S._penProyecto) TPRE(-S._penProyecto);   // el precio de sacrificar el presente, avisado antes
       S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+(ch(.75)?rnd(8,12):rnd(-2,4)));
       if(ch(.35)) S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(.5,1.5));
       S.pendingEvents.push(L("🏗️ Pones la fábrica a construir el coche de pasado mañana: el proyecto apunta alto.","🏗️ You set the factory on the car after next: the project aims high.",{pt:"🏗️ Você põe a fábrica no carro de depois de amanhã: o projeto mira alto."})); });
