@@ -8281,7 +8281,9 @@ function renderTimeline(){
       const cls = d.pos===1?"p1" : d.pos<=3?"top" : d.pos<=10?"" : "rest";
       return `<span class="num tpdrv ${cls}" title="${d.n}">${d.fl} ${d.pos===1?"🏆":d.pos+"º"}</span>`; };
     const raced=r.cat==="TEST"&&r.subRaces;
-    const catLbl=r.cat==="TEST"?L("Probador F1","F1 Reserve",{pt:"Testes F1"}):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series, r.year)||L("Aventura","Adventure",{pt:"Aventura"})):catName(r.cat);
+      /* 🧑‍💼 en el modo jefe, poner «Team Principal» en CADA fila es ruido: ya se sabe a qué juegas
+       (aviso de Carlos). La fila queda «Aston Martin · 2029» y se lee mucho mejor. */
+    const catLbl=r.cat==="TP"?"":r.cat==="TEST"?L("Probador F1","F1 Reserve",{pt:"Testes F1"}):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series, r.year)||L("Aventura","Adventure",{pt:"Aventura"})):catName(r.cat);
     const constr=r.constrPos?`🏭 ${L("Constructores","Constructors",{pt:"Construtores"})}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best",{pt:"melhor"})} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TP"?(r.tpLine||"")   // 🧑‍💼 debajo del equipo van TUS DOS PILOTOS con su puesto en el mundial
@@ -8309,7 +8311,7 @@ function renderTimeline(){
       <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}
         <span><span class="nm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
-            : `${teamDisp(r.team, r.year)} · ${r.year} · ${catLbl}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
+            : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
       ${esTP ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
       ${esTP ? tpCel(0) : `<span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>`}
       ${esTP ? tpCel(1) : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
@@ -9333,9 +9335,14 @@ function tpSignDriver(i,c){
     // su equipo tapa el hueco con un canterano (mismo patrón que el desplazado de occupySeat)
     S.seats[c.from][c.j]=mkRookie(isRBJr(c.from), c.from);
     d.tpc=((d.age||30)<=24 && (d.ceil||0)>=88)?3:2; d.yrs=0;
-    S.pendingEvents.push(L(`✍️ Fichaje: ${surname(d.name)} deja ${c.from} y correrá contigo en ${yN}.`,
-      `✍️ Signing: ${surname(d.name)} leaves ${c.from} to race for you in ${yN}.`,
-      {pt:`✍️ Contratação: ${surname(d.name)} deixa a ${c.from} e vai correr com você em ${yN}.`}));
+    /* ⏱️ EN PRESENTE. Este evento se escribe en el INVIERNO pero se guarda en pendingEvents y se
+       vuelca en la fila de la temporada que viene a continuación: cuando el jugador lo lee, esa
+       temporada YA se ha corrido. Decía «correrá contigo en 2029» dentro de la fila de 2029 (lo cazó
+       Carlos en una captura). Ojo: los de alphaClash SÍ van en futuro, porque esos se escriben
+       durante un año y hablan del siguiente. */
+    S.pendingEvents.push(L(`✍️ Fichaje: ${surname(d.name)} deja ${c.from} y corre contigo en ${yN}.`,
+      `✍️ Signing: ${surname(d.name)} leaves ${c.from} and races for you in ${yN}.`,
+      {pt:`✍️ Contratação: ${surname(d.name)} deixa a ${c.from} e corre com você em ${yN}.`}));
   } else {
     d=mkRookie(false, tn); d.tpc=3;
     if(S.tpGem){ d.ceil=Math.max(d.ceil||0, irnd(93,96)); d.skill=Math.max(d.skill, 78); S.tpGem=false;
