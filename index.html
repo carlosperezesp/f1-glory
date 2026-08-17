@@ -9449,12 +9449,41 @@ function tpRepartoScreen(){
     };
     box.appendChild(b);
   });
-  // no tocar nada también es una decisión: el concepto que funciona no se toca
+  /* ✋ NO TOCAR EL CONCEPTO — ahora con premio propio (idea de Carlos, 17-ago). Antes esta opción no
+     hacía NADA: como el reparto es de suma cero y mover un punto no cuesta nada, «no tocar» solo era
+     correcto si tu coche ya tenía la forma exacta que querías, y el juego no te lo decía. Era una
+     opción condenada por diseño y al jugarla se notaba.
+     Ahora es la otra mitad de una decisión de verdad: un año más con el mismo concepto ACOSTUMBRA a
+     tus pilotos y los hace mejores. Bueno porque el nivel de piloto pesa tanto como el coche; malo
+     porque un piloto se puede ir en cualquier momento y se lleva lo invertido, mientras que el coche
+     se queda. Y como cada uno tiene su techo, esto sirve para la cantera y no para un veterano ya
+     hecho: acostumbrar a Alonso a los 40 no le añade nada. */
+  const mios=tpDrvs();
+  const margen=mios.filter(d=>(d.skill||0) < (d.ceil||97)-0.2);
   const q=document.createElement("button"); q.className="offer";
   q.innerHTML=`<span class="team-dot dot" style="background:#71717c">✋</span>
-    <span class="info"><span class="name">${L("No tocar el concepto","Leave the concept alone",{pt:"Não mexer no conceito"})}</span>
-    <span class="sub" style="display:block">${L("Si funciona, no se arregla. Otro año igual.","If it works, don't fix it. Another year the same.",{pt:"Se funciona, não se mexe. Mais um ano igual."})}</span></span>`;
-  q.onclick=()=>tpAnnounce();
+    <span class="info"><span class="name">${L("Acostumbrar a tus pilotos a este coche","Let your drivers settle into this car",{pt:"Acostumar os seus pilotos a este carro"})}</span>
+    <span class="sub" style="display:block">${L("Otro año con el mismo concepto: se lo aprenden de memoria y rinden más.","Another year with the same concept: they learn it inside out and get more from it.",{pt:"Mais um ano com o mesmo conceito: aprendem de cor e rendem mais."})}</span>
+    <span class="sub" style="display:block">${margen.length
+      ? L(`Mejoran ${margen.map(d=>surname(d.name)).join(" y ")} · pero un piloto se puede ir, y el coche se queda`,
+          `${margen.map(d=>surname(d.name)).join(" and ")} improve · but a driver can leave, and the car stays`,
+          {pt:`Melhoram ${margen.map(d=>surname(d.name)).join(" e ")} · mas um piloto pode sair, e o carro fica`})
+      : L("Los dos están ya en su techo: este año no ganarías nada por ahí","Both are already at their ceiling: you'd gain nothing there this year",{pt:"Os dois já estão no teto: por aí não ganharia nada este ano"})}</span></span>`;
+  q.onclick=()=>{
+    const suben=[];
+    tpDrvs().forEach(d=>{
+      const techo=d.ceil||97;
+      if((d.skill||0) < techo-0.2){ d.skill=Math.min(techo,(d.skill||75)+rnd(.6,1.1)); suben.push(surname(d.name)); }
+    });
+    S.pendingEvents.push(suben.length
+      ? L(`🔧 Otro año con el mismo concepto: ${suben.join(" y ")} se lo aprenden de memoria y sacan más del coche.`,
+          `🔧 Another year with the same concept: ${suben.join(" and ")} learn it inside out and extract more from the car.`,
+          {pt:`🔧 Mais um ano com o mesmo conceito: ${suben.join(" e ")} aprendem de cor e tiram mais do carro.`})
+      : L("🔧 Otro año con el mismo concepto. Tus pilotos ya no pueden sacarle más: están en su techo.",
+          "🔧 Another year with the same concept. Your drivers can't get more out of it: they're at their ceiling.",
+          {pt:"🔧 Mais um ano com o mesmo conceito. Os seus pilotos não podem tirar mais: estão no teto."}));
+    tpAnnounce();
+  };
   box.appendChild(q);
   scrollToDecision();
 }
