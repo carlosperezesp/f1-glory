@@ -9628,12 +9628,112 @@ function simTP(row){
 }
 
 /* ── EL INVIERNO DEL JEFE: tope de etapa → despido/rescate → tentación → un año más ── */
+/* ═══════════ 📄 EL CONTRATO DEL JEFE ═══════════
+   Idea de Carlos tras jugar la beta, y resuelve TRES quejas suyas de una vez:
+     · «solo me salió una oferta en toda la partida» → al vencer el contrato hay mercado de verdad.
+     · «me echaron a los 5 años y no tuve otra oportunidad» → ahora casi siempre queda alguien.
+     · «gané 8 mundiales y a los 20 años el juego me echó sin avisar» → el tope deja de ser un muro
+       invisible: la última oferta te dice a la cara que es la última.
+   El contrato manda en el invierno. Mientras dure, sigues; cuando se acaba, hay mercado. */
+const TP_TOPE=20;                      // temporadas máximas en el muro
+function tpDuracionContrato(tn){
+  // los grandes atan corto (te exigen ya); los pequeños dan margen porque necesitan paciencia
+  const perf=S.f1perf[tn]??75;
+  const orden=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+  const arriba=orden.findIndex(t=>t.name===tn) < 3;
+  return arriba ? irnd(2,3) : irnd(3,4);
+}
+/* firma: fija los años y avisa si esta va a ser la última etapa */
+function tpFirmarContrato(tn){
+  let años=tpDuracionContrato(tn);
+  const quedan=TP_TOPE-S.age;
+  S.tpUltimo = años>=quedan;            // el contrato llega o pasa del tope → es el último
+  if(S.tpUltimo) años=Math.max(1,quedan);
+  S.tpContract=años; S.tpContractTotal=años; S.tpFreshY=yearNow();
+  return años;
+}
 function tpWinter(){
   if(S.retired) return;
-  if(S.age>=20){ endCareer(); return; }   // tope duro: dos décadas en el muro (espejo de la edad del piloto)
   if(S.tpFired){ tpFiredScreen(); return; }
+  if(S.tpContract==null) tpFirmarContrato(S.tpTeam);      // partidas empezadas antes del contrato
+  /* ⚠️ tpFirmarContrato marca S.tpFreshY con el año de la firma. El primer invierno de un contrato
+     nuevo NO descuenta —si no, un contrato de 2 años recién firmado ya bajaría a 1 esa misma noche,
+     y al cambiar de equipo a mitad de recorrido el contador se iba a negativo (medido: −4). */
+  if(S.tpFreshY===yearNow()){ S.tpFreshY=null; }
+  else S.tpContract--;
+  if(S.tpContract<=0){ tpContratoScreen(); return; }      // se acabó: hay mercado
   if(tpTemptCheck()) return;
   tpYearStart();
+}
+/* 📄 EL MERCADO DEL JEFE. Renovar (si te quieren) + hasta dos ofertas de fuera + retirarte.
+   La calidad de lo que te llega sale de tu prestigio y de cómo ha ido la última etapa. */
+function tpContratoScreen(){
+  if(S.retired) return;
+  const tn=S.tpTeam, ultimaEtapa=S.tpUltimo;
+  if(ultimaEtapa){ tpFinDeCarrera(); return; }            // el contrato final se cumplió: se acabó
+  const cumpliste=S.tpLastMet!==false;
+  const myPerf=S.f1perf[tn]??75;
+  const orden=[...F1_TEAMS].filter(t=>t.name!==tn)
+    .sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70));
+  // cuanto más prestigio, más arriba miras; con poco, te llaman los de abajo
+  const techo = S.tpPrest>=75 ? myPerf+10 : S.tpPrest>=58 ? myPerf+4 : myPerf-2;
+  const posibles=orden.filter(t=>(S.f1perf[t.name]||70)<=techo);
+  const pick=(arr,n)=>{const c=[...arr],o=[];while(o.length<n&&c.length)o.push(c.splice(irnd(0,c.length-1),1)[0]);return o;};
+  const fuera=pick(posibles.length?posibles:orden.slice(-3), S.tpPrest>=50?2:1);
+  setDecision(L(`📄 Se acaba tu contrato con ${tn}`,`📄 Your contract with ${tn} is up`,{pt:`📄 Acaba o seu contrato com a ${tn}`}),
+    L(`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} al mando y el papel se acaba. ${cumpliste?"Cumpliste, y eso se sabe en el paddock.":"No cumpliste, y eso también se sabe."} Decide dónde sigues.`,
+      `${S.tpContractTotal} season${S.tpContractTotal===1?"":"s"} in charge and the paper runs out. ${cumpliste?"You delivered, and the paddock knows it.":"You didn't deliver, and the paddock knows that too."} Decide where you go next.`,
+      {pt:`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} no comando e o papel acaba. ${cumpliste?"Você cumpriu, e isso se sabe no paddock.":"Você não cumpriu, e isso também se sabe."} Decida onde continua.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  box.appendChild(tpGridBtn());
+  const oferta=(t, renov)=>{
+    const b=document.createElement("button"); b.className="offer";
+    const años=tpDuracionContrato(t.name);
+    const ultimo=(S.age+años)>=TP_TOPE;
+    const _lg=logoFor(t.name);
+    const punto=_lg?`<span class="team-dot haslogo" style="background:#fff url(${_lg}) center/cover;border:none"></span>`
+                   :`<span class="team-dot" style="${badgeStyle(t)}">${t.abbr||""}</span>`;
+    b.innerHTML=`${punto}<span class="info"><span class="name">${renov?L("Renovar con ","Renew with ",{pt:"Renovar com "}):""}${t.name} · ${tpStars(t.name)}</span>
+      <span class="sub" style="display:block">${L(`Contrato de ${años} temporada${años===1?"":"s"}`,`${años}-season deal`,{pt:`Contrato de ${años} temporada${años===1?"":"s"}`})} · ${tpTierLabel(t.name)}</span>
+      ${ultimo?`<span class="sub" style="display:block;color:var(--gold);font-weight:700">${L("⏳ Tu último trabajo en la F1: te retirarás al acabarlo","⏳ Your last job in F1: you'll retire when it ends",{pt:"⏳ O seu último trabalho na F1: vai se aposentar ao terminar"})}</span>`:""}</span>`;
+    b.onclick=()=>{
+      if(t.name===S.tpTeam){ const a=tpFirmarContrato(t.name);
+        S.pendingEvents.push(L(`📄 Renuevas con ${t.name}: ${a} temporada${a===1?"":"s"} más al mando.`,
+          `📄 You renew with ${t.name}: ${a} more season${a===1?"":"s"} in charge.`,
+          {pt:`📄 Você renova com a ${t.name}: mais ${a} temporada${a===1?"":"s"} no comando.`}));
+        tpYearStart();
+      } else { tpSignTeam(t, "cambio"); }
+    };
+    box.appendChild(b);
+  };
+  // renovar solo si te quieren: cumpliendo, casi siempre; sin cumplir, rara vez
+  const meQuieren = cumpliste ? ch(.85) : ch(.25);
+  const yo=F1_TEAMS.find(t=>t.name===tn);
+  if(meQuieren && yo) oferta(yo, true);
+  fuera.forEach(t=>oferta(t,false));
+  const r=document.createElement("button"); r.className="offer retire";
+  r.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
+    <span class="info"><span class="name">${L("Dejar el muro","Leave the pit wall",{pt:"Deixar o muro"})}</span>
+    <span class="sub" style="display:block">${L("Retirarte y cerrar tu etapa de Team Principal","Retire and close your Team Principal era",{pt:"Aposentar-se e fechar a sua era de Team Principal"})}</span></span>`;
+  r.onclick=endCareer;
+  box.appendChild(r);
+  scrollToDecision();
+}
+/* 🏁 el final anunciado: cumpliste el último contrato y te retiras sabiéndolo desde que lo firmaste */
+function tpFinDeCarrera(){
+  setDecision(L("🏁 Se acaba tu último contrato",`🏁 Your last contract is up`,{pt:"🏁 Acaba o seu último contrato"}),
+    L(`Lo sabías al firmarlo: ${S.tpTeam} era tu última parada. ${TP_TOPE} temporadas en el muro y el paddock ya es otro. Es hora.`,
+      `You knew when you signed it: ${S.tpTeam} was your last stop. ${TP_TOPE} seasons on the pit wall and the paddock is a different place now. It's time.`,
+      {pt:`Você sabia ao assinar: a ${S.tpTeam} era a sua última parada. ${TP_TOPE} temporadas no muro e o paddock já é outro. É hora.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const b=document.createElement("button"); b.className="offer retire";
+  b.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
+    <span class="info"><span class="name">${L("Cerrar tu etapa","Close your era",{pt:"Fechar a sua era"})}</span></span>`;
+  b.onclick=endCareer;
+  box.appendChild(b);
+  scrollToDecision();
 }
 function tpFiredScreen(){
   S.tpFired=false;
