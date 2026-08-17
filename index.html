@@ -9064,11 +9064,16 @@ const TP_OWNERS=[
    intro:()=>L("El dueño viene de ganarlo todo y no ha comprado esto para pasearse: exige más que nadie.",
                "The owner has won everything and didn't buy this to cruise: he demands more than anyone.",
                {pt:"O dono vem de ganhar tudo e não comprou isto para passear: exige mais do que ninguém."})},
+  /* 💼 EL DUEÑO FINANCIERO. Antes se llamaba «tecnócrata» y no encajaba: un tecnócrata analiza datos
+     de carrera, no recorta presupuestos (aviso de Carlos, 17-ago). Lo que este perfil es de verdad es
+     alguien que compró el equipo como ACTIVO, no por pasión: ficha barato, invierte lo justo y
+     mira la puerta de salida. De ahí sale, el día que se le dé efecto mecánico, que castigue las
+     apuestas a largo plazo — una hoja de cálculo no entiende sacrificar un año por el siguiente. */
   {k:"cut",
-   lab:()=>L("📊 Dueño tecnócrata","📊 Technocrat owner",{pt:"📊 Dono tecnocrata"}),
-   intro:()=>L("Al mando hay un tecnócrata de datos y recortes «inteligentes»: pide resultados que cuadren en su hoja de cálculo.",
-               "In charge is a technocrat of data and «smart» cuts: he wants results that balance his spreadsheet.",
-               {pt:"No comando há um tecnocrata de dados e cortes «inteligentes»: quer resultados que fechem na planilha."})},
+   lab:()=>L("💼 Dueño financiero","💼 Financier owner",{pt:"💼 Dono financeiro"}),
+   intro:()=>L("Al mando hay un financiero que compró el equipo como inversión: ficha barato, gasta lo justo y no descarta vender si sale número.",
+               "In charge is a financier who bought the team as an investment: signs cheap, spends the minimum, and won't rule out selling if the numbers add up.",
+               {pt:"No comando há um financista que comprou a equipe como investimento: contrata barato, gasta o mínimo e não descarta vender se a conta fechar."})},
   {k:"young",
    lab:()=>L("🌱 Dueño paciente","🌱 Patient owner",{pt:"🌱 Dono paciente"}),
    intro:()=>L("La junta es joven y cree en los proyectos largos: te darán aire… mientras vean una dirección.",
@@ -9508,7 +9513,7 @@ function tpGoalFor(){
   const voz = !S.tpOwner? "" : S.tpOwner.k==="win"
     ? L("«He ganado en todo lo que he tocado. Aquí no va a ser distinto.»","«I've won at everything I've touched. This will be no different.»",{pt:"«Ganhei em tudo em que toquei. Aqui não vai ser diferente.»"})
     : S.tpOwner.k==="cut"
-    ? L("«Los números no discuten. Cúmplelos y nos llevaremos bien.»","«Numbers don't argue. Hit them and we'll get along.»",{pt:"«Os números não discutem. Cumpra-os e vamos nos entender.»"})
+    ? L("«Esto es una inversión, no una afición. Que los números salgan y nos llevaremos bien.»","«This is an investment, not a hobby. Make the numbers work and we'll get along.»",{pt:"«Isto é um investimento, não um hobby. Que as contas fechem e vamos nos entender.»"})
     : L("«Cree en el proyecto. Nosotros creemos en ti… de momento.»","«Believe in the project. We believe in you… for now.»",{pt:"«Acredite no projeto. Nós acreditamos em você… por enquanto.»"});
   return {target, exp:p, year:yearNow(),
     txt:L(`El consejo fija el listón de ${yearNow()}: ${meta}. ${voz}`,`The board sets the ${yearNow()} bar: ${meta}. ${voz}`,{pt:`O conselho fixa a meta de ${yearNow()}: ${meta}. ${voz}`}),
