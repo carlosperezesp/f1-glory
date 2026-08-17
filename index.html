@@ -3483,16 +3483,16 @@ function rbCanteraInvernal(row){
         const fuera=ms[wi]; ms[wi]=d; sl[i]=mkRookie(true, tn);
         if(fuera && fuera!=="PLAYER"){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(fuera); }
         mktMark(d, fuera, tn, madre);
-        row.events.push(L(`🐂 Ascenso interno: ${surname(d.name)} sube de ${tn} a ${madre}; debuta ${sl[i].name} en el filial.`,
-          `🐂 Internal promotion: ${surname(d.name)} steps up from ${tn} to ${madre}; ${sl[i].name} debuts at the junior team.`,
-          {pt:`🐂 Promoção interna: ${surname(d.name)} sobe da ${tn} para a ${madre}; ${sl[i].name} estreia na filial.`}));
+        row.events.push(L(`✍️ ${surname(d.name)} asciende de ${tn} a ${madre}; debuta ${sl[i].name}.`,
+          `✍️ ${surname(d.name)} moves up from ${tn} to ${madre}; ${sl[i].name} debuts.`,
+          {pt:`✍️ ${surname(d.name)} sobe da ${tn} para a ${madre}; estreia ${sl[i].name}.`}));
       } else {
         S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d);
         sl[i]=mkRookie(true, tn);
         mktMark(d, tn);
-        row.events.push(L(`🐂 ${tn} renueva su cantera: ${surname(d.name)} sale con ${d.age} años y debuta ${sl[i].name}.`,
-          `🐂 ${tn} refresh their academy: ${surname(d.name)} leaves at ${d.age} and ${sl[i].name} debuts.`,
-          {pt:`🐂 A ${tn} renova a base: ${surname(d.name)} sai com ${d.age} anos e ${sl[i].name} estreia.`}));
+        row.events.push(L(`✍️ ${surname(d.name)} deja ${tn}; debuta ${sl[i].name}.`,
+          `✍️ ${surname(d.name)} leaves ${tn}; ${sl[i].name} debuts.`,
+          {pt:`✍️ ${surname(d.name)} deixa a ${tn}; estreia ${sl[i].name}.`}));
       }
     });
   });
