@@ -6853,6 +6853,11 @@ function bgF1Season(row){
     });
   });
   rows.sort((a,b)=>b.score-a.score);
+  /* 🏭 CON QUÉ EQUIPO PUNTUÓ CADA UNO ESE AÑO. Sin esto, la clasificación desplegada busca el escudo
+     entre los asientos ACTUALES y quien perdió el suyo —sustituido, retirado, traspasado— aparece sin
+     logo (lo cazó Carlos en dos capturas). Y el equipo correcto es el de ESA temporada, no el de hoy:
+     si Verstappen corrió en Red Bull en 2028 y en Aston en 2029, cada año debe llevar su escudo. */
+  S.rankDTeam={}; rows.forEach(r=>{ S.rankDTeam[r.d.name]=r.team; });
   const champ=rows[0];
   S.lastChampName=champ.d.name;                    // 👑 idem cuando la F1 corre sin ti
   champ.d.titles=(champ.d.titles||0)+1;
@@ -6996,8 +7001,10 @@ function fsResto(cual){
     };
     return orden.map(([n,p])=>{
       const fl=buscaFlag(n);
-      const eq=Object.entries(S.seats||{}).find(([t,sl])=>(sl||[]).some(x=>x&&x!=="PLAYER"&&x.name===n));
-      return `<div class="srow extra"><span class="nm">${p}º ${fl?flg(fl):""} ${surname(n)}</span><span class="rt2">${eq?teamBadge(eq[0]):""}</span></div>`;
+      // el equipo con el que corrió ESE año; si no consta, se rebusca entre los asientos de ahora
+      const eqAnual=(S.rankDTeam||{})[n];
+      const eq=eqAnual || (Object.entries(S.seats||{}).find(([t,sl])=>(sl||[]).some(x=>x&&x!=="PLAYER"&&x.name===n))||[])[0];
+      return `<div class="srow extra"><span class="nm">${p}º ${fl?flg(fl):""} ${surname(n)}</span><span class="rt2">${eq?teamBadge(eq):""}</span></div>`;
     }).join("");
   }
   const r=S.rankC||{};
