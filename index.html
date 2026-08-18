@@ -2979,7 +2979,7 @@ function initPreviewBar(){ if(!PREVIEW) return;
   const tests=Object.keys(TESTS).map(k=>
     `<a href="?preview=glory26&test=${k}" title="${LA(TESTS[k].d)}">🧪 ${LA(TESTS[k].t)}</a>`).join(" · ");
   b.innerHTML=(TEST_MODE?`🧪 ${L("PRUEBA","TEST",{pt:"TESTE"})}: ${LA(TESTS[TEST_MODE].t)} · `:"")
-    +`🔒 ${L("Modo pruebas: esto solo lo ves TÚ","Preview mode: only YOU can see this",{pt:"Modo de testes: só VOCÊ vê isto"})}`
+    +`🔒 ${L("Modo pruebas: esto solo lo ves TÚ · no se envía nada al ranking","Preview mode: only YOU can see this · nothing is sent to the leaderboard",{pt:"Modo de testes: só VOCÊ vê isto · nada é enviado ao ranking"})}`
     +(tests?` · ${tests}`:"")
     +` · <a href="?preview=off">${L("salir","exit",{pt:"sair"})}</a>`;
   document.body.appendChild(b); }
@@ -8997,9 +8997,13 @@ function endCareer(){
     rows.slice(0,5).map((r,i)=>`<div class="hrow${r.me?" me":""}"><span class="rk">${i+1}.</span><span class="nm">${flg(r.flag)} ${r.n}</span><span class="tt">🏆×${r.t}</span></div>`).join("")+
     (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${pName()} (${L("TÚ","YOU",{pt:"TU"})})</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=gloriaScore();
-  // 🏆 ENVÍO REAL pero OCULTO: recoge la puntuación de TODOS los jugadores a partir del 1-ago-2026 (el ranking
-  // empieza a "contar" desde ahí), aunque la PANTALLA siga escondida hasta que publiquemos. (Sin efecto hasta conectar el KV.)
-  try{ if(PREVIEW || new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
+  /* 🏆 ENVÍO REAL: la puntuación de todos los jugadores cuenta desde el 1-ago-2026.
+     🔒 …PERO NUNCA DESDE EL MODO PRUEBAS. Antes `PREVIEW` era justo lo contrario —forzaba el envío para
+     poder probar el ranking antes de que abriera—, y pasada esa fecha lo único que hacía era colar
+     partidas de prueba en la tabla de verdad. El 18-ago se coló una probando un despliegue: quedó en
+     la global, en la semanal y en tres tablas de época, y hubo que borrarla a mano con /api/remove.
+     Cualquiera que abra el juego con ?preview=glory26 o un ?test= está trasteando, no compitiendo. */
+  try{ if(!PREVIEW && !TEST_MODE && new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
   // guarda la carrera también en local: respaldo del ranking si no hay conexión
   localBoardAdd({n:pName(), f:sel.flag, g:score, d:yearNow(),
     b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons }});
