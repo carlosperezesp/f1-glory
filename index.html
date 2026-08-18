@@ -2026,6 +2026,129 @@ const ERAS = {
   "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:["Fórmula Renault","Formula Renault","Fórmula Renault"],F3:["Fórmula 3","Formula 3","Fórmula 3"],FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010}, kart:KART_2010,
     lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
 };
+/* 🏆🛌 PALMARÉS REAL DE LAS ESCUDERÍAS (la semilla de «El gigante dormido»).
+   Dos listas por equipo, no una: `c` = Mundiales de CONSTRUCTORES, `d` = Mundiales de PILOTOS ganados
+   con su coche. En doce temporadas de la historia el campeón de pilotos NO corría para el campeón de
+   constructores, así que mezclarlas haría mentir al juego la mitad de las veces (aviso de Carlos,
+   18-ago-2026). Al empezar una partida el palmarés se RECORTA a lo anterior al año de la era —en una
+   partida de 1990 nadie ha ganado todavía en 1994— y a partir de ahí solo suman los títulos jugados.
+   ⚠️ Ausencias y cortes deliberados:
+     · Mercedes NO lleva 1954/1955. El Mercedes que vuelve en 2010 es otro equipo y no puede salir como
+       gigante dormido por una sequía de 55 años que no es suya.
+     · `until` corta el linaje el año en que la marca murió: el Lotus de 2010 y el Alfa Romeo de 2020
+       son resurrecciones comerciales, no los equipos originales, y no heredan nada (Alfa Romeo ni
+       siquiera está en la tabla: su único palmarés es de 1950-51 y ese equipo hace décadas que no existe).
+     · Alpine SÍ hereda el de Renault: ahí es el mismo equipo con otro nombre.
+   Fuente: listas de campeones de constructores y de pilotos de Wikipedia, por CHASIS (no por motor:
+   los 12 títulos «de Renault» como fabricante son de Williams, Renault y Red Bull, no de un equipo). */
+const PALMARES = {
+  "Ferrari":  {c:[1961,1964,1975,1976,1977,1979,1982,1983,1999,2000,2001,2002,2003,2004,2007,2008],
+               d:[1952,1953,1956,1958,1961,1964,1975,1977,1979,2000,2001,2002,2003,2004,2007]},
+  "McLaren":  {c:[1974,1984,1985,1988,1989,1990,1991,1998,2024,2025],
+               d:[1974,1976,1984,1985,1986,1988,1989,1990,1991,1998,1999,2008,2025]},
+  "Williams": {c:[1980,1981,1986,1987,1992,1993,1994,1996,1997],
+               d:[1980,1982,1987,1992,1993,1996,1997]},
+  "Mercedes": {c:[2014,2015,2016,2017,2018,2019,2020,2021], d:[2014,2015,2016,2017,2018,2019,2020]},
+  "Red Bull": {c:[2010,2011,2012,2013,2022,2023],           d:[2010,2011,2012,2013,2021,2022,2023,2024]},
+  "Renault":  {c:[2005,2006],                               d:[2005,2006]},
+  "Lotus":    {c:[1963,1965,1968,1970,1972,1973,1978],      d:[1963,1965,1968,1970,1972,1978], until:1995},
+  "Brabham":  {c:[1966,1967],                               d:[1966,1967,1981,1983],           until:1993},
+  "Tyrrell":  {c:[1971],                                    d:[1971,1973],                     until:1999},
+  "Benetton": {c:[1995],                                    d:[1994,1995],                     until:2002},
+};
+PALMARES["Alpine"]=PALMARES["Renault"];
+
+/* 🧬 EL PALMARÉS HISTÓRICO MUERE CON EL NOMBRE, y esto no es un detalle: sin la regla, el linaje de
+   1990 (Tyrrell→BAR→Honda) hacía que en 2008 saliera «Honda no gana el Mundial de Pilotos desde 1973»,
+   que es el título de Stewart con Tyrrell. Y el de 2000 (Benetton→Renault→Lotus) le colgaba a Lotus el
+   Mundial de Benetton. Es la misma mentira histórica que Carlos rechazó para el Lotus de 2010: una
+   marca no hereda lo que ganó la anterior. Lo GANADO JUGANDO sí viaja siempre —eso lo vio el jugador—,
+   y aquí van las únicas excepciones: rebautizados donde el equipo es literalmente el mismo. */
+const PALM_HEREDA = {"Renault":"Alpine"};   // …y al revés, si algún día Alpine vuelve a ser Renault
+
+/* el palmarés de un equipo va en dos cajones separados: `h` lo histórico (recortado al año de la era,
+   muere con el nombre) y `j` lo jugado. gigInfo los suma; rebrandTeam solo tira del primero. */
+function palmSeed(baseYear){
+  S.palm={};
+  F1_TEAMS.forEach(t=>{
+    const p=PALMARES[t.name]; if(!p) return;
+    if(p.until!=null && baseYear>=p.until) return;   // marca resucitada: no hereda nada
+    const c=p.c.filter(y=>y<baseYear), d=p.d.filter(y=>y<baseYear);
+    if(!c.length && !d.length) return;
+    S.palm[t.name]={h:{c:c.length?c[c.length-1]:null, d:d.length?d[d.length-1]:null, nc:c.length, nd:d.length},
+                    j:{c:null, d:null, dn:null, nc:0, nd:0}};
+  });
+}
+/* …y apunta los que se ganan JUGANDO, cada campeonato por su lado. `drvName` es quien lo ganó: se
+   guarda para poder decir «la última vez fue Fulano» aunque para entonces lleve años retirado. */
+function palmReg(year, constrTeam, drvTeam, drvName){
+  if(!S.palm) return;
+  const get=n=>{ const p=(S.palm[n]=S.palm[n]||{h:null,j:null}); p.j=p.j||{c:null,d:null,dn:null,nc:0,nd:0}; return p.j; };
+  if(constrTeam){ const j=get(constrTeam); j.c=year; j.nc++; }
+  if(drvTeam){ const j=get(drvTeam); j.d=year; j.dn=drvName||null; j.nd++; }
+}
+/* los dos cajones, sumados: lo que ve el juego cuando pregunta por el palmarés de un equipo */
+function palmTotal(name){
+  const p=S.palm&&S.palm[name]; if(!p) return null;
+  const h=p.h||{}, j=p.j||{};
+  const nc=(h.nc||0)+(j.nc||0), nd=(h.nd||0)+(j.nd||0);
+  if(!nc && !nd) return null;
+  const ult=(a,b)=>(a==null?b:(b==null?a:Math.max(a,b)));
+  const d=ult(h.d,j.d);
+  // el nombre del piloto solo vale si el ÚLTIMO título de pilotos es uno que se jugó
+  const dn=(j.d!=null && (h.d==null || j.d>=h.d)) ? (j.dn||null) : null;
+  return {c:ult(h.c,j.c), d, dn, nc, nd};
+}
+
+/* 🛌 EL GIGANTE DORMIDO — un ex campeón hundido que te ofrece el asiento para resucitarlo.
+   La sequía se exige EN LOS DOS CAMPEONATOS a la vez, y no es un capricho: pedir solo una habría
+   colado al McLaren de 2020 (22 años sin constructores… pero 12 sin pilotos) y al Brabham de 1990
+   (23 y 7). Los dos estaban resucitando, no durmiendo. */
+const GIG_SEQUIA=15, GIG_EDAD=34, GIG_TITULOS=2;
+function gigInfo(name){
+  const p=palmTotal(name); if(!p) return null;
+  if((p.nc||0)<2 && (p.nd||0)<2) return null;          // ganar UNA vez no te convierte en un gigante
+  const y=yearNow();
+  const sc=p.c==null?Infinity:y-p.c, sd=p.d==null?Infinity:y-p.d;
+  if(sc<GIG_SEQUIA || sd<GIG_SEQUIA) return null;
+  // el texto se apoya en el título MÁS RECIENTE de los dos: así la sequía que se cuenta nunca exagera
+  const esC=(p.c!=null) && (p.d==null || p.c>=p.d);
+  return {team:name, kind:esC?"c":"d", year:esC?p.c:p.d, drv:esC?null:p.dn,
+          anos:Math.min(sc,sd), grande:((p.nc||0)+(p.nd||0))>=8};
+}
+/* …y las otras puertas: no es tu equipo, no te ha cerrado la suya, está en la mitad baja de la parrilla
+   y NO viene subiendo. Un 5º→3º→2º no es un gigante dormido: es un equipo que ya despertó solo. */
+function gigCandidatos(){
+  if(!S.team) return [];
+  const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70));
+  const mitad=Math.ceil(ord.length/2);
+  return F1_TEAMS.map(t=>{
+    if(t.name===S.team.name) return null;
+    if(S.neverHire[t.name]||S.burned[t.name]) return null;
+    if(isJrTeam(t.name)||!rbOk(t)||teamHasFeud(t.name)) return null;
+    if(ord.findIndex(x=>x.name===t.name)+1<=mitad) return null;
+    const tr=trendInfo(t.name); if(tr.c==="up"||tr.c==="up2") return null;
+    return gigInfo(t.name);
+  }).filter(Boolean);
+}
+/* La frase de cabecera: QUÉ campeonato, desde CUÁNDO y cuántos años son, todo dicho una sola vez.
+   El nombre del piloto solo aparece si ese título se vivió jugando (o lo ganaste tú); si es anterior
+   a tu partida no hay a quién nombrar y se queda en el año, que es lo único cierto. */
+function gigSequiaTxt(g){
+  const cab = g.kind==="c"
+    ? L(`${g.team} no gana el Mundial de Constructores desde ${g.year}: ${g.anos} años.`,
+        `${g.team} haven't won the Constructors' Championship since ${g.year}: ${g.anos} years.`,
+        {pt:`A ${g.team} não vence o Mundial de Construtores desde ${g.year}: ${g.anos} anos.`})
+    : L(`${g.team} no gana el Mundial de Pilotos desde ${g.year}: ${g.anos} años.`,
+        `${g.team} haven't won the Drivers' Championship since ${g.year}: ${g.anos} years.`,
+        {pt:`A ${g.team} não vence o Mundial de Pilotos desde ${g.year}: ${g.anos} anos.`});
+  if(g.kind==="c") return cab;
+  const quien = g.drv==="__ME__" ? L(" La última vez fuiste tú."," The last time was you.",{pt:" A última vez foi você."})
+              : g.drv ? L(` La última vez fue ${surname(g.drv)}.`,` The last time was ${surname(g.drv)}.`,{pt:` A última vez foi ${surname(g.drv)}.`})
+              : "";
+  return cab+quien;
+}
+
 let SELECTED_ERA = "2026";
 function curEra(){ return ERAS[(S&&S.era)||SELECTED_ERA]||ERAS["2026"]; }
 // etiqueta de categoría según la era (GP2/GP3 en 2010, F2/F3/FRECA en 2020/2026)
@@ -2460,6 +2583,41 @@ const TESTS = {
     },
     dilema:"favorVeterano"
   },
+  /* 🛌 EL GIGANTE DORMIDO, EN BANDEJA. Coloca la situación EXACTA que el dilema exige, no la finge:
+     un bicampeón de 33 años en el mejor coche de la parrilla y, abajo del todo, un ex campeón con
+     sequía real y el proyecto plano. Cada repetición sortea una de las tres caras del texto que
+     conviene leer: el gigante de palmarés enorme (Williams), el campeón modesto (Alpine) y el caso en
+     que el último título de ese equipo se ganó DURANTE la partida y hay a quién nombrar. Esa tercera
+     se apunta con la MISMA llamada que usa el juego cuando pasa de verdad. Los demás dilemas, apagados. */
+  gigante: {
+    t:["El gigante dormido","The sleeping giant"],
+    d:["Bicampeón del mundo con 31 años y el mejor coche de la parrilla debajo. En la cola hay un ex campeón que lleva décadas sin ganar y que no está remontando. Corre DOS temporadas normales —con su invierno y sus ofertas— y a la tercera te mandarán a su presidente: así ves la llamada llegar dentro de la partida, y no de un botonazo. Si aceptas, termina el año y mira el mercado del invierno: el gigante estará entre tus puertas, marcado. Si dices que no, ese equipo no vuelve a ofrecerte asiento nunca más. Repite el escenario para ver las tres caras del texto: el gigante enorme, el campeón modesto, y el que puede nombrar al último piloto que ganó allí. El resto de dilemas están apagados.",
+       "A double world champion at 31 with the best car on the grid underneath you. At the back there's a former champion decades without a win who isn't climbing. Race TWO normal seasons —winters and offers included— and in the third their president will come for you: that way you see the call arrive inside the game, not at the push of a button. If you accept, finish the year and watch the winter market: the giant will be among your doors, marked. If you turn them down, that team never offers you a seat again. Replay the scenario for all three faces of the text: the huge giant, the modest champion, and the one that can name the last driver who won there. Every other dilemma is switched off."],
+    era:"2026", cat:"F1", dilema:"gigante",
+    run(){
+      S.age=31; S.startAge=16; S.ovr=91; S.peakAge=30; S.cat="F1"; S.f1Seasons=10; S.titles.f1=2; S.titles.constr=2;
+      S._gigEspera=yearNow()+2;   // 🧪 dos temporadas normales primero: la llamada llega DENTRO de la partida
+      const orden=[...F1_TEAMS].filter(t=>S.f1perf[t.name]!=null).sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
+      const mio=orden[0];
+      // el gigante: uno de los dos ex campeones que la parrilla de 2026 tiene en sequía de verdad
+      const cand=["Williams","Alpine"].map(n=>F1_TEAMS.find(t=>t.name===n)).filter(t=>t&&t.name!==mio.name);
+      const g=cand.length?cand[irnd(0,cand.length-1)]:orden[orden.length-1];
+      // …hundido y con el proyecto plano, que son las dos puertas que no vienen dadas
+      const suelo=Math.min(...orden.map(t=>S.f1perf[t.name]));
+      S.f1perf[g.name]=suelo-1; S.f1target[g.name]=suelo-1; if(S.cache) S.cache[g.name]=70;
+      // el otro ex campeón NO debe colarse en el sorteo: se queda arriba
+      cand.filter(t=>t.name!==g.name).forEach(t=>{ S.f1perf[t.name]=90; S.f1target[t.name]=90; });
+      /* 🎲 la tercera cara: el último título de ese equipo lo ganó un piloto DE ESTA PARTIDA. Se coge
+         de SU propio garaje —nombrar a uno que corre en otro equipo sonaba a error, no a memoria— y se
+         apunta con la misma llamada que usa el juego cuando pasa de verdad. */
+      if(ch(.34)){
+        const pool=(S.seats[g.name]||[]).filter(d=>d&&d!=="PLAYER"&&d.name);
+        if(pool.length) palmReg(yearNow()-15, null, g.name, pool[irnd(0,pool.length-1)].name);
+      }
+      S._testGig=g.name;
+      return mio;
+    }
+  },
 };
 function testNow(){ return TEST_MODE ? TESTS[TEST_MODE] : null; }
 /* arranca la partida de prueba: coloca al jugador y le da un botón para simular el año */
@@ -2497,7 +2655,7 @@ function setupTest(T){
 }
 /* 🧪 un escenario de prueba puede REDUCIR el catálogo a los dilemas que se quieren mirar: así se lee
    el que interesa sin que compita con los otros 128. Fuera del modo pruebas no cambia nada. */
-const DIL_SOLO={ favor:["favorVeterano"] };
+const DIL_SOLO={ favor:["favorVeterano"], gigante:["gigante"] };
 function dilAllowed(id){ const solo=DIL_SOLO[TEST_MODE]; return !solo || solo.indexOf(id)>=0; }
 /* 🇪🇸 ¿Y SI CAMPOS NO HUBIERA VENDIDO? (historia alternativa, idea de Carlos)
    En la realidad, Adrián Campos montó el proyecto «Campos Meta 1» para 2010 pero no llegó al inicio de
@@ -3007,6 +3165,7 @@ function startCareer(){
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, pendMiss:0, forceMove:false, apxShown:false,
     baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
     seats:{}, dpool:[], rookies:[...ERA.rookies], crossovers:ERA.crossovers.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
+    palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null,   // 🛌 palmarés vivo + el pacto del gigante dormido
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
@@ -3027,6 +3186,7 @@ function startCareer(){
   // referencias globales a F1_TEAMS siguen válidas). Así cada partida arranca con SU parrilla de época
   // y volver de una retro a 2026 restaura la parrilla actual sin arrastres.
   F1_TEAMS.length=0; ERA.teams.forEach(t=>F1_TEAMS.push({...t, cat:"F1"}));
+  palmSeed(ERA.baseYear);   // 🏆 palmarés real recortado al año de la era
   // escalera junior de la era (2010: Fórmula Renault/F3/GP3/GP2; 2020/2026: las actuales)
   const JR = ERA.jr || JR_2026;
   [["F4",F4_TEAMS],["F3",F3_TEAMS],["FR",FRECA_TEAMS],["F2",F2_TEAMS]].forEach(([k,pool])=>{ pool.length=0; JR[k].forEach(t=>pool.push({...t})); });
@@ -4325,6 +4485,25 @@ function signContract(o){
         {pt:`💔 Na ${eq} descartaram uma contratação de peso para apostar em você, e você foi embora do mesmo jeito. Essa porta se fecha para sempre. Fama −10%`}));
     }
   } else if(S.lealtadDebe && o.team && o.team.name===S.lealtadDebe.team){ S.lealtadDebe=null; }
+  /* 🛌 ABANDONAR AL GIGANTE. Fuiste a despertarlo dando tu palabra; si te largas sin haberlo levantado,
+     el juego tiene que decir algo (lo cazó Carlos: se fue de Williams al año y no pasó nada). Y no es
+     lo mismo huir a los dos años que pelearlo cinco: la espantada se paga y cierra la puerta; el que
+     lo intentó de verdad sale aplaudido. Se narra UNA vez por carrera. */
+  if(S.gigTeam && !S.gigResucitado && !S.gigFuga && prev && prev.name===S.gigTeam
+     && o.team && o.team.name!==S.gigTeam && F1_TEAMS.some(t=>t.name===S.gigTeam)){
+    const eq=S.gigTeam, anos=Math.max(1, yearNow()-(S.gigDesde||yearNow()));
+    S.gigFuga=yearNow();
+    if(anos<=2){
+      S.neverHire[eq]=true; VAL(.85);
+      S.pendingEvents.push(L(`💔 Fuiste a ${eq} a despertar al gigante pero has decidido cambiar de aires. En el paddock lo llaman por su nombre: una espantada. Esa puerta se cierra para siempre. Fama −15%`,
+        `💔 You went to ${eq} to wake the giant but you've decided to move on. The paddock calls it what it is: you bottled it. That door shuts for good. Fame −15%`,
+        {pt:`💔 Você foi à ${eq} para acordar o gigante mas decidiu mudar de ares. No paddock chamam pelo nome: você amarelou. Aquela porta se fecha para sempre. Fama −15%`}));
+    } else {
+      S.pendingEvents.push(L(`🕊️ Dejas ${eq} sin haberlo devuelto a lo más alto. ${anos} temporadas lo intentaste, y eso allí no se olvida: te despiden de pie, y con pena.`,
+        `🕊️ You leave ${eq} without taking them back to the top. ${anos} seasons you tried, and that isn't forgotten there: they see you off on their feet, and sorry to lose you.`,
+        {pt:`🕊️ Você deixa a ${eq} sem devolvê-la ao topo. ${anos} temporadas tentando, e ali isso não se esquece: te despedem de pé, e com pena.`}));
+    }
+  }
   // traiciones: dejar un equipo de F1 deja cicatrices, seas héroe o lastre
   // solo te "queman" si PUDISTE quedarte (te ofrecieron renovar) y te fuiste igual → traición.
   // Si te ECHARON (sin renovación) no hay traición. Y a un CAMPEÓN se le respeta: rara vez se queman puentes.
@@ -5655,6 +5834,43 @@ const DILEMAS=[
        return L("Entras, pones las cartas sobre la mesa y sales con lo que querías: libertad para pelear y los galones de Nº1.","You walk in, lay it all out and come out with what you wanted: freedom to race and No.1 status.",{pt:"Você entra, põe as cartas na mesa e sai com o que queria: liberdade para brigar e os galões de Nº1."}); }],
      [40,()=>L("Salís los dos con unas normas de convivencia bajo el brazo. Ni ganas ni pierdes, pero la sangre no llega al río.","You both leave with a set of ground rules. You neither win nor lose, but it doesn't boil over.",{pt:"Vocês dois saem com umas regras de convivência debaixo do braço. Nem ganha nem perde, mas o sangue não chega ao rio."})],
      [30,()=>{ CAR(-1); return quitarGalones(L("Te ven como un problema y deciden zanjarlo por la vía rápida: órdenes de equipo el resto del año. −1 coche. ","They see you as a problem and settle it the quick way: team orders for the rest of the year. −1 car. ",{pt:"Passam a te ver como um problema e resolvem pela via rápida: ordens de equipe o resto do ano. −1 carro. "})); }])}]},
+ /* 🛌 EL GIGANTE DORMIDO. Un ex campeón hundido manda a su presidente a buscarte para que seas TÚ
+    quien lo devuelva a lo más alto. Cinco puertas: dos títulos tuyos, 34 años o menos, 15 sin ganar
+    NADA (los dos campeonatos), mitad baja de la parrilla y sin venir subiendo. Vale en el modo clásico,
+    en el reto y en todas las eras retro; en el modo jefe no, que ahí el catálogo es otro. */
+ {id:"gigante",stage:"f1",noTag:true,
+  cond:()=>{ if(S.cat!=="F1"||!S.team) return false;
+    if(S._gigEspera && yearNow()<S._gigEspera) return false;   // 🧪 solo lo usa el escenario de prueba, para verlo llegar
+    if((S.titles.f1||0)<GIG_TITULOS) return false;   // esto no se le ofrece a cualquiera: hace falta ser leyenda
+    if(S.age>GIG_EDAD) return false;                 // …y una leyenda con años por delante para el proyecto
+    const c=gigCandidatos(); if(!c.length) return false;
+    c.sort((a,b)=>b.anos-a.anos); S._gig=c[0]; return true; },
+  t:()=>L("El gigante dormido","The sleeping giant",{pt:"O gigante adormecido"}),
+  d:()=>{ const g=S._gig; if(!g) return "";
+    const seq=gigSequiaTxt(g);
+    return g.grande
+     ? L(`${seq} La marca sigue intacta —las gradas se llenan, los patrocinadores siguen ahí, la historia pesa en cada pared del edificio—, pero el coche vive en la mitad baja de la parrilla y en el paddock ya nadie los mira con miedo. Su presidente ha cogido un avión para verte en persona: quieren que seas TÚ quien los devuelva a lo más alto.`,
+         `${seq} The badge is untouched —the stands still fill, the sponsors are still there, the history hangs on every wall of the building— but the car lives in the bottom half of the grid and nobody in the paddock fears them any more. Their president has taken a plane to see you in person: they want YOU to be the one who takes them back to the top.`,
+         {pt:`${seq} A marca segue intacta —as arquibancadas enchem, os patrocinadores continuam ali, a história pesa em cada parede do prédio—, mas o carro vive na metade de baixo do grid e no paddock ninguém mais os olha com medo. O presidente pegou um avião para te ver pessoalmente: querem que seja VOCÊ quem os devolva ao topo.`})
+     : L(`${seq} Nunca fue de los que ganaban cada temporada, pero ganó, y hoy ya nadie lo diría: pelean por puntos sueltos en la mitad baja de la parrilla. Te llaman porque están convencidos de que un piloto de tu talla lo cambiaría todo.`,
+         `${seq} They were never the team that won every season, but they won, and today you'd never guess it: they scrap for the odd point in the bottom half of the grid. They're calling because they're convinced a driver of your stature would change everything.`,
+         {pt:`${seq} Nunca foi das que ganhavam toda temporada, mas ganhou, e hoje ninguém diria: brigam por pontos soltos na metade de baixo do grid. Te procuram porque estão convencidos de que um piloto do seu porte mudaria tudo.`}); },
+  opts:[
+   {l:()=>L("Resucitar al antiguo campeón","Revive the old champion",{pt:"Ressuscitar o antigo campeão"}),
+    /* 🔒 ACEPTAR CIERRA EL TRATO. Antes esto dejaba `forceMove` y el invierno era un mercado normal:
+       el gigante salía con UNA estrella y, justo al lado, Ferrari y Red Bull con cuatro. El dilema
+       prometía «el año que viene te sientas en X» y la pantalla siguiente lo desmentía (lo cazó Carlos
+       en una captura). Si uno se va a arrepentir, que sea en el dilema. `lockTeam` es la misma vía que
+       usa el dilema del debut: ese invierno no hay nada que negociar. */
+    r:()=>{ const g=S._gig; S.lockTeam=g.team; S.gigTeam=g.team; VAL(1.2);
+      return L(`Das el sí y el paddock se para en seco: un campeón del mundo se marcha al equipo hundido. Esta temporada la terminas donde estás; el año que viene te sientas en ${g.team} con una sola misión encima. +fama`,
+               `You say yes and the paddock stops dead: a world champion is joining the fallen team. You see out this season where you are; next year you sit in a ${g.team} with a single mission on your shoulders. +fame`,
+               {pt:`Você diz sim e o paddock para de repente: um campeão do mundo vai para a equipe afundada. Esta temporada você termina onde está; no ano que vem senta na ${g.team} com uma única missão nas costas. +fama`}); }},
+   {l:()=>L("No es tu problema","Not your problem",{pt:"Não é problema seu"}),
+    r:()=>{ const g=S._gig; S.neverHire[g.team]=true; VAL(1.04);
+      return L(`Les dices que no. Con educación, pero que no. En ${g.team} lo encajan como lo que es —otro que no se atrevió— y cierran la puerta: ese asiento no volverá a estar sobre la mesa en toda tu carrera. Tu equipo agradece la fidelidad. +fama leve`,
+               `You turn them down. Politely, but you turn them down. ${g.team} take it for what it is —another one who didn't dare— and shut the door: that seat will never be on the table again in your career. Your team appreciates the loyalty. slight +fame`,
+               {pt:`Você diz que não. Com educação, mas não. Na ${g.team} encaram como o que é —mais um que não se atreveu— e fecham a porta: aquela vaga não voltará a estar na mesa em toda a sua carreira. A sua equipe agradece a fidelidade. +fama leve`}); }}]},
 ];
 
 /* 🏆 los grandes que PUEDEN llamarte cuando deslumbras de sustituto: buenos coches, pero nunca EL
@@ -5966,6 +6182,12 @@ function pickDilemma(){
   // 🎬 2023-2025 (línea temporal retro): Hollywood rueda la peli de F1 en los circuitos
   if(S.cat==="F1" && !S.usedDilemmas.pelicula && yearNow()>=2023 && yearNow()<=2025 && (S.age-S.lastDilemmaAge>=1) && ch(.5)){
     return DILEMAS.find(d=>d.id==="pelicula");
+  }
+  // 🛌 EL GIGANTE DORMIDO: ventana estrechísima (dos títulos, ≤34 años y un ex campeón hundido y sin
+  // remontar en la parrilla). Compitiendo de tú a tú con los ~45 del catálogo no se vería casi nunca.
+  if(S.cat==="F1" && !S.usedDilemmas.gigante && (S.age-S.lastDilemmaAge>=1) && dilAllowed("gigante")){
+    const d=DILEMAS.find(x=>x.id==="gigante");
+    if(d && d.cond() && ch(.6)) return d;
   }
   // tope de dilemas por carrera (subido de 5 a 6 el 7-ago-2026, decisión de Carlos). Los prioritarios
   // —arco del reglamento, gomas, toque, pandemia, película…— siguen saltándose esta cuenta a propósito:
@@ -6530,6 +6752,15 @@ function rebrandTeam(oldName, to, row){
   ["f1perf","f1target","f1char","cache"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
   if(S.seats[oldName]){ S.seats[nn]=S.seats[oldName]; delete S.seats[oldName]; }
   ["burned","neverHire"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
+  /* 🏆 el palmarés viaja con el equipo… PERO la parte histórica se queda con el nombre viejo salvo que
+     sea un rebautizado puro (Renault→Alpine). Si no, Honda acabaría presumiendo del título de Tyrrell. */
+  if(S.palm&&S.palm[oldName]!=null){
+    const p=S.palm[oldName]; delete S.palm[oldName];
+    if(!(PALM_HEREDA[oldName]===nn || PALM_HEREDA[nn]===oldName)) p.h=null;
+    if(p.h || (p.j && (p.j.nc||p.j.nd))) S.palm[nn]=p;
+  }
+  if(S.gigTeam===oldName) S.gigTeam=nn;
+  if(S.gigResucitado===oldName) S.gigResucitado=nn;
   if(S.roleTeam===oldName) S.roleTeam=nn;
   if(S.mySeatTeam===oldName) S.mySeatTeam=nn;
   if(S.poachTeam===oldName) S.poachTeam=nn;
@@ -6890,6 +7121,8 @@ function bgF1Season(row){
   const _disJ=(i)=>_snJ.filter(x=>x===_snJ[i]).length>1 ? rows[i].d.name : _snJ[i]; // M./R. Schumacher
   row.top3d=rows.slice(0,3).map((r,i)=>({n:_disJ(i), t:r.team}));
   row.top3c=constrRank.slice(0,3).map(e=>e[0]);
+  // 🏆 el palmarés vivo: quién ganó cada campeonato este año (alimenta «El gigante dormido»)
+  palmReg(row.year, constrRank.length?constrRank[0][0]:null, rows[0]?rows[0].team:null, rows[0]?rows[0].d.name:null);
   const {mvD,mvC}=trackRanks(rows.map(r=>r.d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
     d:rows.slice(0,3).map((r,i)=>({n:_disJ(i),team:r.team,flag:r.d.flag,me:false,mv:mvD(r.d.name,i+1)})),
@@ -7268,6 +7501,11 @@ function simF1(row,st){
   const _mIdx=standings.findIndex(d=>!d.isP && d.team===myTeam);
   if(_mIdx>=0){ row.matePos=_mIdx+1; row.mateName=standings[_mIdx].name; }
   row.top3c=constrRank.slice(0,3).map(e=>e[0]);
+  // 🏆 el palmarés vivo. Si el campeón eres tú se guarda "__ME__": años después, el equipo al que
+  // dejaste dormido puede decirte a la cara que la última vez que ganaron fuiste tú.
+  palmReg(row.year, constrRank.length?constrRank[0][0]:null,
+          standings[0]?(standings[0].isP?myTeam:standings[0].team):null,
+          standings[0]?(standings[0].isP?"__ME__":standings[0].name):null);
   const {mvD,mvC}=trackRanks(standings.map(d=>d.isP?"__ME__":d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
     d:standings.slice(0,3).map((d,i)=>({n:d.isP?"TÚ":_dis3(i),team:d.team,flag:d.dref?d.dref.flag:undefined,me:d.isP,mv:mvD(d.isP?"__ME__":d.name,i+1)})),
@@ -7283,6 +7521,14 @@ function simF1(row,st){
     if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️",{pt:"🥈 VICE-CAMPEÃO: o mundial escapou por uma decisão da FIA contra você. Dói para sempre. 🏛️"}):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory.",{pt:"🥈 Vice-campeão mundial atrás de "+surname(champ.name)+" — às portas da glória."}));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship.",{pt:"🏭 A sua equipe "+myTeam+" vence o Mundial de Construtores."}));}
+  /* 🛌 EL PACTO DEL GIGANTE DORMIDO se cumple el día que ese equipo vuelve a ganar contigo dentro.
+     Vale cualquiera de los dos campeonatos: los dos son «volver a lo más alto». */
+  if(S.gigTeam && myTeam===S.gigTeam && !S.gigResucitado && (pos===1||constrPos===1)){
+    S.gigResucitado=myTeam; VAL(1.35);
+    row.events.push(L(`🛌 ${myTeam} vuelve a ganar. El gigante ha despertado, y lo has despertado tú.`,
+      `🛌 ${myTeam} are winning again. The giant has woken up, and you're the one who woke it.`,
+      {pt:`🛌 A ${myTeam} volta a ganhar. O gigante acordou, e foi você quem o acordou.`}));
+  }
   // 🎤 arco de «voy a por el récord»: remontas (callas bocas), te quedas corto (bocazas) o te quedas a medias.
   // El reloj cuenta TEMPORADAS DE F1 desde el boast: irte de aventura NO cuenta como "no perseguir el récord".
   if(S.recordBoast){
@@ -7701,6 +7947,22 @@ function nOffers(){
 }
 function nextOffers(){
   if(S.cat==="TP"){ tpWinter(); return; }   // 🧑‍💼 el invierno del jefe: consejo, asientos, rumbo
+  /* 🛌 EL PACTO DEL GIGANTE DORMIDO. Diste tu palabra: el invierno es una firma. Se deja el botón de
+     retirarse —un piloto de 33 años siempre puede colgar el casco— pero no hay otros equipos: los
+     otros equipos eran la tentación, y la tentación era el dilema. */
+  if(S.lockTeam && S.gigTeam===S.lockTeam && !S.forceMove && !S.retired){
+    const t=F1_TEAMS.find(x=>x.name===S.lockTeam); S.lockTeam=null;
+    if(t){
+      S.gigDesde=yearNow();
+      setDecision(L("Un trato es un trato","A deal is a deal",{pt:"Trato é trato"}),
+        L(`Diste tu palabra y aquí no hay nada que negociar: el año que viene eres piloto de ${t.name}. Medio paddock cree que te has vuelto loco; la otra mitad se ha quedado sin saber qué decir.`,
+          `You gave your word and there's nothing to negotiate: next year you drive for ${t.name}. Half the paddock thinks you've lost your mind; the other half doesn't know what to say.`,
+          {pt:`Você deu a sua palavra e aqui não há nada a negociar: no ano que vem você é piloto da ${t.name}. Meio paddock acha que você enlouqueceu; a outra metade ficou sem saber o que dizer.`}));
+      $("decRecap").style.display="none";
+      renderOffers([{team:t, role:roleFor(t.name), note:["🛌 Lo que fuiste a buscar","🛌 What you came for","🛌 O que você foi buscar"]}], true);
+      scrollToDecision(); return;
+    }
+  }
   // 🤝 el dilema del debut YA decidió dónde corres: ese invierno no hay mercado, solo la confirmación.
   if(S.lockTeam && !S.forceMove && !S.retired){
     const t=F1_TEAMS.find(x=>x.name===S.lockTeam); S.lockTeam=null;
@@ -8723,6 +8985,8 @@ function endCareer(){
   else if((S.advTitles||0)>=1){ const s=serName(mainAdvSeries()); legacy=L("CAMPEÓN LEJOS DE LA F1","CHAMPION AWAY FROM F1",{pt:"CAMPEÃO LONGE DA F1"});verdict=L(`Nunca llegaste a la F1, pero conquistaste ${s}. No todos los reyes reinan en el mismo sitio — y tú reinaste en el tuyo.`,`You never reached F1, but you conquered ${s}. Not every king reigns in the same place — and you reigned in yours.`,{pt:`Você nunca chegou à F1, mas conquistou a ${s}. Nem todos os reis reinam no mesmo lugar — e você reinou no seu.`});}
   else if(S.adventures && S.adventures.length){ const s=serName(mainAdvSeries()); const mq=bestMarqueeWin(); legacy=L("PROFESIONAL DEL VOLANTE","A RACING PRO",{pt:"PROFISSIONAL DO VOLANTE"});verdict=L(`La F1 se te resistió, pero te ganaste la vida compitiendo al máximo nivel en ${s}. Una carrera de verdad, lejos de los focos.`,`F1 eluded you, but you earned your living racing at the top level in ${s}. A real career, away from the spotlight.`,{pt:`A F1 resistiu, mas você ganhou a vida competindo no mais alto nível na ${s}. Uma carreira de verdade, longe dos holofotes.`})+(mq?L(` Y hasta te llevaste una joya: ${mq}.`,` And you even grabbed a jewel: ${mq}.`,{pt:` E ainda levou uma joia: ${mq}.`}):"");}
   else {legacy=L("PROMESA DEL AUTOMOVILISMO","MOTORSPORT PROSPECT",{pt:"PROMESSA DO AUTOMOBILISMO"});verdict=L("La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.","F1 stayed out of reach, but the track was your home. Not every dream ends in Monaco, and they're worth it all the same.",{pt:"A F1 ficou longe, mas o asfalto foi a sua casa. Nem todos os sonhos terminam em Mônaco, e ainda assim valem a pena."});}
+  // 🛌 el único legado que deja el gigante dormido: lo encontraste dormido y volvió a ganar contigo
+  if(S.gigResucitado) verdict+=L(` Y resucitaste a ${S.gigResucitado}: lo encontraste dormido y lo devolviste a lo más alto. 🛌`,` And you revived ${S.gigResucitado}: you found them sleeping and took them back to the top. 🛌`,{pt:` E você ressuscitou a ${S.gigResucitado}: encontrou-a adormecida e a devolveu ao topo. 🛌`});
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=L(" Y sí: lo de APXGP fue tan de película como suena. 🎬"," And yes: the APXGP thing was as cinematic as it sounds. 🎬",{pt:" E sim: o lance da APXGP foi tão de cinema quanto parece. 🎬"});
   /* 📅 RETO · LA COMPARACIÓN CON EL PILOTO REAL, RETIRADA (decisión de Carlos, 14-ago-2026).
      Enseñaba una tabla «LO HAS HECHO MEJOR QUE ÉL» con mundiales/victorias/poles/podios frente a los
