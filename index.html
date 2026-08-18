@@ -403,7 +403,9 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 
 /* end modal */
 #endModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.45);backdrop-filter:blur(6px);z-index:50;align-items:center;justify-content:center;padding:20px}
-#rankModal,#patronModal,#tpGridModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.55);backdrop-filter:blur(6px);z-index:60;align-items:center;justify-content:center;padding:16px}
+/* z-index 80 > cinta de BETA (70): un modal abierto va por encima de TODO, o su ✕ queda tapada por
+   la cinta y no se puede cerrar (captura de Carlos en la beta) */
+#rankModal,#patronModal,#tpGridModal{display:none;position:fixed;inset:0;background:rgba(21,21,30,.55);backdrop-filter:blur(6px);z-index:80;align-items:center;justify-content:center;padding:16px}
 /* muro de mecenas */
 .pt-tier{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:14px 4px 6px}
 .pt-tier:first-child{margin-top:4px}
@@ -440,6 +442,13 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .rank-tabs button.on{background:var(--accent);color:#fff;border-color:transparent}
 .rank-me{padding:6px 16px 0}
 .rank-list{padding:8px 16px 18px;overflow-y:auto}
+/* 📱 el panel de parrilla+mercado apretaba en móvil (Carlos): filas y estrellas más chicas */
+@media(max-width:520px){
+  #tpGridList{padding:6px 10px 14px}
+  #tpGridList .pt-row{padding:7px 9px;gap:4px}
+  #tpGridList .pt-row > b{font-size:13px}
+  #tpGridList .pt-row span[style*="border-radius:8px"]{font-size:11px;padding:2px 6px !important}
+}
 .rank-note{font-size:12px;color:var(--muted);text-align:center;padding:10px 4px 14px;line-height:1.45}
 .rank-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:14px}
 .rank-row:nth-child(even){background:var(--panel2)}
@@ -9997,7 +10006,7 @@ function tpContratoScreen(){
     box.appendChild(b);
   };
   // renovar solo si te quieren: cumpliendo, casi siempre; sin cumplir, rara vez
-  const meQuieren = cumpliste ? ch(.85) : ch(.25);
+  const meQuieren = cumpliste ? true : ch(.3);   // 🐞 Carlos: yendo bien, tu equipo debe quererte SIEMPRE (antes 15% te dejaba tirado)
   const yo=F1_TEAMS.find(t=>t.name===tn);
   if(meQuieren && yo) oferta(yo, true);
   fuera.forEach(t=>oferta(t,false));
