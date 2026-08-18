@@ -1322,6 +1322,12 @@ const CROSSOVERS = [
      nunca contigo dentro sin avisarte un año antes. */
 const LINEAGE_2026 = [
  {key:"Haas", steps:[{die:true, w:[2034,2044], p:.45}]},
+ /* 🔄 ALPINE PUEDE VOLVER A SER RENAULT (petición de Carlos, 18-ago-2026). Es el reverso del cambio
+    real de 2021 y modela una ENTIDAD, no un patrocinador, así que cumple la regla del linaje. El
+    escudo sale solo: `TEAM_LOGOS_ERA` ya devuelve el Renault AMARILLO para cualquier año ≥2016.
+    Y el palmarés viaja con él —`PALM_HEREDA` cubre los dos sentidos—: si Renault-Alpine se hunde
+    quince años, el gigante dormido lo llamará por el nombre que lleve en ese momento. */
+ {key:"Alpine", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2030,2040], p:.22}]},
 ];
 const EXPANSION = [
   {range:[2032,2040], team:{name:"Hyundai", abbr:"HYU", color:"#002C5F", color2:"#00AAD2", perf:65, cat:"F1"},
@@ -1332,6 +1338,12 @@ const EXPANSION = [
     drivers:null, dieAfter:{w:[4,9], p:.25}}, // el eterno «casi» por fin da el paso
   {range:[2030,2040], team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:65, cat:"F1"},
     drivers:null, dieAfter:{w:[4,9], p:.25}}, // el gigante japonés vuelve tras su marcha de 2009
+  /* 🔱 MASERATI. Campeona del mundo de PILOTOS en 1954 y 1957 con Fangio, y desaparecida como
+     constructor desde el 58. Vuelve como marca, no como heredera: igual que el Lotus de la expansión,
+     NO lleva palmarés (decisión de Carlos con el gigante dormido: una resurrección comercial no hereda
+     lo que ganó otro equipo con el mismo nombre). Azul marino del tridente + rojo italiano. */
+  {range:[2030,2040], team:{name:"Maserati", abbr:"MSR", color:"#003A5D", color2:"#C8102E", perf:64, cat:"F1"},
+    drivers:null, dieAfter:{w:[3,8], p:.35}},
 ];
 
 /* ============================================================
@@ -1491,7 +1503,8 @@ const ROOKIE_2020 = [
    Virgin→Marussia('12)→☠️('16) · HRT→☠️('12). Haas NO viene de Sauber: entra NUEVO en 2016. */
 const LINEAGE_2010 = [
  {key:"Mercedes GP", steps:[{to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2011,2014], p:.85}]},
- {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2016,2026], p:.65}]},
+ {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2016,2026], p:.65},
+                         {to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2029,2039], p:.35, from:"Alpine"}]},
  {key:"Force India", steps:[{to:{name:"Racing Point",abbr:"RP",color:"#F596C8",color2:"#2B2B2B"}, w:[2016,2020], p:.55},
                             {to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2020,2027], p:.7}]},
  {key:"Toro Rosso", steps:[{to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2018,2022], p:.6},
@@ -1512,7 +1525,8 @@ const LINEAGE_2010 = [
  {key:"HRT", steps:[{die:true, w:[2012,2015], p:.7}]},
 ];
 const LINEAGE_2020 = [
- {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2021,2024], p:.75}]},
+ {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2021,2024], p:.75},
+                         {to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2033,2043], p:.3, from:"Alpine"}]},
  {key:"Racing Point", steps:[{to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2021,2023], p:.85}]},
  {key:"AlphaTauri", steps:[{to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2027], p:.6}]},
  {key:"Alfa Romeo", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2030], p:.65}]},
@@ -1930,7 +1944,8 @@ const LINEAGE_2000 = [
                     {to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2010,2013], p:.8}]},
  {key:"Benetton", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2001,2004], p:.8},
                          {to:{name:"Lotus",abbr:"LOT",color:"#111111",color2:"#c9a227"}, w:[2011,2014], p:.5},
-                         {to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2019,2024], p:.6}]},
+                         {to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2019,2024], p:.6},
+                         {to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2029,2039], p:.35, from:"Alpine"}]},
  {key:"Sauber", steps:[{to:{name:"BMW Sauber",abbr:"BMW",color:"#0a4ea2",color2:"#c0c0c8"}, w:[2005,2008], p:.6},
                        {to:{name:"Sauber",abbr:"SAU",color:"#0A4EA2",color2:"#C00000"}, w:[2009,2012], p:.7},
                        {to:{name:"Alfa Romeo",abbr:"ALF",color:"#900000",color2:"#C0C0C8"}, w:[2018,2022], p:.5},
@@ -2055,6 +2070,11 @@ const PALMARES = {
   "Brabham":  {c:[1966,1967],                               d:[1966,1967,1981,1983],           until:1993},
   "Tyrrell":  {c:[1971],                                    d:[1971,1973],                     until:1999},
   "Benetton": {c:[1995],                                    d:[1994,1995],                     until:2002},
+  /* 🔱 MASERATI es la EXCEPCIÓN a la regla de la marca resucitada, y a propósito (Carlos, 18-ago): el
+     Maserati que la expansión trae en los años 30 SÍ arrastra los Mundiales de Fangio del 54 y el 57.
+     Sin `until`, por tanto. No tiene Constructores porque ese campeonato no existía hasta 1958: eso lo
+     deja con una sequía infinita en constructores, que es justo lo que era. */
+  "Maserati": {c:[],                                        d:[1954,1957]},
 };
 PALMARES["Alpine"]=PALMARES["Renault"];
 
@@ -2070,14 +2090,17 @@ const PALM_HEREDA = {"Renault":"Alpine"};   // …y al revés, si algún día Al
    muere con el nombre) y `j` lo jugado. gigInfo los suma; rebrandTeam solo tira del primero. */
 function palmSeed(baseYear){
   S.palm={};
-  F1_TEAMS.forEach(t=>{
-    const p=PALMARES[t.name]; if(!p) return;
-    if(p.until!=null && baseYear>=p.until) return;   // marca resucitada: no hereda nada
-    const c=p.c.filter(y=>y<baseYear), d=p.d.filter(y=>y<baseYear);
-    if(!c.length && !d.length) return;
-    S.palm[t.name]={h:{c:c.length?c[c.length-1]:null, d:d.length?d[d.length-1]:null, nc:c.length, nd:d.length},
-                    j:{c:null, d:null, dn:null, nc:0, nd:0}};
-  });
+  F1_TEAMS.forEach(t=>palmSeedTeam(t.name, baseYear));
+}
+/* …y un equipo suelto, porque los de EXPANSIÓN no están en la parrilla al empezar: Maserati aterriza
+   en los años 30 y tiene que llegar con sus dos Mundiales del 54 y el 57 puestos. */
+function palmSeedTeam(name, baseYear){
+  const p=PALMARES[name]; if(!p || !S.palm || S.palm[name]) return;
+  if(p.until!=null && baseYear>=p.until) return;   // marca resucitada: no hereda nada
+  const c=p.c.filter(y=>y<baseYear), d=p.d.filter(y=>y<baseYear);
+  if(!c.length && !d.length) return;
+  S.palm[name]={h:{c:c.length?c[c.length-1]:null, d:d.length?d[d.length-1]:null, nc:c.length, nd:d.length},
+                j:{c:null, d:null, dn:null, nc:0, nd:0}};
 }
 /* …y apunta los que se ganan JUGANDO, cada campeonato por su lado. `drvName` es quien lo ganó: se
    guarda para poder decir «la última vez fue Fulano» aunque para entonces lleve años retirado. */
@@ -2124,6 +2147,13 @@ function gigCandidatos(){
   const mitad=Math.ceil(ord.length/2);
   return F1_TEAMS.map(t=>{
     if(t.name===S.team.name) return null;
+    /* 🔱 UN RECIÉN LLEGADO NO ES UN GIGANTE DORMIDO. Maserati aterriza en los años 30 arrastrando los
+       Mundiales de Fangio del 54 y el 57, así que el mismo año de su debut ya cumplía la sequía —74
+       años— y encima ganaba a todos los demás, que como mucho llevan 30. Un equipo que acaba de nacer
+       no está dormido: está empezando. Se le piden 8 temporadas en la parrilla antes de poder pedir
+       auxilio, y entonces la frase se gana el derecho a existir: volvieron, pasó una década y siguen
+       sin ganar nada desde Fangio. */
+    if(S.llegadaExp && S.llegadaExp[t.name]!=null && yearNow()-S.llegadaExp[t.name] < 8) return null;
     if(S.neverHire[t.name]||S.burned[t.name]) return null;
     if(isJrTeam(t.name)||!rbOk(t)||teamHasFeud(t.name)) return null;
     if(ord.findIndex(x=>x.name===t.name)+1<=mitad) return null;
@@ -2262,7 +2292,8 @@ const TEAM_LOGOS = {
   // 🕰️ era 2000 y sus transformaciones
   "Jordan":"Jordan.png","Jaguar":"Jaguar.png","Minardi":"Minardi.png","Benetton":"Benetton.png",
   "BAR":"BAR.png","Arrows":"Arrows.png","Prost GP":"Prost.png","BMW Sauber":"BMW.png",
-  "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png"
+  "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png",
+  "Maserati":"maserati.png"
 };
 // 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
 // se volvió papaya; el Williams clásico dio paso al actual). [desdeAño, fichero] — el último que cumple manda.
@@ -3165,7 +3196,7 @@ function startCareer(){
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, pendMiss:0, forceMove:false, apxShown:false,
     baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
     seats:{}, dpool:[], rookies:[...ERA.rookies], crossovers:ERA.crossovers.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
-    palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null,   // 🛌 palmarés vivo + el pacto del gigante dormido
+    palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null, llegadaExp:{},   // 🛌 palmarés vivo + el pacto del gigante dormido
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
@@ -6714,6 +6745,8 @@ function processEntries(row){
     if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
+    palmSeedTeam(e.team.name, S.baseYear);   // 🏆 si la marca tiene palmarés propio, llega con él puesto
+    (S.llegadaExp=S.llegadaExp||{})[e.team.name]=yearNow();   // 🛌 y desde cuándo lleva aquí (ver gigCandidatos)
     /* 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento.
        ⚖️ NO en el equipo que un reto obliga a entrar: el reto es TU asiento y todos los jugadores
           compiten en la misma tabla, así que ese 3% le regalaba a uno de cada treinta un coche
