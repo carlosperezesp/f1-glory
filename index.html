@@ -2154,6 +2154,7 @@ function gigCandidatos(){
        auxilio, y entonces la frase se gana el derecho a existir: volvieron, pasó una década y siguen
        sin ganar nada desde Fangio. */
     if(S.llegadaExp && S.llegadaExp[t.name]!=null && yearNow()-S.llegadaExp[t.name] < 8) return null;
+    if((S.gigOfrecidos||[]).includes(t.name)) return null;   // el que ya te llamó no insiste
     if(S.neverHire[t.name]||S.burned[t.name]) return null;
     if(isJrTeam(t.name)||!rbOk(t)||teamHasFeud(t.name)) return null;
     if(ord.findIndex(x=>x.name===t.name)+1<=mitad) return null;
@@ -3196,7 +3197,7 @@ function startCareer(){
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, pendMiss:0, forceMove:false, apxShown:false,
     baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
     seats:{}, dpool:[], rookies:[...ERA.rookies], crossovers:ERA.crossovers.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
-    palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null, llegadaExp:{},   // 🛌 palmarés vivo + el pacto del gigante dormido
+    palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null, llegadaExp:{}, gigOfrecidos:[],   // 🛌 palmarés vivo + el pacto del gigante dormido
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
@@ -5878,8 +5879,14 @@ const DILEMAS=[
     if(S._gigEspera && yearNow()<S._gigEspera) return false;   // 🧪 solo lo usa el escenario de prueba, para verlo llegar
     if((S.titles.f1||0)<GIG_TITULOS) return false;   // esto no se le ofrece a cualquiera: hace falta ser leyenda
     if(S.age>GIG_EDAD) return false;                 // …y una leyenda con años por delante para el proyecto
+    /* 🤝 UN PACTO CADA VEZ. Si diste tu palabra a un equipo y aún no lo has levantado (ni te has
+       largado), nadie más te llama: primero se cumple o se rompe lo que hay. */
+    if(S.gigTeam && !S.gigResucitado && !S.gigFuga) return false;
     const c=gigCandidatos(); if(!c.length) return false;
-    c.sort((a,b)=>b.anos-a.anos); S._gig=c[0]; return true; },
+    /* 🎲 …Y EL QUE LLAMA SE ELIGE AL AZAR, no el que lleva más años sin ganar (corrección de Carlos,
+       18-ago). Si en tu partida están hundidos Williams y Ferrari, los dos pueden llamarte: no hay
+       motivo para que el de la sequía más larga se lleve siempre el papel. */
+    S._gig=c[irnd(0,c.length-1)]; return true; },
   t:()=>L("El gigante dormido","The sleeping giant",{pt:"O gigante adormecido"}),
   d:()=>{ const g=S._gig; if(!g) return "";
     const seq=gigSequiaTxt(g);
@@ -5898,11 +5905,13 @@ const DILEMAS=[
        en una captura). Si uno se va a arrepentir, que sea en el dilema. `lockTeam` es la misma vía que
        usa el dilema del debut: ese invierno no hay nada que negociar. */
     r:()=>{ const g=S._gig; S.lockTeam=g.team; S.gigTeam=g.team; VAL(1.2);
+      (S.gigOfrecidos=S.gigOfrecidos||[]).push(g.team);
       return L(`Das el sí y el paddock se para en seco: un campeón del mundo se marcha al equipo hundido. Esta temporada la terminas donde estás; el año que viene te sientas en ${g.team} con una sola misión encima. +fama`,
                `You say yes and the paddock stops dead: a world champion is joining the fallen team. You see out this season where you are; next year you sit in a ${g.team} with a single mission on your shoulders. +fame`,
                {pt:`Você diz sim e o paddock para de repente: um campeão do mundo vai para a equipe afundada. Esta temporada você termina onde está; no ano que vem senta na ${g.team} com uma única missão nas costas. +fama`}); }},
    {l:()=>L("No es tu problema","Not your problem",{pt:"Não é problema seu"}),
     r:()=>{ const g=S._gig; S.neverHire[g.team]=true; VAL(1.04);
+      (S.gigOfrecidos=S.gigOfrecidos||[]).push(g.team);
       return L(`Les dices que no. Con educación, pero que no. En ${g.team} lo encajan como lo que es —otro que no se atrevió— y cierran la puerta: ese asiento no volverá a estar sobre la mesa en toda tu carrera. Tu equipo agradece la fidelidad. +fama leve`,
                `You turn them down. Politely, but you turn them down. ${g.team} take it for what it is —another one who didn't dare— and shut the door: that seat will never be on the table again in your career. Your team appreciates the loyalty. slight +fame`,
                {pt:`Você diz que não. Com educação, mas não. Na ${g.team} encaram como o que é —mais um que não se atreveu— e fecham a porta: aquela vaga não voltará a estar na mesa em toda a sua carreira. A sua equipe agradece a fidelidade. +fama leve`}); }}]},
@@ -6218,9 +6227,12 @@ function pickDilemma(){
   if(S.cat==="F1" && !S.usedDilemmas.pelicula && yearNow()>=2023 && yearNow()<=2025 && (S.age-S.lastDilemmaAge>=1) && ch(.5)){
     return DILEMAS.find(d=>d.id==="pelicula");
   }
-  // 🛌 EL GIGANTE DORMIDO: ventana estrechísima (dos títulos, ≤34 años y un ex campeón hundido y sin
-  // remontar en la parrilla). Compitiendo de tú a tú con los ~45 del catálogo no se vería casi nunca.
-  if(S.cat==="F1" && !S.usedDilemmas.gigante && (S.age-S.lastDilemmaAge>=1) && dilAllowed("gigante")){
+  /* 🛌 EL GIGANTE DORMIDO: ventana estrechísima (dos títulos, ≤34 años y un ex campeón hundido y sin
+     remontar en la parrilla). Compitiendo de tú a tú con los ~45 del catálogo no se vería casi nunca.
+     Y NO se mira `usedDilemmas`: puede repetir con OTRO equipo (rechazaste a Williams, y años después
+     te llama Ferrari). Cada equipo llama una sola vez —de eso se encarga `gigOfrecidos`— y nunca hay
+     dos pactos abiertos a la vez, que eso lo guarda el propio `cond`. */
+  if(S.cat==="F1" && (S.age-S.lastDilemmaAge>=1) && dilAllowed("gigante")){
     const d=DILEMAS.find(x=>x.id==="gigante");
     if(d && d.cond() && ch(.6)) return d;
   }
