@@ -6088,9 +6088,14 @@ const DILEMAS=[
        return L("Llegas con el reloj puesto en hora local y te lo notas desde el primer libre: fresco cuando los demás arrastran los pies. +1 OVR",
                 "You arrive with your body clock already on local time and feel it from first practice: sharp while the rest drag their feet. +1 OVR",
                 {pt:"Você chega com o relógio biológico no horário local e sente desde o primeiro treino: inteiro enquanto os outros arrastam os pés. +1 OVR"});}],
-     [4,()=>L("Una semana de hotel, gimnasio y paseos por una ciudad que no conoces. Llegas descansado, como casi todos. Sin cambios.",
-              "A week of hotel, gym and walks round a city you don't know. You arrive rested, like almost everyone else. No change.",
-              {pt:"Uma semana de hotel, academia e caminhadas por uma cidade que você não conhece. Chega descansado, como quase todos. Sem mudanças."})])},
+     /* 💡 ESTA RAMA NO DABA NADA, y no por descuido: las otras dos puertas pagan en coche (1 / 0.5) y en
+        fama (+18% / +7%), que admiten medias tintas, pero esta paga en OVR — que es ENTERO y se
+        redondea, así que «medio OVR» no existe. Se le paga en fama, y pequeña, para no pisarle la
+        moneda a la puerta del patrocinador. Lo cazó Carlos preguntando cuál era la que no daba nada. */
+     [4,()=>{VAL(1.04);
+       return L("Una semana de hotel, gimnasio y paseos por una ciudad que no conoces. Llegas entero, y en el paddock alguien cuenta que estabas allí desde el lunes. +fama leve",
+                "A week of hotel, gym and walks round a city you don't know. You arrive fresh, and in the paddock someone mentions you'd been there since Monday. slight +fame",
+                {pt:"Uma semana de hotel, academia e caminhadas por uma cidade que você não conhece. Você chega inteiro, e no paddock alguém comenta que estava lá desde segunda. +fama leve"});}])},
    {l:()=>L("Volver a la fábrica entre carreras","Fly back to the factory between races",{pt:"Voltar à fábrica entre corridas"}),
     r:()=>roll(
      [6,()=>{CAR(1);
