@@ -1764,14 +1764,19 @@ const GRID1990 = {
   "Arrows":[["M. Alboreto",33,80,83,0,"🇮🇹"],["A. Caffi",26,76,80,0,"🇮🇹"]],
   "Larrousse":[["É. Bernard",30,76,80,0,"🇫🇷"],["A. Suzuki",27,76,80,0,"🇯🇵"]],
   "Ligier":[["N. Larini",25,77,82,0,"🇮🇹"],["P. Alliot",36,74,77,0,"🇫🇷"]],
-  "Minardi":[["P. Martini",29,78,82,0,"🇮🇹"],["G. Morbidelli",22,74,80,0,"🇮🇹"]],
+  "Minardi":[["P. Martini",29,78,82,0,"🇮🇹"],["P. Barilla",26,69,72,0,"🇮🇹"]],
   "Scuderia Italia":[["A. de Cesaris",31,76,80,0,"🇮🇹"],["E. Pirro",28,76,80,0,"🇮🇹"]],
-  "Osella":[["O. Grouillard",30,72,76,0,"🇫🇷"],["P. Barilla",26,69,72,0,"🇮🇹"]],
+  /* 🚗 UN SOLO COCHE (verificado, temporada 1990): Osella, Coloni y Life presentaban UN coche — la
+     parrilla real eran 35 inscritos, no 38. De paso, dos recolocaciones históricas: Barilla corría en
+     MINARDI (Morbidelli fue su sustituto de final de año: pasa al bote de novatos con su año real) y
+     Johansson estuvo en Onyx dos carreras, no en Coloni — sale de la parrilla. El motor aguanta
+     equipos de un coche: sin compañero no hay duelo interno, y las mecánicas de pareja se saltan solas. */
+  "Osella":[["O. Grouillard",30,72,76,0,"🇫🇷"]],
   "Onyx":[["JJ. Lehto",24,78,84,0,"🇫🇮"],["G. Foitek",24,70,74,0,"🇨🇭"]],
   "AGS":[["Y. Dalmas",33,70,73,0,"🇫🇷"],["G. Tarquini",28,75,79,0,"🇮🇹"]],
-  "Coloni":[["B. Gachot",27,76,80,0,"🇧🇪"],["S. Johansson",34,74,77,0,"🇸🇪"]],
+  "Coloni":[["B. Gachot",27,76,80,0,"🇧🇪"]],
   "EuroBrun":[["R. Moreno",31,76,80,0,"🇧🇷"],["C. Langes",29,64,67,0,"🇮🇹"]],
-  "Life":[["B. Giacomelli",37,64,66,0,"🇮🇹"],["G. Brabham",29,64,67,0,"🇦🇺"]],
+  "Life":[["B. Giacomelli",37,64,66,0,"🇮🇹"]],
 };
 /* 🧬 LINAJE DE LOS 90 — de la carnicería de 1990-92 hasta enlazar con la parrilla de hoy.
    Casi todas las compras son de FUERA (una tabacalera compra Tyrrell, Renault compra Benetton, Prost
@@ -1893,7 +1898,7 @@ const ROOKIE_1990 = [
      📌 Siguen sin fecha, y por tanto debutan con 18-21 (identificados pero sin dato verificado):
        Naspetti, Couto, Coronel, Kox, Minassian, Müller, Goossens. */
   ["A. Montermini","🇮🇹",null,1964,85],["V. Sospiri","🇮🇹",null,1966,87],["E. Naspetti","🇮🇹",null,1968],
-  ["L. Badoer","🇮🇹",1992,1971,86],["M. Apicella","🇮🇹",null,1965],["A. Zanardi","🇮🇹",null,1966,92],["G. Lavaggi","🇮🇹",1993,1958],
+  ["G. Morbidelli","🇮🇹",1990,1968,84],["L. Badoer","🇮🇹",1992,1971,86],["M. Apicella","🇮🇹",null,1965],["A. Zanardi","🇮🇹",null,1966,92],["G. Lavaggi","🇮🇹",1993,1958],
   ["A. Couto","🇵🇹",1995,1976],["A. García","🇪🇸",1999,1980],
   ["T. Kristensen","🇩🇰",1993,1967,90],["A. Wallace","🇬🇧",null,1961],
   ["C. Albers","🇳🇱",1998,1979],["T. Coronel","🇳🇱",1994,1972],["P. Kox","🇳🇱",1982,1964],
@@ -4187,7 +4192,26 @@ function pedigreeLabel(){
    campeones vigentes; si los dos lo fueran, se cae al más flojo, como antes.
    ⚠️ Lo usan mateIfJoin y occupySeat: TIENEN que decidir igual, o la oferta promete un compañero y te
    sienta con otro (algo que ya costó una tanda de medición). */
+/* 🚗² EL SEGUNDO COCHE (Carlos, 19-ago: «puede ser que en un caso rarísimo aumenten a 2 pilotos o
+   incluso que sobrevivan»). Osella, Coloni y Life arrancan 1990 con UN coche, como en la realidad.
+   Sobrevivir ya era posible (sus quiebras del linaje fallan un 3-12% de las veces); esto añade la otra
+   mitad: si el equipo sigue vivo y su coche ha dejado de ser el último clavo (perf ≥ 62), cada
+   invierno tiene un 15% de encontrar el dinero para el segundo coche. Sale un novato, se narra, y a
+   partir de ahí es un equipo normal. */
+function segundoCoche(row){
+  F1_TEAMS.forEach(t=>{
+    const sl=S.seats[t.name];
+    if(!Array.isArray(sl) || sl.length!==1) return;
+    if((S.f1perf[t.name]??60) < 62 || !ch(.15)) return;
+    const d=mkRookie(false, t.name);
+    sl.push(d);
+    row.events.push(L(`🚗² ${t.name} encuentra por fin presupuesto para un segundo coche: lo estrena ${d.name}.`,
+      `🚗² ${t.name} finally finds the budget for a second car: ${d.name} gets the seat.`,
+      {pt:`🚗² A ${t.name} finalmente acha orçamento para um segundo carro: ${d.name} fica com a vaga.`}));
+  });
+}
 function displaceIdx(sl){
+  if(!sl || sl.length<2) return 0;   // 🚗 equipo de UN coche: el asiento es ese, no un segundo fantasma
   const camp = x => !!(x && x!=="PLAYER" && S.lastChampName && x.name===S.lastChampName);
   const a=sl[0], b=sl[1];
   if(camp(a) && !camp(b)) return 1;
@@ -4541,7 +4565,12 @@ function renderOffers(offers, withRetire){
     let roleChip="";
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.",{pt:"PILOTO N.º"})}${o.role}</span>`;
     if(o.team.cat==="TEST") roleChip=`<span class="role rt">${L("PROBADOR","RESERVE",{pt:"PILOTO DE TESTES"})}</span>`;
-    const mate = o.team.cat==="F1"&&S.seats[o.team.name] ? ` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: `+mateIfJoin(o.team.name).name : "";
+    const _sl1=S.seats[o.team.name];
+    const mate = o.team.cat==="F1"&&_sl1
+      ? (Array.isArray(_sl1)&&_sl1.length<2 && !_sl1.some(x=>x==="PLAYER")
+          ? ` · ${L("Coche único: correrías solo","One-car team: you'd race alone",{pt:"Carro único: você correria sozinho"})}`
+          : ` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: `+mateIfJoin(o.team.name).name)
+      : "";
     let trendLine="", carLine="", profileLine="";
     if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">${L("TENDENCIA","TREND",{pt:"TENDÊNCIA"})}: ${ti.a} ${ti.t}</span>`; }
     if(o.team.cat==="F1"){
@@ -6856,6 +6885,7 @@ function simSeason(){
   npcSeason(row);
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
   rbCanteraInvernal(row); // 🐂 el filial promociona o suelta a los que dejan de ser promesa
+  segundoCoche(row);      // 🚗² un equipo de un coche que sobrevive y mejora puede montar el segundo
   beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
   maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
   alphaClash(row); // 🥊 dos gallos no caben en el mismo corral
