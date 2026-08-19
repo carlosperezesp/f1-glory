@@ -482,8 +482,19 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .end-stats div.gold .k{color:#7c5e0f}
 .end-stats div.shiny{position:relative;overflow:hidden;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 6px 20px rgba(214,164,44,.6)}
-.end-stats div.shiny .v{background:linear-gradient(92deg,#6b4a00,#a9770a,#6b4a00);background-size:200% 100%;
-  -webkit-background-clip:text;background-clip:text;color:transparent;animation:goldshift 3s linear infinite}
+/* 🐞 EL NÚMERO DESAPARECÍA EN ALGUNOS MÓVILES (captura de un jugador, 17-ago). Esto pintaba el número
+   con un degradado recortado a la forma de las letras y `color:transparent`: si el navegador no
+   soporta bien `background-clip:text` —o falla al combinarlo con la animación— el texto se queda
+   transparente sobre el fondo y el número no se ve. Lo tenía TODO el que ganaba 3+ títulos, o sea
+   justo las mejores partidas.
+   Ahora el color legible es la BASE y el degradado solo se aplica donde el recorte existe de verdad.
+   Si falla, se ve un número marrón oscuro sobre dorado: menos vistoso, perfectamente legible. */
+.end-stats div.shiny .v{color:#6f4e00}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .end-stats div.shiny .v{background:linear-gradient(92deg,#6b4a00,#a9770a,#6b4a00);background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    animation:goldshift 3s linear infinite}
+}
 .end-stats div.shiny::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;pointer-events:none;
   background:linear-gradient(105deg,transparent,rgba(255,255,255,.9),transparent);transform:skewX(-18deg);
   animation:shine 2.8s ease-in-out infinite}
@@ -693,11 +704,8 @@ body.conBeta #topBtns{top:44px}
   </div>
   <!-- VISIBLE. Para ocultarlo cuando las novedades caduquen, volver a poner display:none en el style. -->
   <p class="news" style="max-width:540px;margin:20px auto 0;font-size:13px;line-height:1.55;color:var(--muted)"
-     data-es="✨ <b>Últimas novedades:</b> las <b>banderas ya se ven igual en todos los dispositivos</b> — quien jugaba desde Windows veía «ES» en vez de 🇪🇸, y eso se acabó, también en las tarjetas que compartes. Ahora hay <b>207 países</b> para elegir. Y hay <b>dilemas nuevos</b> que aparecerán durante la partida. El <b>lunes 17 abre el Reto semanal</b> y el <b>viernes 21, la década de 1990</b>. Vuelve pronto. 🏗️" data-pt="✨ <b>Últimas novidades:</b> as <b>bandeiras já aparecem iguais em todos os dispositivos</b> — quem jogava no Windows via «ES» em vez de 🇪🇸, e isso acabou, também nos cartões que você compartilha. Agora há <b>207 países</b> para escolher. E há <b>dilemas novos</b> que vão aparecer durante a partida. Na <b>segunda-feira 17 abre o Desafio semanal</b> e na <b>sexta-feira 21, a década de 1990</b>. Volte logo. 🏗️" data-pl="✨ <b>Najnowsze zmiany:</b> <b>flagi wyglądają teraz tak samo na każdym urządzeniu</b> — kto grał na Windowsie, widział «ES» zamiast 🇪🇸, i to się skończyło, także na kartach, którymi się dzielisz. Do wyboru jest teraz <b>207 krajów</b>. Są też <b>nowe dylematy</b>, które pojawią się w trakcie kariery. W <b>poniedziałek 17 startuje Wyzwanie tygodnia</b>, a w <b>piątek 21 — lata 90.</b> Zaglądaj wkrótce. 🏗️" data-fr="✨ <b>Dernières nouveautés :</b> les <b>drapeaux s'affichent enfin pareil sur tous les appareils</b> — sur Windows on voyait « ES » au lieu de 🇪🇸, c'est terminé, y compris sur les cartes que tu partages. Il y a maintenant <b>207 pays</b> au choix. Et de <b>nouveaux dilemmes</b> qui surgiront en cours de partie. Le <b>lundi 17 ouvre le Défi hebdomadaire</b>, et le <b>vendredi 21, la décennie 1990</b>. Reviens vite. 🏗️"
-     data-en="✨ <b>What's new:</b> <b>flags now look the same on every device</b> — anyone playing on Windows used to see «ES» instead of 🇪🇸, and that's over, including on the cards you share. There are now <b>207 countries</b> to choose from. And there are <b>new dilemmas</b> waiting to show up during your career. The <b>Weekly Challenge opens on Monday the 17th</b>, and the <b>1990s on Friday the 21st</b>. Come back soon. 🏗️">✨ <b>Últimas novedades:</b> las <b>banderas ya se ven igual en todos los dispositivos</b> — quien jugaba desde Windows veía «ES» en vez de 🇪🇸, y eso se acabó, también en las tarjetas que compartes. Ahora hay <b>207 países</b> para elegir. Y hay <b>dilemas nuevos</b> que aparecerán durante la partida. El <b>lunes 17 abre el Reto semanal</b> y el <b>viernes 21, la década de 1990</b>. Vuelve pronto. 🏗️</p>
-  <p class="news" style="max-width:540px;margin:8px auto 0;font-size:13px;line-height:1.5;color:var(--muted)"
-     data-es="¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧" data-pt="Sugestões ou erros? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Escreva para mim!</a> 📧" data-pl="Sugestie albo błędy? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Napisz do mnie!</a> 📧" data-fr="Suggestions ou bugs ? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Écris-moi !</a> 📧" data-pt="Sugestões ou erros? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Escreve-me!</a> 📧"
-     data-en="Suggestions or bugs? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>Email me!</a> 📧">¿Sugerencias o fallos? <a href='mailto:perezzamoracarlos.20@gmail.com' style='color:var(--accent);font-weight:700'>¡Escríbeme!</a> 📧</p>
+     data-es="✨ <b>Últimas novedades:</b> ya está abierto el <b>Reto semanal</b>: cada lunes, una carrera jugada con las cartas de otro. Empezamos con <b>El Nano</b>. Además, las <b>banderas se ven ya igual en todos los dispositivos</b> y hay <b>207 países</b> para elegir. Y <b>dilemas nuevos</b>, que aparecerán durante la partida. El <b>viernes 21 abre la década de 1990</b>. Vuelve pronto. 🏗️" data-pt="✨ <b>Últimas novidades:</b> já está aberto o <b>Desafio semanal</b>: toda segunda-feira, uma carreira jogada com as cartas de outro. Começamos com <b>El Nano</b>. Além disso, as <b>bandeiras já aparecem iguais em todos os dispositivos</b> e há <b>207 países</b> para escolher. E <b>dilemas novos</b>, que vão aparecer durante a partida. Na <b>sexta-feira 21 abre a década de 1990</b>. Volte logo. 🏗️"
+     data-en="✨ <b>What's new:</b> the <b>Weekly Challenge</b> is open: every Monday, a career played with someone else's cards. We start with <b>El Nano</b>. On top of that, <b>flags now look the same on every device</b> and there are <b>207 countries</b> to choose from. Plus <b>new dilemmas</b> waiting to show up mid-career. The <b>1990s open on Friday the 21st</b>. Come back soon. 🏗️">✨ <b>Últimas novedades:</b> ya está abierto el <b>Reto semanal</b>: cada lunes, una carrera jugada con las cartas de otro. Empezamos con <b>El Nano</b>. Además, las <b>banderas se ven ya igual en todos los dispositivos</b> y hay <b>207 países</b> para elegir. Y <b>dilemas nuevos</b>, que aparecerán durante la partida. El <b>viernes 21 abre la década de 1990</b>. Vuelve pronto. 🏗️</p>
   <!-- 📲 aviso de instalar como app: solo en móvil, se puede cerrar y no vuelve (lo activa initInstallHint) -->
   <div id="installHint" style="display:none">
     <div class="ih-top">
@@ -1346,6 +1354,12 @@ const CROSSOVERS = [
      nunca contigo dentro sin avisarte un año antes. */
 const LINEAGE_2026 = [
  {key:"Haas", steps:[{die:true, w:[2034,2044], p:.45}]},
+ /* 🔄 ALPINE PUEDE VOLVER A SER RENAULT (petición de Carlos, 18-ago-2026). Es el reverso del cambio
+    real de 2021 y modela una ENTIDAD, no un patrocinador, así que cumple la regla del linaje. El
+    escudo sale solo: `TEAM_LOGOS_ERA` ya devuelve el Renault AMARILLO para cualquier año ≥2016.
+    Y el palmarés viaja con él —`PALM_HEREDA` cubre los dos sentidos—: si Renault-Alpine se hunde
+    quince años, el gigante dormido lo llamará por el nombre que lleve en ese momento. */
+ {key:"Alpine", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2030,2040], p:.22}]},
 ];
 const EXPANSION = [
   {range:[2032,2040], team:{name:"Hyundai", abbr:"HYU", color:"#002C5F", color2:"#00AAD2", perf:65, cat:"F1"},
@@ -1356,6 +1370,12 @@ const EXPANSION = [
     drivers:null, dieAfter:{w:[4,9], p:.25}}, // el eterno «casi» por fin da el paso
   {range:[2030,2040], team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:65, cat:"F1"},
     drivers:null, dieAfter:{w:[4,9], p:.25}}, // el gigante japonés vuelve tras su marcha de 2009
+  /* 🔱 MASERATI. Campeona del mundo de PILOTOS en 1954 y 1957 con Fangio, y desaparecida como
+     constructor desde el 58. Vuelve como marca, no como heredera: igual que el Lotus de la expansión,
+     NO lleva palmarés (decisión de Carlos con el gigante dormido: una resurrección comercial no hereda
+     lo que ganó otro equipo con el mismo nombre). Azul marino del tridente + rojo italiano. */
+  {range:[2030,2040], team:{name:"Maserati", abbr:"MSR", color:"#003A5D", color2:"#C8102E", perf:64, cat:"F1"},
+    drivers:null, dieAfter:{w:[3,8], p:.35}},
 ];
 
 /* ============================================================
@@ -1515,7 +1535,8 @@ const ROOKIE_2020 = [
    Virgin→Marussia('12)→☠️('16) · HRT→☠️('12). Haas NO viene de Sauber: entra NUEVO en 2016. */
 const LINEAGE_2010 = [
  {key:"Mercedes GP", steps:[{to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2011,2014], p:.85}]},
- {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2016,2026], p:.65}]},
+ {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2016,2026], p:.65},
+                         {to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2029,2039], p:.35, from:"Alpine"}]},
  {key:"Force India", steps:[{to:{name:"Racing Point",abbr:"RP",color:"#F596C8",color2:"#2B2B2B"}, w:[2016,2020], p:.55},
                             {to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2020,2027], p:.7}]},
  {key:"Toro Rosso", steps:[{to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2018,2022], p:.6},
@@ -1536,7 +1557,8 @@ const LINEAGE_2010 = [
  {key:"HRT", steps:[{die:true, w:[2012,2015], p:.7}]},
 ];
 const LINEAGE_2020 = [
- {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2021,2024], p:.75}]},
+ {key:"Renault", steps:[{to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2021,2024], p:.75},
+                         {to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2033,2043], p:.3, from:"Alpine"}]},
  {key:"Racing Point", steps:[{to:{name:"Aston Martin",abbr:"AMR",color:"#229971",color2:"#CEDC00"}, w:[2021,2023], p:.85}]},
  {key:"AlphaTauri", steps:[{to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2027], p:.6}]},
  {key:"Alfa Romeo", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2030], p:.65}]},
@@ -1954,7 +1976,8 @@ const LINEAGE_2000 = [
                     {to:{name:"Mercedes",abbr:"MER",color:"#00A19B",color2:"#0f0f14"}, w:[2010,2013], p:.8}]},
  {key:"Benetton", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2001,2004], p:.8},
                          {to:{name:"Lotus",abbr:"LOT",color:"#111111",color2:"#c9a227"}, w:[2011,2014], p:.5},
-                         {to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2019,2024], p:.6}]},
+                         {to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2019,2024], p:.6},
+                         {to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2029,2039], p:.35, from:"Alpine"}]},
  {key:"Sauber", steps:[{to:{name:"BMW Sauber",abbr:"BMW",color:"#0a4ea2",color2:"#c0c0c8"}, w:[2005,2008], p:.6},
                        {to:{name:"Sauber",abbr:"SAU",color:"#0A4EA2",color2:"#C00000"}, w:[2009,2012], p:.7},
                        {to:{name:"Alfa Romeo",abbr:"ALF",color:"#900000",color2:"#C0C0C8"}, w:[2018,2022], p:.5},
@@ -2050,6 +2073,145 @@ const ERAS = {
   "2010":{ id:"2010", baseYear:2010, teams:TEAMS_2010, grid:GRID2010, rookies:ROOKIE_2010, crossovers:CROSSOVERS, legends:LEGENDS_2010, expansion:ENTRIES_2010, cats:{F4:["Fórmula Renault","Formula Renault","Fórmula Renault"],F3:["Fórmula 3","Formula 3","Fórmula 3"],FR:"GP3",F2:"GP2"}, jr:{F4:FREN_2010,F3:F3_2010,FR:GP3_2010,F2:GP2_2010}, kart:KART_2010,
     lineage:LINEAGE_2010, arrivals:ARRIVALS_2010, juniorOf:{"Toro Rosso":"Red Bull"} },
 };
+/* 🏆🛌 PALMARÉS REAL DE LAS ESCUDERÍAS (la semilla de «El gigante dormido»).
+   Dos listas por equipo, no una: `c` = Mundiales de CONSTRUCTORES, `d` = Mundiales de PILOTOS ganados
+   con su coche. En doce temporadas de la historia el campeón de pilotos NO corría para el campeón de
+   constructores, así que mezclarlas haría mentir al juego la mitad de las veces (aviso de Carlos,
+   18-ago-2026). Al empezar una partida el palmarés se RECORTA a lo anterior al año de la era —en una
+   partida de 1990 nadie ha ganado todavía en 1994— y a partir de ahí solo suman los títulos jugados.
+   ⚠️ Ausencias y cortes deliberados:
+     · Mercedes NO lleva 1954/1955. El Mercedes que vuelve en 2010 es otro equipo y no puede salir como
+       gigante dormido por una sequía de 55 años que no es suya.
+     · `until` corta el linaje el año en que la marca murió: el Lotus de 2010 y el Alfa Romeo de 2020
+       son resurrecciones comerciales, no los equipos originales, y no heredan nada (Alfa Romeo ni
+       siquiera está en la tabla: su único palmarés es de 1950-51 y ese equipo hace décadas que no existe).
+     · Alpine SÍ hereda el de Renault: ahí es el mismo equipo con otro nombre.
+   Fuente: listas de campeones de constructores y de pilotos de Wikipedia, por CHASIS (no por motor:
+   los 12 títulos «de Renault» como fabricante son de Williams, Renault y Red Bull, no de un equipo). */
+const PALMARES = {
+  "Ferrari":  {c:[1961,1964,1975,1976,1977,1979,1982,1983,1999,2000,2001,2002,2003,2004,2007,2008],
+               d:[1952,1953,1956,1958,1961,1964,1975,1977,1979,2000,2001,2002,2003,2004,2007]},
+  "McLaren":  {c:[1974,1984,1985,1988,1989,1990,1991,1998,2024,2025],
+               d:[1974,1976,1984,1985,1986,1988,1989,1990,1991,1998,1999,2008,2025]},
+  "Williams": {c:[1980,1981,1986,1987,1992,1993,1994,1996,1997],
+               d:[1980,1982,1987,1992,1993,1996,1997]},
+  "Mercedes": {c:[2014,2015,2016,2017,2018,2019,2020,2021], d:[2014,2015,2016,2017,2018,2019,2020]},
+  "Red Bull": {c:[2010,2011,2012,2013,2022,2023],           d:[2010,2011,2012,2013,2021,2022,2023,2024]},
+  "Renault":  {c:[2005,2006],                               d:[2005,2006]},
+  "Lotus":    {c:[1963,1965,1968,1970,1972,1973,1978],      d:[1963,1965,1968,1970,1972,1978], until:1995},
+  "Brabham":  {c:[1966,1967],                               d:[1966,1967,1981,1983],           until:1993},
+  "Tyrrell":  {c:[1971],                                    d:[1971,1973],                     until:1999},
+  "Benetton": {c:[1995],                                    d:[1994,1995],                     until:2002},
+  /* 🔱 MASERATI es la EXCEPCIÓN a la regla de la marca resucitada, y a propósito (Carlos, 18-ago): el
+     Maserati que la expansión trae en los años 30 SÍ arrastra los Mundiales de Fangio del 54 y el 57.
+     Sin `until`, por tanto. No tiene Constructores porque ese campeonato no existía hasta 1958: eso lo
+     deja con una sequía infinita en constructores, que es justo lo que era. */
+  "Maserati": {c:[],                                        d:[1954,1957]},
+};
+PALMARES["Alpine"]=PALMARES["Renault"];
+
+/* 🧬 EL PALMARÉS HISTÓRICO MUERE CON EL NOMBRE, y esto no es un detalle: sin la regla, el linaje de
+   1990 (Tyrrell→BAR→Honda) hacía que en 2008 saliera «Honda no gana el Mundial de Pilotos desde 1973»,
+   que es el título de Stewart con Tyrrell. Y el de 2000 (Benetton→Renault→Lotus) le colgaba a Lotus el
+   Mundial de Benetton. Es la misma mentira histórica que Carlos rechazó para el Lotus de 2010: una
+   marca no hereda lo que ganó la anterior. Lo GANADO JUGANDO sí viaja siempre —eso lo vio el jugador—,
+   y aquí van las únicas excepciones: rebautizados donde el equipo es literalmente el mismo. */
+const PALM_HEREDA = {"Renault":"Alpine"};   // …y al revés, si algún día Alpine vuelve a ser Renault
+
+/* el palmarés de un equipo va en dos cajones separados: `h` lo histórico (recortado al año de la era,
+   muere con el nombre) y `j` lo jugado. gigInfo los suma; rebrandTeam solo tira del primero. */
+function palmSeed(baseYear){
+  S.palm={};
+  F1_TEAMS.forEach(t=>palmSeedTeam(t.name, baseYear));
+}
+/* …y un equipo suelto, porque los de EXPANSIÓN no están en la parrilla al empezar: Maserati aterriza
+   en los años 30 y tiene que llegar con sus dos Mundiales del 54 y el 57 puestos. */
+function palmSeedTeam(name, baseYear){
+  const p=PALMARES[name]; if(!p || !S.palm || S.palm[name]) return;
+  if(p.until!=null && baseYear>=p.until) return;   // marca resucitada: no hereda nada
+  const c=p.c.filter(y=>y<baseYear), d=p.d.filter(y=>y<baseYear);
+  if(!c.length && !d.length) return;
+  S.palm[name]={h:{c:c.length?c[c.length-1]:null, d:d.length?d[d.length-1]:null, nc:c.length, nd:d.length},
+                j:{c:null, d:null, dn:null, nc:0, nd:0}};
+}
+/* …y apunta los que se ganan JUGANDO, cada campeonato por su lado. `drvName` es quien lo ganó: se
+   guarda para poder decir «la última vez fue Fulano» aunque para entonces lleve años retirado. */
+function palmReg(year, constrTeam, drvTeam, drvName){
+  if(!S.palm) return;
+  const get=n=>{ const p=(S.palm[n]=S.palm[n]||{h:null,j:null}); p.j=p.j||{c:null,d:null,dn:null,nc:0,nd:0}; return p.j; };
+  if(constrTeam){ const j=get(constrTeam); j.c=year; j.nc++; }
+  if(drvTeam){ const j=get(drvTeam); j.d=year; j.dn=drvName||null; j.nd++; }
+}
+/* los dos cajones, sumados: lo que ve el juego cuando pregunta por el palmarés de un equipo */
+function palmTotal(name){
+  const p=S.palm&&S.palm[name]; if(!p) return null;
+  const h=p.h||{}, j=p.j||{};
+  const nc=(h.nc||0)+(j.nc||0), nd=(h.nd||0)+(j.nd||0);
+  if(!nc && !nd) return null;
+  const ult=(a,b)=>(a==null?b:(b==null?a:Math.max(a,b)));
+  const d=ult(h.d,j.d);
+  // el nombre del piloto solo vale si el ÚLTIMO título de pilotos es uno que se jugó
+  const dn=(j.d!=null && (h.d==null || j.d>=h.d)) ? (j.dn||null) : null;
+  return {c:ult(h.c,j.c), d, dn, nc, nd};
+}
+
+/* 🛌 EL GIGANTE DORMIDO — un ex campeón hundido que te ofrece el asiento para resucitarlo.
+   La sequía se exige EN LOS DOS CAMPEONATOS a la vez, y no es un capricho: pedir solo una habría
+   colado al McLaren de 2020 (22 años sin constructores… pero 12 sin pilotos) y al Brabham de 1990
+   (23 y 7). Los dos estaban resucitando, no durmiendo. */
+const GIG_SEQUIA=15, GIG_EDAD=34, GIG_TITULOS=2;
+function gigInfo(name){
+  const p=palmTotal(name); if(!p) return null;
+  if((p.nc||0)<2 && (p.nd||0)<2) return null;          // ganar UNA vez no te convierte en un gigante
+  const y=yearNow();
+  const sc=p.c==null?Infinity:y-p.c, sd=p.d==null?Infinity:y-p.d;
+  if(sc<GIG_SEQUIA || sd<GIG_SEQUIA) return null;
+  // el texto se apoya en el título MÁS RECIENTE de los dos: así la sequía que se cuenta nunca exagera
+  const esC=(p.c!=null) && (p.d==null || p.c>=p.d);
+  return {team:name, kind:esC?"c":"d", year:esC?p.c:p.d, drv:esC?null:p.dn,
+          anos:Math.min(sc,sd), grande:((p.nc||0)+(p.nd||0))>=8};
+}
+/* …y las otras puertas: no es tu equipo, no te ha cerrado la suya, está en la mitad baja de la parrilla
+   y NO viene subiendo. Un 5º→3º→2º no es un gigante dormido: es un equipo que ya despertó solo. */
+function gigCandidatos(){
+  if(!S.team) return [];
+  const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70));
+  const mitad=Math.ceil(ord.length/2);
+  return F1_TEAMS.map(t=>{
+    if(t.name===S.team.name) return null;
+    /* 🔱 UN RECIÉN LLEGADO NO ES UN GIGANTE DORMIDO. Maserati aterriza en los años 30 arrastrando los
+       Mundiales de Fangio del 54 y el 57, así que el mismo año de su debut ya cumplía la sequía —74
+       años— y encima ganaba a todos los demás, que como mucho llevan 30. Un equipo que acaba de nacer
+       no está dormido: está empezando. Se le piden 8 temporadas en la parrilla antes de poder pedir
+       auxilio, y entonces la frase se gana el derecho a existir: volvieron, pasó una década y siguen
+       sin ganar nada desde Fangio. */
+    if(S.llegadaExp && S.llegadaExp[t.name]!=null && yearNow()-S.llegadaExp[t.name] < 8) return null;
+    if((S.gigOfrecidos||[]).includes(t.name)) return null;   // el que ya te llamó no insiste
+    if(S.neverHire[t.name]||S.burned[t.name]) return null;
+    if(isJrTeam(t.name)||!rbOk(t)||teamHasFeud(t.name)) return null;
+    if(ord.findIndex(x=>x.name===t.name)+1<=mitad) return null;
+    const tr=trendInfo(t.name); if(tr.c==="up"||tr.c==="up2") return null;
+    return gigInfo(t.name);
+  }).filter(Boolean);
+}
+/* La frase de cabecera: QUÉ campeonato, desde CUÁNDO y cuántos años son, todo dicho una sola vez.
+   El nombre del piloto solo aparece si ese título se vivió jugando (o lo ganaste tú); si es anterior
+   a tu partida no hay a quién nombrar y se queda en el año, que es lo único cierto. */
+function gigSequiaTxt(g){
+  const cab = g.kind==="c"
+    ? L(`${g.team} no gana el Mundial de Constructores desde ${g.year}: ${g.anos} años.`,
+        `${g.team} haven't won the Constructors' Championship since ${g.year}: ${g.anos} years.`,
+        {pt:`A ${g.team} não vence o Mundial de Construtores desde ${g.year}: ${g.anos} anos.`})
+    : L(`${g.team} no gana el Mundial de Pilotos desde ${g.year}: ${g.anos} años.`,
+        `${g.team} haven't won the Drivers' Championship since ${g.year}: ${g.anos} years.`,
+        {pt:`A ${g.team} não vence o Mundial de Pilotos desde ${g.year}: ${g.anos} anos.`});
+  if(g.kind==="c") return cab;
+  const quien = g.drv==="__ME__" ? L(" La última vez fuiste tú."," The last time was you.",{pt:" A última vez foi você."})
+              : g.drv ? L(` La última vez fue ${surname(g.drv)}.`,` The last time was ${surname(g.drv)}.`,{pt:` A última vez foi ${surname(g.drv)}.`})
+              : "";
+  return cab+quien;
+}
+
 let SELECTED_ERA = "2026";
 function curEra(){ return ERAS[(S&&S.era)||SELECTED_ERA]||ERAS["2026"]; }
 // etiqueta de categoría según la era (GP2/GP3 en 2010, F2/F3/FRECA en 2020/2026)
@@ -2163,7 +2325,8 @@ const TEAM_LOGOS = {
   // 🕰️ era 2000 y sus transformaciones
   "Jordan":"Jordan.png","Jaguar":"Jaguar.png","Minardi":"Minardi.png","Benetton":"Benetton.png",
   "BAR":"BAR.png","Arrows":"Arrows.png","Prost GP":"Prost.png","BMW Sauber":"BMW.png",
-  "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png"
+  "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png",
+  "Maserati":"maserati.png"
 };
 // 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
 // se volvió papaya; el Williams clásico dio paso al actual). [desdeAño, fichero] — el último que cumple manda.
@@ -2462,6 +2625,52 @@ const TESTS = {
      El escenario CUMPLE de verdad las seis condiciones (no las finge): un campeón de 36 años con 3
      títulos que acabó 1º el año pasado, en el mejor coche de la parrilla; y tú, en tu segunda
      temporada, sin títulos y en un coche de media tabla. */
+  /* 🛞 LA GOMA, EN LAS CINCO ÉPOCAS. Arranca en el karting de 1990 con SOLO los dos dilemas nuevos de
+     piloto encendidos: subes la escalera, llegas a la F1 y a partir de ahí te salen una y otra vez,
+     con el texto de la época que estés viviendo. Repitiendo se leen las tres versiones del de gomas
+     (sin repostaje / con repostaje / la ventana) y las tres del jetlag. */
+  gomas: {
+    t:["🛞 La goma y el jetlag","🛞 Tyres and jetlag"],
+    d:["Arrancas en el karting de 1990 con TODOS los dilemas apagados menos los dos nuevos de piloto: «La goma no llega» y «El otro lado del mundo». Sube a la F1 y te irán saliendo. Lo interesante es que el texto cambia con el año que estés viviendo: hasta 1993 no hay repostaje y parar es tiempo tirado; de 1994 a 2009 la parada la manda el depósito; desde 2010 existe «la ventana» de la goma. El jetlag hace lo mismo: gira de ultramar hasta 1999, doble cita asiática hasta 2017, triple tanda después. Y tu estilo de pilotaje inclina de verdad la balanza: el agresivo exprime mejor, el consistente gestiona mejor.",
+       "You start in 1990 karting with EVERY dilemma switched off except the two new driver ones: «The tyres won't last» and «The other side of the world». Climb to F1 and they'll come. The interesting part is that the text changes with the year you're living: until 1993 there's no refuelling and pitting is time thrown away; from 1994 to 2009 the stop is dictated by the fuel; from 2010 there's the tyre's «window». Jetlag does the same: overseas tour until 1999, Asian double header until 2017, triple header after. And your driving style genuinely tilts the odds: aggressive pushes better, consistent manages better."],
+    era:"1990", jr:true,
+    run(){ return null; }
+  },
+  /* 🏎️💨 EL VETERANO CON PRISA, EN BANDEJA. Te sienta en un equipo de mediocampo de 2026 y coloca en
+     un coche PEOR a un campeón de 36 años, que es exactamente lo que el dilema exige. Se apagan los
+     demás dilemas de jefe para poder leerlo con calma. */
+  jefeVeterano: {
+    t:["Jefe · El veterano con prisa","Boss · The veteran in a hurry"],
+    d:["Te sientas en el muro de un equipo de mediocampo en 2026. En un coche peor que el tuyo hay un campeón de 36 años al que se le acaba el tiempo y lo sabe. Pasa la pantalla de rumbo y pedirá verte a solas: se ofrece por una temporada y por muy poco dinero, a cambio de que vuelques el desarrollo del año en ganar YA. Aceptar hace las dos cosas de golpe: se sienta él, sale tu piloto más flojo, y el coche sube ahora a costa del año que viene. El resto de dilemas del jefe están apagados.",
+       "You take over a midfield pit wall in 2026. In a worse car than yours sits a 36-year-old champion whose time is running out, and he knows it. Get past the direction screen and he'll ask to see you alone: he offers himself for one season and almost no money, provided you pour the year's development into winning NOW. Accepting does both at once: he takes a seat, your weakest driver leaves, and the car improves now at next year's expense. Every other boss dilemma is switched off."],
+    /* ⚠️ `team` es OBLIGATORIO en un escenario de jefe: `setupTest` lo lee DESPUÉS de `run()` y, si no
+       está, te sienta en `F1_TEAMS[0]` —o sea, en el mejor coche de la parrilla— y entonces no hay
+       ningún equipo peor del que pueda venir el veterano. Medido: 0 de 20. */
+    era:"2026", tp:true, team:"Aston Martin", tpDilema:"tpVeterano",
+    run(){
+      // un campeón de 36 años en un coche CLARAMENTE peor que el tuyo, que es lo que pide el dilema
+      const orden=[...F1_TEAMS].filter(t=>!isRBJr(t.name)).sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+      const mio=F1_TEAMS.find(t=>t.name==="Aston Martin")||orden[4];
+      const peor=orden.filter(t=>t.name!==mio.name).at(-1);
+      if(!peor) return null;
+      S.f1perf[peor.name]=Math.min(S.f1perf[peor.name]??70, (S.f1perf[mio.name]??75)-8);
+      const sl=S.seats[peor.name]||(S.seats[peor.name]=[]);
+      let v=sl.find(d=>d&&d!=="PLAYER");
+      if(!v){ v=mkRookie(false, peor.name); sl[0]=v; }
+      v.age=36; v.skill=91; v.ceil=93; v.titles=2;
+      v.champYears=[yearNow()-6, yearNow()-5];
+      S._testVetTP=v.name;
+      return null;
+    }
+  },
+  /* 🛞 EL MURO Y LA GOMA, EN BANDEJA: no exige nada especial de la parrilla, solo sentarse. */
+  jefeGomas: {
+    t:["Jefe · El muro y la goma","Boss · The pit wall and the tyres"],
+    d:["Te sientas en el muro de un equipo de 2026 y pasas la pantalla de rumbo. Tu piloto está peleando una posición que vale puntos y las gomas se están yendo: le dices que gestione o que apriete como siempre. Quién te avisa depende de la época —en los 2000 en adelante lo canta la telemetría; antes, solo la voz del piloto—, así que también se puede leer en una retro. El resto de dilemas del jefe están apagados.",
+       "You take over a 2026 pit wall and get past the direction screen. Your driver is fighting for a position worth points and the tyres are going: you tell him to manage them or to push like always. Who warns you depends on the era —from the 2000s the telemetry says it first; before that, only the driver's voice— so it reads in a retro era too. Every other boss dilemma is switched off."],
+    era:"2026", tp:true, tpDilema:"tpGomas",
+    run(){ return null; }
+  },
   favor: {
     t:["El favor del veterano","The veteran's favour"],
     d:["Segunda temporada en la F1, sin títulos y con un coche de media tabla. En el mejor coche hay un campeón de 36 años que viene de ganar el Mundial y este año se lo vuelve a jugar. Acepta la oferta y te buscará en el paddock. El resto de dilemas están apagados.",
@@ -2483,6 +2692,41 @@ const TESTS = {
       return mio;
     },
     dilema:"favorVeterano"
+  },
+  /* 🛌 EL GIGANTE DORMIDO, EN BANDEJA. Coloca la situación EXACTA que el dilema exige, no la finge:
+     un bicampeón de 33 años en el mejor coche de la parrilla y, abajo del todo, un ex campeón con
+     sequía real y el proyecto plano. Cada repetición sortea una de las tres caras del texto que
+     conviene leer: el gigante de palmarés enorme (Williams), el campeón modesto (Alpine) y el caso en
+     que el último título de ese equipo se ganó DURANTE la partida y hay a quién nombrar. Esa tercera
+     se apunta con la MISMA llamada que usa el juego cuando pasa de verdad. Los demás dilemas, apagados. */
+  gigante: {
+    t:["El gigante dormido","The sleeping giant"],
+    d:["Bicampeón del mundo con 31 años y el mejor coche de la parrilla debajo. En la cola hay un ex campeón que lleva décadas sin ganar y que no está remontando. Corre DOS temporadas normales —con su invierno y sus ofertas— y a la tercera te mandarán a su presidente: así ves la llamada llegar dentro de la partida, y no de un botonazo. Si aceptas, termina el año y mira el mercado del invierno: el gigante estará entre tus puertas, marcado. Si dices que no, ese equipo no vuelve a ofrecerte asiento nunca más. Repite el escenario para ver las tres caras del texto: el gigante enorme, el campeón modesto, y el que puede nombrar al último piloto que ganó allí. El resto de dilemas están apagados.",
+       "A double world champion at 31 with the best car on the grid underneath you. At the back there's a former champion decades without a win who isn't climbing. Race TWO normal seasons —winters and offers included— and in the third their president will come for you: that way you see the call arrive inside the game, not at the push of a button. If you accept, finish the year and watch the winter market: the giant will be among your doors, marked. If you turn them down, that team never offers you a seat again. Replay the scenario for all three faces of the text: the huge giant, the modest champion, and the one that can name the last driver who won there. Every other dilemma is switched off."],
+    era:"2026", cat:"F1", dilema:"gigante",
+    run(){
+      S.age=31; S.startAge=16; S.ovr=91; S.peakAge=30; S.cat="F1"; S.f1Seasons=10; S.titles.f1=2; S.titles.constr=2;
+      S._gigEspera=yearNow()+2;   // 🧪 dos temporadas normales primero: la llamada llega DENTRO de la partida
+      const orden=[...F1_TEAMS].filter(t=>S.f1perf[t.name]!=null).sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
+      const mio=orden[0];
+      // el gigante: uno de los dos ex campeones que la parrilla de 2026 tiene en sequía de verdad
+      const cand=["Williams","Alpine"].map(n=>F1_TEAMS.find(t=>t.name===n)).filter(t=>t&&t.name!==mio.name);
+      const g=cand.length?cand[irnd(0,cand.length-1)]:orden[orden.length-1];
+      // …hundido y con el proyecto plano, que son las dos puertas que no vienen dadas
+      const suelo=Math.min(...orden.map(t=>S.f1perf[t.name]));
+      S.f1perf[g.name]=suelo-1; S.f1target[g.name]=suelo-1; if(S.cache) S.cache[g.name]=70;
+      // el otro ex campeón NO debe colarse en el sorteo: se queda arriba
+      cand.filter(t=>t.name!==g.name).forEach(t=>{ S.f1perf[t.name]=90; S.f1target[t.name]=90; });
+      /* 🎲 la tercera cara: el último título de ese equipo lo ganó un piloto DE ESTA PARTIDA. Se coge
+         de SU propio garaje —nombrar a uno que corre en otro equipo sonaba a error, no a memoria— y se
+         apunta con la misma llamada que usa el juego cuando pasa de verdad. */
+      if(ch(.34)){
+        const pool=(S.seats[g.name]||[]).filter(d=>d&&d!=="PLAYER"&&d.name);
+        if(pool.length) palmReg(yearNow()-15, null, g.name, pool[irnd(0,pool.length-1)].name);
+      }
+      S._testGig=g.name;
+      return mio;
+    }
   },
 };
 function testNow(){ return TEST_MODE ? TESTS[TEST_MODE] : null; }
@@ -2521,7 +2765,8 @@ function setupTest(T){
 }
 /* 🧪 un escenario de prueba puede REDUCIR el catálogo a los dilemas que se quieren mirar: así se lee
    el que interesa sin que compita con los otros 128. Fuera del modo pruebas no cambia nada. */
-const DIL_SOLO={ favor:["favorVeterano"] };
+const DIL_SOLO={ favor:["favorVeterano"], gigante:["gigante"], gomas:["gomas1","jetlag"],
+  jefeVeterano:["tpVeterano"], jefeGomas:["tpGomas"] };
 function dilAllowed(id){ const solo=DIL_SOLO[TEST_MODE]; return !solo || solo.indexOf(id)>=0; }
 /* 🇪🇸 ¿Y SI CAMPOS NO HUBIERA VENDIDO? (historia alternativa, idea de Carlos)
    En la realidad, Adrián Campos montó el proyecto «Campos Meta 1» para 2010 pero no llegó al inicio de
@@ -2813,7 +3058,7 @@ function initPreviewBar(){ if(!PREVIEW) return;
   const tests=Object.keys(TESTS).map(k=>
     `<a href="?preview=glory26&test=${k}" title="${LA(TESTS[k].d)}">🧪 ${LA(TESTS[k].t)}</a>`).join(" · ");
   b.innerHTML=(TEST_MODE?`🧪 ${L("PRUEBA","TEST",{pt:"TESTE"})}: ${LA(TESTS[TEST_MODE].t)} · `:"")
-    +`🔒 ${L("Modo pruebas: esto solo lo ves TÚ","Preview mode: only YOU can see this",{pt:"Modo de testes: só VOCÊ vê isto"})}`
+    +`🔒 ${L("Modo pruebas: esto solo lo ves TÚ · no se envía nada al ranking","Preview mode: only YOU can see this · nothing is sent to the leaderboard",{pt:"Modo de testes: só VOCÊ vê isto · nada é enviado ao ranking"})}`
     +(tests?` · ${tests}`:"")
     +` · <a href="?preview=off">${L("salir","exit",{pt:"sair"})}</a>`;
   document.body.appendChild(b); }
@@ -3037,6 +3282,8 @@ function startCareer(){
     pendingEvents:[], missRaces:0, crashRace:null, dnpSeason:false, pendMiss:0, forceMove:false, apxShown:false,
     baseYear:ERA.baseYear, era:ERA.id, legends:ERA.legends, expansion:ERA.expansion,
     seats:{}, dpool:[], rookies:[...ERA.rookies], crossovers:ERA.crossovers.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
+    palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null, llegadaExp:{}, gigOfrecidos:[],   // 🛌 palmarés vivo + el pacto del gigante dormido
+    dilPod:0,              // 🥉 podios ganados en un dilema, a sumar al cerrar la temporada
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
@@ -3057,6 +3304,7 @@ function startCareer(){
   // referencias globales a F1_TEAMS siguen válidas). Así cada partida arranca con SU parrilla de época
   // y volver de una retro a 2026 restaura la parrilla actual sin arrastres.
   F1_TEAMS.length=0; ERA.teams.forEach(t=>F1_TEAMS.push({...t, cat:"F1"}));
+  palmSeed(ERA.baseYear);   // 🏆 palmarés real recortado al año de la era
   // escalera junior de la era (2010: Fórmula Renault/F3/GP3/GP2; 2020/2026: las actuales)
   const JR = ERA.jr || JR_2026;
   [["F4",F4_TEAMS],["F3",F3_TEAMS],["FR",FRECA_TEAMS],["F2",F2_TEAMS]].forEach(([k,pool])=>{ pool.length=0; JR[k].forEach(t=>pool.push({...t})); });
@@ -4165,7 +4413,7 @@ function renderRecap(){
   else if(s.pos===1){ posTxt=L("🏆 Campeón","🏆 Champion",{pt:"🏆 Campeão"}); posCol="linear-gradient(135deg,#ffe066,#f2ae00);color:#4a3000"; }
   else if(s.pos<=3){ posTxt=s.pos+"º"; posCol="#dcf5e3;color:#15803d"; }
   else { posTxt=s.pos+"º"; posCol="#ececf1;color:#5a5a66"; }
-  const stat = s.cat==="TEST" ? (s.subRaces?`🏁 ${s.subRaces} ${L("GP sustituto · mejor","sub GPs · best",{pt:"GPs como substituto · melhor"})} ${s.subBest===1?"1º":s.subBest+"º"}`:L("FP1 + simulador","FP1 + simulator",{pt:"TL1 + simulador"})) : `🏆 ${s.wins} · 🥉 ${s.pods} · ${s.pts} ${L("pts","pts",{pt:"pts"})}`;
+  const stat = s.cat==="TEST" ? (s.subRaces?`🏁 ${s.subRaces} ${L("GP sustituto · mejor","sub GPs · best",{pt:"GPs como substituto · melhor"})} ${s.subBest===1?"1º":s.subBest+"º"}`:L(yearNow()>=2005?"FP1 + simulador":"Test privados",yearNow()>=2005?"FP1 + simulator":"Private testing",{pt:yearNow()>=2005?"TL1 + simulador":"Testes privados"})) : `🏆 ${s.wins} · 🥉 ${s.pods} · ${s.pts} ${L("pts","pts",{pt:"pts"})}`;
   const constr = s.constrPos ? ` · 🏭 ${L("Constructores","Constructors",{pt:"Construtores"})} ${s.constrPos===1?"1º":s.constrPos+"º"}` : "";
   const badge = teamBadge(s.team.name);
   el.style.display="block";
@@ -4362,6 +4610,25 @@ function signContract(o){
         {pt:`💔 Na ${eq} descartaram uma contratação de peso para apostar em você, e você foi embora do mesmo jeito. Essa porta se fecha para sempre. Fama −10%`}));
     }
   } else if(S.lealtadDebe && o.team && o.team.name===S.lealtadDebe.team){ S.lealtadDebe=null; }
+  /* 🛌 ABANDONAR AL GIGANTE. Fuiste a despertarlo dando tu palabra; si te largas sin haberlo levantado,
+     el juego tiene que decir algo (lo cazó Carlos: se fue de Williams al año y no pasó nada). Y no es
+     lo mismo huir a los dos años que pelearlo cinco: la espantada se paga y cierra la puerta; el que
+     lo intentó de verdad sale aplaudido. Se narra UNA vez por carrera. */
+  if(S.gigTeam && !S.gigResucitado && !S.gigFuga && prev && prev.name===S.gigTeam
+     && o.team && o.team.name!==S.gigTeam && F1_TEAMS.some(t=>t.name===S.gigTeam)){
+    const eq=S.gigTeam, anos=Math.max(1, yearNow()-(S.gigDesde||yearNow()));
+    S.gigFuga=yearNow();
+    if(anos<=2){
+      S.neverHire[eq]=true; VAL(.85);
+      S.pendingEvents.push(L(`💔 Fuiste a ${eq} a despertar al gigante pero has decidido cambiar de aires. En el paddock lo llaman por su nombre: una espantada. Esa puerta se cierra para siempre. Fama −15%`,
+        `💔 You went to ${eq} to wake the giant but you've decided to move on. The paddock calls it what it is: you bottled it. That door shuts for good. Fame −15%`,
+        {pt:`💔 Você foi à ${eq} para acordar o gigante mas decidiu mudar de ares. No paddock chamam pelo nome: você amarelou. Aquela porta se fecha para sempre. Fama −15%`}));
+    } else {
+      S.pendingEvents.push(L(`🕊️ Dejas ${eq} sin haberlo devuelto a lo más alto. ${anos} temporadas lo intentaste, y eso allí no se olvida: te despiden de pie, y con pena.`,
+        `🕊️ You leave ${eq} without taking them back to the top. ${anos} seasons you tried, and that isn't forgotten there: they see you off on their feet, and sorry to lose you.`,
+        {pt:`🕊️ Você deixa a ${eq} sem devolvê-la ao topo. ${anos} temporadas tentando, e ali isso não se esquece: te despedem de pé, e com pena.`}));
+    }
+  }
   // traiciones: dejar un equipo de F1 deja cicatrices, seas héroe o lastre
   // solo te "queman" si PUDISTE quedarte (te ofrecieron renovar) y te fuiste igual → traición.
   // Si te ECHARON (sin renovación) no hay traición. Y a un CAMPEÓN se le respeta: rara vez se queman puentes.
@@ -4518,7 +4785,7 @@ const FIA_SCENARIOS=[
     opts:()=>fiaOpt(L("Confiar en que lo pulirán","Trust they'll fix it",{pt:"Confiar que vão ajustar"}),L("Exigir criterios claros y en público","Demand clear rules, publicly",{pt:"Exigir critérios claros e em público"}),L("No meterte en el barro","Stay out of the mud",{pt:"Não entrar na lama"})) },
   { sit:()=>L("Un toque 50-50 con un rival y los comisarios te cargan la sanción a TI. Medio paddock lo ve justo; medio, una injusticia.","A 50-50 clash with a rival and the stewards pin the penalty on YOU. Half the paddock calls it fair; half, an injustice.",{pt:"Um toque 50-50 com um rival e os comissários jogam a punição em VOCÊ. Metade do paddock acha justo; a outra metade, uma injustiça."}),
     opts:()=>fiaOpt(L("Aceptarla como un profesional","Take it like a pro",{pt:"Aceitar como um profissional"}),L("Estallar contra los comisarios","Explode at the stewards",{pt:"Explodir contra os comissários"}),L("Tragar y callar","Grin and bear it",{pt:"Engolir e calar"})) },
-  { sit:()=>L("En medios y redes se comenta que los coches nuevos dejan cada vez menos sitio al talento: más apretar botones que pilotar. Veteranos y afición rezongan.","Media and social buzz says the new cars leave less room for talent: more button-pushing than driving. Veterans and fans grumble.",{pt:"Na imprensa e nas redes comenta-se que os carros novos deixam cada vez menos espaço para o talento: mais apertar botões do que pilotar. Veteranos e torcida resmungam."}),
+  { sit:()=>L(`${yearNow()>=2008?"En medios y redes":"En la prensa y en el paddock"} se comenta que los coches nuevos dejan cada vez menos sitio al talento: más apretar botones que pilotar. Veteranos y afición rezongan.`,`${yearNow()>=2008?"Media and social buzz":"The press and the paddock"} says the new cars leave less room for talent: more button-pushing than driving. Veterans and fans grumble.`,{pt:`${yearNow()>=2008?"Na imprensa e nas redes":"Na imprensa e no paddock"} comenta-se que os carros novos deixam cada vez menos espaço para o talento: mais apertar botões do que pilotar. Veteranos e torcida resmungam.`}),
     opts:()=>fiaOpt(L("Defender la evolución del deporte","Defend the sport's evolution",{pt:"Defender a evolução do esporte"}),L("Criticar que matan el arte de pilotar","Blast them for killing the art of driving",{pt:"Criticar que matam a arte de pilotar"}),L("No pronunciarte","Say nothing",{pt:"Não se pronunciar"})) },
   { sit:()=>L("La FIA prohíbe a mitad de temporada un «invento» que daba ventaja a los coches punteros. Medio paddock lo celebra; la otra mitad grita tongo.","Mid-season, the FIA bans a «device» that gave the top cars an edge. Half the paddock cheers; the other half cries foul.",{pt:"A FIA proíbe no meio da temporada uma «invenção» que dava vantagem aos carros da frente. Metade do paddock comemora; a outra metade grita armação."}),
     opts:()=>fiaOpt(L("Aplaudir la igualdad","Applaud the level field",{pt:"Aplaudir a igualdade"}),L("Denunciar el cambio de reglas a mitad de año","Blast changing the rules mid-year",{pt:"Denunciar a mudança de regras no meio do ano"}),L("No tomar partido","Take no side",{pt:"Não tomar partido"})) },
@@ -4703,7 +4970,7 @@ const DILEMAS=[
    {l:()=>L("Aceptar y colgar el casco","Accept and hang up the helmet",{pt:"Aceitar e pendurar o capacete"}),r:()=>{VAL(1.3);S.retired=true;setTimeout(endCareer,800);return L("Eliges irte en tus términos, con una sonrisa. +30% fama","You choose to leave on your terms, with a smile. +30% fame",{pt:"Você escolhe sair nos seus termos, com um sorriso. +30% fama"});}},
    {l:()=>L("Seguir corriendo","Keep racing",{pt:"Continuar correndo"}),r:()=>ch(.7)?(OVR(1),L("El fuego sigue vivo. +1 OVR","The fire is still alive. +1 OVR",{pt:"O fogo continua vivo. +1 OVR"})):(OVR(-1),L("Empiezas a preguntarte si valió la pena. -1 OVR","You start wondering if it was worth it. -1 OVR",{pt:"Você começa a se perguntar se valeu a pena. -1 OVR"}))}]},
  // ---- dilemas dramáticos ----
- {id:"crashgate",stage:"f1",t:()=>L("La orden imposible","The impossible order",{pt:"A ordem impossível"}),d:()=>L("El muro te insinúa «tener un problema» en una curva concreta: un coche de seguridad en ese instante le daría la victoria a tu equipo. Nadie lo sabría… en teoría.","The pit wall hints at «having a problem» at a specific corner: a safety car right then would hand your team the win. Nobody would know… in theory.",{pt:"O muro insinua que você poderia «ter um problema» numa curva específica: um safety car naquele instante daria a vitória à sua equipe. Ninguém saberia… em tese."}),opts:[
+ {id:"crashgate",stage:"f1",from:1993,t:()=>L("La orden imposible","The impossible order",{pt:"A ordem impossível"}),d:()=>L("El muro te insinúa «tener un problema» en una curva concreta: un coche de seguridad en ese instante le daría la victoria a tu equipo. Nadie lo sabría… en teoría.","The pit wall hints at «having a problem» at a specific corner: a safety car right then would hand your team the win. Nobody would know… in theory.",{pt:"O muro insinua que você poderia «ter um problema» numa curva específica: um safety car naquele instante daria a vitória à sua equipe. Ninguém saberia… em tese."}),opts:[
    {l:()=>L("Provocar el accidente","Cause the crash",{pt:"Provocar o acidente"}),r:()=>roll(
      [4,()=>(CAR(1),L("El plan sale redondo y el equipo te debe una. +1 coche","The plan works perfectly and the team owes you one. +1 car",{pt:"O plano sai perfeito e a equipe fica te devendo uma. +1 carro"}))],
      [3,()=>(VAL(.8),L("Corren rumores por el paddock. Tu nombre queda manchado. Fama -20%","Rumours spread through the paddock. Your name is tarnished. Fame -20%",{pt:"Correm boatos pelo paddock. O seu nome fica manchado. Fama -20%"}))],
@@ -4712,7 +4979,11 @@ const DILEMAS=[
      [5,()=>(VAL(1.1),L("Plantas cara y el paddock respeta tu integridad. +fama","You stand firm and the paddock respects your integrity. +fame",{pt:"Você bate de frente e o paddock respeita a sua integridade. +fama"}))],
      [3,()=>L("El jefe se traga su idea. Todo sigue igual.","The boss swallows his idea. Nothing changes.",{pt:"O chefe engole a ideia dele. Tudo continua igual."})],
      [2,()=>(CAR(-1),L("El equipo te lo hace pagar en desarrollo. -1 coche","The team makes you pay in development. -1 car",{pt:"A equipe te cobra isso no desenvolvimento. -1 carro"}))])}]},
- {id:"safetycar",stage:"f1",t:()=>L("La decisión del muro de control","Race control's call",{pt:"A decisão da direção de corrida"}),d:()=>L("Última vuelta, coche de seguridad. Dirección de carrera toma una decisión confusa que TE beneficia de forma dudosa: podrías ganar así. Tu rival estalla por la radio.","Final lap, safety car. Race control makes a confusing call that dubiously benefits YOU: you could win like this. Your rival erupts on the radio.",{pt:"Última volta, safety car. A direção de prova toma uma decisão confusa que TE beneficia de forma duvidosa: você poderia vencer assim. O seu rival explode no rádio."}),opts:[
+   /* 🚨 EL COCHE DE SEGURIDAD NO EXISTE ANTES DE 1993. La FIA lo implantó esa temporada (el único
+     precedente es el experimento del GP de Canadá de 1973), así que en una partida que arranca en
+     1990 este dilema hablaba de algo que el jugador no había visto nunca. Y aquí no vale con cambiar
+     una palabra: el coche de seguridad ES la premisa. Puerta de época y a otra cosa. */
+ {id:"safetycar",stage:"f1",from:1993,t:()=>L("La decisión del muro de control","Race control's call",{pt:"A decisão da direção de corrida"}),d:()=>L("Última vuelta, coche de seguridad. Dirección de carrera toma una decisión confusa que TE beneficia de forma dudosa: podrías ganar así. Tu rival estalla por la radio.","Final lap, safety car. Race control makes a confusing call that dubiously benefits YOU: you could win like this. Your rival erupts on the radio.",{pt:"Última volta, safety car. A direção de prova toma uma decisão confusa que TE beneficia de forma duvidosa: você poderia vencer assim. O seu rival explode no rádio."}),opts:[
    {l:()=>L("Aprovecharla y ganar","Take it and win",{pt:"Aproveitar e vencer"}),r:()=>roll(
      [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.15),L("Ganas. Injusto para muchos, pero la victoria cuenta. +fama","You win. Unfair to many, but the win counts. +fame",{pt:"Você vence. Injusto para muitos, mas a vitória conta. +fama"}))],
      [3,()=>(S.dilWin=(S.dilWin||0)+1,VAL(.95),L("Ganas entre polémica y medio mundo te señala. Fama -5%","You win amid controversy and half the world points at you. Fame -5%",{pt:"Você vence em meio à polêmica e meio mundo te aponta o dedo. Fama -5%"}))],
@@ -4732,7 +5003,7 @@ const DILEMAS=[
      [4,()=>(VAL(1.2),L("Tu deportividad se hace leyenda. +20% fama","Your sportsmanship becomes legend. +20% fame",{pt:"A sua esportividade vira lenda. +20% fama"}))],
      [3,()=>(OVR(1),L("Tu temple bajo presión te hace mejor. +1 OVR","Your composure under pressure makes you better. +1 OVR",{pt:"O seu sangue-frio sob pressão te faz melhor. +1 OVR"}))],
      [3,()=>L("Que gane el mejor. Sin cambios.","May the best driver win. No change.",{pt:"Que vença o melhor. Sem mudanças."})])}]},
- {id:"frenazo",stage:"f1",t:()=>L("Sangre caliente","Hot blood",{pt:"Sangue quente"}),d:()=>L("Un rival te ha hecho una jugarreta y vais pegados tras el coche de seguridad. Podrías 'equivocarte' y darle un toque para mandarle un mensaje.","A rival pulled a dirty move on you and you're nose-to-tail behind the safety car. You could 'make a mistake' and tap him to send a message.",{pt:"Um rival te aprontou uma e vocês estão colados atrás do safety car. Você poderia «errar» e dar um toque nele para mandar um recado."}),opts:[
+ {id:"frenazo",stage:"f1",from:1993,t:()=>L("Sangre caliente","Hot blood",{pt:"Sangue quente"}),d:()=>L("Un rival te ha hecho una jugarreta y vais pegados tras el coche de seguridad. Podrías 'equivocarte' y darle un toque para mandarle un mensaje.","A rival pulled a dirty move on you and you're nose-to-tail behind the safety car. You could 'make a mistake' and tap him to send a message.",{pt:"Um rival te aprontou uma e vocês estão colados atrás do safety car. Você poderia «errar» e dar um toque nele para mandar um recado."}),opts:[
    {l:()=>L("Darle un toque","Tap him",{pt:"Dar um toque nele"}),r:()=>roll(
      [4,()=>(VAL(.92),L("Golpe polémico en directo: sanción y bronca mediática. Fama -8%","A controversial hit live on TV: penalty and media backlash. Fame -8%",{pt:"Toque polêmico ao vivo: punição e confusão na mídia. Fama -8%"}))],
      [3,()=>L("Solo un roce, queda en nada. Sin cambios.","Just a graze, it comes to nothing. No change.",{pt:"Só um roçar, não dá em nada. Sem mudanças."})],
@@ -4841,7 +5112,7 @@ const DILEMAS=[
      [3,()=>L("Cumples, aunque por dentro te quema.","You comply, though it burns inside.",{pt:"Você cumpre, mesmo que por dentro esteja queimando."})],
      [2,()=>(VAL(.9),L("Los fans querían pelea. Quedas «obediente». Fama −10%","Fans wanted a fight. You look «obedient». Fame −10%",{pt:"Os fãs queriam briga. Você fica com fama de «obediente». Fama −10%"}))])},
    {l:()=>L("«No entendí el mensaje» y adelantar","«Didn't get the message» and pass",{pt:"«Não entendi a mensagem» e ultrapassar"}),r:()=>roll(
-     [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.2),L("Ganas la posición y el clip es legendario. Fama +20%","You take the place and the clip is legendary. Fame +20%",{pt:"Você ganha a posição e o clipe vira lendário. Fama +20%"}))],
+     [4,()=>(S.dilWin=(S.dilWin||0)+1,VAL(1.2),(yearNow()>=2008 ? L("Ganas la posición y el clip es legendario. Fama +20%","You take the place and the clip is legendary. Fame +20%",{pt:"Você ganha a posição e o clipe vira lendário. Fama +20%"}) : L("Ganas la posición y la maniobra se repite en todos los resúmenes del año. Fama +20%","You take the place and the move is replayed in every highlight reel of the year. Fame +20%",{pt:"Você ganha a posição e a manobra é repetida em todos os resumos do ano. Fama +20%"})))],
      [3,()=>(S.dilWin=(S.dilWin||0)+1,CAR(-1),L("Ganas la batalla, pero el box se parte. −1 coche","You win the battle, but the garage splits. −1 car",{pt:"Você vence a batalha, mas o box racha. −1 carro"}))],
      [3,()=>(S.dilWin=(S.dilWin||0)+1,OVR(-1),L("Te llevas la victoria, pero el equipo te sanciona internamente. −1 OVR","You take the win, but the team disciplines you internally. −1 OVR",{pt:"Você leva a vitória, mas a equipe te pune internamente. −1 OVR"}))])}]},
  {id:"cuentas",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&(S.yearsAtTeam||1)>=3,t:()=>L("Cuentas pendientes","Unfinished business",{pt:"Contas por saldar"}),
@@ -4918,7 +5189,7 @@ const DILEMAS=[
    {l:()=>L("Arriesgar por un titular","Gamble for a headline",{pt:"Arriscar por uma manchete"}),r:()=>roll(
      [3,()=>(VAL(.92),L("Sales de tu zona y la lías un poco. −fama leve","You leave your comfort zone and it gets messy. slight −fame",{pt:"Você sai da sua zona e apronta um pouco. −fama leve"}))],
      [3,()=>(VAL(1.12),L("Te sale un adelantamiento vistoso. +fama","You pull off a flashy overtake. +fame",{pt:"Sai uma ultrapassagem vistosa. +fama"}))])}]},
- {id:"resCon2",stage:"test",cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("Cabeza fría en el caos","Cool head in chaos",{pt:"Cabeça fria no caos"}),
+ {id:"resCon2",stage:"test",from:1993,cond:()=>sel.style==="consistente"&&S.age<=32,t:()=>L("Cabeza fría en el caos","Cool head in chaos",{pt:"Cabeça fria no caos"}),
   d:()=>L("Tu GP de sustituto se vuelve una locura: lluvia, coches de seguridad y rivales estampándose. Puedes mantener la calma mientras el resto se va al muro.","Your sub race turns to mayhem: rain, safety cars, rivals crashing everywhere. Keep your cool while the rest hit the wall.",{pt:"O seu GP como substituto vira uma loucura: chuva, safety cars e rivais se estampando. Você pode manter a calma enquanto o resto vai para o muro."}),opts:[
    {l:()=>L("Mantener la cabeza fría","Keep your cool",{pt:"Manter a cabeça fria"}),r:()=>roll(
      [4,()=>reserveCallup()],
@@ -5299,14 +5570,28 @@ const DILEMAS=[
      [3,()=>(VAL(.93),L("Los pilotos te miran distinto: cuando tocaba estar juntos, fuiste por libre. −fama","The drivers look at you differently: when unity mattered, you went alone. −fame",{pt:"Os pilotos passam a te olhar diferente: na hora de estar juntos, você foi por conta própria. −fama"}))],
      [3,()=>(OVR(-1),L("Un reventón a 300 km/h te pega el susto de tu vida. −1 OVR","A blowout at 300 km/h gives you the fright of your life. −1 OVR",{pt:"Um estouro a 300 km/h te dá o susto da sua vida. −1 OVR"}))])}]},
  // 🏁 inspirado en 2016: Rosberg ganó su PRIMER Mundial con 31 años y se retiró cinco días después
- {id:"cimaRosberg",stage:"f1",cond:()=>S.cat==="F1"&&S.titles.f1===1&&(S.seasons.at(-1)||{}).pos===1&&S.age>=30,
+ /* 🏔️ RETIRARSE EN LA CIMA (Rosberg 2016). Dos arreglos del 17-ago tras el reporte de un jugador:
+    · SALÍA CASI SIEMPRE. Medido: de 22 carreras, 5 llegaron a la situación y en 4 salió el dilema —un
+      80%—. La ventana es de un solo año (justo tras el primer título, con 30+), así que en cuanto se
+      abría, se disparaba. Ahora se sortea UNA vez por carrera y sale en ~1 de cada 3.
+      ⚠️ El sorteo se guarda en S: `cond` se evalúa muchas veces y un ch() suelto daría un resultado
+      distinto cada vez —el dilema aparecería y desaparecería según quién preguntara—.
+    · SEGUIR NO PUEDE CASTIGARTE. Antes, «aún tengo hambre» quitaba −1 OVR en 6 de cada 10 tiradas:
+      continuar tu carrera después del primer título era, en frío, una mala decisión. Retirarse debe
+      ser una elección de personaje, no la opción estadísticamente correcta. */
+ {id:"cimaRosberg",stage:"f1",
+  cond:()=>{
+    if(S.cat!=="F1" || (S.titles.f1||0)!==1 || ((S.seasons.at(-1)||{}).pos)!==1 || S.age<30) return false;
+    if(S._cimaSorteo==null) S._cimaSorteo = ch(.35);
+    return S._cimaSorteo;
+  },
   t:()=>L("¿Retirarte en la cima?","Retire on top?",{pt:"Retirares-te no auge?"}),
   d:()=>L("Lo has conseguido: campeón del mundo, después de todo el sacrificio que nadie vio. Y una voz dentro pregunta: ¿y ahora qué? Ya no queda nada que demostrar. Podrías irte como los más grandes: por la puerta de arriba.","You've done it: world champion, after sacrifices nobody saw. And a voice inside asks: now what? There's nothing left to prove. You could leave like the greats — through the top door.",{pt:"Você conseguiu: campeão mundial, depois de todo o sacrifício que ninguém viu. E uma voz por dentro pergunta: e agora? Já não há nada a provar. Você poderia sair como os maiores: pela porta da frente."}),opts:[
    {l:()=>L("Colgar el casco siendo campeón","Hang up the helmet as champion",{pt:"Pendurar o capacete sendo campeão"}),r:()=>{ endCareer(); return L("Cinco días después del título lo anuncias: te vas. El paddock se queda helado… y en pie, aplaudiendo.","Five days after the title you announce it: you're leaving. The paddock is stunned — and on its feet, applauding.",{pt:"Cinco dias depois do título você anuncia: está saindo. O paddock congela… e depois se levanta, aplaudindo."}); }},
    {l:()=>L("Seguir: aún tengo hambre","Keep going: I'm still hungry",{pt:"Continuar: ainda tenho fome"}),r:()=>roll(
-     [4,()=>L("El fuego sigue vivo. A por el siguiente.","The fire still burns. On to the next one.",{pt:"O fogo continua vivo. Rumo ao próximo."})],
-     [4,()=>(OVR(-1),L("Lo notas enseguida: sin montaña que escalar, entrenar cuesta el doble. −1 OVR","You feel it at once: with no mountain left to climb, training is twice as hard. −1 OVR",{pt:"Você sente na hora: sem montanha para escalar, treinar custa o dobro. −1 OVR"}))],
-     [2,()=>(OVR(-1),VAL(.95),L("El campeón defensor vive vigilado: cada tropiezo es portada. −1 OVR, −fama leve","The defending champion lives under a microscope: every stumble makes headlines. −1 OVR, slight −fame",{pt:"O campeão em título vive vigiado: cada tropeço é capa. −1 OVR, −fama leve"}))])}]},
+     [5,()=>L("El fuego sigue vivo. A por el siguiente.","The fire still burns. On to the next one.",{pt:"O fogo continua vivo. Rumo ao próximo."})],
+     [3,()=>(VAL(1.05),L("Nadie se explica que sigas. Esa hambre después de tenerlo todo es justo lo que el paddock respeta. +fama","Nobody understands why you're still here. That hunger after having it all is exactly what the paddock respects. +fame",{pt:"Ninguém entende por que você continua. Essa fome depois de ter tudo é o que o paddock respeita. +fama"}))],
+     [2,()=>(VAL(.95),L("El campeón defensor vive vigilado: cada tropiezo es portada. −fama leve","The defending champion lives under a microscope: every stumble makes headlines. slight −fame",{pt:"O campeão defensor vive vigiado: cada tropeço é manchete. −fama leve"}))])}]},
 
  // 🎲 LA APUESTA DEL REGLAMENTO (Hamilton→Mercedes, 2013): dejas un coche ganador por una promesa técnica.
  // Ventana de UN año (dos antes de la revolución) → va en el bloque de prioridad de pickDilemma().
@@ -5367,7 +5652,7 @@ const DILEMAS=[
    {l:()=>L("Volcarte: vivir en la fábrica","Go all in: live at the factory",{pt:"Se entregar: morar na fábrica"}),r:()=>{ const t=S.team.name;
      return roll(
       [5,()=>(CAR(1),respectMate(),L("Te instalas entre los ingenieros y peleas cada detalle. Sea lo que sea ese coche, va a llevar tu firma. +1 coche","You move in among the engineers and fight for every detail. Whatever that car is, it'll carry your fingerprints. +1 car",{pt:"Você se instala entre os engenheiros e briga por cada detalhe. Seja o que for aquele carro, vai levar a sua assinatura. +1 carro"}))],
-      [4,()=>(OVR(1),L("Los meses de simulador te dejan afiladísimo: llegas al primer test sabiéndote el coche de memoria. +1 OVR","Months in the simulator leave you razor-sharp: you reach the first test knowing the car by heart. +1 OVR",{pt:"Os meses de simulador te deixam afiadíssimo: você chega ao primeiro teste sabendo o carro de cor. +1 OVR"}))],
+      [4,()=>(OVR(1),L(`Los meses ${yearNow()>=2005?"de simulador":"encerrado en el banco de pruebas y en test privados"} te dejan afiladísimo: llegas al primer test sabiéndote el coche de memoria. +1 OVR`,`Months ${yearNow()>=2005?"in the simulator":"on the test bench and in private testing"} leave you razor-sharp: you reach the first test knowing the car by heart. +1 OVR`,{pt:`Os meses ${yearNow()>=2005?"de simulador":"na bancada de testes e em testes privados"} te deixam afiadíssimo: você chega ao primeiro teste sabendo o carro de cor. +1 OVR`}))],
       [3,()=>(S.f1target[t]=Math.min(93,(S.f1target[t]??S.f1perf[t])+rnd(3,6)),
         L("Aprietas al equipo hasta el último tornillo. El rumbo del proyecto mejora, aunque no se note de inmediato. 📈","You push the team down to the last bolt. The project's direction improves, even if it doesn't show right away. 📈",{pt:"Você aperta a equipe até o último parafuso. O rumo do projeto melhora, mesmo que não se note de imediato. 📈"}))]); }},
    {l:()=>L("Pedir la puerta ya","Ask for the door now",{pt:"Pedir para sair já"}),r:()=>{ const t=S.team.name;
@@ -5628,7 +5913,7 @@ const DILEMAS=[
       sel.style=c; S.reinvented=true; try{ $("tagStyle").textContent=STYLES[c].label; }catch(e){}
       if(ch(probReinvencion())){ OVR(2);
         return L(`${yearNow()>=2005?"Te encierras en el simulador":"Te encierras a hacer test privados"} y sales siendo otro piloto. Dominas el estilo ${styleLabel(c)} y el coche por fin te obedece. +2 OVR`,
-                 `You lock yourself in the simulator and come out a different driver. You master the ${styleLabel(c)} style and the car finally obeys. +2 OVR`,{pt:`${yearNow()>=2005?"Você se tranca no simulador":"Você se tranca em testes privados"} e sai outro piloto. Domina o estilo ${styleLabel(c)} e o carro finalmente te obedece. +2 OVR`}); }
+                 `${yearNow()>=2005?"You lock yourself in the simulator":"You lock yourself away in private testing"} and come out a different driver. You master the ${styleLabel(c)} style and the car finally obeys. +2 OVR`,{pt:`${yearNow()>=2005?"Você se tranca no simulador":"Você se tranca em testes privados"} e sai outro piloto. Domina o estilo ${styleLabel(c)} e o carro finalmente te obedece. +2 OVR`}); }
       OVR(-2); S.oxido=2; S.oxidoTeam=S.team.name;
       return L(`Cambias de piel, pero tus automatismos se rebelan: frenas donde ya no toca y el cronómetro lo nota. −2 OVR. Tendrás un par de temporadas para recuperarlo.`,
                `You shed your skin, but your instincts rebel: you brake where you no longer should and the stopwatch notices. −2 OVR. You'll have a couple of seasons to win it back.`,{pt:`Você troca de pele, mas os seus automatismos se rebelam: freia onde já não é para frear e o cronômetro sente. −2 OVR. Você terá umas duas temporadas para recuperar.`}); }},
@@ -5678,6 +5963,204 @@ const DILEMAS=[
        return L("Entras, pones las cartas sobre la mesa y sales con lo que querías: libertad para pelear y los galones de Nº1.","You walk in, lay it all out and come out with what you wanted: freedom to race and No.1 status.",{pt:"Você entra, põe as cartas na mesa e sai com o que queria: liberdade para brigar e os galões de Nº1."}); }],
      [40,()=>L("Salís los dos con unas normas de convivencia bajo el brazo. Ni ganas ni pierdes, pero la sangre no llega al río.","You both leave with a set of ground rules. You neither win nor lose, but it doesn't boil over.",{pt:"Vocês dois saem com umas regras de convivência debaixo do braço. Nem ganha nem perde, mas o sangue não chega ao rio."})],
      [30,()=>{ CAR(-1); return quitarGalones(L("Te ven como un problema y deciden zanjarlo por la vía rápida: órdenes de equipo el resto del año. −1 coche. ","They see you as a problem and settle it the quick way: team orders for the rest of the year. −1 car. ",{pt:"Passam a te ver como um problema e resolvem pela via rápida: ordens de equipe o resto do ano. −1 carro. "})); }])}]},
+ /* 🛌 EL GIGANTE DORMIDO. Un ex campeón hundido manda a su presidente a buscarte para que seas TÚ
+    quien lo devuelva a lo más alto. Cinco puertas: dos títulos tuyos, 34 años o menos, 15 sin ganar
+    NADA (los dos campeonatos), mitad baja de la parrilla y sin venir subiendo. Vale en el modo clásico,
+    en el reto y en todas las eras retro; en el modo jefe no, que ahí el catálogo es otro. */
+ {id:"gigante",stage:"f1",noTag:true,
+  cond:()=>{ if(S.cat!=="F1"||!S.team) return false;
+    if(S._gigEspera && yearNow()<S._gigEspera) return false;   // 🧪 solo lo usa el escenario de prueba, para verlo llegar
+    if((S.titles.f1||0)<GIG_TITULOS) return false;   // esto no se le ofrece a cualquiera: hace falta ser leyenda
+    if(S.age>GIG_EDAD) return false;                 // …y una leyenda con años por delante para el proyecto
+    /* 🤝 UN PACTO CADA VEZ. Si diste tu palabra a un equipo y aún no lo has levantado (ni te has
+       largado), nadie más te llama: primero se cumple o se rompe lo que hay. */
+    if(S.gigTeam && !S.gigResucitado && !S.gigFuga) return false;
+    const c=gigCandidatos(); if(!c.length) return false;
+    /* 🎲 …Y EL QUE LLAMA SE ELIGE AL AZAR, no el que lleva más años sin ganar (corrección de Carlos,
+       18-ago). Si en tu partida están hundidos Williams y Ferrari, los dos pueden llamarte: no hay
+       motivo para que el de la sequía más larga se lleve siempre el papel. */
+    S._gig=c[irnd(0,c.length-1)]; return true; },
+  t:()=>L("El gigante dormido","The sleeping giant",{pt:"O gigante adormecido"}),
+  d:()=>{ const g=S._gig; if(!g) return "";
+    const seq=gigSequiaTxt(g);
+    return g.grande
+     ? L(`${seq} La marca sigue intacta —las gradas se llenan, los patrocinadores siguen ahí, la historia pesa en cada pared del edificio—, pero el coche vive en la mitad baja de la parrilla y en el paddock ya nadie los mira con miedo. Su presidente ha cogido un avión para verte en persona: quieren que seas TÚ quien los devuelva a lo más alto.`,
+         `${seq} The badge is untouched —the stands still fill, the sponsors are still there, the history hangs on every wall of the building— but the car lives in the bottom half of the grid and nobody in the paddock fears them any more. Their president has taken a plane to see you in person: they want YOU to be the one who takes them back to the top.`,
+         {pt:`${seq} A marca segue intacta —as arquibancadas enchem, os patrocinadores continuam ali, a história pesa em cada parede do prédio—, mas o carro vive na metade de baixo do grid e no paddock ninguém mais os olha com medo. O presidente pegou um avião para te ver pessoalmente: querem que seja VOCÊ quem os devolva ao topo.`})
+     : L(`${seq} Nunca fue de los que ganaban cada temporada, pero ganó, y hoy ya nadie lo diría: pelean por puntos sueltos en la mitad baja de la parrilla. Te llaman porque están convencidos de que un piloto de tu talla lo cambiaría todo.`,
+         `${seq} They were never the team that won every season, but they won, and today you'd never guess it: they scrap for the odd point in the bottom half of the grid. They're calling because they're convinced a driver of your stature would change everything.`,
+         {pt:`${seq} Nunca foi das que ganhavam toda temporada, mas ganhou, e hoje ninguém diria: brigam por pontos soltos na metade de baixo do grid. Te procuram porque estão convencidos de que um piloto do seu porte mudaria tudo.`}); },
+  opts:[
+   {l:()=>L("Resucitar al antiguo campeón","Revive the old champion",{pt:"Ressuscitar o antigo campeão"}),
+    /* 🔒 ACEPTAR CIERRA EL TRATO. Antes esto dejaba `forceMove` y el invierno era un mercado normal:
+       el gigante salía con UNA estrella y, justo al lado, Ferrari y Red Bull con cuatro. El dilema
+       prometía «el año que viene te sientas en X» y la pantalla siguiente lo desmentía (lo cazó Carlos
+       en una captura). Si uno se va a arrepentir, que sea en el dilema. `lockTeam` es la misma vía que
+       usa el dilema del debut: ese invierno no hay nada que negociar. */
+    r:()=>{ const g=S._gig; S.lockTeam=g.team; S.gigTeam=g.team; VAL(1.2);
+      (S.gigOfrecidos=S.gigOfrecidos||[]).push(g.team);
+      return L(`Das el sí y el paddock se para en seco: un campeón del mundo se marcha al equipo hundido. Esta temporada la terminas donde estás; el año que viene te sientas en ${g.team} con una sola misión encima. +fama`,
+               `You say yes and the paddock stops dead: a world champion is joining the fallen team. You see out this season where you are; next year you sit in a ${g.team} with a single mission on your shoulders. +fame`,
+               {pt:`Você diz sim e o paddock para de repente: um campeão do mundo vai para a equipe afundada. Esta temporada você termina onde está; no ano que vem senta na ${g.team} com uma única missão nas costas. +fama`}); }},
+   {l:()=>L("No es tu problema","Not your problem",{pt:"Não é problema seu"}),
+    r:()=>{ const g=S._gig; S.neverHire[g.team]=true; VAL(1.04);
+      (S.gigOfrecidos=S.gigOfrecidos||[]).push(g.team);
+      return L(`Les dices que no. Con educación, pero que no. En ${g.team} lo encajan como lo que es —otro que no se atrevió— y cierran la puerta: ese asiento no volverá a estar sobre la mesa en toda tu carrera. Tu equipo agradece la fidelidad. +fama leve`,
+               `You turn them down. Politely, but you turn them down. ${g.team} take it for what it is —another one who didn't dare— and shut the door: that seat will never be on the table again in your career. Your team appreciates the loyalty. slight +fame`,
+               {pt:`Você diz que não. Com educação, mas não. Na ${g.team} encaram como o que é —mais um que não se atreveu— e fecham a porta: aquela vaga não voltará a estar na mesa em toda a sua carreira. A sua equipe agradece a fidelidade. +fama leve`}); }}]},
+ /* ══ 🛞 LA GOMA NO LLEGA ═══════════════════════════════════════════════════════════════════════
+    UN EVENTO, no una temporada. Petición literal de Carlos: «si no te atreves todavía a decidir un
+    campeonato por un dilema, entonces que sea una decisión de un evento en concreto». Así que esto
+    es una carrera, una vuelta y una voz por la radio.
+    Y el texto CAMBIA CON LA ÉPOCA porque la pregunta cambia con el reglamento:
+      · hasta 1993 no hay repostaje  → parar es tiempo tirado y sales detrás de todo
+      · 1994-2009 sí lo hay          → la parada la manda el depósito; la goma va de acompañante
+      · desde 2010 otra vez no       → y además se degrada por diseño: existe «la ventana»
+    ⚠️ MEDIDO: la rama de antes de 1994 HOY NO LA VE NADIE. En la era de 1990 se empieza en el karting
+    y el debut en F1 más temprano de 40 partidas fue 1994 (mediana 1997), justo el año en que volvió
+    el repostaje. Se deja escrita porque es historia correcta y porque se enciende sola el día que
+    haya un reto que te siente en un F1 de los primeros 90 — que es contenido ya previsto.
+    El estilo de pilotaje inclina la balanza de verdad: el agresivo exprime mejor, el consistente
+    gestiona mejor. No es decorado, son los pesos del `roll`. ══════════════════════════════════ */
+ {id:"gomas1",stage:"f1",cond:()=>S.cat==="F1"&&!!S.team,
+  t:()=>L("La goma no llega","The tyres won't last",{pt:"O pneu não chega"}),
+  d:()=>{ const gps=gpList(yearNow()), gp=gps[dilVar("gpI",()=>irnd(0,gps.length-1))];
+    const vta=dilVar("vta",()=>irnd(Math.max(8,Math.round(gp.laps*.45)), Math.max(10,gp.laps-6)));
+    const quedan=Math.max(5, gp.laps-vta);
+    /* 🏁 DESDE 2º: si vas segundo y adelantas, eso es una VICTORIA — y tiene que aparecer en tu
+       palmarés, no solo en el texto (petición de Carlos). Lo suman `S.dilWin` y `S.dilPod`. */
+    const pos=dilVar("pos",()=>irnd(2,6));
+    const yr=yearNow();
+    // 🎬 que no empiece siempre igual (lo pidió Carlos)
+    const abre=dilVar("abre",()=>irnd(0,2));
+    const cabecera = abre===0 ? L(`Vuelta ${vta} en ${gp.n}.`,`Lap ${vta} at ${gp.n}.`,{pt:`Volta ${vta} em ${gp.n}.`})
+                   : abre===1 ? L(`${gp.n}, vuelta ${vta} de ${gp.laps}.`,`${gp.n}, lap ${vta} of ${gp.laps}.`,{pt:`${gp.n}, volta ${vta} de ${gp.laps}.`})
+                              : L(`Quedan ${quedan} vueltas en ${gp.n}.`,`${quedan} laps to go at ${gp.n}.`,{pt:`Faltam ${quedan} voltas em ${gp.n}.`});
+    // 🛞 …ni que se rompa siempre lo mismo
+    const dano=dilVar("dano",()=>irnd(0,3));
+    const goma = dano===0 ? L(`el tren trasero está pasado`,`the rears are gone`,{pt:`o trem traseiro está acabado`})
+               : dano===1 ? L(`las delanteras están al límite`,`the fronts are at their limit`,{pt:`os dianteiros estão no limite`})
+               : dano===2 ? L(`el delantero izquierdo se está ampollando`,`the front left is blistering`,{pt:`o dianteiro esquerdo está bolhando`})
+                          : L(`las traseras se han pasado de temperatura y no bajan`,`the rears have gone over temperature and won't come back`,{pt:`os traseiros passaram da temperatura e não baixam`});
+    /* 📻 CÓMO TE LLEGA EL AVISO, Y ESTO ESTÁ COMPROBADO (lo preguntó Carlos: «¿seguro que es realista
+       que te avise el ingeniero hasta 1993?»). La radio coche-a-box se usó por primera vez en 1984 y
+       a finales de los 80 los sistemas analógicos cifrados ya permitían guiar tácticamente al piloto
+       en carrera. O sea: en 1990 SÍ es realista. Pero iba plagada de interferencias y cortes —a Senna
+       le llegaron mensajes de una empresa de catering en Silverstone—, y el panel del muro siguió
+       siendo el respaldo fiable. Así que hasta mediados de los 90 el aviso llega a trompicones. */
+    const aviso = yr<1996
+      ? L(`entre interferencias y cortes, tu ingeniero ha conseguido decírtelo dos veces:`,
+          `through interference and dropouts, your engineer has managed to tell you twice:`,
+          {pt:`entre interferências e cortes, o seu engenheiro conseguiu te dizer duas vezes:`})
+      : L(`tu ingeniero ya te ha avisado dos veces:`,
+          `your engineer has warned you twice already:`,
+          {pt:`o seu engenheiro já avisou duas vezes:`});
+    const ctx = yr<1994
+      ? L(`Aquí no se reposta: la carrera se planteó para hacerla de una tirada. Entrar a boxes ahora es tiempo tirado a la basura y sales detrás de todo.`,
+          `There's no refuelling here: the race was planned to run flat out to the end. Pitting now is time thrown away and you rejoin behind everyone.`,
+          {pt:`Aqui não se reabastece: a corrida foi planejada para ir direto até o fim. Entrar nos boxes agora é tempo jogado fora e você volta atrás de todos.`})
+      : yr<2010
+      ? L(`La parada la manda el depósito, no las gomas. Si aprietas ahora llegas a tu ventana de repostaje con los neumáticos muertos, y aún quedará medio Gran Premio.`,
+          `The stop is dictated by the fuel, not the tyres. Push now and you'll reach your refuelling window with the rubber dead, and there'll still be half a Grand Prix to go.`,
+          {pt:`A parada é ditada pelo tanque, não pelos pneus. Se apertar agora, chega à sua janela de reabastecimento com os pneus mortos, e ainda faltará meio Grande Prêmio.`})
+      : L(`Estás fuera de la ventana de la goma. Cada vuelta que aprietes ahora te va a costar dos al final del relevo, y eso el muro lo sabe.`,
+          `You're outside the tyre's window. Every lap you push now will cost you two at the end of the stint, and the pit wall knows it.`,
+          {pt:`Você está fora da janela do pneu. Cada volta que apertar agora vai custar duas no fim do stint, e o muro sabe disso.`});
+    const presa = pos===2
+      ? L(`Vas 2º y el líder está a tiro`,`You're 2nd and the leader is within reach`,{pt:`Você está em 2º e o líder está ao alcance`})
+      : L(`Vas ${pos}º y el coche de delante está a tiro`,`You're ${pos}th and the car ahead is within reach`,{pt:`Você está em ${pos}º e o carro da frente está ao alcance`});
+    return L(`${cabecera} ${presa}, pero ${aviso} ${goma}. ${ctx}`,
+             `${cabecera} ${presa}, but ${aviso} ${goma}. ${ctx}`,
+             {pt:`${cabecera} ${presa}, mas ${aviso} ${goma}. ${ctx}`}); },
+  opts:[
+   {l:()=>L("Gestionar y traer la posición a casa","Manage them and bring the position home",{pt:"Gerir e trazer a posição para casa"}),
+    r:()=>{ const con=sel.style==="consistente";
+      return roll(
+       [con?7:5,()=>{VAL(1.05);
+         return L("Bajas el ritmo, cuidas la goma y no pasa nada en veinte vueltas. Aburrido y perfecto: los puntos, en casa. +fama leve",
+                  "You drop the pace, look after the rubber and nothing happens for twenty laps. Boring and perfect: the points come home. slight +fame",
+                  {pt:"Você baixa o ritmo, cuida do pneu e não acontece nada em vinte voltas. Chato e perfeito: os pontos vêm para casa. +fama leve"});}],
+       [con?2:4,()=>{VAL(.95);
+         return L("Gestionas tanto que el de detrás te come el hueco y te pasa a tres vueltas del final. Salvas la goma y pierdes la posición. Fama −5%",
+                  "You manage so hard that the man behind eats the gap and passes you three laps from the end. You save the tyre and lose the place. Fame −5%",
+                  {pt:"Você gere tanto que o de trás come a diferença e te ultrapassa a três voltas do fim. Salva o pneu e perde a posição. Fama −5%"});}],
+       [1,()=>{VAL(1.12);OVR(1);const p=gomaGana();
+         return L(`Cuidas la goma tan bien que al final del relevo eres el único con caucho vivo: adelantas en la última vuelta sin despeinarte y cruzas la meta ${p}º.${gomaRemate(p)} +fama, +1 OVR`,
+                  `You look after the rubber so well that by the end of the stint you're the only one with tyre left: you pass on the final lap without breaking sweat and take the flag ${p}${p===1?"st":p===2?"nd":p===3?"rd":"th"}.${gomaRemate(p)} +fame, +1 OVR`,
+                  {pt:`Você cuida tanto do pneu que no fim do stint é o único com borracha viva: ultrapassa na última volta sem despentear e cruza a linha em ${p}º.${gomaRemate(p)} +fama, +1 OVR`});}]);}},
+   {l:()=>L("Apretar: esos puntos valen","Push: those points are worth it",{pt:"Apertar: esses pontos valem"}),
+    r:()=>{ const agr=sel.style==="agresivo", con=sel.style==="consistente";
+      return roll(
+       [agr?5:con?2:4,()=>{VAL(1.15);const p=gomaGana();
+         return L(`Tres vueltas al límite, un movimiento por fuera y la posición es tuya: cruzas la meta ${p}º.${gomaRemate(p)} La goma llega deshecha, pero llega. +fama`,
+                  `Three laps on the limit, a move round the outside and the place is yours: you take the flag ${p}${p===1?"st":p===2?"nd":p===3?"rd":"th"}.${gomaRemate(p)} The tyre reaches the line destroyed, but it reaches it. +fame`,
+                  {pt:`Três voltas no limite, um movimento por fora e a posição é sua: você cruza a linha em ${p}º.${gomaRemate(p)} O pneu chega em farrapos, mas chega. +fama`});}],
+       [3,()=>{
+         return L("Aprietas, no llegas a ponerte a rueda y encima acabas el relevo sin nada debajo. Ni adelantas ni pierdes: solo desgaste. Sin cambios.",
+                  "You push, never quite get alongside and finish the stint with nothing left underneath you. No gain, no loss: just wear. No change.",
+                  {pt:"Você aperta, não chega a colar e ainda termina o stint sem nada por baixo. Nem ultrapassa nem perde: só desgaste. Sem mudanças."});}],
+       [agr?2:con?5:3,()=>{VAL(.88);
+         return L("La goma dice basta en la frenada más rápida del circuito. Te vas recto, escapas por los pelos y terminas fuera de los puntos. Fama −12%",
+                  "The tyre gives up at the fastest braking zone on the track. You go straight on, just about get away with it and finish outside the points. Fame −12%",
+                  {pt:"O pneu diz basta na frenagem mais rápida do circuito. Você vai reto, escapa por pouco e termina fora dos pontos. Fama −12%"});}]);}}]},
+ /* ══ 🛫 JETLAG ════════════════════════════════════════════════════════════════════════════════
+    Encargo de Carlos, y adaptado a las cinco eras: la gira de ultramar no siempre fue lo mismo.
+      · hasta 1999 → Japón y Australia al final del año, con vuelos de veinticuatro horas
+      · 2000-2017 → la doble cita asiática
+      · desde 2018 → la triple tanda, tres domingos seguidos
+    Tres salidas y ninguna gratis: descanso, fábrica o patrocinadores. ═══════════════════════ */
+ {id:"jetlag",stage:"f1",cond:()=>S.cat==="F1"&&!!S.team,
+  t:()=>L("El otro lado del mundo","The other side of the world",{pt:"O outro lado do mundo"}),
+  d:()=>{ const yr=yearNow();
+    const gira = yr>=2018
+      ? L("Llega la triple tanda: tres Grandes Premios en tres domingos seguidos, y los tres al otro lado del planeta.",
+          "The triple header arrives: three Grands Prix on three consecutive Sundays, all of them on the other side of the planet.",
+          {pt:"Chega a sequência tripla: três Grandes Prêmios em três domingos seguidos, todos do outro lado do planeta."})
+      : yr>=2000
+      ? L("Llega la doble cita asiática: dos Grandes Premios seguidos a doce husos horarios de casa.",
+          "The Asian double header arrives: two Grands Prix back to back, twelve time zones from home.",
+          {pt:"Chega a dupla asiática: dois Grandes Prêmios seguidos a doze fusos de casa."})
+      : L("Llega la gira de ultramar que cierra el año: Japón y Australia, con vuelos de veinticuatro horas y una semana de por medio.",
+          "The overseas tour that closes the year arrives: Japan and Australia, twenty-four-hour flights and a week in between.",
+          {pt:"Chega a turnê de ultramar que fecha o ano: Japão e Austrália, voos de vinte e quatro horas e uma semana no meio."});
+    return L(`${gira} El cuerpo no entiende de calendarios: hasta el jueves no sabrás si has dormido. Tienes esos días muertos y son tuyos.`,
+             `${gira} The body doesn't understand calendars: until Thursday you won't know whether you've slept at all. Those dead days are yours to spend.`,
+             {pt:`${gira} O corpo não entende de calendários: até quinta-feira você não saberá se dormiu. Esses dias mortos são seus.`}); },
+  opts:[
+   {l:()=>L("Llegar una semana antes y adaptarte","Fly out a week early and acclimatise",{pt:"Chegar uma semana antes e adaptar-se"}),
+    r:()=>roll(
+     [6,()=>{OVR(1);
+       return L("Llegas con el reloj puesto en hora local y te lo notas desde el primer libre: fresco cuando los demás arrastran los pies. +1 OVR",
+                "You arrive with your body clock already on local time and feel it from first practice: sharp while the rest drag their feet. +1 OVR",
+                {pt:"Você chega com o relógio biológico no horário local e sente desde o primeiro treino: inteiro enquanto os outros arrastam os pés. +1 OVR"});}],
+     /* 💡 ESTA RAMA NO DABA NADA, y no por descuido: las otras dos puertas pagan en coche (1 / 0.5) y en
+        fama (+18% / +7%), que admiten medias tintas, pero esta paga en OVR — que es ENTERO y se
+        redondea, así que «medio OVR» no existe. Se le paga en fama, y pequeña, para no pisarle la
+        moneda a la puerta del patrocinador. Lo cazó Carlos preguntando cuál era la que no daba nada. */
+     [4,()=>{VAL(1.04);
+       return L("Una semana de hotel, gimnasio y paseos por una ciudad que no conoces. Llegas entero, y en el paddock alguien cuenta que estabas allí desde el lunes. +fama leve",
+                "A week of hotel, gym and walks round a city you don't know. You arrive fresh, and in the paddock someone mentions you'd been there since Monday. slight +fame",
+                {pt:"Uma semana de hotel, academia e caminhadas por uma cidade que você não conhece. Você chega inteiro, e no paddock alguém comenta que estava lá desde segunda. +fama leve"});}])},
+   {l:()=>L("Volver a la fábrica entre carreras","Fly back to the factory between races",{pt:"Voltar à fábrica entre corridas"}),
+    r:()=>roll(
+     [6,()=>{CAR(1);
+       return L("Te plantas en la fábrica con el cuaderno lleno y los ingenieros te escuchan de verdad. Las piezas del siguiente paquete llevan tu letra. +1 coche",
+                "You turn up at the factory with a full notebook and the engineers genuinely listen. The next update package has your handwriting on it. +1 car",
+                {pt:"Você aparece na fábrica com o caderno cheio e os engenheiros ouvem de verdade. As peças do próximo pacote levam a sua letra. +1 carro"});}],
+     [4,()=>{CAR(.5);
+       return L("Dos vuelos transoceánicos más en siete días para tres reuniones y un café. Algo se llevan de tus notas, aunque el paquete gordo ya estaba cerrado. +0.5 coche",
+                "Two more transoceanic flights in seven days for three meetings and a coffee. They take something from your notes, though the big package was already signed off. +0.5 car",
+                {pt:"Mais dois voos transoceânicos em sete dias para três reuniões e um café. Levam algo das suas notas, embora o pacote grande já estivesse fechado. +0,5 carro"});}])},
+   {l:()=>L("Aprovechar para los actos de patrocinador","Use the days for sponsor events",{pt:"Aproveitar para os eventos de patrocinador"}),
+    r:()=>roll(
+     [6,()=>{VAL(1.18);
+       return L("Tres ciudades, cinco actos y un mercado entero descubriendo tu cara. Los patrocinadores no lo olvidan. Fama +18%",
+                "Three cities, five events and an entire market discovering your face. Sponsors don't forget that. Fame +18%",
+                {pt:"Três cidades, cinco eventos e um mercado inteiro descobrindo o seu rosto. Os patrocinadores não esquecem. Fama +18%"});}],
+     [4,()=>{VAL(1.07);
+       return L("Cumples con todos, sonríes en las fotos y firmas lo que te ponen delante. Ni un titular, pero el patrocinador queda contento. +fama leve",
+                "You do every one of them, smile for the photos and sign whatever they put in front of you. Not a headline in sight, but the sponsor is happy. slight +fame",
+                {pt:"Você cumpre todos, sorri nas fotos e assina o que colocam à sua frente. Nem uma manchete, mas o patrocinador fica contente. +fama leve"});}])}]},
 ];
 
 /* 🏆 los grandes que PUEDEN llamarte cuando deslumbras de sustituto: buenos coches, pero nunca EL
@@ -5990,6 +6473,15 @@ function pickDilemma(){
   if(S.cat==="F1" && !S.usedDilemmas.pelicula && yearNow()>=2023 && yearNow()<=2025 && (S.age-S.lastDilemmaAge>=1) && ch(.5)){
     return DILEMAS.find(d=>d.id==="pelicula");
   }
+  /* 🛌 EL GIGANTE DORMIDO: ventana estrechísima (dos títulos, ≤34 años y un ex campeón hundido y sin
+     remontar en la parrilla). Compitiendo de tú a tú con los ~45 del catálogo no se vería casi nunca.
+     Y NO se mira `usedDilemmas`: puede repetir con OTRO equipo (rechazaste a Williams, y años después
+     te llama Ferrari). Cada equipo llama una sola vez —de eso se encarga `gigOfrecidos`— y nunca hay
+     dos pactos abiertos a la vez, que eso lo guarda el propio `cond`. */
+  if(S.cat==="F1" && (S.age-S.lastDilemmaAge>=1) && dilAllowed("gigante")){
+    const d=DILEMAS.find(x=>x.id==="gigante");
+    if(d && d.cond() && ch(.6)) return d;
+  }
   // tope de dilemas por carrera (subido de 5 a 6 el 7-ago-2026, decisión de Carlos). Los prioritarios
   // —arco del reglamento, gomas, toque, pandemia, película…— siguen saltándose esta cuenta a propósito:
   // tienen ventanas de un año y o salen entonces o no salen nunca.
@@ -6015,6 +6507,19 @@ function pickDilemma(){
 /* 🎲 DETALLES DE AMBIENTACIÓN de un dilema (las décimas que pierdes, la vuelta y la curva del toque).
    Se sortean UNA vez y se guardan: si se sortearan dentro del texto, cambiar de idioma con el dilema en
    pantalla repinta d() y el accidente se mudaría de circuito a media lectura. */
+/* 🏁 ADELANTAR EN «LA GOMA NO LLEGA» SUMA DE VERDAD. Antes el texto decía «la posición es tuya» y
+   ahí se acababa todo: ni victoria ni podio llegaban al palmarés (lo cazó Carlos). Ahora se calcula
+   el puesto resultante y se acredita: 1º cuenta como victoria (y podio), 2º y 3º como podio. */
+function gomaGana(){
+  const p=Math.max(1, (dilVar("pos",()=>irnd(2,6))||3)-1);
+  if(p===1) S.dilWin=(S.dilWin||0)+1;
+  else if(p<=3) S.dilPod=(S.dilPod||0)+1;
+  return p;
+}
+function gomaRemate(p){
+  return p===1 ? L(" Y era la victoria."," And that was the win.",{pt:" E era a vitória."})
+       : p<=3  ? L(" Y era podio."," And that was a podium.",{pt:" E era pódio."}) : "";
+}
 function dilVar(k, gen){ S._dilVars=S._dilVars||{}; if(S._dilVars[k]===undefined) S._dilVars[k]=gen(); return S._dilVars[k]; }
 
 // `repintar`=true cuando solo se está cambiando el idioma: no vuelve a contar como dilema nuevo
@@ -6526,6 +7031,8 @@ function processEntries(row){
     if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
+    palmSeedTeam(e.team.name, S.baseYear);   // 🏆 si la marca tiene palmarés propio, llega con él puesto
+    (S.llegadaExp=S.llegadaExp||{})[e.team.name]=yearNow();   // 🛌 y desde cuándo lleva aquí (ver gigCandidatos)
     /* 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento.
        ⚖️ NO en el equipo que un reto obliga a entrar: el reto es TU asiento y todos los jugadores
           compiten en la misma tabla, así que ese 3% le regalaba a uno de cada treinta un coche
@@ -6568,6 +7075,15 @@ function rebrandTeam(oldName, to, row){
   ["f1perf","f1target","f1char","cache"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
   if(S.seats[oldName]){ S.seats[nn]=S.seats[oldName]; delete S.seats[oldName]; }
   ["burned","neverHire"].forEach(k=>{ if(S[k]&&S[k][oldName]!=null){ S[k][nn]=S[k][oldName]; delete S[k][oldName]; } });
+  /* 🏆 el palmarés viaja con el equipo… PERO la parte histórica se queda con el nombre viejo salvo que
+     sea un rebautizado puro (Renault→Alpine). Si no, Honda acabaría presumiendo del título de Tyrrell. */
+  if(S.palm&&S.palm[oldName]!=null){
+    const p=S.palm[oldName]; delete S.palm[oldName];
+    if(!(PALM_HEREDA[oldName]===nn || PALM_HEREDA[nn]===oldName)) p.h=null;
+    if(p.h || (p.j && (p.j.nc||p.j.nd))) S.palm[nn]=p;
+  }
+  if(S.gigTeam===oldName) S.gigTeam=nn;
+  if(S.gigResucitado===oldName) S.gigResucitado=nn;
   if(S.roleTeam===oldName) S.roleTeam=nn;
   if(S.mySeatTeam===oldName) S.mySeatTeam=nn;
   if(S.poachTeam===oldName) S.poachTeam=nn;
@@ -6911,29 +7427,7 @@ function bgF1Season(row){
     (S.seats[t.name]||[]).forEach(d=>{
       // ⚠️ el null también se filtra: en TP el equipo que dejaste puede arrastrar un asiento vacío
       // un invierno (retirada + despido/tentación en la misma ventana) hasta que el mercado lo tape
-      if(d && d!=="PLAYER"){
-        const w=drvW();
-        /* 🔧 EL REPARTO DEL COCHE, TRADUCIDO A LENGUAJE DE TEMPORADA (fase 2).
-           El modo jefe NO simula carreras: resuelve el año entero en esta línea, igual que el modo
-           clásico. Así que «la aerodinámica sube la pole» no tenía dónde agarrarse — no existe la
-           pole. Los tres ejes se expresan en lo que sí existe, y cada uno se siente distinto:
-             · MOTOR       → el ritmo bruto. Mejora segura y aburrida: más rápido, sin más.
-             · AERODINÁMICA→ el TECHO, no el suelo. Ensancha el azar: un año extraordinario o uno a
-                             medias. Es la apuesta, y no mueve la media.
-             · FIABILIDAD  → el SUELO. Compra la probabilidad de que el año se vaya al garete. No te
-                             hace ganar; evita que pierdas.
-           Cada piloto tira su propio riesgo: un coche puede romperse en un lado del garaje y no en
-           el otro. Y todo esto SOLO existe si hay reparto, o sea solo en partidas de jefe. */
-        const pr = S.f1prof && S.f1prof[t.name];
-        const coche = S.f1perf[t.name] + (pr ? pr.motor*PROF_K : 0);
-        const disp  = 3.4 + (pr ? pr.aero*0.9 : 0);          // aero ensancha, sin desplazar la media
-        let sc = d.skill*w + coche*(1-w) + gauss()*Math.max(1.2, disp);
-        if(pr){
-          const riesgo = 0.10 - pr.fiab*0.045;               // +2 → 1% · 0 → 10% · −2 → 19%
-          if(ch(Math.max(0, riesgo))) sc -= rnd(4,10);       // el año que se rompe
-        }
-        rows.push({d, team:t.name, score:sc});
-      }
+      if(d && d!=="PLAYER"){ const w=drvW(); rows.push({d,team:t.name,score:d.skill*w+S.f1perf[t.name]*(1-w)+gauss()*3.4}); }
     });
   });
   rows.sort((a,b)=>b.score-a.score);
@@ -6955,6 +7449,8 @@ function bgF1Season(row){
   const _disJ=(i)=>_snJ.filter(x=>x===_snJ[i]).length>1 ? rows[i].d.name : _snJ[i]; // M./R. Schumacher
   row.top3d=rows.slice(0,3).map((r,i)=>({n:_disJ(i), t:r.team}));
   row.top3c=constrRank.slice(0,3).map(e=>e[0]);
+  // 🏆 el palmarés vivo: quién ganó cada campeonato este año (alimenta «El gigante dormido»)
+  palmReg(row.year, constrRank.length?constrRank[0][0]:null, rows[0]?rows[0].team:null, rows[0]?rows[0].d.name:null);
   const {mvD,mvC}=trackRanks(rows.map(r=>r.d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
     d:rows.slice(0,3).map((r,i)=>({n:_disJ(i),team:r.team,flag:r.d.flag,me:false,mv:mvD(r.d.name,i+1)})),
@@ -7139,9 +7635,9 @@ function simTest(row,st){
     return {pos:champPos};
   } else {
     const flavor=[yearNow()>=2005
-        ? L("🔬 Miles de vueltas en el simulador puliendo tu técnica.","🔬 Thousands of laps in the simulator polishing your craft.",{pt:"🔬 Milhares de voltas no simulador lapidando a sua técnica."})
+        ? yearNow()>=2005 ? L("🔬 Miles de vueltas en el simulador puliendo tu técnica.","🔬 Thousands of laps in the simulator polishing your craft.",{pt:"🔬 Milhares de voltas no simulador lapidando a sua técnica."}) : L("🔬 Miles de kilómetros de test privado puliendo tu técnica.","🔬 Thousands of miles of private testing polishing your craft.",{pt:"🔬 Milhares de quilômetros de teste privado lapidando a sua técnica."})
         : L("🔬 Kilómetros y kilómetros de test privado puliendo tu técnica.","🔬 Mile after mile of private testing polishing your craft.",{pt:"🔬 Quilômetros e quilômetros de teste privado lapidando a sua técnica."}),
-      L("🛞 FP1 en "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimas del titular.","🛞 FP1 at "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": 3 tenths off the regular.",{pt:"🛞 TL1 em "+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimos do titular."}),
+      L((yearNow()>=2005?"🛞 FP1 en ":"🛞 Test privado en ")+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimas del titular.",(yearNow()>=2005?"🛞 FP1 at ":"🛞 Private test at ")+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": 3 tenths off the regular.",{pt:(yearNow()>=2005?"🛞 TL1 em ":"🛞 Teste privado em ")+["Monza","Spa","Suzuka","Interlagos","Barcelona"][irnd(0,4)]+": a 3 décimos do titular."}),
       L("🧰 Te conviertes en la referencia técnica del garaje.","🧰 You become the technical reference in the garage.",{pt:"🧰 Você vira a referência técnica da garagem."}),
       L("📋 Recorres el mundo con el equipo aprendiendo cada circuito.","📋 You travel the world with the team learning every circuit.",{pt:"📋 Você roda o mundo com a equipe aprendendo cada circuito."})];
     row.events.push(flavor[irnd(0,flavor.length-1)]);
@@ -7275,6 +7771,10 @@ function simF1(row,st){
   const pts=me.pts;
   // victoria concedida por un dilema (muro de control, órdenes, multi-21…): cuenta como victoria y podio de esta temporada
   if(S.dilWin){ wins+=S.dilWin; pods+=S.dilWin; S.dilWin=0; }
+  /* 🥉 …y el PODIO suelto: hay adelantamientos de dilema que te dejan 2º o 3º, no 1º. Sin esto, un
+     «cruzas la meta 3º» en «La goma no llega» era una frase bonita que no llegaba a tu palmarés
+     (lo cazó Carlos: «si al final te llevas el podio o la victoria, hay que sumarlo al total»). */
+  if(S.dilPod){ pods+=S.dilPod; S.dilPod=0; }
   S.wins+=wins;S.podiums+=pods;S.poles+=poles;S.ptsF1+=pts;
   // ¿alguna de tus victorias fue en Mónaco? (cuenta para la 👑 Triple Corona). Más victorias → más probable
   if(wins>0 && !S.tripleCrown.monaco && ch(Math.min(.55, wins*0.13))){
@@ -7340,6 +7840,11 @@ function simF1(row,st){
   const _mIdx=standings.findIndex(d=>!d.isP && d.team===myTeam);
   if(_mIdx>=0){ row.matePos=_mIdx+1; row.mateName=standings[_mIdx].name; }
   row.top3c=constrRank.slice(0,3).map(e=>e[0]);
+  // 🏆 el palmarés vivo. Si el campeón eres tú se guarda "__ME__": años después, el equipo al que
+  // dejaste dormido puede decirte a la cara que la última vez que ganaron fuiste tú.
+  palmReg(row.year, constrRank.length?constrRank[0][0]:null,
+          standings[0]?(standings[0].isP?myTeam:standings[0].team):null,
+          standings[0]?(standings[0].isP?"__ME__":standings[0].name):null);
   const {mvD,mvC}=trackRanks(standings.map(d=>d.isP?"__ME__":d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
     d:standings.slice(0,3).map((d,i)=>({n:d.isP?"TÚ":_dis3(i),team:d.team,flag:d.dref?d.dref.flag:undefined,me:d.isP,mv:mvD(d.isP?"__ME__":d.name,i+1)})),
@@ -7355,6 +7860,14 @@ function simF1(row,st){
     if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️",{pt:"🥈 VICE-CAMPEÃO: o mundial escapou por uma decisão da FIA contra você. Dói para sempre. 🏛️"}):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory.",{pt:"🥈 Vice-campeão mundial atrás de "+surname(champ.name)+" — às portas da glória."}));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship.",{pt:"🏭 A sua equipe "+myTeam+" vence o Mundial de Construtores."}));}
+  /* 🛌 EL PACTO DEL GIGANTE DORMIDO se cumple el día que ese equipo vuelve a ganar contigo dentro.
+     Vale cualquiera de los dos campeonatos: los dos son «volver a lo más alto». */
+  if(S.gigTeam && myTeam===S.gigTeam && !S.gigResucitado && (pos===1||constrPos===1)){
+    S.gigResucitado=myTeam; VAL(1.35);
+    row.events.push(L(`🛌 ${myTeam} vuelve a ganar. El gigante ha despertado, y lo has despertado tú.`,
+      `🛌 ${myTeam} are winning again. The giant has woken up, and you're the one who woke it.`,
+      {pt:`🛌 A ${myTeam} volta a ganhar. O gigante acordou, e foi você quem o acordou.`}));
+  }
   // 🎤 arco de «voy a por el récord»: remontas (callas bocas), te quedas corto (bocazas) o te quedas a medias.
   // El reloj cuenta TEMPORADAS DE F1 desde el boast: irte de aventura NO cuenta como "no perseguir el récord".
   if(S.recordBoast){
@@ -7459,7 +7972,7 @@ function maybeEvent(row,st){
     {id:"jr-programa",t:L("⭐ Un programa junior de F1 se fija en ti.","⭐ An F1 junior programme takes notice of you.",{pt:"⭐ Um programa júnior de F1 repara em você."}),fx:()=>OVR(1)},
     // 🕰️ en 1992 no hay simulador de verdad: antes de mediados de los 2000 son inviernos de gimnasio y test
     {id:"jr-sim",t:yearNow()>=2005
-      ? L("🛠️ Inviernos enteros en el simulador: progreso silencioso.","🛠️ Whole winters in the simulator: quiet progress.",{pt:"🛠️ Invernos inteiros no simulador: progresso silencioso."})
+      ? yearNow()>=2005 ? L("🛠️ Inviernos enteros en el simulador: progreso silencioso.","🛠️ Whole winters in the simulator: quiet progress.",{pt:"🛠️ Invernos inteiros no simulador: progresso silencioso."}) : L("🛠️ Inviernos enteros dando vueltas en los test: progreso silencioso.","🛠️ Whole winters pounding round in testing: quiet progress.",{pt:"🛠️ Invernos inteiros girando nos testes: progresso silencioso."})
       : L("🛠️ Inviernos enteros de gimnasio y kilómetros de test: progreso silencioso.","🛠️ Whole winters of gym work and testing miles: quiet progress.",{pt:"🛠️ Invernos inteiros de academia e quilômetros de teste: progresso silencioso."}),fx:()=>OVR(1)},
     {id:"jr-domina",t:L(`🏆 Dominas el fin de semana de ${gp()} de principio a fin.`,`🏆 You dominate the ${gp()} weekend from start to finish.`,{pt:`🏆 Você domina o fim de semana de ${gp()} do começo ao fim.`}),fx:()=>OVR(.8)},
     {id:"jr-test",t:L("📈 Un test con un equipo superior sale mejor de lo esperado.","📈 A test with a bigger team goes better than expected.",{pt:"📈 Um teste com uma equipe superior sai melhor do que o esperado."}),fx:()=>OVR(.8)},
@@ -7535,8 +8048,8 @@ function esperarTrasQuiebraOption(exEquipo){
       S.pendingEvents.push(L("🕰️ Esperaste demasiado: el mercado se cerró y te quedaste sin volante titular.",
                              "🕰️ You waited too long: the market closed and you were left without a race seat.",{pt:"🕰️ Você esperou demais: o mercado fechou e você ficou sem volante de titular."}));
       setDecision(L("⏳ Te quedaste fuera","⏳ You were left out",{pt:"⏳ Você ficou de fora"}),
-        L("Los asientos se fueron llenando uno a uno mientras tú esperabas. Cuando quisiste reaccionar, no quedaba ninguno. Solo el simulador y los viernes.",
-          "The seats filled up one by one while you waited. By the time you reacted, there were none left. Just the simulator and Fridays.",{pt:"As vagas foram sendo preenchidas uma a uma enquanto você esperava. Quando quis reagir, não sobrava nenhuma. Só o simulador e as sextas."}), false, true);
+        L(`Los asientos se fueron llenando uno a uno mientras tú esperabas. Cuando quisiste reaccionar, no quedaba ninguno. ${yearNow()>=2005?"Solo el simulador y los viernes":"Solo los test privados y esperar a que alguien se lesionara"}.`,
+          `The seats filled up one by one while you waited. By the time you reacted, there were none left. ${yearNow()>=2005?"Just the simulator and Fridays":"Just private testing and waiting for someone to get hurt"}.`,{pt:`As vagas foram sendo preenchidas uma a uma enquanto você esperava. Quando quis reagir, não sobrava nenhuma. ${yearNow()>=2005?"Só o simulador e as sextas":"Só os testes privados e esperar que alguém se machucasse"}.`}), false, true);
       const tomar3=(arr,n)=>{const c=[...arr],out=[];while(out.length<n&&c.length)out.push(c.splice(irnd(0,c.length-1),1)[0]);return out;};
       const test=tomar3(F1_TEAMS.filter(libres),3).map(t=>({team:{...t,cat:"TEST"}, note:L("Programa de pruebas","Test programme",{pt:"Programa de testes"})}));
       renderOffers(test, S.age>=31);
@@ -7774,6 +8287,22 @@ function nOffers(){
 }
 function nextOffers(){
   if(S.cat==="TP"){ tpWinter(); return; }   // 🧑‍💼 el invierno del jefe: consejo, asientos, rumbo
+  /* 🛌 EL PACTO DEL GIGANTE DORMIDO. Diste tu palabra: el invierno es una firma. Se deja el botón de
+     retirarse —un piloto de 33 años siempre puede colgar el casco— pero no hay otros equipos: los
+     otros equipos eran la tentación, y la tentación era el dilema. */
+  if(S.lockTeam && S.gigTeam===S.lockTeam && !S.forceMove && !S.retired){
+    const t=F1_TEAMS.find(x=>x.name===S.lockTeam); S.lockTeam=null;
+    if(t){
+      S.gigDesde=yearNow();
+      setDecision(L("Un trato es un trato","A deal is a deal",{pt:"Trato é trato"}),
+        L(`Diste tu palabra y aquí no hay nada que negociar: el año que viene eres piloto de ${t.name}. Medio paddock cree que te has vuelto loco; la otra mitad se ha quedado sin saber qué decir.`,
+          `You gave your word and there's nothing to negotiate: next year you drive for ${t.name}. Half the paddock thinks you've lost your mind; the other half doesn't know what to say.`,
+          {pt:`Você deu a sua palavra e aqui não há nada a negociar: no ano que vem você é piloto da ${t.name}. Meio paddock acha que você enlouqueceu; a outra metade ficou sem saber o que dizer.`}));
+      $("decRecap").style.display="none";
+      renderOffers([{team:t, role:roleFor(t.name), note:["🛌 Lo que fuiste a buscar","🛌 What you came for","🛌 O que você foi buscar"]}], true);
+      scrollToDecision(); return;
+    }
+  }
   // 🤝 el dilema del debut YA decidió dónde corres: ese invierno no hay mercado, solo la confirmación.
   if(S.lockTeam && !S.forceMove && !S.retired){
     const t=F1_TEAMS.find(x=>x.name===S.lockTeam); S.lockTeam=null;
@@ -7957,7 +8486,7 @@ function nextOffers(){
           sub+=L(" O para un año: hay quien te quiere de probador ahora y de titular después."," Or stop for a year: someone wants you as reserve now and as a racer later.",{pt:" Ou pare um ano: tem quem te queira de testes agora e de titular depois."}); } }
     } else if(S.ovr>=72){
       title=L("El banquillo de la F1","The F1 reserve bench",{pt:"O banco da F1"});
-      sub=L(`Nadie te da un volante titular aún, pero en la Fórmula 1 te quieren de piloto probador: FP1, ${yearNow()>=2005?"simulador":"test privados"} y paciencia.`,`No race seat yet, but Formula 1 wants you as a reserve driver: FP1, ${yearNow()>=2005?"simulator":"private testing"} and patience.`,{pt:`Ninguém te dá um volante de titular ainda, mas na Fórmula 1 te querem como piloto de testes: TL1, ${yearNow()>=2005?"simulador":"testes privados"} e paciência.`});
+      sub=L(`Nadie te da un volante titular aún, pero en la Fórmula 1 te quieren de piloto probador: ${yearNow()>=2005?"FP1, simulador":"test privados"} y paciencia.`,`No race seat yet, but Formula 1 wants you as a reserve driver: ${yearNow()>=2005?"FP1, simulator":"private testing"} and patience.`,{pt:`Ninguém te dá um volante de titular ainda, mas na Fórmula 1 te querem como piloto de testes: ${yearNow()>=2005?"TL1, simulador":"testes privados"} e paciência.`});
       const stayOK2 = yrsHere<2 && !wonHere && S.age<=24;
       pick(F1_TEAMS, Math.min(stayOK2?2:3, Math.max(1,nOffers()))).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       patronDoor(o, false);  // 📜 aquí el padrino te da el banquillo, que es lo que prometió
@@ -7983,7 +8512,7 @@ function nextOffers(){
     if(ready){
       title=L("🏎️ ¡Asiento TITULAR en F1!","🏎️ A RACE seat in F1!",{pt:"🏎️ Vaga de TITULAR na F1!"});
       sub = proved ? L("Tu papel como sustituto convenció: hay volante de verdad para ti.","Your stand-in performances convinced them: there's a real seat for you.",{pt:"A sua atuação como substituto convenceu: há volante de verdade para você."})
-                   : L("Las horas de simulador (y de pista) dan fruto. Volantes de verdad sobre la mesa.","The simulator (and track) hours pay off. Real seats on the table.",{pt:"As horas de simulador (e de pista) dão fruto. Volantes de verdade em cima da mesa."});
+                   : L(`Las horas de ${yearNow()>=2005?"simulador":"test"} (y de pista) dan fruto. Volantes de verdad sobre la mesa.`,`The ${yearNow()>=2005?"simulator":"testing"} (and track) hours pay off. Real seats on the table.`,{pt:`As horas de ${yearNow()>=2005?"simulador":"teste"} (e de pista) dão fruto. Volantes de verdade em cima da mesa.`});
       let cands = proved ? sorted.slice(2,8) : sorted.slice(0,5);
       // 🚪 el que te rompió la promesa no te ofrece asiento titular ESTE invierno: se lo acaba de dar a otro
       if(S.promesaRota) cands=cands.filter(t=>t.name!==S.promesaRota);
@@ -8007,7 +8536,7 @@ function nextOffers(){
     } else if(S.age>=28){ if(S.f1Seasons>0){ endCareer(); } else { washedOut(); } return; }
     else {
       title=L("Otro año de probador","Another year as reserve",{pt:"Mais um ano de piloto de testes"});
-      sub=L("El asiento titular se resiste. Sigues de reserva: FP1, simulador y alguna carrera si surge.","The race seat is elusive. You stay a reserve: FP1, simulator and the odd race if it comes up.",{pt:"A vaga de titular resiste. Você segue como reserva: TL1, simulador e alguma corrida se surgir."});
+      sub=L(`El asiento titular se resiste. Sigues de reserva: ${yearNow()>=2005?"FP1, simulador":"test privados"} y alguna carrera si surge.`,`The race seat is elusive. You stay a reserve: ${yearNow()>=2005?"FP1, simulator":"private testing"} and the odd race if it comes up.`,{pt:`A vaga de titular resiste. Você segue como reserva: ${yearNow()>=2005?"TL1, simulador":"testes privados"} e alguma corrida se surgir.`});
       pick(F1_TEAMS,3).forEach(t=>o.push({team:{...t,cat:"TEST"},note:["Programa de pruebas","Test programme"]}));
       if(S.promesaRotaTxt){
         title=L("💔 El asiento prometido se cae","💔 The promised seat falls through",{pt:"💔 A vaga prometida cai"});
@@ -8395,7 +8924,7 @@ function renderTimeline(){
     const constr=r.constrPos?`🏭 ${L("Constructores","Constructors",{pt:"Construtores"})}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best",{pt:"melhor"})} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TP"?(r.tpLine||"")   // 🧑‍💼 debajo del equipo van TUS DOS PILOTOS con su puesto en el mundial
-      :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} pts`:L("FP1 + simulador","FP1 + simulator",{pt:"TL1 + simulador"})):r.cat==="ADV"?"":`${r.pts} pts`;
+      :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} pts`:L(yearNow()>=2005?"FP1 + simulador":"Test privados",yearNow()>=2005?"FP1 + simulator":"Private testing",{pt:yearNow()>=2005?"TL1 + simulador":"Testes privados"})):r.cat==="ADV"?"":`${r.pts} pts`;
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
     // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
     const advR=r.advResult;
@@ -8781,9 +9310,13 @@ function endCareer(){
     rows.slice(0,5).map((r,i)=>`<div class="hrow${r.me?" me":""}"><span class="rk">${i+1}.</span><span class="nm">${flg(r.flag)} ${r.n}</span><span class="tt">🏆×${r.t}</span></div>`).join("")+
     (S.titles.f1>0&&myRank>5?`<div class="hrow me"><span class="rk">${myRank}.</span><span class="nm">${flg(sel.flag)} ${pName()} (${L("TÚ","YOU",{pt:"TU"})})</span><span class="tt">🏆×${S.titles.f1}</span></div>`:"");
   const score=gloriaScore();
-  // 🏆 ENVÍO REAL pero OCULTO: recoge la puntuación de TODOS los jugadores a partir del 1-ago-2026 (el ranking
-  // empieza a "contar" desde ahí), aunque la PANTALLA siga escondida hasta que publiquemos. (Sin efecto hasta conectar el KV.)
-  try{ if(PREVIEW || new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
+  /* 🏆 ENVÍO REAL: la puntuación de todos los jugadores cuenta desde el 1-ago-2026.
+     🔒 …PERO NUNCA DESDE EL MODO PRUEBAS. Antes `PREVIEW` era justo lo contrario —forzaba el envío para
+     poder probar el ranking antes de que abriera—, y pasada esa fecha lo único que hacía era colar
+     partidas de prueba en la tabla de verdad. El 18-ago se coló una probando un despliegue: quedó en
+     la global, en la semanal y en tres tablas de época, y hubo que borrarla a mano con /api/remove.
+     Cualquiera que abra el juego con ?preview=glory26 o un ?test= está trasteando, no compitiendo. */
+  try{ if(!PREVIEW && !TEST_MODE && new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
   // guarda la carrera también en local: respaldo del ranking si no hay conexión
   localBoardAdd({n:pName(), f:sel.flag, g:score, d:yearNow(),
     b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons }});
@@ -8818,6 +9351,8 @@ function endCareer(){
   else if((S.advTitles||0)>=1){ const s=serName(mainAdvSeries()); legacy=L("CAMPEÓN LEJOS DE LA F1","CHAMPION AWAY FROM F1",{pt:"CAMPEÃO LONGE DA F1"});verdict=L(`Nunca llegaste a la F1, pero conquistaste ${s}. No todos los reyes reinan en el mismo sitio — y tú reinaste en el tuyo.`,`You never reached F1, but you conquered ${s}. Not every king reigns in the same place — and you reigned in yours.`,{pt:`Você nunca chegou à F1, mas conquistou a ${s}. Nem todos os reis reinam no mesmo lugar — e você reinou no seu.`});}
   else if(S.adventures && S.adventures.length){ const s=serName(mainAdvSeries()); const mq=bestMarqueeWin(); legacy=L("PROFESIONAL DEL VOLANTE","A RACING PRO",{pt:"PROFISSIONAL DO VOLANTE"});verdict=L(`La F1 se te resistió, pero te ganaste la vida compitiendo al máximo nivel en ${s}. Una carrera de verdad, lejos de los focos.`,`F1 eluded you, but you earned your living racing at the top level in ${s}. A real career, away from the spotlight.`,{pt:`A F1 resistiu, mas você ganhou a vida competindo no mais alto nível na ${s}. Uma carreira de verdade, longe dos holofotes.`})+(mq?L(` Y hasta te llevaste una joya: ${mq}.`,` And you even grabbed a jewel: ${mq}.`,{pt:` E ainda levou uma joia: ${mq}.`}):"");}
   else {legacy=L("PROMESA DEL AUTOMOVILISMO","MOTORSPORT PROSPECT",{pt:"PROMESSA DO AUTOMOBILISMO"});verdict=L("La F1 quedó lejos, pero el asfalto fue tu casa. No todos los sueños terminan en Mónaco, y aún así valen la pena.","F1 stayed out of reach, but the track was your home. Not every dream ends in Monaco, and they're worth it all the same.",{pt:"A F1 ficou longe, mas o asfalto foi a sua casa. Nem todos os sonhos terminam em Mônaco, e ainda assim valem a pena."});}
+  // 🛌 el único legado que deja el gigante dormido: lo encontraste dormido y volvió a ganar contigo
+  if(S.gigResucitado) verdict+=L(` Y resucitaste a ${S.gigResucitado}: lo encontraste dormido y lo devolviste a lo más alto. 🛌`,` And you revived ${S.gigResucitado}: you found them sleeping and took them back to the top. 🛌`,{pt:` E você ressuscitou a ${S.gigResucitado}: encontrou-a adormecida e a devolveu ao topo. 🛌`});
   if(S.apxShown && S.seasons.some(s=>s.team.name==="APXGP")) verdict+=L(" Y sí: lo de APXGP fue tan de película como suena. 🎬"," And yes: the APXGP thing was as cinematic as it sounds. 🎬",{pt:" E sim: o lance da APXGP foi tão de cinema quanto parece. 🎬"});
   /* 📅 RETO · LA COMPARACIÓN CON EL PILOTO REAL, RETIRADA (decisión de Carlos, 14-ago-2026).
      Enseñaba una tabla «LO HAS HECHO MEJOR QUE ÉL» con mundiales/victorias/poles/podios frente a los
@@ -9050,25 +9585,11 @@ const PROF_ARQUETIPOS=[
   [1,-1,0],[1,0,-1],[0,1,-1],[-1,1,0],[-1,0,1],[0,-1,1],
   [2,-1,-1],[-1,2,-1],[-1,-1,2]
 ];
-/* `conCaracter` = fuerza un arquetipo NO neutro. Los tres primeros de PROF_ARQUETIPOS son [0,0,0]. */
-function profNuevo(conCaracter){
-  const desde = conCaracter ? 3 : 0;
-  const a=PROF_ARQUETIPOS[irnd(desde, PROF_ARQUETIPOS.length-1)];
-  return {aero:a[0], motor:a[1], fiab:a[2]};
-}
-/* 🏆 LOS QUE MANDAN, MANDAN POR ALGO (corrección de Carlos). Al medir la fase 1, Ferrari se quedó en
-   0/0/0 doce años seguidos: la regla de «quien gana no toca lo que funciona» lo dejaba clavado en un
-   coche sin carácter, y el mejor equipo acababa siendo el más anodino. En la F1 real es al revés —Red
-   Bull era EL de la aerodinámica, Mercedes EL del motor—. Así que los mejores coches de la parrilla
-   arrancan con un concepto pronunciado; los del pelotón sí pueden ser neutros. */
+function profNuevo(){ const a=PROF_ARQUETIPOS[irnd(0,PROF_ARQUETIPOS.length-1)];
+  return {aero:a[0], motor:a[1], fiab:a[2]}; }
 function initCarProfiles(){
   S.f1prof={};
-  const perfs=F1_TEAMS.map(t=>S.f1perf[t.name] ?? t.perf ?? 75).sort((a,b)=>b-a);
-  const corte=perfs[Math.min(perfs.length-1, 3)];   // los ~4 mejores coches
-  F1_TEAMS.forEach(t=>{
-    const perf=S.f1perf[t.name] ?? t.perf ?? 75;
-    S.f1prof[t.name]=profNuevo(perf>=corte);
-  });
+  F1_TEAMS.forEach(t=>{ S.f1prof[t.name]=profNuevo(); });
 }
 /* 🏭 CÓMO EVOLUCIONAN LOS RIVALES (encargo de Carlos: «que la progresión sea realista», no un sorteo).
    Tres reglas, y cada una tiene su porqué:
@@ -9117,23 +9638,12 @@ function evolveCarProfiles(){
     const p = .12 + .38*enAscenso - .20*arriba;               // entre ~4% y ~50% al año
     if(!ch(Math.max(.03,p))) return;
     const pr=S.f1prof[tn];
-    // un coche con un eje en el extremo puede moderarlo: se lima el sesgo hacia el centro
-    const extremo=PROF_EJES.find(e=>pr[e]===2);
-    if(extremo && ch(.30)){
-      const suben=PROF_EJES.filter(e=>e!==extremo && pr[e]<2);
-      if(suben.length){ pr[extremo]--; pr[suben[irnd(0,suben.length-1)]]++; return; }
-    }
     /* 🐞 el suelo se colaba: se filtraban los ejes por >-2 y luego se cogía `[irnd(0,1)]`, que con un
        solo candidato devolvía undefined y caía en un `||` que ignoraba el filtro. Resultado medido:
        un Alpine con aero −3. Ahora se sortea DENTRO de los que de verdad pueden bajar, y si no hay
        ninguno, no se toca nada. */
     const sube=PROF_EJES[irnd(0,2)];
     if(pr[sube]>=2) return;
-    /* 🎚️ LLEGAR AL EXTREMO CUESTA (corrección de Carlos). En la fase 1 el 56% de los coches acababa
-       con un eje en ±2, porque cada paso podía llevar un 1 hasta un 2 sin resistencia. Si casi todos
-       son radicales, ser radical no significa nada. Ahora dar ese último paso solo sale 1 de cada 3
-       veces, y además un coche ya extremo puede suavizarse: los conceptos muy sesgados se refinan. */
-    if(pr[sube]===1 && !ch(.33)) return;
     const puedenBajar=PROF_EJES.filter(e=>e!==sube && pr[e]>-2);
     if(!puedenBajar.length) return;
     const baja=puedenBajar[irnd(0,puedenBajar.length-1)];
@@ -9148,6 +9658,8 @@ function ejeFuerza(tn, eje){
   const pr=(S.f1prof||{})[tn]; const base=S.f1perf[tn]??75;
   return base + ((pr&&pr[eje])||0)*PROF_K;
 }
+/* el PUESTO en ese eje entre los equipos que existan ese año (1 = el mejor). Robusto al tamaño de la
+   parrilla, que es justo lo que preguntó Carlos. */
 /* el PUESTO en ese eje entre los equipos que existan ese año (1 = el mejor). Robusto al tamaño de la
    parrilla, que es justo lo que preguntó Carlos. */
 /* ⭐ EL ESTADO DE CADA EJE EN PALABRAS Y ESTRELLAS. Carlos pidió expresamente que NO fueran barras de
@@ -9416,6 +9928,54 @@ function tpYearStart(){
     S.tpSaleQ=[];
   }
   S._tpTries={};   // 🎯 los intentos de fichaje se cuentan por invierno
+  /* 🏁 EL VETERANO CON PRISA VINO POR UN AÑO, Y UN AÑO ES UN AÑO. Sin esto, al expirar su contrato
+     `tpTerna` lo ofrecía como renovación un invierno tras otro y la promesa se quedaba en nada (lo
+     cazó Carlos probándolo: «si se ofrece por un año… no tiene sentido que aparezca después en las
+     ofertas»). Ahora sale del juego salvo que se lo haya GANADO en pista: campeón, o entre los tres
+     primeros del Mundial. Y ojo: al retirarse NO va a `freeAgents` —cuelga el casco, no busca equipo. */
+  {
+    const sl0=S.seats[S.tpTeam]||[];
+    sl0.forEach((d,i)=>{
+      if(!d || d==="PLAYER" || !d._vetPrisa || (d.tpc||0)>0) return;
+      const r=(S.rankD||{})[d.name];
+      if(r!=null && r<=3){
+        // se lo ha ganado: puede seguir un año más, y ahora la renovación de `tpTerna` sí tiene sentido
+        delete d._vetPrisa;
+        S.pendingEvents.push(r===1
+          ? L(`👑 ${surname(d.name)} ha sido CAMPEÓN DEL MUNDO contigo. Vino por un año a por su último cartucho y se lo ha llevado: ahora es él quien decide si sigue.`,
+              `👑 ${surname(d.name)} is WORLD CHAMPION with you. He came for one year and one last shot, and he took it: now it's his call whether he stays.`,
+              {pt:`👑 ${surname(d.name)} foi CAMPEÃO DO MUNDO com você. Veio por um ano atrás do último cartucho e levou: agora é ele quem decide se fica.`})
+          : L(`🔥 ${surname(d.name)} acaba ${r}º del Mundial a los ${d.age}. Vino por un año y ha demostrado que le quedaba otro: la puerta sigue abierta si la quiere.`,
+              `🔥 ${surname(d.name)} finishes ${r}${r===2?"nd":"rd"} in the championship at ${d.age}. He came for one year and proved he had another in him: the door stays open if he wants it.`,
+              {pt:`🔥 ${surname(d.name)} termina em ${r}º no Mundial aos ${d.age}. Veio por um ano e provou que tinha outro: a porta segue aberta se ele quiser.`}));
+      } else {
+        sl0[i]=null;
+        S.pendingEvents.push(L(`🎩 ${surname(d.name)} cuelga el casco. Vino a por un último cartucho, no salió, y se retira sin pedirle nada a nadie. El asiento queda libre.`,
+                               `🎩 ${surname(d.name)} hangs up his helmet. He came for one last shot, it didn't come off, and he retires without asking anyone for anything. The seat is open.`,
+                               {pt:`🎩 ${surname(d.name)} pendura o capacete. Veio atrás de um último cartucho, não deu certo, e se aposenta sem pedir nada a ninguém. A vaga fica livre.`}));
+      }
+    });
+  }
+  /* 🎩 …Y EL VETERANO AL QUE DIJISTE QUE NO, esté donde esté. Se ofreció para su último cartucho; le
+     dijiste que no, y ese año era el último de verdad: corre la temporada (en su equipo o en el que
+     le fichó) y cuelga el casco. La única prórroga es la que se gana en pista — si acaba CAMPEÓN, se
+     queda un año más, exactamente igual que si lo hubieras fichado tú. */
+  Object.entries(S.seats||{}).forEach(([tn,sl2])=>{
+    (sl2||[]).forEach((d,i)=>{
+      if(!d || d==="PLAYER" || !d._vetFinal || yearNow()<=d._vetFinal) return;
+      if((S.rankD||{})[d.name]===1 && !d._vetProrroga){
+        d._vetProrroga=true; d._vetFinal=yearNow();
+        S.pendingEvents.push(L(`👑 ${surname(d.name)} se proclama CAMPEÓN DEL MUNDO a los ${d.age} en ${tn}, el año que iba a ser el último. Se queda uno más.`,
+                               `👑 ${surname(d.name)} is crowned WORLD CHAMPION at ${d.age} with ${tn}, in what was meant to be his final year. He stays for one more.`,
+                               {pt:`👑 ${surname(d.name)} se sagra CAMPEÃO DO MUNDO aos ${d.age} na ${tn}, no ano que seria o último. Fica mais um.`}));
+        return;
+      }
+      sl2[i]=mkRookie(isRBJr(tn), tn);
+      S.pendingEvents.push(L(`🎩 ${surname(d.name)} se retira al final de la temporada. Buscó un último cartucho y nadie se lo dio a tiempo.`,
+                             `🎩 ${surname(d.name)} retires at the end of the season. He went looking for one last shot and nobody handed it to him in time.`,
+                             {pt:`🎩 ${surname(d.name)} se aposenta no fim da temporada. Procurou um último cartucho e ninguém lhe deu a tempo.`}));
+    });
+  });
   S._tpSeatQ=[];
   const sl=S.seats[S.tpTeam]||[];
   sl.forEach((d,i)=>{ if(!d || d==="PLAYER" || (d.tpc||0)<=0) S._tpSeatQ.push(i); });
@@ -9536,6 +10096,7 @@ function tpTerna(i){
     if(t===tn || !Array.isArray(s2)) return;
     s2.forEach((d,j)=>{
       if(!d || d==="PLAYER" || mktMoved(d) || d.beast) return;
+      if(d._noVuelve===tn) return;   // 🚪 le echaste para sentar al veterano: contigo no firma más
       if(other && other!=="PLAYER" && d.name===other.name) return;
       if(noY[d.name]===yearNow()) return;              // ya te dijo que no este invierno
       if(soyFilial && !esPromesa(d)) return;           // 🐂 el filial solo mira promesas
@@ -10229,6 +10790,66 @@ function tpVendible(g){
   const margen=d=>((d.ceil||97)-(d.skill||75));
   return margen(g.a)<=margen(g.b) ? g.a : g.b;
 }
+/* 🏎️💨 EL VETERANO CON PRISA. Un campeón al que se le acaba el tiempo y lo sabe: se ofrece barato
+   por UNA temporada, pero a cambio de un coche que gane HOY. Como con el cazador, la tentación tiene
+   que ser CIERTA o el dilema no sale: ≥35 años, con al menos un título, corriendo en un coche PEOR
+   que el tuyo, y claramente por encima del más flojo de tus dos. Si no supera al tuyo, no es una
+   tentación: es un capricho caro. Devuelve {vet, from, j, flojo} o null. No sortea nada. */
+function tpVeteranoPrisa(){
+  if(S.cat!=="TP" || !S.tpTeam) return null;
+  /* 🚫 NI A UN COLISTA. Un campeón que se ofrece para su último cartucho no se va al fondo de la
+     parrilla, y sobre todo: TÚ no le puedes prometer nada allí (lo cazó Carlos probándolo en Aston
+     Martin). Del sexto para abajo, este hombre no llama a tu puerta. Lo que sí escala es lo que te
+     PIDE, y eso lo resuelve `tpVetMeta()`: arriba quiere el Mundial; en el mediocampo, volver al podio. */
+  if(gridRank(S.tpTeam)>6) return null;
+  const mios=tpDrvs(); if(mios.length<2) return null;
+  const flojo=mios.reduce((a,b)=>((a.skill||0)<=(b.skill||0)?a:b));
+  const miPerf=S.f1perf[S.tpTeam]??75;
+  const out=[];
+  Object.entries(S.seats||{}).forEach(([tn,sl])=>{
+    if(tn===S.tpTeam || isRBJr(tn)) return;
+    if((S.f1perf[tn]??70) >= miPerf) return;            // tiene que venir de un coche PEOR que el tuyo
+    (sl||[]).forEach((d,j)=>{
+      if(!d || d==="PLAYER") return;
+      if((d.age||0)<35 || (d.titles||0)<1) return;      // campeón y con el reloj en contra
+      if((d.skill||0) <= (flojo.skill||0)+3) return;    // y una mejora de verdad sobre el que sale
+      out.push({vet:d, from:tn, j});
+    });
+  });
+  if(!out.length) return null;
+  out.sort((a,b)=>((b.vet.skill||0)-(a.vet.skill||0)) || a.from.localeCompare(b.from));
+  return {...out[0], flojo};
+}
+/* 🎯 LO QUE TE PIDE EL VETERANO, medido con tu coche en la mano y no con un deseo. Con el mejor
+   coche de la parrilla puedes hablarle de ganar; en el mediocampo, prometerle un Mundial sería
+   mentirle a un campeón del mundo, y él lo sabría antes que tú. */
+function tpVetMeta(){
+  const r=gridRank(S.tpTeam);
+  return r<=2 ? "ganar" : r<=4 ? "pelear" : "podio";
+}
+/* 🚪 EL VETERANO AL QUE DIJISTE QUE NO. Si el texto dice que «firma en otro sitio esa misma semana»,
+   eso tiene que verse en la parrilla y no quedarse en una frase (lo pidió Carlos). Busca un equipo
+   con mejor coche que el suyo —por eso se movería—, desaloja al más flojo de allí (que se va a la
+   bolsa de agentes libres, no al limbo) y lo sienta. Devuelve el nombre del equipo, o null. */
+function tpVetSeVa(vet, desde){
+  const suPerf=S.f1perf[desde]??70;
+  const cands=F1_TEAMS.filter(t=>t.name!==desde && t.name!==S.tpTeam && !isRBJr(t.name)
+    && (S.f1perf[t.name]??70) > suPerf
+    && (S.seats[t.name]||[]).some(d=>d && d!=="PLAYER" && (d.skill||0) < (vet.skill||0)));
+  if(!cands.length) return null;
+  cands.sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+  const destino=cands[0], sl=S.seats[destino.name];
+  let peor=-1;
+  sl.forEach((d,i)=>{ if(!d||d==="PLAYER") return;
+    if(peor<0 || (d.skill||0) < ((sl[peor]||{}).skill||0)) peor=i; });
+  if(peor<0) return null;
+  const fuera=sl[peor];
+  if(fuera && fuera!=="PLAYER"){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(fuera); }
+  const orig=(S.seats[desde]||[]).indexOf(vet);
+  if(orig>=0) S.seats[desde][orig]=mkRookie(isRBJr(desde), desde);
+  sl[peor]=vet;
+  return destino.name;
+}
 function tpGallos(){
   if(S.cat!=="TP" || !S.tpTeam) return null;
   const d=tpDrvs(); if(d.length<2 || !isElite(d[0]) || !isElite(d[1])) return null;
@@ -10408,6 +11029,140 @@ const TP_DILEMAS=[
         return L(`Sale la cifra en prensa y con ella la lectura: has troceado el mejor equipo que tenías por dinero. El vestuario tarda meses en perdonártelo. +coche, −−prestigio`,
                  `The fee leaks, and with it the reading: you broke up the best line-up you had for money. The garage takes months to forgive it. +car, −−prestige`,
                  {pt:`O valor vaza e com ele a leitura: você desmontou a melhor dupla que tinha por dinheiro. O vestiário demora meses a perdoar. +carro, −−prestígio`});}]);}}]},
+ /* ══ 🛞 EL MURO Y LA GOMA ══════════════════════════════════════════════════════════════════════
+    La otra cara de «La goma no llega»: el mismo domingo, la misma vuelta, pero desde el muro. Lo
+    pidió Carlos así: «un piloto (o tus datos) te dicen que las ruedas están pasándolo mal. ¿Le dices
+    al piloto que da igual, o que siga apretando como siempre?».
+    Y quién te lo dice también es de época: hasta los 90 lo único que tienes es la voz del piloto;
+    a partir de los 2000 la telemetría lo dice antes que él.
+    ⚠️ Hoy solo se lee la variante de telemetría: `startTPFlow()` fija SELECTED_ERA="2026", así que el
+    modo jefe únicamente existe en la era actual. La otra rama queda lista para el día que el muro se
+    abra a las retro. ═══════════════════════════════════════════════════════════════════════ */
+ {id:"tpGomas", cond:()=>tpDrvs().length>0,
+  t:()=>L("El muro y la goma","The pit wall and the tyres",{pt:"O muro e o pneu"}),
+  d:()=>{ const a=tpDrvs(); const n=a[0]?surname(a[0].name):"tu piloto"; const yr=yearNow();
+    /* 🎲 QUE NO SALGA SIEMPRE CALCADO (lo pidió Carlos al probarlo): circuito y vuelta de la época,
+       y tres cosas distintas en juego. La decisión es la misma; el domingo, no. */
+    const gps=gpList(yr), gp=gps[dilVar("gpI",()=>irnd(0,gps.length-1))];
+    const vta=dilVar("vta",()=>irnd(Math.max(8,Math.round(gp.laps*.5)), Math.max(10,gp.laps-8)));
+    const quedan=Math.max(6, gp.laps-vta);
+    const juego=dilVar("juego",()=>irnd(0,2));
+    /* ⚠️ estos fragmentos van DETRÁS de un punto, así que empiezan en MAYÚSCULA. Salían en minúscula
+       y encadenando «y… y quedan N vueltas» — solo se ve leyendo la frase entera (lo cazó Carlos). */
+    const enJuego = juego===0
+      ? L(`Está peleando una posición que vale puntos`,`He's fighting for a position worth points`,{pt:`Está brigando por uma posição que vale pontos`})
+      : juego===1
+      ? L(`Va tercero y defiende el podio con uñas y dientes`,`He's third and defending the podium tooth and nail`,{pt:`Está em terceiro e defende o pódio com unhas e dentes`})
+      : L(`Lleva media carrera pegado al escape del líder`,`He's spent half the race glued to the leader's gearbox`,{pt:`Passou meia corrida colado no escapamento do líder`});
+    const fuente = yr>=2000
+      ? L(`La telemetría lo canta antes que él: las temperaturas del tren trasero llevan diez vueltas fuera de rango. Cuando ${n} aprieta el botón de la radio, ya lo sabías.`,
+          `The telemetry says it before he does: rear temperatures have been out of range for ten laps. By the time ${n} presses the radio button, you already knew.`,
+          {pt:`A telemetria canta antes dele: as temperaturas do trem traseiro estão fora de faixa há dez voltas. Quando ${n} aperta o botão do rádio, você já sabia.`})
+      : L(`La voz de ${n} por radio dice que el coche se le va de atrás en cada frenada.`,
+          `${n}'s voice on the radio says the car is stepping out at every braking point.`,
+          {pt:`A voz de ${n} pelo rádio diz que o carro escapa atrás em cada frenagem.`});
+    return L(`Vuelta ${vta} en ${gp.n}. ${fuente} ${enJuego}, y quedan ${quedan} vueltas. La decisión es tuya y hay que tomarla ahora.`,
+             `Lap ${vta} at ${gp.n}. ${fuente} ${enJuego}, and there are ${quedan} laps to go. The call is yours and it has to be made now.`,
+             {pt:`Volta ${vta} em ${gp.n}. ${fuente} ${enJuego}, e faltam ${quedan} voltas. A decisão é sua e tem de ser agora.`}); },
+  opts:[
+   {l:()=>L("«Gestiona. Los puntos, en casa»","«Manage them. Bring the points home»",{pt:"«Gere. Os pontos, para casa»"}),
+    r:()=>{ const a=tpDrvs(), n=a[0]?surname(a[0].name):"tu piloto";
+      return roll(
+       [5,()=>{TPRE(1);
+         return L(`Levanta el pie, cruza la meta con la goma entera y los puntos entran enteros. El consejo no aplaude estas cosas, pero las apunta. +prestigio`,
+                  `He lifts, crosses the line with the tyre intact and the points come in whole. The board doesn't applaud these things, but it notes them. +prestige`,
+                  {pt:`Ele alivia, cruza a linha com o pneu inteiro e os pontos entram inteiros. O conselho não aplaude essas coisas, mas anota. +prestígio`});}],
+       [4,()=>{tpDrvSkill(n,-1);TPRE(-.5);
+         return L(`Obedece, pierde la posición en la penúltima vuelta y baja del coche sin mirar al muro. «Yo la tenía», repite en el box. −moral de ${n}, −prestigio leve`,
+                  `He obeys, loses the place on the penultimate lap and climbs out without looking at the wall. «I had him», he keeps saying in the garage. −${n}'s morale, slight −prestige`,
+                  {pt:`Ele obedece, perde a posição na penúltima volta e desce do carro sem olhar para o muro. «Eu tinha ele», repete no box. −moral de ${n}, −prestígio leve`});}])}},
+   {l:()=>L("«Aprieta como siempre. Necesitamos esos puntos»","«Push like always. We need those points»",{pt:"«Aperta como sempre. Precisamos desses pontos»"}),
+    r:()=>{ const a=tpDrvs(), n=a[0]?surname(a[0].name):"tu piloto";
+      return roll(
+       [4,()=>{TPRE(2);tpDrvSkill(n,1);
+         return L(`Le das cuerda y responde: adelanta a cuatro vueltas del final con las gomas en los huesos. El garaje se viene abajo y él sabe que confiaste. +prestigio, +moral de ${n}`,
+                  `You let him off the leash and he delivers: he passes with four laps left on tyres down to the canvas. The garage erupts and he knows you trusted him. +prestige, +${n}'s morale`,
+                  {pt:`Você solta a corda e ele responde: ultrapassa a quatro voltas do fim com os pneus na lona. A garagem vai abaixo e ele sabe que você confiou. +prestígio, +moral de ${n}`});}],
+       [3,()=>L(`Aprieta, no llega a ponerse a rueda y termina donde estaba, con el neumático destrozado. Ni bien ni mal: solo goma gastada. Sin cambios.`,
+                `He pushes, never gets alongside and finishes where he was, with the tyre in pieces. Neither good nor bad: just rubber spent. No change.`,
+                {pt:`Ele aperta, não chega a colar e termina onde estava, com o pneu destruído. Nem bem nem mal: só borracha gasta. Sem mudanças.`})],
+       [3,()=>{TPRE(-2);TPCAR(-.5);
+         return L(`La goma se rinde en la curva más rápida del trazado y el coche acaba contra las protecciones. ${n} sale por su pie; el chasis, en un camión. La prensa pregunta quién dio esa orden. −−prestigio, −coche`,
+                  `The tyre gives up at the fastest corner on the circuit and the car ends up in the barriers. ${n} walks away; the chassis leaves on a truck. The press asks who gave that order. −−prestige, −car`,
+                  {pt:`O pneu se rende na curva mais rápida do traçado e o carro termina nas proteções. ${n} sai andando; o chassi, num caminhão. A imprensa pergunta quem deu aquela ordem. −−prestígio, −carro`});}])}}]},
+ /* ══ 🏎️💨 EL VETERANO CON PRISA ═══════════════════════════════════════════════════════════════
+    Un campeón de 35+ en un coche peor que el tuyo se ofrece por una temporada y por poco dinero.
+    Aceptar NO es solo un fichaje: es la petición literal de Carlos —«te fuerza entonces a elegir ese
+    piloto y a que elijas la opción de exprimir el coche este año»—. Así que el sí trae las dos
+    cosas en el mismo paquete: se sienta él, sale tu piloto más flojo, y el desarrollo se vuelca en
+    ESTA temporada a costa de la siguiente (+coche ahora, −proyecto). Un año a cara o cruz. ═════ */
+ {id:"tpVeterano",
+  /* 🔒 el candidato se ELIGE UNA VEZ, en cond(), y se guarda en `S._tpVet`. Antes se llamaba a
+     tpVeteranoPrisa() cuatro veces —título, enunciado, etiqueta de la opción y resultado— y cada
+     llamada vuelve a escanear la parrilla: cuatro oportunidades de que el nombre del título no sea
+     el del texto. Es el mismo patrón que ya usa el gigante dormido con `S._gig`. */
+  cond:()=>{ const v=tpVeteranoPrisa(); if(!v) return false; S._tpVet=v; return true; },
+  t:()=>{ const v=S._tpVet; return L(`El veterano con prisa${v?": "+surname(v.vet.name):""}`,`The veteran in a hurry${v?": "+surname(v.vet.name):""}`,{pt:`O veterano com pressa${v?": "+surname(v.vet.name):""}`}); },
+  d:()=>{ const v=S._tpVet; if(!v) return "";
+    const n=surname(v.vet.name), ti=v.vet.titles||1, meta=tpVetMeta();
+    const pide = meta==="ganar"
+      ? L(`quiere un coche que GANE, y tú tienes uno de los dos mejores de la parrilla: sabe perfectamente lo que está pidiendo`,
+          `he wants a car that WINS, and you have one of the two best on the grid: he knows exactly what he's asking for`,
+          {pt:`quer um carro que GANHE, e você tem um dos dois melhores do grid: ele sabe exatamente o que está pedindo`})
+      : meta==="pelear"
+      ? L(`no te pide el Mundial —no es tonto y ha mirado la tabla—, pero sí un coche con el que pelear los domingos de tú a tú con los de delante`,
+          `he isn't asking for the title —he's not stupid and he's read the table— but he does want a car that can go toe to toe with the front on Sundays`,
+          {pt:`não te pede o Mundial —não é bobo e olhou a tabela—, mas quer um carro para brigar de igual para igual com os da frente aos domingos`})
+      : L(`no te habla de ganar: te habla de volver a un podio antes de retirarse, que es exactamente lo que tu coche puede darle si lo aprietas`,
+          `he doesn't talk about winning: he talks about standing on a podium once more before he retires, which is exactly what your car can give him if you squeeze it`,
+          {pt:`não fala em ganhar: fala em voltar a um pódio antes de se aposentar, que é exatamente o que o seu carro pode dar se você o espremer`});
+    return L(`${n} pide verte a solas. Tiene ${v.vet.age} años, ${ti} ${ti===1?"Mundial":"Mundiales"} en la vitrina y un coche en ${v.from} que no le da para nada. Te lo dice sin rodeos: le queda una temporada buena dentro, lo sabe, y no piensa gastarla donde está. Se ofrece por UN año y por una cifra que casi da vergüenza. A cambio ${pide}, no un proyecto bonito para ${yearNow()+2}. El asiento tendría que salir de ${surname(v.flojo.name)}.`,
+             `${n} asks to see you alone. He's ${v.vet.age}, has ${ti} ${ti===1?"title":"titles"} in the cabinet and a car at ${v.from} that gives him nothing. He tells you straight: he has one good season left in him, he knows it, and he won't spend it where he is. He offers himself for ONE year at a figure that's almost embarrassing. In return ${pide}, not a pretty project for ${yearNow()+2}. The seat would have to come out of ${surname(v.flojo.name)}.`,
+             {pt:`${n} pede para te ver a sós. Tem ${v.vet.age} anos, ${ti} ${ti===1?"Mundial":"Mundiais"} na vitrine e um carro na ${v.from} que não lhe dá nada. Ele diz sem rodeios: resta-lhe uma boa temporada dentro, ele sabe, e não pretende gastá-la onde está. Oferece-se por UM ano e por um valor quase constrangedor. Em troca ${pide}, não um projeto bonito para ${yearNow()+2}. A vaga teria de sair de ${surname(v.flojo.name)}.`}); },
+  opts:[
+   {l:()=>{ return L(`Firmarle y volcar el año en el coche`,`Sign him and pour the year into the car`,{pt:`Assiná-lo e virar o ano no carro`}); },
+    r:()=>{ const v=S._tpVet; if(!v) return "";
+      const n=surname(v.vet.name), fl=surname(v.flojo.name);
+      const sl=S.seats[S.tpTeam], idx=sl.indexOf(v.flojo);
+      if(idx>=0){
+        /* 🚪 AL QUE ECHAS NO SE LO TRAGA LA TIERRA. Antes se sobrescribía su asiento y desaparecía de
+           la F1 (lo cazó Carlos). Ahora va a la bolsa de agentes libres —de donde otros equipos lo
+           pescan el invierno siguiente— y queda marcado: contigo no vuelve a firmar jamás. */
+        S.freeAgents=S.freeAgents||[]; S.freeAgents.push(v.flojo);
+        v.flojo._noVuelve=S.tpTeam;
+        sl[idx]=v.vet; v.vet.tpc=1; v.vet.yrs=0;
+        // 🏁 marcado: vino por UN año. El invierno decidirá si se lo ha ganado (ver tpYearStart)
+        v.vet._vetPrisa=yearNow();
+        // su equipo tapa el hueco con un canterano, igual que en cualquier fichaje del modo jefe
+        if(S.seats[v.from]) S.seats[v.from][v.j]=mkRookie(isRBJr(v.from), v.from);
+      }
+      TPCAR(2); TPTGT(-2.5);
+      return roll(
+       [5,()=>{TPRE(1.5);
+         return L(`Hecho. ${fl} se entera por la prensa y no te lo perdona, pero ${n} se sienta en tu coche y el garaje entero cambia de postura: los ingenieros llegan antes, las reuniones duran menos y todo el desarrollo del año se vuelca en ESTA temporada. Lo de ${yearNow()+2} ya se verá. +coche ahora, −proyecto, +prestigio`,
+                  `Done. ${fl} finds out from the press and never forgives you, but ${n} sits in your car and the whole garage straightens up: the engineers arrive earlier, the meetings run shorter and every ounce of the year's development goes into THIS season. ${yearNow()+2} can wait. +car now, −project, +prestige`,
+                  {pt:`Feito. ${fl} descobre pela imprensa e não te perdoa, mas ${n} senta no seu carro e a garagem inteira muda de postura: os engenheiros chegam mais cedo, as reuniões duram menos e todo o desenvolvimento do ano se volta para ESTA temporada. O de ${yearNow()+2} que espere. +carro agora, −projeto, +prestígio`});}],
+       [3,()=>{TPRE(-1);
+         return L(`Hecho, y el paddock lo lee como lo que es: un equipo con prisa. ${n} se sienta en tu coche, ${fl} se va con un comunicado de tres líneas y el consejo te pregunta por escrito qué plan hay para ${yearNow()+2}. No tienes una buena respuesta. +coche ahora, −proyecto, −prestigio`,
+                  `Done, and the paddock reads it for what it is: a team in a hurry. ${n} sits in your car, ${fl} leaves with a three-line statement and the board asks you in writing what the plan is for ${yearNow()+2}. You don't have a good answer. +car now, −project, −prestige`,
+                  {pt:`Feito, e o paddock lê pelo que é: uma equipe com pressa. ${n} senta no seu carro, ${fl} sai com um comunicado de três linhas e o conselho te pergunta por escrito qual é o plano para ${yearNow()+2}. Você não tem boa resposta. +carro agora, −projeto, −prestígio`});}]);}},
+   {l:()=>L("Decirle que no: aquí se construye","Tell him no: we're building something here",{pt:"Dizer que não: aqui se constrói"}),
+    r:()=>{ const v=S._tpVet; const n=v?surname(v.vet.name):"él";
+      return roll(
+       [5,()=>{TPTGT(1.5);TPRE(.5);
+         if(v) v.vet._vetFinal=yearNow();   // 🏁 nadie le dio el último cartucho: este es su último año
+         return L(`Se lo dices a la cara y lo encaja como un campeón: te da la mano y se va. Termina el año donde estaba y anuncia que lo deja. Tu piloto se entera de que le defendiste sin que él lo pidiera, y los ingenieros siguen trabajando para el año que viene sin que nadie les cambie el plan a mitad. +proyecto, +prestigio leve`,
+                  `You tell him to his face and he takes it like a champion: shakes your hand and leaves. He sees the year out where he was and announces he's done. Your driver learns you backed him without being asked, and the engineers keep working towards next year with nobody moving the plan halfway. +project, slight +prestige`,
+                  {pt:`Você diz na cara e ele encaixa como um campeão: aperta a sua mão e vai embora. Termina o ano onde estava e anuncia que para. O seu piloto fica sabendo que você o defendeu sem que pedisse, e os engenheiros seguem trabalhando para o ano que vem sem ninguém mudar o plano no meio. +projeto, +prestígio leve`});}],
+       [3,()=>{TPTGT(1.5);TPRE(-1);
+         /* 🚪 y el fichaje OCURRE: cambia de equipo en la parrilla y este sigue siendo su último año
+            (salvo que sea campeón, que entonces le queda otro — lo resuelve tpYearStart). */
+         const dest = v ? tpVetSeVa(v.vet, v.from) : null;
+         if(v) v.vet._vetFinal=yearNow();
+         const donde = dest ? dest : L("otro equipo","another team",{pt:"outra equipe"});
+         return L(`Le dices que no y firma por ${donde} esa misma semana. Cuando se le ve delante de tu coche en la tercera carrera, medio paddock recuerda que pudo ser tuyo por cuatro duros. El proyecto sigue en pie, la broma también. +proyecto, −prestigio`,
+                  `You say no and he signs for ${donde} that same week. When he's seen ahead of your car at the third race, half the paddock remembers he could have been yours for pennies. The project survives; so does the joke. +project, −prestige`,
+                  {pt:`Você diz não e ele assina pela ${donde} naquela mesma semana. Quando ele aparece à frente do seu carro na terceira corrida, meio paddock lembra que ele podia ser seu por trocados. O projeto segue de pé, a piada também. +projeto, −prestígio`});}]);}}]},
 ];
 function pickTPDilemma(){
   // 🧪 en un escenario de prueba manda EL dilema que se quiere revisar (mismo criterio que pickDilemma)
