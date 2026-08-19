@@ -1549,11 +1549,33 @@ const ENTRIES_2010 = [
  {range:[2014,2022], prob:.28, team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null},
  // 🇩🇪 Porsche: el eterno «casi»
  {range:[2016,2025], prob:.22, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null},
+/* 🇪🇸 CAMPOS RACING · EL TERCER INTENTO DE ADRIÁN CAMPOS (2021→2022). Tras Minardi como piloto y
+    tras perder su equipo de 2010 —que se vendió a Carabante y salió a pista como HRT—, iba a por un
+    proyecto con control de verdad, junto a Monaco Increase Management. Motor Renault muy rumoreado,
+    entrada retrasada por la pandemia a 2022… y Adrián murió el 27 de enero de 2021 con el proyecto
+    aún sin cerrar. Sin él, todo se deshizo.
+    Y la parrilla que sonaba era REAL y está verificada: Pascal Wehrlein, a quien la F1 se le estaba
+    cerrando y por eso miraba a la Fórmula E, y Álex Palou, entonces en Super Fórmula y a punto de
+    saltar a la IndyCar. Con el diario de hoy en la mano: un campeón de Fórmula E y un tetracampeón
+    de IndyCar en el mismo garaje. `driversBorn` los sienta con su EDAD REAL del año que entren.
+    ⚠️ NUNCA DOS CAMPOS EN LA MISMA PARTIDA (condición de Carlos). La era de 2010 ya tiene su propio
+    what-if —`maybeCampos()` rebautiza HRT como «Campos Meta»—, así que esta entrada trae `noSi` y se
+    cae sola si ya hay un Campos en la parrilla. Si aquel murió por el camino (HRT/Campos Meta tiene
+    su quiebra), esto pasa a ser justo lo que fue en la vida real: el tercer intento. */
+ {range:[2022,2023], prob:.30, team:{name:"Campos Racing", abbr:"CMP", color:"#E8452C", color2:"#F2B01E", perf:61, cat:"F1"},
+  drivers:null, noSi:"Campos", driversBorn:[["P. Wehrlein",1994,83,87,"🇩🇪"],["A. Palou",1997,83,87,"🇪🇸"]],
+  dieAfter:{w:[3,7], p:.40}},
  // 🇺🇸 proyecto GM: o Andretti o Cadillac, nunca los dos
  {range:[2022,2027], prob:.3,  team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[3,8], p:.35}},
  {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
 ];
 const ENTRIES_2020 = [
+ /* 🇪🇸 el mismo what-if de Campos, en la era de 2020: aquí llega cuando tú aún estás subiendo la
+    escalera, así que no lo vas a pilotar — pero la parrilla de tu mundo tiene un equipo español con
+    Palou y Wehrlein dentro, y eso se nota al llegar arriba. Detalle completo en ENTRIES_2010. */
+ {range:[2022,2023], prob:.30, team:{name:"Campos Racing", abbr:"CMP", color:"#E8452C", color2:"#F2B01E", perf:61, cat:"F1"},
+  drivers:null, noSi:"Campos", driversBorn:[["P. Wehrlein",1994,83,87,"🇩🇪"],["A. Palou",1997,83,87,"🇪🇸"]],
+  dieAfter:{w:[3,7], p:.40}},
  {range:[2024,2028], prob:.35, team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
  {range:[2025,2029], prob:.6,  team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
  // 🇩🇪 Porsche: el acuerdo con Red Bull que se rompió en 2022 — en algunas realidades se firma otro camino
@@ -2294,7 +2316,7 @@ const TEAM_LOGOS = {
   "Jordan":"Jordan.png","Jaguar":"Jaguar.png","Minardi":"Minardi.png","Benetton":"Benetton.png",
   "BAR":"BAR.png","Arrows":"Arrows.png","Prost GP":"Prost.png","BMW Sauber":"BMW.png",
   "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png",
-  "Maserati":"maserati.png"
+  "Maserati":"maserati.png","Campos Racing":"camposracing21.png"
 };
 // 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
 // se volvió papaya; el Williams clásico dio paso al actual). [desdeAño, fichero] — el último que cumple manda.
@@ -6968,6 +6990,9 @@ function processEntries(row){
   const _drop = S.chDrop || [];
   (S.expansion||[]).forEach(e=>{
     if(e.added || yearNow()<e.year) return;
+    /* 🚫 «SIEMPRE Y CUANDO NO HAYA MÁS CAMPOS ANTES» (Carlos). Si ya hay en la parrilla un equipo cuyo
+       nombre contiene esta marca, esta entrada no ocurre: dos Campos a la vez no existirían nunca. */
+    if(e.noSi && F1_TEAMS.some(t=>t.name.indexOf(e.noSi)>=0)){ e.added=true; return; }
     if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
