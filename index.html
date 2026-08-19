@@ -10066,15 +10066,22 @@ function tpMercado(){
   const nAb=abiertos.length;
   const garaje=[tpAsientoLinea(0), tpAsientoLinea(1),
     `🧢 ${S.tpReserva?surname(S.tpReserva.name):L("LIBRE","OPEN",{pt:"LIVRE"})}`].join(" &nbsp;·&nbsp; ");
+  /* ⚠️ setDecision escribe con textContent: el HTML de la cabecera del garaje (los <b>, el <br>)
+     salía LITERAL en pantalla. Se pasa el texto plano a setDecision y el HTML se pinta después. */
   setDecision(L(`✍️ El mercado · ${yearNow()}`,`✍️ The market · ${yearNow()}`,{pt:`✍️ O mercado · ${yearNow()}`})+" · "+S.tpTeam,
-    garaje+"<br>"+(nAb>1
+    "");
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=garaje+"<br>"+(nAb>1
       ? L("Dos huecos por cubrir: llama a quien quieras, y tú decides en qué asiento se sienta cada uno.",
           "Two seats to fill: call whoever you want, and you decide which seat each one takes.",
           {pt:"Duas vagas para cobrir: ligue para quem quiser, e você decide em qual assento cada um senta."})
       : L("Un hueco por cubrir. El mercado es tuyo: cada nombre lleva su probabilidad de decirte que sí.",
           "One seat to fill. The market is yours: every name carries his odds of saying yes.",
-          {pt:"Uma vaga para cobrir. O mercado é seu: cada nome traz a probabilidade de dizer sim."})));
+          {pt:"Uma vaga para cobrir. O mercado é seu: cada nome traz a probabilidade de dizer sim."})); }catch(e){}
   if(S._tpNoTxt){ try{ const _d=$("decSub")||document.querySelector("#decision .sub"); if(_d) _d.innerHTML=S._tpNoTxt+"<br>"+_d.innerHTML; }catch(e){} S._tpNoTxt=null; }
+  /* ✍️ …y la FIRMA también se ve (playtest de Carlos: «no se ve cuando un piloto acepta una oferta;
+     directamente pasa a la siguiente pantalla»). Entre dos huecos, la confirmación abre la pantalla;
+     tras el último hueco sigue viajando al rumbo, como siempre. */
+  if(S._tpFirmadoTxt){ try{ const _d=$("decSub")||document.querySelector("#decision .sub"); if(_d) _d.innerHTML=S._tpFirmadoTxt+"<br>"+_d.innerHTML; }catch(e){} S._tpFirmadoTxt=null; }
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
@@ -10097,6 +10104,11 @@ function tpMercado(){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Agente libre","Free agent",{pt:"Agente livre"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=L("Sin equipo: aceptaría casi seguro (2 años)","No seat: would almost surely accept (2 years)",{pt:"Sem equipe: aceitaria quase certo (2 anos)"});
+    } else if(c.kind==="cross"){
+      nm=`🌎 ${c.d.flag||"🏁"} ${c.d.name}`;
+      sub1=L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
+      sub2=L("Cruzaría a la F1 por un asiento titular (2 años)","Would cross to F1 for a race seat (2 years)",{pt:"Cruzaria para a F1 por uma vaga de titular (2 anos)"})
+        + " · 📞 " + tpOddsTag(c.odds||.7);
     } else if(c.kind==="fichar"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
@@ -10122,17 +10134,24 @@ function tpMercado(){
         S._tpNos=(S._tpNos||0)+1;
         S._tpNo=S._tpNo||{}; S._tpNo[c.d.name]=yearNow();
         if(S._tpNos>=5){ tpDirectivaCierra(); return; }
-        S._tpNoTxt=L(`❌ ${surname(c.d.name)} te dice que no: se queda en ${c.from}.`,
+        S._tpNoTxt=(c.kind==="cross"
+          ? L(`❌ ${surname(c.d.name)} te dice que no: prefiere seguir mandando donde está a sufrir en la F1.`,
+              `❌ ${surname(c.d.name)} turns you down: he'd rather keep winning where he is than suffer in F1.`,
+              {pt:`❌ ${surname(c.d.name)} diz não: prefere seguir mandando onde está a sofrer na F1.`})
+          : L(`❌ ${surname(c.d.name)} te dice que no: se queda en ${c.from}.`,
           `❌ ${surname(c.d.name)} turns you down: he stays at ${c.from}.`,
-          {pt:`❌ ${surname(c.d.name)} diz não: fica na ${c.from}.`})
+          {pt:`❌ ${surname(c.d.name)} diz não: fica na ${c.from}.`}))
           + (S._tpNos===4 ? "<br>"+L("⚠️ La directiva empieza a impacientarse: un portazo más y cerrarán el mercado por ti.",
                                      "⚠️ The board is losing patience: one more slammed door and they'll close the market for you.",
                                      {pt:"⚠️ A diretoria está perdendo a paciência: mais uma porta na cara e fecharão o mercado por você."}) : "");
         tpMercado(); return;
       }
       // aceptó: ¿dónde lo sientas?
+      /* 🪑 RENOVAR TAMBIÉN ELIGE ASIENTO (playtest de Carlos: «hay veces que los dos terminan contrato
+         y querría darle al 1 el 2 y al 2 el 1, pero solo me ofrece renovarlos en sus posiciones»).
+         Con más de un hueco abierto, la renovación pasa por la misma pantalla de colocación. */
       const ab=tpAbiertos();
-      if(c.kind==="renew"){ tpSignDriver(c.i, c); return; }
+      if(c.kind==="renew"){ if(ab.length>1) tpElegirAsiento(c, ab); else tpSignDriver(c.i, c); return; }
       if(ab.length<=1){ tpSignDriver(ab[0].i, c); return; }
       tpElegirAsiento(c, ab);
     };
@@ -10156,7 +10175,10 @@ function tpElegirAsiento(c, ab){
     const rol = h.i===0
       ? L("Asiento 1 · el Nº1: el mejor coche del garaje","Seat 1 · the No.1: the best car in the garage",{pt:"Assento 1 · o Nº1: o melhor carro da garagem"})
       : L("Asiento 2 · el escudero: coche un punto por detrás","Seat 2 · the wingman: a car a step behind",{pt:"Assento 2 · o escudeiro: carro um passo atrás"});
-    const quien = h.cur ? L(`hoy lo ocupa ${surname(h.cur.name)} con el contrato vencido — saldría del equipo`,
+    const esElMismo = h.cur && c.d && h.cur.name===c.d.name;   // renovándole en su propio asiento
+    const quien = esElMismo
+      ? L("su asiento de siempre","his usual seat",{pt:"o assento de sempre"})
+      : h.cur ? L(`hoy lo ocupa ${surname(h.cur.name)} con el contrato vencido — saldría del equipo`,
                             `currently ${surname(h.cur.name)}, contract expired — he would leave the team`,
                             {pt:`hoje é de ${surname(h.cur.name)}, contrato vencido — ele sairia da equipe`})
                        : L("hoy está libre","currently open",{pt:"hoje está livre"});
@@ -10221,6 +10243,19 @@ function tpMercadoPool(abiertos){
   cands.push(...top);
   (S.freeAgents||[]).filter(d=>d&&d.name&&noY[d.name]!==yearNow() && ocupantes.indexOf(d.name)<0 && (!soyFilial||esPromesa(d)))
     .slice(0,2).forEach(d=>cands.push({kind:"libre", d, odds:.9}));
+  /* 🌎 Y A VECES, ALGUIEN DE FUERA DE LA F1 (playtest de Carlos: «debería aparecer también por ahí
+     algún piloto de fuera de la F1, los Palou, etc.»). El mismo bote de crossovers del modo clásico,
+     con su ventana de edad (27-37) y sin duplicar a quien ya cruzó por otra vía. En el filial no:
+     un consagrado de IndyCar no baja a una cantera. */
+  if(!soyFilial && ch(.4)){
+    const yr=yearNow();
+    const elig=(S.crossovers||[]).filter(c=>{ const a=yr-c.born;
+      return a>=27 && a<=37 && !S.dpool.some(d=>d.name===c.name) && noY[c.name]!==yr; });
+    if(elig.length){
+      const c0=elig[irnd(0,elig.length-1)];
+      cands.push({kind:"cross", d:{name:c0.name, age:yr-c0.born, skill:c0.base, ceil:c0.ceil, titles:0, flag:c0.flag}, odds:.7});
+    }
+  }
   cands.push({kind:"rookie"});
   return cands;
 }
@@ -10334,7 +10369,20 @@ function tpSignDriver(i,c){
   const tn=S.tpTeam, sl=S.seats[tn], yN=yearNow();
   let d;
   if(c.kind==="renew"){
-    d=c.d; d.tpc=(d.age>=34)?1:2;
+    d=c.d;
+    /* 👇 …«y quizá me dice que sí o que no» (Carlos): renovarle QUITÁNDOLE el asiento 1 es una
+       degradación, y un 30% de las veces no la traga: rompe la negociación y se va a la bolsa. */
+    if(i===1 && c.i===0 && ch(.30)){
+      const sl0=S.seats[tn]; sl0[c.i]=null;
+      S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d);
+      S._tpNo=S._tpNo||{}; S._tpNo[d.name]=yN;
+      S._tpNoTxt=L(`❌ ${surname(d.name)} rompe la negociación: no renueva para ser el escudero de nadie. Se va.`,
+        `❌ ${surname(d.name)} walks out of the talks: he won't re-sign to be anyone's wingman. He leaves.`,
+        {pt:`❌ ${surname(d.name)} rompe a negociação: não renova para ser escudeiro de ninguém. Vai embora.`});
+      tpMercado(); return;
+    }
+    if(i!==c.i){ S.seats[tn][c.i]=null; }   // cambia de asiento: el suyo queda abierto para el mercado
+    d.tpc=(d.age>=34)?1:2;
     S._tpRenovados=S._tpRenovados||{}; S._tpRenovados[d.name]=true;   // 🪑 su hueco deja de estar abierto
     S.pendingEvents.push(c._silencioso
       ? L(`🏛️ La directiva renueva a ${surname(d.name)}${d.age>=34?" un año":" dos temporadas"}: alguien tenía que hacerlo.`,
@@ -10350,6 +10398,11 @@ function tpSignDriver(i,c){
     S.pendingEvents.push(L(`🧢 Le das la alternativa a tu probador: ${d.name} pasa a titular, y se le nota el hambre.`,
       `🧢 You give your reserve his shot: ${d.name} steps up, and the hunger shows.`,
       {pt:`🧢 Você dá a alternativa ao seu reserva: ${d.name} vira titular, e a fome aparece.`}));
+  } else if(c.kind==="cross"){
+    d=c.d; d.tpc=2; d.yrs=0; S.dpool.push(d);   // entra al mundo: el bote de crossovers ya no lo re-ofrece
+    S.pendingEvents.push(L(`🌎 Bombazo: ${surname(d.name)} deja su categoría y cruza a la F1 con tu equipo.`,
+      `🌎 Blockbuster: ${surname(d.name)} leaves his series and crosses to F1 with your team.`,
+      {pt:`🌎 Bomba: ${surname(d.name)} deixa a categoria dele e cruza para a F1 com a sua equipe.`}));
   } else if(c.kind==="libre"){
     d=c.d; S.freeAgents=(S.freeAgents||[]).filter(x=>x && x.name!==d.name);
     d.tpc=(d.age>=34)?1:2; d.yrs=0;
@@ -10929,12 +10982,41 @@ function tpProbadorInvierno(){
   const r=S.tpReserva;
   r.age=(r.age||20)+1;
   r.skill=Math.max(66,(r.skill||74)-rnd(.3,.8));   // en el banquillo no se rueda
+  r.resYrs=(r.resYrs||0)+1;
   if(r.skill<=69 || r.age>=33){
     S.pendingEvents.push(L(`🧢 ${surname(r.name)} cuelga el mono de probador: demasiados inviernos sin rodar.`,
       `🧢 ${surname(r.name)} hangs up the reserve overalls: too many winters without racing.`,
       {pt:`🧢 ${surname(r.name)} pendura o macacão de reserva: invernos demais sem rodar.`}));
     S.tpReserva=null;
     if(isRBJr(S.tpTeam)) tpCrearProbador();
+    return;
+  }
+  /* ⏳ EL BANQUILLO NO ES ETERNO (playtest de Carlos: «el probador sigue ahí eternamente, no es
+     realista»). Su contrato dura DOS años; al vencer, la mitad de las veces su vida sigue por otro
+     lado — y por dónde depende de lo que valga: si aún tiene nivel, entra al mercado (la bolsa, de
+     donde cualquier equipo lo pesca… tú incluido); si no, se marcha a buscar volante a otra
+     categoría. Si se queda, firma dos años más y se narra. */
+  if(r.resYrs>=2){
+    if(ch(.5)){
+      S.tpReserva=null; delete r.probador;
+      if((r.skill||70)>=74){
+        S.freeAgents=S.freeAgents||[]; S.freeAgents.push(r);
+        S.pendingEvents.push(L(`🧢 El contrato de ${surname(r.name)} vence y no renueva: quiere pista de verdad y sale al mercado a buscarla.`,
+          `🧢 ${surname(r.name)}'s deal expires and he won't renew: he wants real track time and hits the market to find it.`,
+          {pt:`🧢 O contrato de ${surname(r.name)} vence e ele não renova: quer pista de verdade e sai ao mercado atrás disso.`}));
+      } else {
+        const serie=[L("la IndyCar","IndyCar",{pt:"a IndyCar"}),L("la Fórmula E","Formula E",{pt:"a Fórmula E"}),L("la resistencia","endurance racing",{pt:"o endurance"})][irnd(0,2)];
+        S.pendingEvents.push(L(`🧢 ${surname(r.name)} se cansa de esperar un debut que no llega: se marcha a ${serie}.`,
+          `🧢 ${surname(r.name)} tires of waiting for a debut that never comes: he leaves for ${serie}.`,
+          {pt:`🧢 ${surname(r.name)} cansa de esperar uma estreia que não chega: vai embora para ${serie}.`}));
+      }
+      if(isRBJr(S.tpTeam)) tpCrearProbador();
+    } else {
+      r.resYrs=0;
+      S.pendingEvents.push(L(`🧢 ${surname(r.name)} renueva como probador dos años más: sigue creyendo que su hueco saldrá aquí.`,
+        `🧢 ${surname(r.name)} re-signs as reserve for two more years: he still believes his chance will come here.`,
+        {pt:`🧢 ${surname(r.name)} renova como reserva por mais dois anos: segue acreditando que a chance sairá aqui.`}));
+    }
   }
 }
 function tpDrvs(){ return (S.seats[S.tpTeam]||[]).filter(d=>d&&d!=="PLAYER"); }
@@ -11100,13 +11182,33 @@ const TP_DILEMAS=[
    {l:()=>L("«Dejadlos correr»","«Let them race»",{pt:"«Deixem correr»"}),r:()=>roll(
      [5,()=>(TPRE(2),L("Se baten en un duelo limpio que abre telediarios: el paddock celebra a un jefe con agallas. +prestigio","They fight a clean duel that leads the news: the paddock salutes a boss with guts. +prestige",{pt:"Eles duelam limpo e abrem os telejornais: o paddock celebra um chefe com coragem. +prestígio"}))],
      [4,()=>(TPRE(-2.5),TPCAR(-.5),L("Se tocan y los dos coches vuelven en grúa. El consejo te mira fijamente. −prestigio, −coche","They collide and both cars come home on a truck. The board stares right at you. −prestige, −car",{pt:"Eles se tocam e os dois carros voltam de guincho. O conselho te encara. −prestígio, −carro"}))])}]},
- {id:"tpPago", cond:()=>(S.f1perf[S.tpTeam]||75)<=80 && !isRBJr(S.tpTeam),   // el filial no vende asientos (Carlos, 18-ago)
+ {id:"tpPago",
+  /* 💼 EL PROTEGIDO TIENE NOMBRE Y EL TRASPASO OCURRE (playtest de Carlos, 19-ago: «debería conocer
+     quién es ese piloto y debería forzarse el traspaso si acepto»). El piloto se genera UNA vez y se
+     guarda en S._tpPagoD; aceptar lo sienta DE VERDAD en el asiento de tu piloto más flojo, que sale
+     a la bolsa de agentes libres. Antes el dinero llegaba y la parrilla no se enteraba. */
+  cond:()=>{ if((S.f1perf[S.tpTeam]||75)>80 || isRBJr(S.tpTeam)) return false;   // el filial no vende asientos (Carlos, 18-ago)
+    if(tpDrvs().length<2) return false;   // con un solo titular no hay asiento que vender
+    if(!S._tpPagoD){ const d=mkRookie(true, S.tpTeam); d.skill=irnd(70,74); d.ceil=Math.max(d.skill+2, irnd(76,80)); S._tpPagoD=d; }
+    return true; },
   t:()=>L("El patrocinador exige","The sponsor demands",{pt:"O patrocinador exige"}),
-  d:()=>L("Tu patrocinador principal pone sobre la mesa una ampliación millonaria… con condición: un asiento para su piloto protegido, más maleta que talento.",
-          "Your title sponsor offers a huge extension… with a condition: a seat for their protégé, more suitcase than talent.",
-          {pt:"O seu patrocinador principal põe na mesa uma extensão milionária… com condição: uma vaga para o piloto protegido deles, mais mala do que talento."}),opts:[
-   {l:()=>L("Aceptar el dinero","Take the money",{pt:"Aceitar o dinheiro"}),r:()=>(TPCAR(2),TPRE(-2),
-     L("El túnel de viento estrena piezas pagadas con esa maleta, pero el paddock murmura que tu parrilla se compra. +coche, −prestigio","The wind tunnel gets parts paid with that suitcase, but the paddock mutters your grid is for sale. +car, −prestige",{pt:"O túnel de vento estreia peças pagas com aquela mala, mas o paddock murmura que a sua vaga se compra. +carro, −prestígio"}))},
+  d:()=>{ const p=S._tpPagoD;
+    return L(`Tu patrocinador principal pone sobre la mesa una ampliación millonaria… con condición: un asiento titular para ${p?p.name:"su protegido"}, su piloto protegido — ${p?p.age+" años y":""} más maleta que talento.`,
+             `Your title sponsor offers a huge extension… with a condition: a race seat for ${p?p.name:"their protégé"}, their protected driver — ${p?p.age+" years old and":""} more suitcase than talent.`,
+             {pt:`O seu patrocinador principal põe na mesa uma extensão milionária… com condição: uma vaga de titular para ${p?p.name:"o protegido"}, o piloto protegido deles — ${p?p.age+" anos e":""} mais mala do que talento.`}); },opts:[
+   {l:()=>{ const p=S._tpPagoD; return L(`Aceptar: el dinero manda${p?" — se sienta "+surname(p.name):""}`,`Take it: money talks${p?" — "+surname(p.name)+" gets the seat":""}`,{pt:`Aceitar: o dinheiro manda${p?" — senta "+surname(p.name):""}`}); },
+    r:()=>{ TPCAR(2); TPRE(-2);
+     const p=S._tpPagoD, sl=S.seats[S.tpTeam];
+     const mios=tpDrvs(); const flojo=mios.reduce((a,b)=>((a.skill||0)<=(b.skill||0)?a:b));
+     const idx=sl.indexOf(flojo);
+     if(p && idx>=0){
+       S.freeAgents=S.freeAgents||[]; S.freeAgents.push(flojo);
+       p.tpc=2; p.yrs=0; sl[idx]=p; S.dpool.push(p); S._tpPagoD=null;
+       return L(`El túnel de viento estrena piezas pagadas con esa maleta. ${surname(p.name)} se sienta en el coche de ${surname(flojo.name)}, que sale del equipo con el finiquito en la mano — y el paddock murmura que tu parrilla se compra. +coche, −prestigio`,
+                `The wind tunnel gets parts paid with that suitcase. ${surname(p.name)} takes ${surname(flojo.name)}'s car, who leaves with his severance in hand — and the paddock mutters your grid is for sale. +car, −prestige`,
+                {pt:`O túnel de vento estreia peças pagas com aquela mala. ${surname(p.name)} senta no carro de ${surname(flojo.name)}, que sai da equipe com a rescisão na mão — e o paddock murmura que a sua vaga se compra. +carro, −prestígio`});
+     }
+     return L("El túnel de viento estrena piezas pagadas con esa maleta, pero el paddock murmura que tu parrilla se compra. +coche, −prestigio","The wind tunnel gets parts paid with that suitcase, but the paddock mutters your grid is for sale. +car, −prestige",{pt:"O túnel de vento estreia peças pagas com aquela mala, mas o paddock murmura que a sua vaga se compra. +carro, −prestígio"}); }},
    {l:()=>L("«Aquí se corre por mérito»","«Here you earn your seat»",{pt:"«Aqui se corre por mérito»"}),r:()=>roll(
      [6,()=>(TPRE(1.5),L("La frase se hace camiseta entre la afición. El presupuesto sufre, tu autoridad no. +prestigio","The line ends up on fan T-shirts. The budget suffers, your authority doesn't. +prestige",{pt:"A frase vira camiseta na torcida. O orçamento sofre, a sua autoridade não. +prestígio"}))],
      [4,()=>(TPRE(1),TPCAR(-1),L("El patrocinador se lleva parte del dinero y el desarrollo se resiente… pero el vestuario te compraría entradas. +prestigio, −coche","The sponsor pulls part of the money and development suffers… but the garage would buy tickets to watch you. +prestige, −car",{pt:"O patrocinador leva parte do dinheiro e o desenvolvimento sofre… mas a garagem pagaria ingresso por você. +prestígio, −carro"}))])}]},
