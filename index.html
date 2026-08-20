@@ -11591,6 +11591,53 @@ const TP_DILEMAS=[
          return L(`Lo tuyo con ${j} se filtra a la prensa con detalles que solo sabíais los tres. El vestuario se parte en bandos y cada rueda de prensa es un campo de minas. −−prestigio, −moral de ${j}`,
                   `Your row with ${j} leaks to the press with details only the three of you knew. The dressing room splits into camps and every press conference is a minefield. −−prestige, −${j}'s morale`,
                   {pt:`A sua conversa com ${j} vaza para a imprensa com detalhes que só vocês três sabiam. O vestiário racha em lados e cada coletiva vira um campo minado. −−prestígio, −moral de ${j}`});}]);}}]},
+ /* ══ 🧑‍🔧 TRAE A TU GENTE (REVISADO por Carlos en el doc de 204 dilemas; inspirado en Ross Brawn
+    llevándose a Byrne a Ferrari). Abre un eje que el modo jefe NO tocaba: tu GENTE técnica —
+    ingenieros, estrategas, diseñadores—, no pilotos ni coche por sí solo.
+    Condición EXACTA de Carlos: «en tu primer contrato eres novato, no tienes gente que traer. Pero si
+    cambias 1 vez de equipo, sí puede encajar; idealmente en tu tercer o cuarto contrato». → hace falta
+    tener un EQUIPO ANTERIOR (`tpStints.length>=2`) y estar en el PRIMER año del nuevo (acabas de
+    llegar, es cuando montas tu estructura). Una vez por carrera (lo garantiza `usedDilemmas`).
+    Es una apuesta de VARIANZA: traerlos puede disparar el coche o resquebrajar el departamento; la
+    otra opción es segura y modesta. */
+ {id:"tpDreamTeam",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+    const st=S.tpStints||[]; if(st.length<2) return false;
+    const cur=st[st.length-1]; if(!cur || (yearNow()-cur.y0)>1) return false;   // solo el 1er año del nuevo equipo
+    // el equipo anterior distinto del actual, y que siga existiendo para poder nombrarlo
+    let prev=null; for(let i=st.length-2;i>=0;i--){ if(st[i].team!==S.tpTeam){ prev=st[i].team; break; } }
+    if(!prev) return false;
+    S._tpDreamFrom=prev; return true; },
+  t:()=>L("Trae a tu gente","Bring your people",{pt:"Traga a sua gente"}),
+  d:()=>{ const de=S._tpDreamFrom||"tu antiguo equipo";
+    return L(`Media docena de ingenieros y estrategas de ${de} te seguirían a ${S.tpTeam} con una llamada. Cuesta una fortuna en fichajes y finiquitos, y desplazarían a gente que ya está aquí y no lo va a encajar callada. Pero es tu gente.`,
+             `Half a dozen engineers and strategists from ${de} would follow you to ${S.tpTeam} with one phone call. It costs a fortune in signings and payoffs, and it would push out people already here who won't take it quietly. But they're your people.`,
+             {pt:`Meia dúzia de engenheiros e estrategistas da ${de} te seguiriam à ${S.tpTeam} com um telefonema. Custa uma fortuna em contratações e rescisões, e deslocaria gente que já está aqui e não vai engolir calada. Mas é a sua gente.`}); },
+  opts:[
+   {l:()=>L("Traerlos: es tu gente de confianza","Bring them: they're your trusted people",{pt:"Trazê-los: é a sua gente de confiança"}),
+    r:()=>{ const de=S._tpDreamFrom||"tu antiguo equipo";
+      return roll(
+       [5,()=>{TPTGT(2.5);TPCAR(1);TPRE(-1);
+         return L(`Se adaptan en seis meses y el coche es otro: la lectura de carrera del muro no se compra en el mercado, se trae. Ha costado una fortuna y el consejo lo sabe, pero funciona. +proyecto, +coche, −prestigio`,
+                  `They settle in within six months and the car is transformed: pit-wall race-craft can't be bought on the market, it's brought. It's cost a fortune and the board knows it, but it works. +project, +car, −prestige`,
+                  {pt:`Se adaptam em seis meses e o carro é outro: a leitura de corrida do muro não se compra no mercado, se traz. Custou uma fortuna e o conselho sabe, mas funciona. +projeto, +carro, −prestígio`});}],
+       [4,()=>{TPCAR(-1);TPRE(-1.5);
+         return L(`Los que desplazaste no se van callados y los tuyos tardan en encajar: durante un año hay dos escuelas discutiendo en cada reunión y el coche llega tarde a todo. −coche, −prestigio`,
+                  `The people you pushed out don't leave quietly and yours take time to bed in: for a year there are two schools arguing in every meeting and the car is late to everything. −car, −prestige`,
+                  {pt:`Os que você deslocou não saem calados e os seus demoram a encaixar: durante um ano há duas escolas discutindo em cada reunião e o carro chega atrasado a tudo. −carro, −prestígio`});}])}},
+   {l:()=>L("Mantener la estructura de aquí","Keep the structure that's here",{pt:"Manter a estrutura daqui"}),
+    r:()=>roll(
+     [5,()=>{TPCAR(1);TPRE(.5);
+       return L("Apuestas por la gente que ya estaba y responde: el coche mejora sin dramas y el departamento te lo agradece con lealtad. +coche, +prestigio leve",
+                "You back the people already here and they respond: the car improves without drama and the department repays you with loyalty. +car, slight +prestige",
+                {pt:"Você aposta na gente que já estava e ela responde: o carro melhora sem dramas e o departamento retribui com lealdade. +carro, +prestígio leve"});}],
+     [4,()=>L("La estructura de siempre da lo que da: un año de transición, ni brillante ni malo. Sin cambios.",
+              "The existing structure gives what it gives: a transition year, neither brilliant nor bad. No change.",
+              {pt:"A estrutura de sempre dá o que dá: um ano de transição, nem brilhante nem ruim. Sem mudanças."})],
+     [1,()=>{TPTGT(-1);
+       return L("Sin savia nueva, el desarrollo se estanca: los rivales traen ideas y tú repites las tuyas. −proyecto",
+                "Without fresh blood, development stalls: rivals bring ideas and you repeat yours. −project",
+                {pt:"Sem sangue novo, o desenvolvimento estagna: os rivais trazem ideias e você repete as suas. −projeto"});}])}]},
 ];
 function pickTPDilemma(){
   // 🧪 en un escenario de prueba manda EL dilema que se quiere revisar (mismo criterio que pickDilemma)
