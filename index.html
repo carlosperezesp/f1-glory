@@ -971,6 +971,16 @@ let LANG = (function(){ try{ const l=localStorage.getItem("f1lang")||"es"; retur
 const BETA = (function(){ try{
   return location.protocol!=="file:" && !/(^|\.)f1-glory\.com$/.test(location.hostname);
 }catch(e){ return false; } })();
+/* 🔒 DEMO PÚBLICA DEL MODO JEFE (rama demo-tp, 20-ago). Esta constante SOLO existe aquí: la beta
+   completa vive en sistema-coche y no lleva ni el flag. Capa el juego a: solo modo TP, 6 temporadas. */
+const DEMO_TP = true;
+function demoLockUI(){
+  if(typeof DEMO_TP==="undefined" || !DEMO_TP) return;
+  try{
+    const cta=document.querySelector("button[onclick=\"startCareerFlow('2026')\"]"); if(cta) cta.style.display="none";
+    ["challengeCard","challengeGrid","retroCard","decadeGrid"].forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display="none"; });
+  }catch(e){}
+}
 const PREVIEW = (function(){ try{
   const p=new URLSearchParams(location.search).get("preview");
   if(p==="off"){ localStorage.removeItem("f1g_preview"); return false; }
@@ -1062,6 +1072,7 @@ function setLang(l){
   // reto → le devolvía el «Próximamente» y se perdía la cuenta atrás (lo cazó Carlos). Hay que repintar
   // los lanzamientos DESPUÉS de applyLang, siempre.
   try{ refreshReleases(); }catch(e){}
+  demoLockUI();   // 🔒 demo: por si applyLang re-enseñó algo
   // 📲 el aviso de instalar se escribe por JS, así que no lo cubren los data-es/data-en
   try{ const h=document.getElementById("installHint"); if(h && h._pinta) h._pinta(); }catch(e){}
   // re-render de lo que esté en pantalla (si hay partida)
@@ -2124,6 +2135,8 @@ const ERAS = {
      · Alpine SÍ hereda el de Renault: ahí es el mismo equipo con otro nombre.
    Fuente: listas de campeones de constructores y de pilotos de Wikipedia, por CHASIS (no por motor:
    los 12 títulos «de Renault» como fabricante son de Williams, Renault y Red Bull, no de un equipo). */
+void 0;
+try{ demoLockUI(); }catch(e){}   // 🔒 demo: la portada se capa nada más pintarse
 const PALMARES = {
   "Ferrari":  {c:[1961,1964,1975,1976,1977,1979,1982,1983,1999,2000,2001,2002,2003,2004,2007,2008],
                d:[1952,1953,1956,1958,1961,1964,1975,1977,1979,2000,2001,2002,2003,2004,2007]},
@@ -2436,7 +2449,9 @@ function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
-function startCareerFlow(era){ CHALLENGE=null; TP_MODE=false;
+function startCareerFlow(era){
+  if(typeof DEMO_TP!=="undefined" && DEMO_TP){ startTPFlow(); return; }   // 🔒 demo: solo modo jefe
+  CHALLENGE=null; TP_MODE=false;
   if(TEST_MODE && TESTS[TEST_MODE] && TESTS[TEST_MODE].era) era=TESTS[TEST_MODE].era; SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
 // 🕰️ Modo Retro: la tarjeta despliega el selector de décadas (2010 y 2020 jugables; el resto, en camino)
 function toggleRetro(){
@@ -10149,6 +10164,7 @@ function tpAsientoLinea(i){
 }
 function tpMercado(){
   if(S.retired) return;
+  if(typeof DEMO_TP!=="undefined" && DEMO_TP && (S.seasons||[]).length>=6){ S._demoFin=true; endTPCareer(); return; }
   const abiertos=tpAbiertos();
   if(!abiertos.length){ tpProbadorHueco(); return; }
   const nAb=abiertos.length;
@@ -10689,6 +10705,7 @@ function tpSignDriver(i,c){
 /* la DECISIÓN DE RUMBO: el mando que en el clásico era el dilema `nuevoJefe` — aquí el jefe eres tú */
 function tpRumboScreen(){
   if(S.retired) return;
+  if(typeof DEMO_TP!=="undefined" && DEMO_TP && (S.seasons||[]).length>=6){ S._demoFin=true; endTPCareer(); return; }
   const tn=S.tpTeam, perf=Math.round(S.f1perf[tn]||75);
   const ti=trendInfo(tn);
   /* ⭐ el nivel del coche en ESTRELLAS y la tendencia como chip de color (Carlos, 20-ago: fuera el
@@ -11969,6 +11986,9 @@ function endTPCareer(){
   track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
   const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
   $("endName").textContent=sel.flag+" "+pName();
+  if(typeof DEMO_TP!=="undefined" && DEMO_TP && S._demoFin){
+    try{ $("endName").textContent+=" · "+L("🔒 La demo llega hasta aquí (6 temporadas)","🔒 The demo ends here (6 seasons)",{pt:"🔒 A demo termina aqui (6 temporadas)"}); }catch(e){}
+  }
   $("endYears").textContent="🧑‍💼 Team Principal · "+L(`Al mando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} escudería${teams.length===1?"":"s"}`,
     `In charge: ${S.baseYear||2026} – ${yearNow()} · ${yrs} season${yrs===1?"":"s"} · ${teams.length} team${teams.length===1?"":"s"}`,
     {pt:`No comando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} equipe${teams.length===1?"":"s"}`});
