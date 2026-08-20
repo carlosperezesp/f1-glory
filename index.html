@@ -777,8 +777,8 @@ body.conBeta #topBtns{top:44px}
     <div class="card">
       <h3 data-es="Identidad" data-pt="Identidade" data-pl="Tożsamość" data-fr="Identité" data-pt="Identidade" data-en="Identity">Identidad</h3>
       <div class="numplate"><span id="helmetNum"></span></div>
-      <div class="field"><label data-es="Apellido" data-pt="Sobrenome" data-pl="Nazwisko" data-fr="Nom" data-pt="Apelido" data-en="Surname">Apellido</label><input id="inName" maxlength="14" placeholder="Apellido" data-esph="Apellido" data-ptph="Sobrenome" data-plph="Nazwisko" data-frph="Nom" data-enph="Surname" oninput="idChanged()"></div>
-      <div class="field"><label data-es="Dorsal (1-99)" data-pt="Número (1-99)" data-pl="Numer (1-99)" data-fr="Numéro (1-99)" data-pt="Número (1-99)" data-en="Number (1-99)">Dorsal (1-99)</label><input id="inNum" maxlength="2" placeholder="Nº" data-esph="Nº" data-ptph="Nº" data-plph="Nr" data-frph="N°" data-enph="No." inputmode="numeric" oninput="idChanged()"></div>
+      <div class="field"><label data-es="Apellido" data-pt="Sobrenome" data-pl="Nazwisko" data-fr="Nom" data-pt="Apelido" data-en="Surname">Apellido</label><input id="inName" onblur="idBlurIdent()" maxlength="14" placeholder="Apellido" data-esph="Apellido" data-ptph="Sobrenome" data-plph="Nazwisko" data-frph="Nom" data-enph="Surname" oninput="idChanged()"></div>
+      <div class="field"><label data-es="Dorsal (1-99)" data-pt="Número (1-99)" data-pl="Numer (1-99)" data-fr="Numéro (1-99)" data-pt="Número (1-99)" data-en="Number (1-99)">Dorsal (1-99)</label><input id="inNum" onblur="idBlurIdent()" maxlength="2" placeholder="Nº" data-esph="Nº" data-ptph="Nº" data-plph="Nr" data-frph="N°" data-enph="No." inputmode="numeric" oninput="idChanged()"></div>
     </div>
     <div class="card" id="cardChallenge" style="display:none">
       <h3 id="chTitle"></h3>
@@ -3283,7 +3283,7 @@ function renderCountries(){
     const b=document.createElement("button");
     b.innerHTML = `${flg(c[1])} ${countryLabel(c)}`;
     if(sel.country===c[0]) b.classList.add("sel");   // la clave guardada es SIEMPRE la española
-    b.onclick=()=>{ sel.country=c[0]; sel.flag=c[1]; renderCountries(); validateIdentity(); };
+    b.onclick=()=>{ sel.country=c[0]; sel.flag=c[1]; renderCountries(); validateIdentity(); idNextCard("cardCountry"); };
     list.appendChild(b);
   });
 }
@@ -3291,6 +3291,28 @@ function pickStyle(s){
   sel.style=s;
   ["agresivo","tecnico","consistente"].forEach(x=>$("st-"+x).classList.toggle("sel",x===s));
   validateIdentity();
+  idNextCard("cardStyle");
+}
+/* 📱 LA FICHA TE LLEVA DE LA MANO (Carlos, 20-ago): en móvil, al completar una sección la pantalla
+   baja sola a la siguiente — nadie tiene por qué saber que el botón está abajo del todo. Orden:
+   nombre+número → país → estilo → confirmar. OJO: cada modo enseña tarjetas distintas (el jefe no
+   tiene dorsal ni estilo; los retos que reviven a alguien, ni país), así que no se salta a una
+   tarjeta fija sino a la SIGUIENTE VISIBLE. Solo móvil: en pantalla grande se ve todo de un vistazo. */
+function idNextCard(desde){
+  if(!esMovil()) return;
+  const vis=el=>{ try{ return el && el.offsetParent!==null && getComputedStyle(el).display!=="none"; }catch(e){ return false; } };
+  const orden=["cardCountry","cardStyle"];
+  let objetivo=null;
+  for(let k=(desde?orden.indexOf(desde)+1:0); k<orden.length; k++){ const e=$(orden[k]); if(vis(e)){ objetivo=e; break; } }
+  if(!objetivo) objetivo=$("btnConfirm");
+  if(objetivo) setTimeout(()=>{ try{ objetivo.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){} }, 150);
+}
+// nombre y número: solo cuando LOS DOS están llenos (rellene el que rellene primero) — pedido así
+function idBlurIdent(){
+  const nombreOk=$("inName").value.trim().length>=2;
+  const nf=$("inNum");
+  const numOk=!nf || nf.offsetParent===null || nf.value.length>=1;   // en el modo jefe no hay dorsal
+  if(nombreOk && numOk) idNextCard("");
 }
 function validateIdentity(){
   // 🧑‍💼 en TP no hay dorsal ni estilo que validar: con apellido y país basta
