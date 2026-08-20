@@ -143,6 +143,11 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
    En 2×2 quedan equilibradas y centradas. */
 .id-grid.cuatro{grid-template-columns:repeat(2,minmax(0,420px));justify-content:center;align-items:start}
 #identity.challenge .actions{max-width:790px;margin-left:auto;margin-right:auto}
+/* 🔘 los botones de la FICHA son más pequeños que la llamada de la portada: ahí no hay que gritar,
+   solo confirmar. Con el aviso de muertes de los 90 encima, a tamaño grande se comían la pantalla
+   (captura de Carlos). Solo afecta a #identity: «Iniciar carrera» sigue igual de grande. */
+.actions .btn{padding:12px 26px;font-size:15px}
+@media(max-width:520px){ .actions .btn{padding:11px 20px;font-size:14.5px} }
 @media(max-width:900px){.id-grid,.id-grid.duo,.id-grid.cuatro{grid-template-columns:1fr}}
 /* etiquetas fijas del reto: 2×2 en vez de una fila que se desborda */
 #chFixed{display:grid;grid-template-columns:1fr 1fr;gap:7px}
