@@ -3549,7 +3549,7 @@ function mkRookie(noCross, forTeam){
   // 🎬 llegadas históricas (retro): los pilotos reales debutan ~cuando lo hicieron en la realidad.
   // Si el asiento libre es el de SU equipo real → casi seguro entra ahí; si llevan 2+ años esperando,
   // entran en el primer hueco que salga (Antonelli puede acabar debutando en otro equipo, como pediste).
-  if(S.arrivals && S.arrivals.length){
+  if(!S._forceRookie && S.arrivals && S.arrivals.length){
     const yr=yearNow();
     S.arrivals=S.arrivals.filter(a=>!S.dpool.some(d=>d.name===a.n)); // sin duplicados (p.ej. entró como crossover)
     const due=S.arrivals.filter(a=>a.y<=yr);
@@ -3575,7 +3575,7 @@ function mkRookie(noCross, forTeam){
   }
   // 🏆 crossover: rara vez, una estrella real de otra categoría cruza a la F1 a su EDAD REAL (solo dentro de su ventana).
   // noCross=true (asiento de Racing Bulls): RB solo ficha jóvenes → ahí NUNCA entra un veterano/crossover (Palou y cía.).
-  if(!noCross && S.crossovers && S.crossovers.length && (S.crossoverCount||0)<2 && ch(0.045)){
+  if(!S._forceRookie && !noCross && S.crossovers && S.crossovers.length && (S.crossoverCount||0)<2 && ch(0.045)){
     const yr=yearNow();
     // sin duplicados: si ya entró por otra vía (llegada histórica retro, p.ej. Wehrlein 2016), no cruza
     const elig=S.crossovers.filter(c=>{ const a=yr-c.born; return a>=27 && a<=37 && !S.dpool.some(d=>d.name===c.name); });
@@ -3592,7 +3592,7 @@ function mkRookie(noCross, forTeam){
   }
   let name, flag, born=null, _tech=null;   // _tech = techo propio de la ficha (5º campo), si lo trae
   // 🏎️ si a esta partida le tocó el piloto de un mecenas, entra por aquí, como una promesa más
-  if(S.supDriver && ch(.15)){ name=S.supDriver[0]; flag=S.supDriver[1]; S.supDriver=null; }
+  if(!S._forceRookie && S.supDriver && ch(.15)){ name=S.supDriver[0]; flag=S.supDriver[1]; S.supDriver=null; }
   S.rookies=S.rookies.filter(r=>!S.dpool.some(d=>d.name===r[0])); // purga nombres que ya entraron por otra vía
   // ⏳ cada promesa puede llevar año de «disponible desde» (r[2]) → los Costoya de 2026 no aparecen en 2012:
   // en una partida retro, las promesas de cada década van entrando cuando la línea temporal llega a su época.
@@ -3612,7 +3612,13 @@ function mkRookie(noCross, forTeam){
     if(noCross && r[3] && (_yr-r[3])>26) return false;
     return true;
   });
-  if(name){ /* ya lo puso el bloque del mecenas */ }
+  /* 🔭 la bolsa señala con el dedo: si el jefe eligió una promesa concreta, es ESA (salta los
+     filtros de disponibilidad: la pantalla ya filtró lo que se podía enseñar) */
+  if(S._forceRookie){
+    const _fi=S.rookies.findIndex(r=>r[0]===S._forceRookie); S._forceRookie=null;
+    if(_fi>=0){ const _r=S.rookies.splice(_fi,1)[0]; name=_r[0]; flag=_r[1]; born=_r[3]||null; _tech=_r[4]||null; }
+  }
+  if(name){ /* ya lo puso el bloque del mecenas o la bolsa */ }
   else if(_avail.length){
     let _i=_avail[irnd(0,_avail.length-1)];
     // 🇪🇸 realismo: sin equipo español vivo (HRT), la parrilla no se llena de españoles (máx 3) → se elige otro.
@@ -6910,6 +6916,10 @@ function simSeason(){
   if(S.retired) { S.seasons.push(row); renderTimeline(); renderF1State(); endCareer(); return; }
   if(S.cat!=="ADV" && S.cat!=="TP" && !row.dnp) maybeEvent(row,st); // sin eventos de pista si te perdiste el año entero (ni en el muro: esos son de piloto)
   mktReset();             // 🔒 nadie se ha movido todavía en el mercado de este invierno
+  /* 🆕 foto de los asientos AL CERRAR la temporada: todo el que esté en otro equipo la próxima vez
+     que mires la parrilla es un movimiento de este invierno (petición de Carlos: «ver cómo se mueve
+     el mercado») */
+  S._seatsPrev={}; Object.entries(S.seats||{}).forEach(([t,sl])=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") S._seatsPrev[d.name]=t; }));
   evolveF1(row);
   tpCapFilial();   // 🅱️ tras evolucionar todos, el filial se recorta si se pasó de la madre
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
@@ -7504,6 +7514,8 @@ function bgF1Season(row){
   S.lastChampName=champ.d.name;                    // 👑 idem cuando la F1 corre sin ti
   champ.d.titles=(champ.d.titles||0)+1;
   (champ.d.champYears=champ.d.champYears||[]).push(row.year);
+  // 👑 el título le cuenta: un campeón modesto sale del año hecho otro (confianza, estatus, millaje)
+  if((champ.d.skill||0)<80) champ.d.skill=Math.min(83,(champ.d.skill||72)+irnd(2,4));
   const teamScores={};
   rows.forEach(r=>{teamScores[r.team]=(teamScores[r.team]||0)+r.score;});
   const constrRank=Object.entries(teamScores).sort((a,b)=>b[1]-a[1]);
@@ -7925,7 +7937,8 @@ function simF1(row,st){
     const champ=standings[0];
     S.lastChampName=champ.name;                    // 👑 para que nadie eche al campeón vigente
     if(champ.dref){ champ.dref.titles=(champ.dref.titles||0)+1;
-      (champ.dref.champYears=champ.dref.champYears||[]).push(row.year); }
+      (champ.dref.champYears=champ.dref.champYears||[]).push(row.year);
+      if((champ.dref.skill||0)<80) champ.dref.skill=Math.min(83,(champ.dref.skill||72)+irnd(2,4)); }
     if(pos===2){S.subcamp++; row.events.push(row.fiaTitle?L("🥈 SUBCAMPEÓN: el mundial se te escapó por un fallo de la FIA en tu contra. Duele para siempre. 🏛️","🥈 RUNNER-UP: the title slipped away through an FIA ruling against you. It stings forever. 🏛️",{pt:"🥈 VICE-CAMPEÃO: o mundial escapou por uma decisão da FIA contra você. Dói para sempre. 🏛️"}):L("🥈 Subcampeón del mundo tras "+surname(champ.name)+" — a las puertas de la gloria.","🥈 World runner-up behind "+surname(champ.name)+" — at the gates of glory.",{pt:"🥈 Vice-campeão mundial atrás de "+surname(champ.name)+" — às portas da glória."}));}
   }
   if(constrPos===1){S.titles.constr++; row.events.push(L("🏭 Tu equipo "+myTeam+" gana el Mundial de Constructores.","🏭 Your team "+myTeam+" wins the Constructors' Championship.",{pt:"🏭 A sua equipe "+myTeam+" vence o Mundial de Construtores."}));}
@@ -10134,8 +10147,14 @@ function tpMercado(){
   if(!abiertos.length){ tpProbadorHueco(); return; }
   const nAb=abiertos.length;
   const _colG=(S.team&&S.team.color)||"#c9a227";
+  /* ↔️ INVERTIR EL ORDEN (Carlos, 20-ago: «cambiar asientos: todavía no hay ninguna opción»). Solo
+     con los dos asientos ocupados; el asiento 1 corre con el mejor coche del garaje, así que esto es
+     jerarquía de verdad, no estética. */
+  const _sl=S.seats[S.tpTeam]||[];
+  const _swap=(_sl[0]&&_sl[0]!=="PLAYER"&&_sl[1]&&_sl[1]!=="PLAYER")
+    ? ` <span class="gar-chip" style="border-color:${_colG};cursor:pointer" onclick="tpSwapSeats()">↔️ ${L("invertir orden","swap order",{pt:"inverter ordem"})}</span>` : "";
   const garaje=[tpAsientoLinea(0), tpAsientoLinea(1),
-    `<span class="gar-chip" style="border-color:${_colG}">🧢 ${S.tpReserva?surname(S.tpReserva.name):L("LIBRE","OPEN",{pt:"LIVRE"})}</span>`].join(" ");
+    `<span class="gar-chip" style="border-color:${_colG}">🧢 ${S.tpReserva?surname(S.tpReserva.name):L("LIBRE","OPEN",{pt:"LIVRE"})}</span>`].join(" ")+_swap;
   /* ⚠️ setDecision escribe con textContent: el HTML de la cabecera del garaje (los <b>, el <br>)
      salía LITERAL en pantalla. Se pasa el texto plano a setDecision y el HTML se pinta después. */
   setDecision(L(`✍️ El mercado · ${yearNow()}`,`✍️ The market · ${yearNow()}`,{pt:`✍️ O mercado · ${yearNow()}`})+" · "+S.tpTeam,
@@ -10157,7 +10176,22 @@ function tpMercado(){
   box.appendChild(tpGridBtn());
   tpMercadoPool(abiertos).forEach(c=>{
     const b=document.createElement("button"); b.className="offer";
-    let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️";
+    let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️",dotHTML=null;
+    /* 🎨 inmersión (Carlos): el redondel es el ESCUDO del equipo de origen; y lo tuyo —renovaciones y
+       probador— lleva el borde del color de TU equipo, como los chips del garaje */
+    if(c.kind==="fichar" && c.from) dotHTML=badge(c.from,"dot");
+    if(c.kind==="renew"||c.kind==="probador"){ dotHTML=badge(S.tpTeam,"dot"); b.style.border="2px solid "+((S.team&&S.team.color)||"#c9a227"); }
+    if(c.kind==="pool"){
+      nm="🔭 "+L("Explorar la bolsa","Explore the pool",{pt:"Explorar o pool"});
+      sub1=L("Reservas y cantera: libres, jóvenes y promesas por descubrir","Reserves & academy: free agents, youngsters and unproven prospects",{pt:"Reservas e base: livres, jovens e promessas por descobrir"});
+      sub2=L("Eliges tú a quién llamar","You choose who to call",{pt:"Você escolhe quem chamar"});
+      b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3d8bd4,#1d5b94)">🔭</span>
+        <span class="info"><span class="name">${nm}</span>
+        <span class="sub" style="display:block">${sub1}</span>
+        <span class="sub" style="display:block">${sub2}</span></span>`;
+      b.onclick=()=>tpPoolScreen();
+      box.appendChild(b); return;
+    }
     if(c.kind==="renew"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
@@ -10187,7 +10221,7 @@ function tpMercado(){
                   :("📜3 · "+L("debutante","rookie deal",{pt:"estreante"}));
       dotTxt="🎓";
     }
-    b.innerHTML=`<span class="team-dot dot" style="${dotStyle}">${dotTxt}</span>
+    b.innerHTML=`${dotHTML || `<span class="team-dot dot" style="${dotStyle}">${dotTxt}</span>`}
       <span class="info"><span class="name">${nm}</span>
       <span class="sub" style="display:block">${sub1}</span>
       <span class="sub" style="display:block">${sub2}</span></span>`;
@@ -10301,12 +10335,12 @@ function tpMercadoPool(abiertos){
     });
   });
   pool.sort((a,b)=>(b.odds||0)-(a.odds||0) || (b.d.skill||0)-(a.d.skill||0));
-  const floor = (S._tpNos||0)>=2 ? 0.45 : 0.12;
-  let top=pool.filter(c=>(c.odds||0)>=floor).slice(0,4);
-  if((S._tpNos||0)<2){ const stretch=pool.find(c=>top.indexOf(c)<0 && (c.d.skill||0)>=88); if(stretch) top.push(stretch); }
-  cands.push(...top);
+  /* 🖐️ CINCO OFERTAS DE FUERA, ni una más (Carlos, 20-ago: «renovaciones + 5 ofertas de mix F1 y
+     otras categorías + el botón de la bolsa»). El mix se reparte: el crossover (si tocó) y hasta dos
+     libres ocupan su hueco, y el resto lo llenan los mejores de la parrilla que cogerían el teléfono. */
+  const fuera=[];
   (S.freeAgents||[]).filter(d=>d&&d.name&&noY[d.name]!==yearNow() && ocupantes.indexOf(d.name)<0 && (!soyFilial||esPromesa(d)))
-    .slice(0,2).forEach(d=>cands.push({kind:"libre", d, odds:.9}));
+    .slice(0,2).forEach(d=>fuera.push({kind:"libre", d, odds:.9}));
   /* 🌎 Y A VECES, ALGUIEN DE FUERA DE LA F1 (playtest de Carlos: «debería aparecer también por ahí
      algún piloto de fuera de la F1, los Palou, etc.»). El mismo bote de crossovers del modo clásico,
      con su ventana de edad (27-37) y sin duplicar a quien ya cruzó por otra vía. En el filial no:
@@ -10317,18 +10351,98 @@ function tpMercadoPool(abiertos){
       return a>=27 && a<=37 && !S.dpool.some(d=>d.name===c.name) && noY[c.name]!==yr; });
     if(elig.length){
       const c0=elig[irnd(0,elig.length-1)];
-      cands.push({kind:"cross", d:{name:c0.name, age:yr-c0.born, skill:c0.base, ceil:c0.ceil, titles:0, flag:c0.flag}, odds:.7});
+      fuera.push({kind:"cross", d:{name:c0.name, age:yr-c0.born, skill:c0.base, ceil:c0.ceil, titles:0, flag:c0.flag}, odds:.7});
     }
   }
-  /* 🎓 LA CANTERA TIENE NOMBRE (Carlos, 20-ago: «se tiene que ver quién es ese canterano»). El chaval
-     se sortea UNA vez por invierno y se cachea: mkRookie tiene efectos (consume llegadas históricas y
-     lo mete en el bote de promesas), así que sortearlo en cada repintado cambiaría de niño al volver
-     de la parrilla. Si no lo fichas, se queda en el bote y puede debutar con otro — como en la vida. */
-  if(!S._tpCantera || S._tpCantera.year!==yearNow() || !S._tpCantera.d)
-    S._tpCantera={year:yearNow(), d:mkRookie(true, tn)};
-  cands.push({kind:"rookie", d:S._tpCantera.d});
+  const floor = (S._tpNos||0)>=2 ? 0.45 : 0.12;
+  const hueco=Math.max(0, 5-fuera.length);
+  let top=pool.filter(c=>(c.odds||0)>=floor).slice(0,hueco);
+  if((S._tpNos||0)<2 && top.length && !top.some(c=>(c.d.skill||0)>=88)){
+    const stretch=pool.find(c=>top.indexOf(c)<0 && (c.d.skill||0)>=88);
+    if(stretch) top[top.length-1]=stretch;   // el estirón entra CAMBIANDO a uno, no sumando un 6º
+  }
+  cands.push(...top, ...fuera);
+  /* 🔭 EXPLORAR LA BOLSA (Carlos, 20-ago, segunda vuelta sobre la cantera: «así el juego no elige a
+     uno solo»). El botón abre el pool de reservas y cantera entero — libres, jóvenes con nivel a la
+     vista y promesas a ciegas — y eliges TÚ. Sustituye al canterano fijo de ayer. */
+  cands.push({kind:"pool"});
   return cands;
 }
+/* 🔭 EXPLORAR LA BOLSA. La vitrina de reservas y cantera, pero con teléfono: cada nombre es una
+   oferta de verdad. Tres estanterías — libres (nivel a la vista, aceptan casi seguro), jóvenes del
+   bote (nivel a la vista), y promesas SIN debutar (a ciegas: su nivel se descubre al firmar, que esa
+   es la gracia de apostar por la cantera). */
+function tpPoolScreen(){
+  if(S.retired) return;
+  const tn=S.tpTeam, yr=yearNow();
+  const ab=tpAbiertos();
+  if(!ab.length){ tpMercado(); return; }
+  setDecision("🔭 "+L(`La bolsa · ${yr}`,`The pool · ${yr}`,{pt:`O pool · ${yr}`})+" · "+tn,
+    L("Reservas y cantera. Los niveles de los jóvenes varían cada año; las promesas sin debutar son a ciegas.",
+      "Reserves & academy. Youngsters' levels shift every year; undebuted prospects are a blind bet.",
+      {pt:"Reservas e base. O nível dos jovens varia a cada ano; promessas sem estreia são às cegas."}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const seated=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") seated.add(d.name); }));
+  const noY=S._tpNo||{};
+  const mk=(icono,nm,sub1,sub2,cand)=>{
+    const b=document.createElement("button"); b.className="offer";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3d8bd4,#1d5b94)">${icono}</span>
+      <span class="info"><span class="name">${nm}</span>
+      <span class="sub" style="display:block">${sub1}</span>
+      <span class="sub" style="display:block">${sub2}</span></span>`;
+    b.onclick=()=>{
+      const ab2=tpAbiertos(); if(!ab2.length){ tpMercado(); return; }
+      if(ab2.length<=1){ tpSignDriver(ab2[0].i, cand); return; }
+      tpElegirAsiento(cand, ab2);
+    };
+    box.appendChild(b);
+  };
+  // 1 · agentes libres, con su nivel
+  (S.freeAgents||[]).filter(d=>d&&d.name&&noY[d.name]!==yr).slice(0,3).forEach(d=>{
+    mk("🕊️", `${d.flag||"🏁"} ${d.name}`,
+      L("Agente libre","Free agent",{pt:"Agente livre"})+` · ${tpEtiqueta(d)} · ${d.age} ${L("años","yo",{pt:"anos"})}${d.titles?` · 👑×${d.titles}`:""}`,
+      `📜2 · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`,
+      {kind:"libre", d});
+  });
+  // 2 · jóvenes del bote con nivel a la vista (aún sin asiento en la parrilla)
+  // ⚠️ tu probador NO sale aquí: tiene su propia oferta en el mercado y ficharlo dos veces lo duplicaría
+  (S.dpool||[]).filter(d=>d&&d.name&&!seated.has(d.name)&&(d.age||99)<=28&&(d.skill||0)>=74
+      && noY[d.name]!==yr && !(S.freeAgents||[]).some(f=>f.name===d.name)
+      && !(S.tpReserva && S.tpReserva.name===d.name))
+    .sort((a,b)=>(b.skill||0)-(a.skill||0)).slice(0,4).forEach(d=>{
+    mk("🌱", `${d.flag||"🏁"} ${d.name}`,
+      L("Joven del bote","Pool youngster",{pt:"Jovem do pool"})+` · ${tpEtiqueta(d)} · ${d.age} ${L("años","yo",{pt:"anos"})}`,
+      `📜${((d.age||30)<=24 && (d.ceil||0)>=88)?3:2} · `+tpOddsTag(.85),
+      {kind:"libre", d, odds:.85});
+  });
+  // 3 · promesas sin debutar: a ciegas — el fichaje las materializa (mkRookie con nombre forzado)
+  (S.rookies||[]).filter(r=>(!r[2]||yr>=r[2]) && !(S.dpool||[]).some(d=>d.name===r[0])).slice(0,5).forEach(r=>{
+    const edad=r[3]?` · ${yr-r[3]} ${L("años","yo",{pt:"anos"})}`:"";
+    mk("🎓", `${r[1]||"🏁"} ${r[0]}`,
+      L("Promesa de la cantera","Academy prospect",{pt:"Promessa da base"})+edad,
+      "📜3 · "+L("a ciegas: nivel por confirmar, techo por descubrir","blind bet: level unproven, ceiling unknown",{pt:"às cegas: nível a confirmar, teto a descobrir"}),
+      {kind:"rookie", _force:r[0]});
+  });
+  // volver
+  const v=document.createElement("button"); v.className="offer retire";
+  v.innerHTML=`<span class="team-dot dot" style="background:#71717c">↩️</span>
+    <span class="info"><span class="name">${L("Volver al mercado","Back to the market",{pt:"Voltar ao mercado"})}</span></span>`;
+  v.onclick=()=>tpMercado();
+  box.appendChild(v);
+  scrollToDecision();
+}
+
+function tpSwapSeats(){
+  const sl=S.seats[S.tpTeam]||[];
+  if(!sl[0]||sl[0]==="PLAYER"||!sl[1]||sl[1]==="PLAYER") return;
+  const a=sl[0]; sl[0]=sl[1]; sl[1]=a;
+  S.pendingEvents.push(L(`↔️ Reordenas el garaje: ${surname(sl[0].name)} pasa a ser tu Nº1 y ${surname(sl[1].name)} lo escolta.`,
+    `↔️ You reshuffle the garage: ${surname(sl[0].name)} becomes your No.1 with ${surname(sl[1].name)} riding shotgun.`,
+    {pt:`↔️ Você reordena a garagem: ${surname(sl[0].name)} vira o seu Nº1 e ${surname(sl[1].name)} o escolta.`}));
+  tpMercado();
+}
+
 /* 🧢 EL HUECO DEL PROBADOR, EXPLÍCITO (encargo de Carlos: «hoy es implícito»). Solo aparece cuando se
    vacía —lo ascendiste, o colgó el mono—, nunca cada invierno. Dos sabores con dientes: el canterano
    que crece esperando, o un veterano ACABADO de la bolsa —el Gené/De la Rosa de la vida: te da un
@@ -10497,9 +10611,8 @@ function tpSignDriver(i,c){
     /* 🐞 O'WARD CON 36 EN «APOSTAR POR LA CANTERA» (cazado por Carlos): mkRookie(false,...) permitía
        CROSSOVERS —pilotos reales de otras categorías, con su edad real—. Una apuesta de cantera es un
        JOVEN por definición: noCross=true salta los crossovers y limita el bote a ≤26. */
-    d=(c.d && S._tpCantera && S._tpCantera.d===c.d) ? c.d : mkRookie(true, tn);
-    S._tpCantera=null;   // el sorteo del invierno queda consumido
-    d.tpc=3;
+    if(c._force) S._forceRookie=c._force;   // la promesa elegida a dedo en la bolsa
+    d=mkRookie(true, tn); d.tpc=3;
     if(S.tpGem){ d.ceil=Math.max(d.ceil||0, irnd(93,96)); d.skill=Math.max(d.skill, 78); S.tpGem=false;
       S.pendingEvents.push(L(`🎓 Debuta ${d.name}, la joya de tu academia. El paddock ya habla de él.`,
         `🎓 ${d.name} debuts — your academy's crown jewel. The paddock is already talking.`,
@@ -10515,10 +10628,52 @@ function tpSignDriver(i,c){
      hueco libre; mismo pecado que el flojo del veterano con prisa). Ahora sale a agentes libres. */
   const _prev=sl[i];
   if(_prev && _prev!=="PLAYER" && (!d || _prev.name!==d.name)){
-    S.freeAgents=S.freeAgents||[]; S.freeAgents.push(_prev);
-    S.pendingEvents.push(L(`🚪 ${surname(_prev.name)} se queda sin asiento: nadie renovó su contrato.`,
-      `🚪 ${surname(_prev.name)} is left without a seat: nobody renewed his contract.`,
-      {pt:`🚪 ${surname(_prev.name)} fica sem assento: ninguém renovou o contrato.`}));
+    /* 👑 CASO AL-AZHARI (Carlos, 20-ago): largó a su campeón del mundo «por probar» y el tipo se
+       quedó criando polvo en la vitrina. No es realista: un campeón vigente no espera tu llamada.
+       Joven → un rival lo ficha ese mismo invierno (y su desplazado sale a la bolsa). Veterano →
+       se lleva la corona a otra categoría, por la puerta grande. Sin corona: a la bolsa, como antes. */
+    let _colocado=false;
+    if((_prev.titles||0)>0){
+      if((_prev.age||30)>=33){
+        const serie=TP_FUERA[irnd(0,TP_FUERA.length-1)]();
+        S.crossovers=S.crossovers||[];
+        if(!S.crossovers.some(c=>c.name===_prev.name))
+          S.crossovers.push({name:_prev.name, flag:_prev.flag||"🏁", born:yearNow()-(_prev.age||34),
+            base:Math.min(88,(_prev.skill||80)), ceil:Math.min(92,Math.max((_prev.skill||80)+2,(_prev.ceil||84)))});
+        _colocado=true;
+        S.pendingEvents.push(L(`👑 ${surname(_prev.name)}, campeón del mundo, no espera a nadie: se lleva la corona ${serie}.`,
+          `👑 ${surname(_prev.name)}, a world champion, waits for no one: he takes his crown to ${serie}.`,
+          {pt:`👑 ${surname(_prev.name)}, campeão do mundo, não espera ninguém: leva a coroa ${serie}.`}));
+      } else {
+        // un rival lo caza: primero un asiento vacío; si no, desplaza al más flojo de la parrilla
+        const tnMe=S.tpTeam; let dest=null, dj=-1, victima=null;
+        Object.entries(S.seats).forEach(([t2,s2])=>{
+          if(t2===tnMe || !Array.isArray(s2) || dest) return;
+          const jv=s2.findIndex(x=>!x);
+          if(jv>=0){ dest=t2; dj=jv; }
+        });
+        if(!dest){
+          let peor=99;
+          Object.entries(S.seats).forEach(([t2,s2])=>{
+            if(t2===tnMe || !Array.isArray(s2)) return;
+            s2.forEach((x,j2)=>{ if(x && x!=="PLAYER" && !x.beast && (x.skill||0)<peor && (x.titles||0)===0){ peor=x.skill||0; dest=t2; dj=j2; victima=x; } });
+          });
+        }
+        if(dest){
+          if(victima){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(victima); }
+          _prev.tpc=2; _prev.yrs=0; S.seats[dest][dj]=_prev; _colocado=true;
+          S.pendingEvents.push(L(`🧲 ${surname(_prev.name)} no dura ni dos semanas sin equipo: ${dest} ficha al campeón que tú dejaste ir.`,
+            `🧲 ${surname(_prev.name)} doesn't last two weeks without a seat: ${dest} signs the champion you let go.`,
+            {pt:`🧲 ${surname(_prev.name)} não fica nem duas semanas sem equipe: a ${dest} contrata o campeão que você deixou ir.`}));
+        }
+      }
+    }
+    if(!_colocado){
+      S.freeAgents=S.freeAgents||[]; S.freeAgents.push(_prev);
+      S.pendingEvents.push(L(`🚪 ${surname(_prev.name)} se queda sin asiento: nadie renovó su contrato.`,
+        `🚪 ${surname(_prev.name)} is left without a seat: nobody renewed his contract.`,
+        {pt:`🚪 ${surname(_prev.name)} fica sem assento: ninguém renovou o contrato.`}));
+    }
   }
   sl[i]=d;
   S._tpFirmadoTxt=S.pendingEvents[S.pendingEvents.length-1]||null;   // la confirmación viaja al rumbo
@@ -10613,12 +10768,14 @@ function tpRepartoScreen(){
      salen cinco en los tres ejes: cierto, pero inútil para decidir —repite lo que ya sabes del nivel
      y esconde la FORMA del coche—. Así que junto a la estrella va la inclinación DENTRO de tu propio
      coche: dónde has apostado y dónde has recortado. Eso es lo que esta pantalla decide. */
+  /* las etiquetas dicen QUÉ HACE TU FÁBRICA con cada frente (Carlos: «no entiendo "tu gran apuesta"
+     y "recortado"»): dónde estás metiendo el dinero de más, y de dónde lo estás quitando para pagarlo */
   const incl=e=>{ const v=pr[e];
-    return v>=2 ? L("◆◆ tu gran apuesta","◆◆ your big bet",{pt:"◆◆ a sua grande aposta"})
-         : v===1 ? L("◆ apoyado","◆ favoured",{pt:"◆ favorecido"})
-         : v===0 ? L("· equilibrado","· balanced",{pt:"· equilibrado"})
-         : v===-1 ? L("▽ recortado","▽ trimmed",{pt:"▽ cortado"})
-         :          L("▽▽ sacrificado","▽▽ sacrificed",{pt:"▽▽ sacrificado"}); };
+    return v>=2 ? L("◆◆ aquí va el dinero de más","◆◆ extra money goes here",{pt:"◆◆ o dinheiro extra vai aqui"})
+         : v===1 ? L("◆ algo más de dinero","◆ a bit more money",{pt:"◆ um pouco mais de dinheiro"})
+         : v===0 ? L("· presupuesto normal","· normal budget",{pt:"· orçamento normal"})
+         : v===-1 ? L("▽ le quitas dinero","▽ money taken from here",{pt:"▽ você tira dinheiro daqui"})
+         :          L("▽▽ pagas lo demás con esto","▽▽ this pays for the rest",{pt:"▽▽ isto paga o resto"}); };
   const resumen=PROF_EJES.map(e=>`${EJE_NOMBRE[e]()} ${est(e).txt} ${incl(e)}`).join(" · ");
   setDecision(L(`🔧 ¿Dónde ponemos el esfuerzo? · ${yearNow()}`,`🔧 Where do we put the effort? · ${yearNow()}`,{pt:`🔧 Onde colocamos o esforço? · ${yearNow()}`})+" · "+tn,
     L(`Tu coche hoy: ${resumen}. Empujar un frente significa recortar en otro — la fábrica no da para todo.`,
@@ -10637,7 +10794,8 @@ function tpRepartoScreen(){
     const tope = tope5 || pr[eje]>=2 || !otros.length;
     const baja = otros.sort((a,b)=>pr[b]-pr[a])[0]; // se recorta de donde hoy sobra
     const b=document.createElement("button"); b.className="offer dilemma"+(tope?" retire":"");
-    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">🔧</span>
+    const _ejeEmoji={motor:"⚙️", aero:"🌬️", fiab:"🛡️"}[eje]||"🔧";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${_ejeEmoji}</span>
       <span class="info"><span class="name">${EJE_NOMBRE[eje]()} ${e.txt} <span style="font-weight:600;opacity:.75">${incl(eje)}</span></span>
       <span class="sub" style="display:block">${EJE_QUE_HACE[eje]()}</span>
       <span class="sub" style="display:block">${tope
@@ -11767,7 +11925,9 @@ function renderTPGrid(){
       if(d==="PLAYER") return "";
       const rk=S.rankD&&S.rankD[d.name]?` · ${S.rankD[d.name]}º`:"";
       const con=(mine&&d.tpc!=null)?` · 📜${Math.max(0,d.tpc)}`:"";
-      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
+      // 🆕 debuta con este equipo este año: no estaba aquí al cerrar la temporada pasada
+      const nuevo=(S._seatsPrev && S._seatsPrev[d.name]!==t.name)?" 🆕":"";
+      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)}${nuevo} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
     }).join(" ");
     const pos=ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"";
     html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;${mine?"outline:2px solid #e10600;border-radius:10px":""}">
@@ -11776,7 +11936,7 @@ function renderTPGrid(){
   });
   const resv=tpReservePool();
   if(resv.length){
-    html+=`<div class="pt-tier">🧢 ${L("Reservas y cantera","Reserves & academy",{pt:"Reservas e base"})}</div>`;
+    html+=`<div class="pt-tier">🧢 ${L("Reservas y cantera","Reserves & academy",{pt:"Reservas e base"})} <span style="font-weight:400;color:var(--muted);font-size:11px">· ${L("varía cada año","shifts every year",{pt:"varia a cada ano"})}</span></div>`;
     html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;font-size:12.5px">`+resv.map(x=>`<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${x}</span>`).join(" ")+`</div>`;
   }
   el.innerHTML=html;
@@ -11785,13 +11945,13 @@ function tpReservePool(){
   const out=[];
   const seated=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") seated.add(d.name); }));
   // libres con nivel (vía Albon) y jóvenes del pool sin asiento
-  (S.freeAgents||[]).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b> · ${L("libre","free",{pt:"livre"})}`));
+  (S.freeAgents||[]).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b>${d.titles?` 👑×${d.titles}`:""} · ${L("libre","free",{pt:"livre"})}`));
   (S.dpool||[]).filter(d=>d&&d.name&&!seated.has(d.name)&&(d.age||99)<=28&&(d.skill||0)>=74&&!(S.freeAgents||[]).some(f=>f.name===d.name))
-    .slice(0,4).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b> · ${d.age}`));
+    .slice(0,4).forEach(d=>out.push(`${d.flag||"🏁"} ${surname(d.name)} <b>${tpEtiqueta(d)}</b>${d.titles?` 👑×${d.titles}`:""} · ${d.age}`));
   // las promesas de la cantera aún sin debutar: nombre y bandera; su nivel se descubre al firmar
   const yr=yearNow();
   (S.rookies||[]).filter(r=>!r[2]||yr>=r[2]).slice(0,6)
-    .forEach(r=>out.push(`${r[1]||"🏁"} ${r[0]} · ${L("promesa","prospect",{pt:"promessa"})}`));
+    .forEach(r=>out.push(`${r[1]||"🏁"} ${r[0]}${r[3]?` · ${yr-r[3]}`:""} · ${L("promesa","prospect",{pt:"promessa"})}`));
   return out.slice(0,12);
 }
 
@@ -11828,7 +11988,12 @@ function endTPCareer(){
   // tus etapas, equipo a equipo (en vez del palmarés de pilotos)
   const stMap={}; (S.tpStints||[]).forEach(s=>{ const k=s.team; (stMap[k]=stMap[k]||{y0:s.y0,y1:s.y1,constr:0,drv:0}); stMap[k].y1=s.y1; stMap[k].constr+=s.constr; stMap[k].drv+=s.drv; });
   $("hallFame").innerHTML="<h4>"+L("🧑‍💼 Tus etapas en el muro","🧑‍💼 Your pit-wall chapters",{pt:"🧑‍💼 As suas etapas no muro"})+"</h4>"+
-    (S.tpStints||[]).map(s=>`<div class="hrow"><span class="nm">${teamBadge(s.team,s.y0)||""} ${s.team} <span style="color:var(--muted)">'${String(s.y0).slice(2)}–'${String(s.y1).slice(2)}</span></span><span class="tt">${s.constr?"🏎️×"+s.constr+" ":""}${s.drv?"🏆×"+s.drv:""}${(!s.constr&&!s.drv)?"—":""}</span></div>`).join("");
+    (S.tpStints||[]).map(s=>{
+      /* 📊 la posición del equipo cada año de la etapa (Carlos: «¿por qué no me muestras la posición
+         global del equipo cada año?») — sale de las filas de temporada, donde row.pos es constructores */
+      const _posiciones=(S.seasons||[]).filter(r=>r.year>=s.y0&&r.year<=s.y1&&r.pos!=null).map(r=>r.pos+"º").join(" ");
+      return `<div class="hrow"><span class="nm">${teamBadge(s.team,s.y0)||""} ${s.team} <span style="color:var(--muted)">'${String(s.y0).slice(2)}–'${String(s.y1).slice(2)}</span>${_posiciones?` <span style="color:var(--muted);font-size:11.5px">· ${_posiciones}</span>`:""}</span><span class="tt">${s.constr?"🏎️×"+s.constr+" ":""}${s.drv?"🏆×"+s.drv:""}${(!s.constr&&!s.drv)?"—":""}</span></div>`;
+    }).join("");
   const avgOver=(S.tpOverSum||0)/Math.max(1,yrs);
   let legacy,verdict;
   if(C>=3 || (C>=2&&D>=2)){ legacy=L("ARQUITECTO DE UNA DINASTÍA","ARCHITECT OF A DYNASTY",{pt:"ARQUITETO DE UMA DINASTIA"});
