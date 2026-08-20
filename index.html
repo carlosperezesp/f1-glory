@@ -9935,6 +9935,7 @@ function tpYearStart(){
   if(S.retired) return;
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
+  tpBolsaSeCansa();      // ⏳ y el que salió a buscar asiento y no lo encuentra, cruza fuera de la F1
   /* 🧑‍💼 SALIDAS PACTADAS EL AÑO PASADO (dilemas «vienen a por tu estrella» y «dos gallos»). El piloto
      corrió su última temporada contigo y AHORA se va de verdad: se le vacía el asiento ANTES de armar
      la cola, para que el invierno te ofrezca la terna en vez de proponerte renovar a quien ya vendiste.
@@ -11001,14 +11002,12 @@ function tpProbadorInvierno(){
       S.tpReserva=null; delete r.probador;
       if((r.skill||70)>=74){
         S.freeAgents=S.freeAgents||[]; S.freeAgents.push(r);
+        r.esperandoDesde=yearNow();   // ⏳ si el mercado no le da asiento, acabará cruzando fuera (tpBolsaSeCansa)
         S.pendingEvents.push(L(`🧢 El contrato de ${surname(r.name)} vence y no renueva: quiere pista de verdad y sale al mercado a buscarla.`,
           `🧢 ${surname(r.name)}'s deal expires and he won't renew: he wants real track time and hits the market to find it.`,
           {pt:`🧢 O contrato de ${surname(r.name)} vence e ele não renova: quer pista de verdade e sai ao mercado atrás disso.`}));
       } else {
-        const serie=[L("la IndyCar","IndyCar",{pt:"a IndyCar"}),L("la Fórmula E","Formula E",{pt:"a Fórmula E"}),L("la resistencia","endurance racing",{pt:"o endurance"})][irnd(0,2)];
-        S.pendingEvents.push(L(`🧢 ${surname(r.name)} se cansa de esperar un debut que no llega: se marcha a ${serie}.`,
-          `🧢 ${surname(r.name)} tires of waiting for a debut that never comes: he leaves for ${serie}.`,
-          {pt:`🧢 ${surname(r.name)} cansa de esperar uma estreia que não chega: vai embora para ${serie}.`}));
+        tpSeVaFuera(r);
       }
       if(isRBJr(S.tpTeam)) tpCrearProbador();
     } else {
@@ -11018,6 +11017,52 @@ function tpProbadorInvierno(){
         {pt:`🧢 ${surname(r.name)} renova como reserva por mais dois anos: segue acreditando que a chance sairá aqui.`}));
     }
   }
+}
+/* 🌎 EL PROBADOR QUE SE CANSA DE ESPERAR — Y QUE PUEDE VOLVER (idea de Carlos, 19-ago: «si un novato
+   se va a la Fórmula E, ¿luego podría volver a aparecer en el pool?»).
+   Antes se narraba su marcha y desaparecía del mundo para siempre. Ahora entra al BOTE DE CROSSOVERS,
+   que es exactamente la maquinaria que ya existe para la gente que compite fuera de la F1 y cruza
+   entre los 27 y los 37 — de donde salen Palou y compañía.
+   Dos cables, y los dos importan:
+   · se le calcula el año de nacimiento desde su edad de hoy, que es lo que el bote usa para su ventana;
+   · y se le SACA del censo (`S.dpool`), porque el filtro anti-duplicados del bote mira ahí: si se
+     queda dentro, no volvería jamás.
+   Vuelve MEJOR de lo que se fue —se ha ido a competir, no a jubilarse— y con más techo. La historia se
+   cierra sola: tu probador se cansó, se fue, se hizo un nombre, y años después te lo encuentras en el
+   mercado del jefe pidiendo asiento titular, o de rival en el modo clásico. */
+/* ⚠️ la preposición va DENTRO de cada categoría: en español «a la IndyCar» pero «al DTM», y en
+   portugués «para a IndyCar» pero «para o DTM». Concatenar «a » + nombre daba «se marcha a el DTM». */
+const TP_FUERA=[
+  ()=>L("a la IndyCar","for IndyCar",{pt:"para a IndyCar"}),
+  ()=>L("a la Fórmula E","for Formula E",{pt:"para a Fórmula E"}),
+  ()=>L("a la resistencia","for endurance racing",{pt:"para o endurance"}),
+  ()=>L("a la Super Fórmula japonesa","for Japanese Super Formula",{pt:"para a Super Fórmula japonesa"}),
+  ()=>L("al DTM","for the DTM",{pt:"para o DTM"}),
+];
+function tpSeVaFuera(r){
+  const serie=TP_FUERA[irnd(0,TP_FUERA.length-1)]();
+  const edad=r.age||22;
+  const base=Math.min(88, Math.round((r.skill||72)+rnd(4,8)));
+  const techo=Math.min(92, Math.max(base+2, Math.round((r.ceil||80)+rnd(2,5))));
+  S.crossovers=S.crossovers||[];
+  if(!S.crossovers.some(c=>c.name===r.name))
+    S.crossovers.push({name:r.name, flag:r.flag||"🏁", born:yearNow()-edad, base, ceil:techo});
+  S.dpool=(S.dpool||[]).filter(d=>d && d.name!==r.name);   // 🔑 si no, el filtro del bote lo bloquea para siempre
+  S.pendingEvents.push(L(`🧢 ${surname(r.name)} se cansa de esperar un debut que no llega: se marcha ${serie}. Si le va bien, el paddock volverá a oír su nombre.`,
+    `🧢 ${surname(r.name)} tires of waiting for a debut that never comes: he leaves ${serie}. If it goes well, the paddock will hear his name again.`,
+    {pt:`🧢 ${surname(r.name)} cansa de esperar uma estreia que não chega: vai embora ${serie}. Se der certo, o paddock voltará a ouvir o nome dele.`}));
+}
+/* ⏳ LA BOLSA TAMPOCO ES ETERNA. El que sale al mercado a buscar volante y no lo encuentra en dos
+   inviernos hace lo mismo: cruzar fuera. Así ninguna de las dos ramas deja gente flotando para
+   siempre, y las dos pueden volver por el bote. */
+function tpBolsaSeCansa(){
+  const yr=yearNow();
+  (S.freeAgents||[]).slice().forEach(d=>{
+    if(!d || !d.esperandoDesde || yr-d.esperandoDesde < 2) return;
+    S.freeAgents=S.freeAgents.filter(x=>x!==d);
+    delete d.esperandoDesde;
+    tpSeVaFuera(d);
+  });
 }
 function tpDrvs(){ return (S.seats[S.tpTeam]||[]).filter(d=>d&&d!=="PLAYER"); }
 /* 👑 NOMBRAR Nº1 — LO ELIGE EL JUGADOR (petición de Carlos, 17-ago). Antes los dos dilemas que dan
