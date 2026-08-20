@@ -3274,7 +3274,7 @@ function startCareer(){
     palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null, llegadaExp:{}, gigOfrecidos:[],   // 🛌 palmarés vivo + el pacto del gigante dormido
     dilPod:0,              // 🥉 podios ganados en un dilema, a sumar al cerrar la temporada
     role:null, roleTeam:null, roleMate:null,
-    advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
+    advSeries:null, advMarca:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
     regReg:ERA.baseYear+20+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
     regYear:null, regBet:null, regBetGrade:null, regBetRefused:null, regPrepared:null, commitTeam:null, commitYears:0,
@@ -4020,6 +4020,7 @@ function promoteFromReserve(){
   const t=F1_TEAMS.find(x=>x.name===(S.team&&S.team.name));
   if(!t) return false;
   S.team=t; S.cat="F1";
+  S.advMarca=null;   // 🏷️ la afiliación era de la aventura: al volver a la F1 se queda allí
   occupySeat(t.name);
   S.roleTeam=t.name; S.roleMate=teammateOf(t.name).name; S.role=roleFor(t.name);
   S.missRaces=irnd(6,12); // te subiste con la temporada empezada
@@ -4454,6 +4455,33 @@ const SERIES={
   formulae: {from:2014, name:"Fórmula E", nameEn:"Formula E", namePt:"Fórmula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", marqueePt:"título da Fórmula E", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy.", subPt:"Monopostos elétricos em circuitos de rua: energia e estratégia."},
   brasil:   {eras:[[0,"Stock Car Brasil"],[2022,"Stock Car Pro Series"]],
              name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão.", subPt:"Turismos brasileiros, muito disputados. A joia: a Corrida do Milhão."},
+  /* 🇦🇷 TURISMO CARRETERA — la categoría más antigua del mundo en actividad (desde 1937), y la casa
+     espiritual del público argentino del juego. Sin `from`: existe en TODAS las eras. La identidad
+     aquí no es el equipo sino LA MARCA: Ford contra Chevrolet desde antes de la guerra, con Dodge y
+     Torino de terceros en discordia — las «cuatro marcas eternas», todas vigentes hoy. Toyota se sumó
+     en 2022 con el Camry (verificado: debut en Viedma 2022, primera victoria en el Desafío de las
+     Estrellas 2023). La joya es el TÍTULO, como en el DTM: el TC no tiene una carrera-catedral única,
+     tiene una guerra de marcas de ochenta años. */
+  tc:       {name:"Turismo Carretera", em:"🇦🇷", col:"#6CACE4", perf:77, varza:8,
+             marcas:[[0,9999,"Ford"],[0,9999,"Chevrolet"],[0,9999,"Dodge"],[0,9999,"Torino"],[2022,9999,"Toyota"]],
+             marquee:"el título de TC", marqueeEn:"the TC title", marqueePt:"o título do TC", triple:null, decay:1.3,
+             sub:"La categoría más antigua del mundo: Ford contra Chevrolet desde 1937.",
+             subEn:"The world's oldest active category: Ford versus Chevrolet since 1937.",
+             subPt:"A categoria mais antiga do mundo em atividade: Ford contra Chevrolet desde 1937."},
+  /* 🌲 WRC — el Mundial de Rallies existe como campeonato de pilotos desde 1979, así que vive en todas
+     las eras del juego. Es LA disciplina más ajena a un piloto de circuitos (Räikkönen apenas puntuó;
+     Kubica ganó el WRC2, no el WRC), de ahí el `perf` más alto del catálogo y el `decay` duro: la
+     finura de la F1 se oxida rápido entre árboles. Las afiliaciones son los equipos OFICIALES de cada
+     época, con sus ventanas reales: el Grupo A de Lancia y Toyota, la era japonesa de Subaru y
+     Mitsubishi, los años de Peugeot y Citroën, el paréntesis de Volkswagen y el presente de Toyota,
+     Hyundai y el Ford de M-Sport. La joya: Montecarlo, que existe desde 1911. */
+  wrc:      {name:"WRC (Rallies)", nameEn:"WRC (Rallying)", namePt:"WRC (Rali)", em:"🌲", col:"#1e3a5f", perf:84, varza:9,
+             marcas:[[0,1992,"Lancia"],[0,1999,"Toyota"],[2017,9999,"Toyota"],[0,2008,"Subaru"],[0,2005,"Mitsubishi"],
+                     [1993,9999,"Ford"],[1999,2005,"Peugeot"],[2001,2016,"Citroën"],[2012,2016,"Volkswagen"],[2014,9999,"Hyundai"]],
+             marquee:"el Rally de Montecarlo", marqueeEn:"the Monte Carlo Rally", marqueePt:"o Rali de Monte Carlo", triple:null, decay:1.5,
+             sub:"Tierra, asfalto y nieve: otro planeta. La joya: Montecarlo.",
+             subEn:"Gravel, tarmac and snow: another planet. The jewel: Monte Carlo.",
+             subPt:"Terra, asfalto e neve: outro planeta. A joia: Monte Carlo."},
   // «Super Fórmula» solo desde 2013: antes era la Formula Nippon
   // 🇯🇵 F3000 japonesa hasta 1995, Formula Nippon desde 1996 y Super Fórmula desde 2013
   superformula:{eras:[[0,"F3000 Japonesa","Japanese F3000","F3000 Japonesa"],[1996,"Formula Nippon"],[2013,"Super Fórmula","Super Formula","Super Fórmula"]],
@@ -4470,6 +4498,22 @@ function serName(k, year){ const s=SERIES[k]||{};
 // (corriste en la Formula Nippon de 2011 aunque te retires en 2035, cuando ya se llama Super Fórmula)
 function teamDisp(t, year){ return t && t.cat==="ADV" && t.series ? serName(t.series, year) : (t?t.name:""); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub, {pt:s.subPt}); }
+/* 🏷️ LA AFILIACIÓN DE LA ÉPOCA: con quién corres dentro de la serie (la marca en el TC, el equipo
+   oficial en el WRC). Ventanas reales [desde, hasta, nombre]; se sortea al ENTRAR en la serie y
+   persiste mientras sigas — «Seguir en» no re-sortea porque no pasa por startAdventure.
+   💤 DORMIDA POR DECISIÓN DE CARLOS (20-ago-2026): las aventuras son GENÉRICAS —te vas a la NASCAR y
+   punto, sin equipos— y el TC y el WRC deben ser coherentes con eso. Las ventanas quedan verificadas
+   y guardadas para el día que se les meta equipos y más detalle, «cuando rehagamos el sistema de
+   puntuación quizá». Ese día: ADV_AFILIACIONES=true y todo despierta — la firma narrada, la marca en
+   la línea de cada temporada y la limpieza al volver a la F1 ya están cableadas detrás del flag. */
+const ADV_AFILIACIONES=false;
+function serMarca(k){
+  if(!ADV_AFILIACIONES) return null;
+  const s=SERIES[k]||{}; if(!s.marcas) return null;
+  const yr=yearNow();
+  const vivas=s.marcas.filter(m=>yr>=m[0] && yr<=m[1]);
+  return vivas.length ? vivas[irnd(0,vivas.length-1)][2] : null;
+}
 function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee, {pt:s.marqueePt}); }
 // Triple Corona: Mónaco + Indy 500 + Le Mans. Nombres de cada pata y estado.
 const CROWN_LEG={ monaco:["el GP de Mónaco","the Monaco GP"], indy:["las 500 Millas de Indianápolis","the Indy 500"], lemans:["las 24h de Le Mans","the Le Mans 24h"] };
@@ -4490,7 +4534,10 @@ const NAT_AFFINITY={
   "Alemania":{teams:["Mercedes","Audi"],series:["dtm"]},
   "Austria":{teams:["Red Bull"],series:[]},
   "Estados Unidos":{teams:["Haas","Cadillac"],series:["indy","nascar"]},
-  "Francia":{teams:["Alpine"],series:["lemans"]},
+  "Francia":{teams:["Alpine"],series:["lemans","wrc"]},      // Loeb y Ogier: nueve y ocho Mundiales
+  "España":{teams:[],series:["wrc"]},                          // Carlos Sainz padre, el Matador
+  "Argentina":{teams:[],series:["tc"]},                        // el TC es religión
+  "Finlandia":{teams:[],series:["wrc"]},                       // el país de los voladores
   "Japón":{teams:["Racing Bulls"],series:["superformula"]},
   "Australia":{teams:[],series:["supercars"]},
   "México":{teams:["Cadillac"],series:["nascar"]},
@@ -4604,6 +4651,7 @@ function renderOffers(offers, withRetire){
 /* ---------- firma y flujo de temporada ---------- */
 function signContract(o){
   S.regUnknown=false;
+  if(o&&o.team&&o.team.cat!=="ADV") S.advMarca=null;   // 🏷️ idem: la marca del TC/WRC no te sigue a la F1
   const prev=S.team, prevCat=S.cat;
   /* 🤝 DEUDA DE LEALTAD («necesitan tu asiento», rama en la que la directiva APUESTA POR TI y descarta
      el fichaje). Si al invierno siguiente te largas igual, no lo entienden — y con razón. */
@@ -8075,7 +8123,7 @@ function simAdventure(row){
     : champPos===1 ? L(`🥇 ¡Campeón de ${serName(key)}!`,`🥇 ${serName(key)} champion!`,{pt:`🥇 Campeão da ${serName(key)}!`})
     : champPos<=3 ? L(`${champPos}º del campeonato (podio)`,`P${champPos} in the championship (podium)`,{pt:`${champPos}º do campeonato (pódio)`})
     : L(`${champPos}º · ${serMarquee(key)}: te quedas sin premio`,`P${champPos} · ${serMarquee(key)}: no silverware`,{pt:`${champPos}º · ${serMarquee(key)}: você fica sem prêmio`});
-  row.events.push(`${sr.em} ${serName(key)} ${row.year}: ${res}`);
+  row.events.push(`${sr.em} ${serName(key)} ${row.year}${S.advMarca?" · "+S.advMarca:""}: ${res}`);
   // ganar Indy/Le Mans avanza (o completa) la Triple Corona → aviso coherente con Mónaco
   if(newCrownLeg){
     const prog=crownMsgAfterWin(key, "").trim();
@@ -8196,6 +8244,10 @@ function startAdventure(key){
   S.advSeries=key; S.cat="ADV";
   S.team={name:SERIES[key].name, series:key, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
   S.role=null; S.roleTeam=null; S.roleMate=null;
+  S.advMarca=serMarca(key);   // 🏷️ tu afiliación en este mundo (Ford en el TC, Toyota en el WRC…)
+  if(S.advMarca) S.pendingEvents.push(L(`🏷️ Firmas con ${S.advMarca} para tu asalto a ${serName(key)}.`,
+    `🏷️ You sign with ${S.advMarca} for your ${serName(key)} campaign.`,
+    {pt:`🏷️ Você assina com a ${S.advMarca} para a sua campanha na ${serName(key)}.`}));
   startSeasonRun();
 }
 function advOffers(){
