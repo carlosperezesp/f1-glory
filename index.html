@@ -10201,12 +10201,12 @@ function tpMercado(){
     if(c.kind==="renew"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${(c.d.age>=34)?1:2} · `+L(`renueva en su asiento ${c.i+1}`,`renews in seat ${c.i+1}`,{pt:`renova no assento ${c.i+1}`});
+      sub2=`📜${(c.d.age>=34)?1:2} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
       dotTxt="🤝";
     } else if(c.kind==="probador"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;   // el 🧢 ya lo pone el punto de color: dos gorras eran una errata
       sub1=L("Tu probador","Your reserve driver",{pt:"O seu reserva"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
-      sub2="📜2 · "+L("por fin rueda","finally races",{pt:"finalmente roda"});
+      sub2="📜2 · "+L("por fin sería titular","would finally get his shot",{pt:"finalmente seria titular"});
       dotTxt="🧢";
     } else if(c.kind==="libre"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
@@ -10418,7 +10418,7 @@ function tpPoolScreen(){
       && !(S.tpReserva && S.tpReserva.name===d.name))
     .sort((a,b)=>(b.skill||0)-(a.skill||0)).slice(0,4).forEach(d=>{
     mk("🌱", `${d.flag||"🏁"} ${d.name}`,
-      L("Joven del bote","Pool youngster",{pt:"Jovem do pool"})+` · ${tpEtiqueta(d)} · ${d.age} ${L("años","yo",{pt:"anos"})}`,
+      L("Joven sin asiento","Young and seatless",{pt:"Jovem sem assento"})+` · ${tpEtiqueta(d)} · ${d.age} ${L("años","yo",{pt:"anos"})}`,
       `📜${((d.age||30)<=24 && (d.ceil||0)>=88)?3:2} · `+tpOddsTag(.85),
       {kind:"libre", d, odds:.85});
   });
@@ -10426,8 +10426,8 @@ function tpPoolScreen(){
   (S.rookies||[]).filter(r=>(!r[2]||yr>=r[2]) && !(S.dpool||[]).some(d=>d.name===r[0])).slice(0,5).forEach(r=>{
     const edad=r[3]?` · ${yr-r[3]} ${L("años","yo",{pt:"anos"})}`:"";
     mk("🎓", `${r[1]||"🏁"} ${r[0]}`,
-      L("Promesa de la cantera","Academy prospect",{pt:"Promessa da base"})+edad,
-      "📜3 · "+L("a ciegas: nivel por confirmar, techo por descubrir","blind bet: level unproven, ceiling unknown",{pt:"às cegas: nível a confirmar, teto a descobrir"}),
+      L("Promesa de la cantera","Academy prospect",{pt:"Promessa da base"})+` · <span class="st-c">★</span><span class="st-e">????</span>`+edad,
+      "📜3 · "+L("se desvela al firmar","revealed when you sign",{pt:"se revela ao assinar"}),
       {kind:"rookie", _force:r[0]});
   });
   // volver
@@ -11936,8 +11936,8 @@ function renderTPGrid(){
       return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)}${nuevo} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
     }).join(" ");
     const pos=ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"";
-    html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;${mine?"outline:2px solid #e10600;border-radius:10px":""}">
-      ${badge(t,"dot")}<b>${t.name}</b><span style="color:var(--muted);font-size:12px">${pos}${tpStars(t.name)}</span>
+    html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;${mine?`outline:2px solid ${t.color};border-radius:10px`:""}">
+      ${badge(t,"dot")}<b>${t.name}</b><span style="color:var(--muted);font-size:12px">${pos}${mine?`<span style="color:${t.color}">${tpStars(t.name)}</span>`:tpStars(t.name)}</span>
       <div style="width:100%;display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px">${dr}</div></div>`;
   });
   const resv=tpReservePool();
@@ -11957,7 +11957,7 @@ function tpReservePool(){
   // las promesas de la cantera aún sin debutar: nombre y bandera; su nivel se descubre al firmar
   const yr=yearNow();
   (S.rookies||[]).filter(r=>!r[2]||yr>=r[2]).slice(0,6)
-    .forEach(r=>out.push(`${r[1]||"🏁"} ${r[0]}${r[3]?` · ${yr-r[3]}`:""} · ${L("promesa","prospect",{pt:"promessa"})}`));
+    .forEach(r=>out.push(`${r[1]||"🏁"} ${r[0]} <b><span class="st-c">★</span><span class="st-e">????</span></b>${r[3]?` · ${yr-r[3]}`:""}`));
   return out.slice(0,12);
 }
 
