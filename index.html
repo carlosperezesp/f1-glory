@@ -222,6 +222,24 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .odds.o3{background:rgba(201,138,30,.16);color:#c98a1e}
 .odds.o2{background:rgba(212,101,30,.16);color:#d4651e}
 .odds.o1{background:rgba(212,63,63,.16);color:#d43f3f}
+/* 📈 la tendencia del coche, como chip de color en la cabecera del rumbo */
+.tr-chip{display:inline-block;border-radius:7px;padding:1px 8px;font-size:12px;font-weight:800;vertical-align:1px}
+.tr-chip.up2{background:rgba(18,146,63,.18);color:#12923f}
+.tr-chip.up{background:rgba(18,146,63,.12);color:#2a9d4f}
+.tr-chip.flat{background:var(--panel2);color:var(--muted)}
+.tr-chip.down{background:rgba(212,101,30,.14);color:#d4651e}
+.tr-chip.down2{background:rgba(212,63,63,.16);color:#d43f3f}
+/* ⚠️ el precio de sacrificar el año, en su propio renglón y su propio color */
+.aviso-consejo{color:#c98a1e;font-weight:700}
+.aviso-ok{color:#12923f;font-weight:700}
+/* 📱 la tarjeta del jefe en pantallas estrechas: los chips y el consejo no se pisan */
+@media (max-width:520px){
+  .card.tp .agev{max-width:44%}
+  .card.tp .agev .v{font-size:12.5px;white-space:normal;line-height:1.25}
+  .card.tp .agev .a{font-size:22px}
+  .card.tp .tag{font-size:11px;padding:2px 7px}
+  .card.tp .driver-meta .tags{gap:5px;row-gap:4px}
+}
 .agev .v{font-size:19px;font-weight:800;background:linear-gradient(92deg,#15151e,#55555f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .team-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 -2px 4px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.25);border:2px solid #fff}
 img.tlogo{object-fit:cover;background:transparent;padding:0;text-shadow:none;border:none;box-shadow:none;vertical-align:middle}
@@ -3466,6 +3484,7 @@ function refreshCard(){
   if(window._tpUiDirty){ window._tpUiDirty=false; try{ applyLang(); $("tagNum").style.display="";
     const _bl=$("ovrBadge").querySelector(".l"); if(_bl) _bl.textContent="OVR";
     const _tg=$("tagGoal"); if(_tg) _tg.style.display="none";        // 🎯 el objetivo es cosa del jefe
+    const _tf=$("tagFama"); if(_tf) _tf.style.display="none";        // ⭐ y la fama-chip también
     $("driverCard").classList.remove("tp"); }catch(e){} }
   if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
   if(sel.flag) $("tagNat").textContent = natLabel();
@@ -9799,11 +9818,17 @@ function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
 /* tarjeta del jefe: prestigio en vez de OVR, humor del consejo en vez de fama, dueño en vez de estilo */
 function tpRefreshCard(){
   window._tpUiDirty=true;
-  $("ovrNum").textContent=S.tpPrest;
-  // «PRESTIGIO» no cabe en la insignia redonda del OVR. Carlos: mejor FAMA, que es lo que de verdad
-  // mide —cuánto pesa tu nombre en el paddock— y además cabe entero en los tres idiomas.
-  const bl=$("ovrBadge").querySelector(".l"); if(bl) bl.textContent=L("FAMA","FAME",{pt:"FAMA"});
-  $("ovrBadge").style.background=ovrColor(Math.max(55,Math.min(96,55+S.tpPrest*.42)));
+  /* 🚗 LA INSIGNIA REDONDA ES EL COCHE (Carlos, 20-ago: «¿cambiamos la fama por el OVR del coche?»).
+     Es el número que de verdad miras cada invierno, y ovrColor le da una escala de color con sentido.
+     La fama no desaparece: baja a un chip ⭐, porque sigue moviendo las ofertas que recibes. */
+  const _carP=Math.round(S.f1perf[S.tpTeam] ?? 75);
+  $("ovrNum").textContent=_carP;
+  const bl=$("ovrBadge").querySelector(".l"); if(bl) bl.textContent=L("COCHE","CAR",{pt:"CARRO"});
+  $("ovrBadge").style.background=ovrColor(_carP);
+  let _tf=$("tagFama");
+  if(!_tf){ _tf=document.createElement("span"); _tf.className="tag"; _tf.id="tagFama";
+    const _tags=document.querySelector("#driverCard .tags"); if(_tags) _tags.appendChild(_tf); }
+  if(_tf){ _tf.style.display=""; _tf.textContent="⭐ "+L("Fama","Fame",{pt:"Fama"})+" "+S.tpPrest; }
   if(sel.flag) $("tagNat").textContent = natLabel();
   /* 📄🎯 lo que Carlos echaba de menos JUGANDO: cuántos años de contrato le quedan y qué le exige el
      consejo, visibles en todo momento. El chip del dorsal (sin uso en el muro) pasa a ser el contrato,
@@ -10156,8 +10181,8 @@ function tpMercado(){
       sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=`📜${(((c.d.age||30)<=24 && (c.d.ceil||0)>=88)?3:2)} · `+tpOddsTag(c.odds||.5);
     } else {
-      nm=L("🎓 Apostar por la cantera","🎓 Bet on the academy",{pt:"🎓 Apostar na base"});
-      sub1=L("Un debutante: nivel por confirmar, techo por descubrir","A rookie: level unproven, ceiling unknown",{pt:"Um estreante: nível a confirmar, teto a descobrir"});
+      nm=L("🎓 Apostar por la cantera","🎓 Bet on the academy",{pt:"🎓 Apostar na base"})+(c.d?` · ${c.d.flag||"🏁"} ${c.d.name}`:"");
+      sub1=(c.d?`${c.d.age} ${L("años","yo",{pt:"anos"})} · `:"")+L("nivel por confirmar, techo por descubrir","level unproven, ceiling unknown",{pt:"nível a confirmar, teto a descobrir"});
       sub2=S.tpGem?("📜3 · "+L("⭐ tu academia apunta a un fenómeno","⭐ your academy points to a phenom",{pt:"⭐ a sua base aponta para um fenômeno"}))
                   :("📜3 · "+L("debutante","rookie deal",{pt:"estreante"}));
       dotTxt="🎓";
@@ -10295,7 +10320,13 @@ function tpMercadoPool(abiertos){
       cands.push({kind:"cross", d:{name:c0.name, age:yr-c0.born, skill:c0.base, ceil:c0.ceil, titles:0, flag:c0.flag}, odds:.7});
     }
   }
-  cands.push({kind:"rookie"});
+  /* 🎓 LA CANTERA TIENE NOMBRE (Carlos, 20-ago: «se tiene que ver quién es ese canterano»). El chaval
+     se sortea UNA vez por invierno y se cachea: mkRookie tiene efectos (consume llegadas históricas y
+     lo mete en el bote de promesas), así que sortearlo en cada repintado cambiaría de niño al volver
+     de la parrilla. Si no lo fichas, se queda en el bote y puede debutar con otro — como en la vida. */
+  if(!S._tpCantera || S._tpCantera.year!==yearNow() || !S._tpCantera.d)
+    S._tpCantera={year:yearNow(), d:mkRookie(true, tn)};
+  cands.push({kind:"rookie", d:S._tpCantera.d});
   return cands;
 }
 /* 🧢 EL HUECO DEL PROBADOR, EXPLÍCITO (encargo de Carlos: «hoy es implícito»). Solo aparece cuando se
@@ -10466,7 +10497,9 @@ function tpSignDriver(i,c){
     /* 🐞 O'WARD CON 36 EN «APOSTAR POR LA CANTERA» (cazado por Carlos): mkRookie(false,...) permitía
        CROSSOVERS —pilotos reales de otras categorías, con su edad real—. Una apuesta de cantera es un
        JOVEN por definición: noCross=true salta los crossovers y limita el bote a ≤26. */
-    d=mkRookie(true, tn); d.tpc=3;
+    d=(c.d && S._tpCantera && S._tpCantera.d===c.d) ? c.d : mkRookie(true, tn);
+    S._tpCantera=null;   // el sorteo del invierno queda consumido
+    d.tpc=3;
     if(S.tpGem){ d.ceil=Math.max(d.ceil||0, irnd(93,96)); d.skill=Math.max(d.skill, 78); S.tpGem=false;
       S.pendingEvents.push(L(`🎓 Debuta ${d.name}, la joya de tu academia. El paddock ya habla de él.`,
         `🎓 ${d.name} debuts — your academy's crown jewel. The paddock is already talking.`,
@@ -10497,10 +10530,15 @@ function tpRumboScreen(){
   if(S.retired) return;
   const tn=S.tpTeam, perf=Math.round(S.f1perf[tn]||75);
   const ti=trendInfo(tn);
-  setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`})+" · "+tn,
-    L(`Nivel actual del coche: ${perf} · ${ti.a} ${ti.t}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
-      `Current car level: ${perf} · ${ti.a} ${ti.t}. Where you push the factory shows over 2-3 seasons.`,
-      {pt:`Nível atual do carro: ${perf} · ${ti.a} ${ti.t}. Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}));
+  /* ⭐ el nivel del coche en ESTRELLAS y la tendencia como chip de color (Carlos, 20-ago: fuera el
+     número pelado y el «proyecto estable» en texto plano) */
+  const _chipTr=`<span class="tr-chip ${ti.c}">${ti.a} ${ti.t}</span>`;
+  setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`})+" · "+tn, "");
+  // setDecision escapa el HTML (lección del mercado): el chip se pinta por innerHTML
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=
+    L(`Tu coche: ${tpStars(tn)} ${_chipTr}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
+      `Your car: ${tpStars(tn)} ${_chipTr}. Where you push the factory shows over 2-3 seasons.`,
+      {pt:`O seu carro: ${tpStars(tn)} ${_chipTr}. Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}); }catch(e){}
   /* ✍️ el fichaje recién hecho se confirma AQUÍ: antes saltabas al rumbo sin saber si cuajó (Carlos) */
   if(S._tpFirmadoTxt){ try{ const _d=$("decSub")||document.querySelector("#decision .sub"); if(_d) _d.innerHTML=S._tpFirmadoTxt+"<br>"+_d.innerHTML; }catch(e){} S._tpFirmadoTxt=null; }
   $("decRecap").style.display="none";
@@ -10515,9 +10553,9 @@ function tpRumboScreen(){
   const _pR=_ordenR.indexOf(tn)+1, _arriba=_pR<=3, _abajo=_pR>=_ordenR.length-2;
   const _fin=S.tpOwner&&S.tpOwner.k==="cut";
   let penProyecto=0, avisoProyecto="";
-  if(_arriba){ penProyecto+=1.5; avisoProyecto+=" ⚠️ "+L("Con este coche, el consejo quiere resultados YA: −prestigio","With this car, the board wants results NOW: −prestige",{pt:"Com este carro, o conselho quer resultados JÁ: −prestígio"}); }
-  if(_fin){ penProyecto+=1; avisoProyecto+=" 💼 "+L("Al dueño financiero no le cuadra invertir a largo: −prestigio","Long-term spending doesn't add up for the financier owner: −prestige",{pt:"Investir a longo prazo não fecha para o dono financeiro: −prestígio"}); }
-  if(_abajo && !avisoProyecto) avisoProyecto=" ✅ "+L("Con este coche, el consejo te deja construir en paz","With this car, the board lets you build in peace",{pt:"Com este carro, o conselho te deixa construir em paz"});
+  if(_arriba){ penProyecto+=1.5; avisoProyecto+="<br><span class=\"aviso-consejo\">⚠️ "+L("Tienes un coche ganador: si aun así sacrificas el año, el consejo se enfada y pierdes prestigio","You have a winning car: sacrifice the year anyway and the board sours — you lose prestige",{pt:"Você tem um carro vencedor: se ainda assim sacrificar o ano, o conselho se irrita e você perde prestígio"})+"</span>"; }
+  if(_fin){ penProyecto+=1; avisoProyecto+="<br><span class=\"aviso-consejo\">💼 "+L("Tu dueño es un fondo: no pone dinero a dos años vista, y elegir esto también te cuesta prestigio","Your owner is a fund: it won't spend two years out — choosing this costs prestige too",{pt:"O seu dono é um fundo: não investe a dois anos, e escolher isto também custa prestígio"})+"</span>"; }
+  if(_abajo && !avisoProyecto) avisoProyecto="<br><span class=\"aviso-ok\">✅ "+L("Con este coche, el consejo te deja construir en paz","With this car, the board lets you build in peace",{pt:"Com este carro, o conselho te deixa construir em paz"})+"</span>";
   S._penProyecto=penProyecto;
   const mk=(dot,nm,sub,fn)=>{
     const b=document.createElement("button"); b.className="offer dilemma";
@@ -10529,21 +10567,28 @@ function tpRumboScreen(){
   /* ⚖️ los objetivos se ANCLAN al nivel actual (como hace evolveF1 con los NPC): sin ancla, sumar
      target año tras año dejaba un grande clavado en 95 para siempre (medido: 14 constructores
      seguidos de Red Bull en la primera tanda de pruebas). Elegir rumbo mueve, no garantiza. */
-  mk("⚡",L("Exprimir ESTE coche · a por el AÑO QUE VIENE ya","Squeeze THIS car · go for NEXT YEAR now",{pt:"Espremer ESTE carro · vai já pelo PRÓXIMO ANO"}),
-    L("Mejora rápida ya (+1,5 a +3), pero hipotecas el año siguiente. Para dar un golpe cuando estás cerca.","Fast gain now (+1.5 to +3), but you mortgage next year. To strike when you're close.",{pt:"Melhora rápida já (+1,5 a +3), mas hipoteca o próximo ano. Para dar o bote quando está perto."}),
-    ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(1.5,3)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(4,8));
+  /* 🔧 REDISEÑO DE CARLOS (20-ago): orden de más a menos inmediato, dos renglones por opción, sin
+     números en pantalla. Los números viven aquí:
+     ⚡ hoy +2..3,5 y el objetivo cae a nivel−5..8 → el año siguiente se paga la hipoteca (~−2)
+     ⚖️ hoy +0,5..1,5 Y objetivo +2..4 → «un poquito este año y otro poquito el que viene» (Carlos)
+     🏗️ hoy RESTA 0,5..2 SIEMPRE (el sacrificio es real, ya no un 35% de las veces) y el objetivo
+        salta +11..15 (3 de cada 4; si no, se atasca) → medido con la deriva .28: si sale bien,
+        −1 / +2,4 / +5,0 / +6,9 — el doble que continuidad en el año 2, a cambio del 25% de bache */
+  mk("⚡",L("Exprimir el coche ESTE año","Squeeze the car THIS year",{pt:"Espremer o carro ESTE ano"}),
+    L("Mejora rápida ya, pero hipotecas el año siguiente.<br>Para dar un golpe cuando estás cerca.","Fast gains now, but you mortgage next year.<br>To strike when you're close.",{pt:"Melhora rápida já, mas hipoteca o próximo ano.<br>Para dar o bote quando está perto."}),
+    ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(2,3.5)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(5,8));
       S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
-  mk("🏗️",L("Proyecto a dos años · el SALTO GRANDE","Two-year project · the BIG LEAP",{pt:"Projeto de dois anos · o SALTO GRANDE"}),
-    L("Sacrificas este año por un coche mucho mejor dentro de dos (o se atasca: 1 de cada 4 falla). El salto más grande, y el más arriesgado.","You sacrifice this year for a much better car in two (or it stalls: 1 in 4 fails). The biggest leap, and the riskiest.",{pt:"Sacrifica este ano por um carro muito melhor em dois (ou emperra: 1 em 4 falha). O maior salto, e o mais arriscado."})+(avisoProyecto||""),
+  mk("⚖️",L("Mejoras SEGURAS y continuidad","SAFE gains and continuity",{pt:"Melhorias SEGURAS e continuidade"}),
+    L("Subida pequeña pero segura, sin riesgo y sin hipotecar nada.<br>El término medio: ni golpe ni sacrificio.","A small but safe climb, no risk and nothing mortgaged.<br>The middle ground: no strike, no sacrifice.",{pt:"Subida pequena mas segura, sem risco e sem hipoteca.<br>O meio-termo: nem bote nem sacrifício."}),
+    ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(.5,1.5)); S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+rnd(2,4));
+      S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
+  mk("🏗️",L("Proyecto a DOS AÑOS","TWO-YEAR project",{pt:"Projeto de DOIS ANOS"}),
+    L("Sacrificas este año por la promesa de un coche mucho mejor dentro de dos.<br>El salto más grande, y el más arriesgado.","You sacrifice this year for the promise of a much better car in two.<br>The biggest leap, and the riskiest.",{pt:"Sacrifica este ano pela promessa de um carro muito melhor em dois.<br>O maior salto, e o mais arriscado."})+(avisoProyecto||""),
     ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
       if(S._penProyecto) TPRE(-S._penProyecto);   // el precio de sacrificar el presente, avisado antes
-      S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+(ch(.75)?rnd(8,12):rnd(-2,4)));
-      if(ch(.35)) S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(.5,1.5));
+      S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(.5,2));   // el sacrificio del primer año, siempre
+      S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+(ch(.75)?rnd(11,15):rnd(-2,4)));
       S.pendingEvents.push(L("🏗️ Pones la fábrica a construir el coche de pasado mañana: el proyecto apunta alto.","🏗️ You set the factory on the car after next: the project aims high.",{pt:"🏗️ Você põe a fábrica no carro de depois de amanhã: o projeto mira alto."})); });
-  mk("⚖️",L("Continuidad · mejora SEGURA y pequeña","Continuity · SAFE small gain",{pt:"Continuidade · melhora SEGURA e pequena"}),
-    L("Subida pequeña pero segura (+2 a +5), sin riesgo y sin hipotecar nada. El término medio: ni golpe ni sacrificio.","Small but safe gain (+2 to +5), no risk and no mortgage. The middle ground: no strike, no sacrifice.",{pt:"Subida pequena mas segura (+2 a +5), sem risco e sem hipoteca. O meio-termo: nem bote nem sacrifício."}),
-    ()=>{ S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+rnd(2,5));
-      S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
   // retirada voluntaria: siempre disponible, nunca escondida
   const r=document.createElement("button"); r.className="offer retire";
   r.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
