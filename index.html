@@ -207,6 +207,21 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .agev{text-align:right;flex-shrink:0}
 .agev .a{font-size:27px;font-weight:900}
 .agev .lbl{font-size:10px;letter-spacing:1px;color:var(--muted)}
+/* 🧑‍💼 la tarjeta del JEFE lleva más chips (contrato, dueño, objetivo): se compacta para que no se pise */
+.card.tp .agev .v{font-size:15px;font-weight:800}
+.card.tp .driver-meta .tags{row-gap:5px}
+/* ⭐ estrellas de calidad→potencial en UNA sola fila: llenas=hoy · huecas de color=potencial · resto apagado */
+.st-c{color:#d9a406}
+.st-p{color:#3d8bd4}
+.st-e{color:var(--muted);opacity:.45}
+/* 🪑 tus tres asientos, con el reborde de TU equipo (aunque estén vacíos) */
+.gar-chip{display:inline-block;border:2px solid;border-radius:9px;padding:2px 9px;margin:2px 3px 2px 0;font-size:12.5px;font-weight:700;background:var(--panel2)}
+/* 📞 la probabilidad de que venga, en color y una palabra */
+.odds{display:inline-block;border-radius:7px;padding:1px 7px;font-size:11.5px;font-weight:800}
+.odds.o4{background:rgba(18,146,63,.16);color:#12923f}
+.odds.o3{background:rgba(201,138,30,.16);color:#c98a1e}
+.odds.o2{background:rgba(212,101,30,.16);color:#d4651e}
+.odds.o1{background:rgba(212,63,63,.16);color:#d43f3f}
 .agev .v{font-size:19px;font-weight:800;background:linear-gradient(92deg,#15151e,#55555f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .team-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 -2px 4px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.25);border:2px solid #fff}
 img.tlogo{object-fit:cover;background:transparent;padding:0;text-shadow:none;border:none;box-shadow:none;vertical-align:middle}
@@ -3449,7 +3464,9 @@ function refreshCard(){
   // ⚠️ el flag vive FUERA de S: cada startCareer crea un S nuevo y un flag dentro de S se perdía justo
   // cuando hacía falta (lo cazó la tanda de regresión: OVR seguía diciendo PRESTIGIO)
   if(window._tpUiDirty){ window._tpUiDirty=false; try{ applyLang(); $("tagNum").style.display="";
-    const _bl=$("ovrBadge").querySelector(".l"); if(_bl) _bl.textContent="OVR"; }catch(e){} }
+    const _bl=$("ovrBadge").querySelector(".l"); if(_bl) _bl.textContent="OVR";
+    const _tg=$("tagGoal"); if(_tg) _tg.style.display="none";        // 🎯 el objetivo es cosa del jefe
+    $("driverCard").classList.remove("tp"); }catch(e){} }
   if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
   if(sel.flag) $("tagNat").textContent = natLabel();
   $("ovrNum").textContent = S.ovr;
@@ -7490,6 +7507,7 @@ function bgF1Season(row){
 /* guarda el ranking completo de la temporada y devuelve funciones de delta vs el año pasado */
 function trackRanks(driverOrder, teamOrder){
   const prevD=S.rankD||{}, prevC=S.rankC||{};
+  S.rankDPrev=prevD; S.rankCPrev=prevC;   // 🔼 persistidos: el desplegable pinta flechas en TODAS las filas
   S.rankD={}; driverOrder.forEach((n,i)=>{S.rankD[n]=i+1;});
   S.rankC={}; teamOrder.forEach((t,i)=>{S.rankC[t]=i+1;});
   return {
@@ -7611,18 +7629,22 @@ function fsResto(cual){
       const p3=(S.legends||[]).find(x=>x&&x.name===n); if(p3&&p3.flag) return p3.flag;
       return null;
     };
+    /* 🔼 las flechas de movimiento, TAMBIÉN aquí (lo cazó Carlos: «solo se ve la subida o bajada del
+       top 3»). El año anterior vive en S.rankDPrev desde trackRanks. */
+    const _mvB=(prev,p)=> prev==null?"":prev>p?`<span class="mv up">▲${prev-p}</span>`:prev<p?`<span class="mv down">▼${p-prev}</span>`:`<span class="mv eq">=</span>`;
     return orden.map(([n,p])=>{
       const fl=buscaFlag(n);
       // el equipo con el que corrió ESE año; si no consta, se rebusca entre los asientos de ahora
       const eqAnual=(S.rankDTeam||{})[n];
       const eq=eqAnual || (Object.entries(S.seats||{}).find(([t,sl])=>(sl||[]).some(x=>x&&x!=="PLAYER"&&x.name===n))||[])[0];
       const mio = S.cat==="TP" && eq===S.tpTeam;   // los míos en su color; el resto, normal
-      return `<div class="srow extra${mio?" me":""}"><span class="nm">${p}º ${fl?flg(fl):""} ${mio?`<b>${surname(n)}</b>`:surname(n)}</span><span class="rt2">${eq?teamBadge(eq):""}</span></div>`;
+      return `<div class="srow extra${mio?" me":""}"><span class="nm">${p}º ${fl?flg(fl):""} ${mio?`<b>${surname(n)}</b>`:surname(n)}</span><span class="rt2">${_mvB((S.rankDPrev||{})[n],p)}${eq?teamBadge(eq):""}</span></div>`;
     }).join("");
   }
   const r=S.rankC||{};
+  const _mvB2=(prev,p)=> prev==null?"":prev>p?`<span class="mv up">▲${prev-p}</span>`:prev<p?`<span class="mv down">▼${p-prev}</span>`:`<span class="mv eq">=</span>`;
   return Object.entries(r).sort((a,b)=>a[1]-b[1]).filter(([t,p])=>p>medalTop)
-    .map(([t,p])=>`<div class="srow extra${tpManaged(t)||(S.team&&S.team.name===t)?" me":""}"><span class="nm">${p}º ${teamBadge(t)} ${t}</span></div>`).join("");
+    .map(([t,p])=>`<div class="srow extra${tpManaged(t)||(S.team&&S.team.name===t)?" me":""}"><span class="nm">${p}º ${teamBadge(t)} ${t}</span>${_mvB2((S.rankCPrev||{})[t],p)}</div>`).join("");
 }
 function simTest(row,st){
   S.testYears++;
@@ -9799,9 +9821,23 @@ function tpRefreshCard(){
   const mood = S.tpMissStreak>=1 ? [L("🚨 Ultimátum","🚨 Ultimatum",{pt:"🚨 Ultimato"}),"#d43f3f"]
     : S.tpLastMet===false ? [L("😮‍💨 Con aire","😮‍💨 Breathing",{pt:"😮‍💨 Com ar"}),"#c98a1e"]
     : [L("😊 Contento","😊 Happy",{pt:"😊 Contente"}),"#12923f"];
-  const _goal=(S.tpGoal && S.tpGoal.year===yearNow() && S.tpGoal.target!=null)
-    ? " · 🎯 "+(S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º") : "";
-  $("valV").textContent=mood[0]+_goal; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
+  /* 🎯 EL OBJETIVO, SIEMPRE VISIBLE Y CON SITIO PROPIO (Carlos, 20-ago: «sigue haciendo falta ponerlo
+     en todo momento, para saber si merece la pena apretar el coche o no»). Antes iba pegado al humor
+     del consejo Y con filtro de año: en cuanto la temporada pasaba, desaparecía justo cuando estás en
+     el invierno decidiendo. Ahora es un CHIP fijo en la tarjeta —el último listón anunciado— y si es
+     de la temporada pasada, lleva el año para que no engañe. */
+  let _tg=$("tagGoal");
+  if(!_tg){ _tg=document.createElement("span"); _tg.className="tag"; _tg.id="tagGoal";
+    const _tags=document.querySelector("#driverCard .tags"); if(_tags) _tags.appendChild(_tg); }
+  if(_tg){
+    if(S.tpGoal && S.tpGoal.target!=null){
+      const _obj=(S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º");
+      _tg.style.display="";
+      _tg.textContent="🎯 "+_obj+(S.tpGoal.year!==yearNow()?" ('"+String(S.tpGoal.year).slice(-2)+")":"");
+    } else _tg.style.display="none";
+  }
+  try{ $("driverCard").classList.add("tp"); }catch(e){}
+  $("valV").textContent=mood[0]; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
   const ks=document.querySelectorAll("#driverCard .stats-row .k");
   if(ks[0]) ks[0].textContent=L("Temporadas","Seasons",{pt:"Temporadas"});
   if(ks[3]) ks[3].textContent=L("Títulos","Titles",{pt:"Títulos"});
@@ -9884,9 +9920,12 @@ function tpStarsN(v, esTecho){
   return v>=c[3]?5 : v>=c[2]?4 : v>=c[1]?3 : v>=c[0]?2 : 1;
 }
 function tpEtiqueta(d){
+  /* ⭐ UNA sola fila (petición de Carlos: «4 estrellas → 5 estrellas es demasiado largo»). Las llenas
+     doradas son su nivel HOY; las huecas azules, hasta dónde puede llegar; el resto, apagado. */
   const c=tpStarsN(d.skill||0,false), p=Math.max(c, tpStarsN(d.ceil||0,true));
-  const est="★".repeat(c)+"☆".repeat(5-c);
-  return p>c ? est+" → "+"★".repeat(p)+"☆".repeat(5-p) : est;
+  return `<span class="st-c">${"★".repeat(c)}</span>`
+       + (p>c?`<span class="st-p">${"☆".repeat(p-c)}</span>`:"")
+       + (p<5?`<span class="st-e">${"☆".repeat(5-p)}</span>`:"");
 }
 function tpStars(tn){ const perf=S.f1perf[tn]??75; const n5=Math.max(1,Math.min(5,Math.round(1+4*(perf-60)/36)));
   return "★".repeat(n5)+"☆".repeat(5-n5); }
@@ -10054,19 +10093,24 @@ function tpAbiertos(){
   return out;
 }
 function tpAsientoLinea(i){
+  /* 🪑 chip con el REBORDE DE TU EQUIPO (Carlos, 20-ago: «los 3 asientos de mi propiedad con un color
+     diferente al de las ofertas… aunque estén vacíos»). El color viene del equipo que diriges. */
+  const col=(S.team&&S.team.color)||"#c9a227";
   const sl=S.seats[S.tpTeam]||[], d=sl[i];
-  const tag = i===0 ? L("1 · Nº1","1 · No.1",{pt:"1 · Nº1"}) : "2";
-  if(!d || d==="PLAYER") return `<b>${tag}</b> · ${L("LIBRE","OPEN",{pt:"LIVRE"})}`;
-  if((d.tpc||0)<=0 && !S._tpRenovados[d.name]) return `<b>${tag}</b> · ${surname(d.name)} · ${L("contrato vencido","contract expired",{pt:"contrato vencido"})}`;
-  return `<b>${tag}</b> · ${surname(d.name)} · 📜${Math.max(0,d.tpc||0)}`;
+  const tag = i===0 ? L("1·Nº1","1·No.1",{pt:"1·Nº1"}) : "2";
+  const cuerpo = (!d || d==="PLAYER") ? `<b>${tag}</b> ${L("LIBRE","OPEN",{pt:"LIVRE"})}`
+    : ((d.tpc||0)<=0 && !S._tpRenovados[d.name]) ? `<b>${tag}</b> ${surname(d.name)} · ${L("vencido","expired",{pt:"vencido"})}`
+    : `<b>${tag}</b> ${surname(d.name)} · 📜${Math.max(0,d.tpc||0)}`;
+  return `<span class="gar-chip" style="border-color:${col}">${cuerpo}</span>`;
 }
 function tpMercado(){
   if(S.retired) return;
   const abiertos=tpAbiertos();
   if(!abiertos.length){ tpProbadorHueco(); return; }
   const nAb=abiertos.length;
+  const _colG=(S.team&&S.team.color)||"#c9a227";
   const garaje=[tpAsientoLinea(0), tpAsientoLinea(1),
-    `🧢 ${S.tpReserva?surname(S.tpReserva.name):L("LIBRE","OPEN",{pt:"LIVRE"})}`].join(" &nbsp;·&nbsp; ");
+    `<span class="gar-chip" style="border-color:${_colG}">🧢 ${S.tpReserva?surname(S.tpReserva.name):L("LIBRE","OPEN",{pt:"LIVRE"})}</span>`].join(" ");
   /* ⚠️ setDecision escribe con textContent: el HTML de la cabecera del garaje (los <b>, el <br>)
      salía LITERAL en pantalla. Se pasa el texto plano a setDecision y el HTML se pinta después. */
   setDecision(L(`✍️ El mercado · ${yearNow()}`,`✍️ The market · ${yearNow()}`,{pt:`✍️ O mercado · ${yearNow()}`})+" · "+S.tpTeam,
@@ -10092,36 +10136,30 @@ function tpMercado(){
     if(c.kind==="renew"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=((c.d.age>=34)?L("Un año más: la veteranía no firma largo","One more year: veterans don't sign long",{pt:"Mais um ano: veterania não assina longo"})
-                         :L("Dos temporadas más de contrato","Two more seasons on the contract",{pt:"Mais duas temporadas de contrato"}))
-           + " · " + L(`sigue en su asiento ${c.i+1}`,`stays in seat ${c.i+1}`,{pt:`segue no assento ${c.i+1}`});
+      sub2=`📜${(c.d.age>=34)?1:2} · `+L(`renueva en su asiento ${c.i+1}`,`renews in seat ${c.i+1}`,{pt:`renova no assento ${c.i+1}`});
       dotTxt="🤝";
     } else if(c.kind==="probador"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;   // el 🧢 ya lo pone el punto de color: dos gorras eran una errata
       sub1=L("Tu probador","Your reserve driver",{pt:"O seu reserva"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
-      sub2=L("Darle la alternativa: por fin rueda, y se nota (2 años)","Give him his shot: he finally races, and it shows (2 years)",{pt:"Dar a alternativa: finalmente roda, e se nota (2 anos)"});
+      sub2="📜2 · "+L("por fin rueda","finally races",{pt:"finalmente roda"});
       dotTxt="🧢";
     } else if(c.kind==="libre"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Agente libre","Free agent",{pt:"Agente livre"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=L("Sin equipo: aceptaría casi seguro (2 años)","No seat: would almost surely accept (2 years)",{pt:"Sem equipe: aceitaria quase certo (2 anos)"});
+      sub2=`📜2 · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`;
     } else if(c.kind==="cross"){
       nm=`🌎 ${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
-      sub2=L("Cruzaría a la F1 por un asiento titular (2 años)","Would cross to F1 for a race seat (2 years)",{pt:"Cruzaria para a F1 por uma vaga de titular (2 anos)"})
-        + " · 📞 " + tpOddsTag(c.odds||.7);
+      sub2=`📜2 · `+tpOddsTag(c.odds||.7);
     } else if(c.kind==="fichar"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=(((c.d.age||30)<=24 && (c.d.ceil||0)>=88)
-        ? L("Joven con techo: contrato de proyecto (3 años)","High-ceiling youngster: project deal (3 years)",{pt:"Jovem com teto: contrato de projeto (3 anos)"})
-        : L("Fichaje directo (2 años)","Straight signing (2 years)",{pt:"Contratação direta (2 anos)"}))
-        + " · 📞 " + tpOddsTag(c.odds||.5);
+      sub2=`📜${(((c.d.age||30)<=24 && (c.d.ceil||0)>=88)?3:2)} · `+tpOddsTag(c.odds||.5);
     } else {
       nm=L("🎓 Apostar por la cantera","🎓 Bet on the academy",{pt:"🎓 Apostar na base"});
       sub1=L("Un debutante: nivel por confirmar, techo por descubrir","A rookie: level unproven, ceiling unknown",{pt:"Um estreante: nível a confirmar, teto a descobrir"});
-      sub2=S.tpGem?L("⭐ Tu inversión en la academia apunta a un fenómeno","⭐ Your academy investment points to a phenom",{pt:"⭐ O seu investimento na base aponta para um fenômeno"})
-                  :L("Contrato de proyecto (3 años). El generador de historias.","Project deal (3 years). Where stories come from.",{pt:"Contrato de projeto (3 anos). É daqui que saem as histórias."});
+      sub2=S.tpGem?("📜3 · "+L("⭐ tu academia apunta a un fenómeno","⭐ your academy points to a phenom",{pt:"⭐ a sua base aponta para um fenômeno"}))
+                  :("📜3 · "+L("debutante","rookie deal",{pt:"estreante"}));
       dotTxt="🎓";
     }
     b.innerHTML=`<span class="team-dot dot" style="${dotStyle}">${dotTxt}</span>
@@ -10317,10 +10355,11 @@ function tpOdds(d, from){
   return Math.max(.05,Math.min(.95,p));
 }
 function tpOddsTag(p){
-  return p>=.7 ? L("vendría casi seguro","would almost surely come",{pt:"viria quase certo"})
-       : p>=.4 ? L("se lo pensaría","would think about it",{pt:"pensaria no assunto"})
-       : p>=.15? L("difícil de convencer","hard to convince",{pt:"difícil de convencer"})
-       :         L("casi imposible","next to impossible",{pt:"quase impossível"});
+  // 🎨 escala de color + UNA palabra (petición de Carlos: «mucho texto en el mercado»)
+  return p>=.7 ? `<span class="odds o4">📞 ${L("vendría","would come",{pt:"viria"})}</span>`
+       : p>=.4 ? `<span class="odds o3">📞 ${L("dudoso","doubtful",{pt:"duvidoso"})}</span>`
+       : p>=.15? `<span class="odds o2">📞 ${L("difícil","unlikely",{pt:"difícil"})}</span>`
+       :         `<span class="odds o1">📞 ${L("imposible","no chance",{pt:"impossível"})}</span>`;
 }
 function tpTerna(i){
   /* 🔓 DE TERNA CERRADA A POOL ELEGIBLE (playtest de Carlos: «ahora es limitante: renovar, un piloto
