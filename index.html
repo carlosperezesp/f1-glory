@@ -799,14 +799,16 @@ body.conBeta #topBtns{top:44px}
       </div>
     </div>
   </div>
+  <!-- ⚫ el aviso de muertes va ENCIMA de los botones: dentro de .actions (flex) convertía
+       «Volver» y «Confirmar» en dos columnas kilométricas (captura de Carlos, 20-ago) -->
+  <div id="deathOpt" style="display:none;margin:10px auto 14px;text-align:left;max-width:640px">
+    <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:14px;line-height:1.45">
+      <input type="checkbox" id="chkDeaths" checked style="margin-top:3px;flex-shrink:0;width:18px;height:18px;accent-color:#c8102e">
+      <span id="deathOptTxt"></span>
+    </label>
+  </div>
   <div class="actions">
     <button class="btn ghost" onclick="backToIntro()" data-es="Volver" data-pt="Voltar" data-pl="Wróć" data-fr="Retour" data-pt="Voltar" data-en="Back">Volver</button>
-    <div id="deathOpt" style="display:none;margin:10px 0 14px;text-align:left;max-width:640px">
-      <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:14px;line-height:1.45">
-        <input type="checkbox" id="chkDeaths" checked style="margin-top:3px;flex-shrink:0;width:18px;height:18px;accent-color:#c8102e">
-        <span id="deathOptTxt"></span>
-      </label>
-    </div>
     <button class="btn" id="btnConfirm" disabled onclick="startCareer()" data-es="Confirmar identidad" data-pt="Confirmar identidade" data-pl="Potwierdź tożsamość" data-fr="Confirmer l'identité" data-pt="Confirmar identidade" data-en="Confirm identity">Confirmar identidad</button>
   </div>
 </section>
@@ -1285,12 +1287,12 @@ const LEGENDS = [["M. Schumacher",7,"🇩🇪"],["J.M. Fangio",5,"🇦🇷"],["A
   ["A. Senna",3,"🇧🇷"],["N. Lauda",3,"🇦🇹"],["N. Piquet",3,"🇧🇷"],["J. Stewart",3,"🇬🇧"],["J. Brabham",3,"🇦🇺"]];
 // cantera de futuros talentos (pilotos reales de F2/F3 con su nacionalidad real)
 const ROOKIE_POOL = [
-  ["A. Dunne","🇮🇪",null,2005],["N. Tsolov","🇧🇬",null,2006],["R. Camara","🇧🇷",null,2005],["U. Ugochukwu","🇺🇸",null,2007],["M. Miyata","🇯🇵"],
+  ["A. Dunne","🇮🇪",null,2005],["N. Tsolov","🇧🇬",null,2006],["R. Camara","🇧🇷",null,2005],["U. Ugochukwu","🇺🇸",null,2007],["M. Miyata","🇯🇵",null,1999],
   ["P. Aron","🇪🇪",null,2004],["D. Beganovic","🇸🇪",null,2004],["L. Browning","🇬🇧",null,2002],["S. Montoya","🇨🇴",null,2005],["J. Edgar","🇬🇧",null,2004],
   ["J. Dürksen","🇵🇾",null,2003],["R. Verschoor","🇳🇱",null,2000],["C. Collet","🇧🇷",null,2002],["T. Smith","🇦🇺",null,2002],["N. León","🇲🇽",null,2004],
   ["O. Goethe","🇩🇪",null,2004],["K. Frederick","🇺🇸",null,2002],["R. Villagómez","🇲🇽",null,2001],["M. Stenshorne","🇳🇴",null,2006],
-  ["T. Tramnitz","🇩🇪",null,2004],["T. Barnard","🇬🇧",null,2004],["J. Wharton","🇦🇺",null,2006],["R. Yamamoto","🇯🇵"],
-  ["C. Costoya","🇪🇸",null,2010],["F. Slater","🇬🇧",null,2008],["T. Taponen","🇫🇮",null,2006],["E. Deligny","🇫🇷",null,2008],["A. Spina","🇮🇹"],
+  ["T. Tramnitz","🇩🇪",null,2004],["T. Barnard","🇬🇧",null,2004],["J. Wharton","🇦🇺",null,2006],["R. Yamamoto","🇯🇵",null,1988],
+  ["C. Costoya","🇪🇸",null,2010],["F. Slater","🇬🇧",null,2008],["T. Taponen","🇫🇮",null,2006],["E. Deligny","🇫🇷",null,2008],["A. Spina","🇮🇹",null,2006],
   ["L. Fornaroli","🇮🇹",null,2004],["B. Badoer","🇮🇹",null,2006],["K. Nakamura-Berta","🇯🇵",null,2007],["E. Giltaire","🇫🇷",null,2006],
   ["M. Colnaghi","🇦🇷",null,2008],["T. Schropp","🇦🇷",null,2009],
   // ampliación jul-2026 (verificados): promesas reales de F2/F3/FREC/Eurocup-3
@@ -1298,10 +1300,10 @@ const ROOKIE_POOL = [
   ["M. Molnár","🇭🇺",null,2008],["S. Wheldon","🇺🇸",null,2009],["R. Al Dhaheri","🇦🇪",null,2008],["E. Olivieri","🇮🇹",null,2008],["A. Powell","🇯🇲",null,2007],
   ["E. Eyckmans","🇧🇪",null,2008],["J. Egozi","🇺🇸",null,2007],["R. Lammers","🇳🇱",null,2008],["E. Masson","🇫🇷",null,2004],
   // ampliación jul-2026 (verificados): F4 y karting (academias Ferrari/Mercedes/McLaren/Williams/Red Bull)
-  ["A. Aksoy","🇹🇷",null,2010],["K. Craigie","🇬🇧",null,2010],["L. Wherrell","🇬🇧"],["D. Van Langendonck","🇧🇪",null,2010],["R. Coronel","🇳🇱",null,2010],
-  ["N. Monteiro","🇵🇹",null,2005],["K. Schormans","🇳🇱",null,2009],["B. Łyżeń","🇵🇱"],["N. Baglin","🇬🇧"],["D. Hoogendoorn","🇳🇱"],
-  ["Z. Drummond","🇬🇧"],["J. Anagnostiadis","🇦🇺"],["F. Sala","🇮🇹"],["N. Perico","🇮🇹"],["W. Green","🇬🇧"],
-  ["D. Mirón","🇪🇸"],["M. Jakobsen","🇩🇰",null,2003],["M. Jaubert","🇫🇷",null,2005],
+  ["A. Aksoy","🇹🇷",null,2010],["K. Craigie","🇬🇧",null,2010],["L. Wherrell","🇬🇧",null,2010],["D. Van Langendonck","🇧🇪",null,2010],["R. Coronel","🇳🇱",null,2010],
+  ["N. Monteiro","🇵🇹",null,2005],["K. Schormans","🇳🇱",null,2009],["B. Łyżeń","🇵🇱",null,2010],["N. Baglin","🇬🇧",null,2012],["D. Hoogendoorn","🇳🇱",null,2012],
+  ["Z. Drummond","🇬🇧",null,2009],["J. Anagnostiadis","🇦🇺",null,2010],["F. Sala","🇮🇹",null,2011],["N. Perico","🇮🇹",null,2014],["W. Green","🇬🇧",null,2013],
+  ["D. Mirón","🇪🇸",null,2013],["M. Jakobsen","🇩🇰",null,2003],["M. Jaubert","🇫🇷",null,2005],
   // ampliación jul-2026 (sugerencias verificadas): F4 británica/italiana + Eurocup-3
   ["S. Lindblom","🇸🇪",null,2010],["T. Harfield","🇬🇧",null,2008],["L. Sammalisto","🇫🇮",null,2007],["K. Al Azhari","🇦🇪",null,2007],["T. Strauven","🇧🇪",null,2008]];
 // apellidos genéricos para cuando se agota la cantera, cada uno con su bandera acorde
@@ -2365,8 +2367,11 @@ const TEAM_LOGOS = {
 // 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
 // se volvió papaya; el Williams clásico dio paso al actual). [desdeAño, fichero] — el último que cumple manda.
 const TEAM_LOGOS_ERA = {
-  "McLaren":[[0,"mclaren-chrome.png"],[2017,"mclaren.png"]],
-  "Williams":[[0,"williams-classic.png"],[2020,"williamsok.png"]],
+  // 🕰️ los escudos noventeros (Carlos, 20-ago): McLaren usa el suyo hasta que llega el metálico en
+  // 1997; Williams lleva el clásico de los 90 hasta 2000 incluido. (Ferrari se queda con su escudo
+  // de siempre en todas las épocas — decisión de Carlos.)
+  "McLaren":[[0,"McLaren90.png"],[1997,"mclaren-chrome.png"],[2017,"mclaren.png"]],
+  "Williams":[[0,"Williams90.png"],[2001,"williams-classic.png"],[2020,"williamsok.png"]],
   // Renault tuvo dos vidas muy distintas: el azul y amarillo de los títulos de Alonso (2002-2010)
   // y el amarillo y negro de su vuelta (2016-2020)
   "Renault":[[0,"renault-azul.png"],[2016,"renault.png"]],
