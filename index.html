@@ -10025,6 +10025,7 @@ function tpSignTeam(t, how){
   const sl=S.seats[S.tpTeam]||[]; const flip=ch(.5);
   sl.forEach((d,i)=>{ if(d&&d!=="PLAYER") d.tpc=((i===0)===flip)?1:2; });
   S.tpStints.push({team:S.tpTeam, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
+  S.tpSinExprimir=0;   // 📊 etapa nueva, contador a cero (medido: sin esto, McLaren te reprochaba el proyecto que hiciste en Audi)
   /* 📄 CADA ETAPA FIRMA SU CONTRATO. Este enganche se perdió en el primer intento (el parche murió a
      mitad) y el síntoma era feo: al cambiar de equipo seguías con el RELOJ del anterior — un contrato
      de 4 años en Cadillac vencía según lo que quedara del de McLaren. Cazado al revisar anclajes. */
@@ -10718,8 +10719,71 @@ function tpSignDriver(i,c){
 }
 
 /* la DECISIÓN DE RUMBO: el mando que en el clásico era el dilema `nuevoJefe` — aquí el jefe eres tú */
+/* 🏛️ «QUEREMOS GANAR YA» (Carlos, 21-ago). El único dilema que salta ANTES del rumbo: la directiva
+   te aprieta y LUEGO eliges, con su exigencia sobre la mesa — nunca después, que anularía una decisión
+   recién tomada. Dispara (medido: ~9% de las partidas, hacia la 6ª temporada, una vez por partida) si:
+   el consejo pidió el TÍTULO y quedaste 2º-4º · 2+ inviernos sin elegir ⚡ · no es tu primer año en el
+   equipo (el reproche sería de otra casa) · no ganaste en las últimas 3 (si acabas de ganar, no hay
+   prisa que valga) · y nunca al filial de Red Bull (su consejo jamás pide el título; cinturón igual). */
+function ganarYaCond(){
+  if(S._ganarYaVisto) return false;
+  if(!S.tpTeam || isRBJr(S.tpTeam)) return false;
+  const u=(S.seasons||[]).at(-1);
+  if(!u || u.cat!=="TP" || u.pos==null || u.pos<2 || u.pos>4) return false;
+  if(!(S.tpGoal && S.tpGoal.target===1 && S.tpGoal.year===yearNow()-1)) return false;
+  if((S.tpSinExprimir||0)<2) return false;
+  const st=(S.tpStints||[]).at(-1);
+  if(st && st.y0===yearNow()) return false;
+  if((S.seasons||[]).slice(-3).some(r=>r.pos===1)) return false;
+  return true;
+}
+function tpGanarYa(){
+  S._ganarYaVisto=true;
+  const tn=S.tpTeam, u=(S.seasons||[]).at(-1)||{};
+  const anos=Math.max(2,S.tpSinExprimir||2);
+  setDecision("🏛️ "+L("«Queremos ganar YA»","\"We want to win NOW\"",{pt:"«Queremos vencer JÁ»"})+" · "+tn,
+    L(`El consejo te ha citado sin avisar. Sobre la mesa, el acta de la última junta y tu plan de desarrollo. «Te pedimos el título. Quedaste ${u.pos}º. Y llevas ${anos} años diciéndonos que el año que viene, que el año que viene. El coche está ahí, ${tn} está ahí, y nos hemos cansado de mirar cómo otro levanta la copa que pagamos nosotros. Este año se vuelca todo en el coche que corre. Todo.»`,
+      `The board summons you unannounced. On the table, the minutes of the last meeting and your development plan. "We asked for the title. You finished P${u.pos}. And for ${anos} years you've been telling us next year, next year. The car is there, ${tn} is there, and we're tired of watching someone else lift the trophy we pay for. This year everything goes into the car that races. Everything."`,
+      {pt:`O conselho te convoca sem avisar. Sobre a mesa, a ata da última reunião e o seu plano de desenvolvimento. «Pedimos o título. Você terminou em ${u.pos}º. E há ${anos} anos você nos diz que no ano que vem, que no ano que vem. O carro está aí, a ${tn} está aí, e cansamos de ver outro levantar a taça que nós pagamos. Este ano tudo vai para o carro que corre. Tudo.»`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const mk=(dot,nm,sub,fn)=>{
+    const b=document.createElement("button"); b.className="offer dilemma";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#8a6a10,#5e470b)">${dot}</span>
+      <span class="info"><span class="name">${nm}</span><span class="sub" style="display:block">${sub}</span></span>`;
+    b.onclick=fn; box.appendChild(b);
+  };
+  // A · ceder: rumbo forzado a exprimir, el consejo respira
+  mk("🤝",L("«Vale. Este año lo damos todo»","\"Fine. This year we give it everything\"",{pt:"«Está bem. Este ano damos tudo»"}),
+    L("Tienen razón en una cosa: el título no se gana el año que viene.","They're right about one thing: the title isn't won next year.",{pt:"Eles têm razão numa coisa: o título não se ganha no ano que vem."}),
+    ()=>{ S.tpSinExprimir=0;
+      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(2,3.5)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(5,8));
+      S.pendingEvents.push(L("🤝 Cedes, y el consejo respira. La fábrica vuelca hasta el último recurso en el coche de este año — y se nota desde la primera carrera. Lo que venga después, ya se verá.","🤝 You give in, and the board breathes out. The factory pours every last resource into this year's car — you feel it from race one. Whatever comes after, comes after.",{pt:"🤝 Você cede, e o conselho respira. A fábrica despeja cada recurso no carro deste ano — e se nota desde a primeira corrida. O que vier depois, logo se vê."}));
+      tpRepartoScreen(); });
+  // B · plantarte: el dado arreglado — base 35, títulos y fama suman, el ultimátum resta
+  mk("🧱",L("«Competimos, pero no quemo el coche del año que viene»","\"We'll race, but I'm not burning next year's car\"",{pt:"«Competimos, mas não queimo o carro do ano que vem»"}),
+    L("No es renunciar al título: es negarse a pagarlo con la temporada siguiente.","It's not giving up on the title: it's refusing to pay for it with next season.",{pt:"Não é desistir do título: é recusar pagá-lo com a temporada seguinte."}),
+    ()=>{ let p=.35 + .15*(S.titles.constr||0) + (S.tpPrest>85?.20:S.tpPrest>70?.10:0) - (S.tpMissStreak>=1?.15:0);
+      p=Math.max(.05,Math.min(.97,p));
+      if(ch(p)){
+        S.tpPrest=Math.min(99,S.tpPrest+3); S._ganarYaFirme=yearNow();
+        S.pendingEvents.push(L("🏛️ Se hace un silencio largo. El presidente cierra la carpeta. «Un año más. Uno.» No has ganado nada todavía, pero sales del despacho con tu plan intacto y con algo que no tenías al entrar: te han escuchado. +fama","🏛️ A long silence. The chairman closes the folder. \"One more year. One.\" You haven't won anything yet, but you leave with your plan intact and something you didn't have walking in: they listened. +fame",{pt:"🏛️ Um silêncio longo. O presidente fecha a pasta. «Mais um ano. Um.» Você ainda não ganhou nada, mas sai com o plano intacto e com algo que não tinha ao entrar: te ouviram. +fama"}));
+      } else {
+        S.tpMissStreak=Math.max(S.tpMissStreak||0,1); S._ganarYaFirme=yearNow();
+        S.pendingEvents.push(L("🚨 No se molestan ni en discutirlo. «Tomamos nota de tu posición. Nosotros tomamos nota de los resultados.» El plan sigue siendo tuyo, pero ya no tienes crédito: el próximo tropiezo no lo vas a poder explicar.","🚨 They don't even argue. \"We note your position. We'll be noting the results.\" The plan is still yours, but your credit is gone: the next stumble won't be explainable.",{pt:"🚨 Nem se dão ao trabalho de discutir. «Tomamos nota da sua posição. Nós tomaremos nota dos resultados.» O plano segue sendo seu, mas o crédito acabou: o próximo tropeço não terá explicação."}));
+      }
+      tpRumboScreen(); });
+  // C · amenazar con irte: el paddock se entera, y el invierno que viene suenan teléfonos
+  mk("💼",L("«Si no confiáis en el plan, buscad a otro»","\"If you don't trust the plan, find someone else\"",{pt:"«Se não confiam no plano, procurem outro»"}),
+    L("Drástico. Y en el paddock no hay secretos.","Drastic. And the paddock keeps no secrets.",{pt:"Drástico. E no paddock não há segredos."}),
+    ()=>{ S._jefeDisponible=true;
+      S.pendingEvents.push(L("💼 Lo dices en voz baja y sin levantarte, que es como se dicen estas cosas. Para el viernes ya lo sabe medio paddock, y dos teléfonos que llevaban un año callados vuelven a sonar.","💼 You say it quietly, without standing up — the way these things are said. By Friday half the paddock knows, and two phones that had been silent for a year start ringing again.",{pt:"💼 Você diz em voz baixa e sem se levantar, que é como se dizem essas coisas. Na sexta metade do paddock já sabe, e dois telefones calados há um ano voltam a tocar."}));
+      tpRumboScreen(); });
+  scrollToDecision();
+}
 function tpRumboScreen(){
   if(S.retired) return;
+  if(ganarYaCond()){ tpGanarYa(); return; }
   const tn=S.tpTeam, perf=Math.round(S.f1perf[tn]||75);
   const ti=trendInfo(tn);
   /* ⭐ el nivel del coche en ESTRELLAS y la tendencia como chip de color (Carlos, 20-ago: fuera el
@@ -10768,15 +10832,18 @@ function tpRumboScreen(){
         −1 / +2,4 / +5,0 / +6,9 — el doble que continuidad en el año 2, a cambio del 25% de bache */
   mk("⚡",L("Exprimir el coche ESTE año","Squeeze the car THIS year",{pt:"Espremer o carro ESTE ano"}),
     L("Mejora rápida ya, pero hipotecas el año siguiente.<br>Para dar un golpe cuando estás cerca.","Fast gains now, but you mortgage next year.<br>To strike when you're close.",{pt:"Melhora rápida já, mas hipoteca o próximo ano.<br>Para dar o bote quando está perto."}),
-    ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(2,3.5)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(5,8));
+    ()=>{ S.tpSinExprimir=0; S._ganarYaFirme=null;   // 📊 exprimiste: el contador vuelve a cero (y si te habías plantado, ya no cuenta)
+      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(2,3.5)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(5,8));
       S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
   mk("⚖️",L("Mejoras SEGURAS y continuidad","SAFE gains and continuity",{pt:"Melhorias SEGURAS e continuidade"}),
     L("Subida pequeña pero segura, sin riesgo y sin hipotecar nada.<br>El término medio: ni golpe ni sacrificio.","A small but safe climb, no risk and nothing mortgaged.<br>The middle ground: no strike, no sacrifice.",{pt:"Subida pequena mas segura, sem risco e sem hipoteca.<br>O meio-termo: nem bote nem sacrifício."}),
-    ()=>{ S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(.5,1.5)); S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+rnd(2,4));
+    ()=>{ S.tpSinExprimir=(S.tpSinExprimir||0)+1;
+      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(.5,1.5)); S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+rnd(2,4));
       S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
   mk("🏗️",L("Proyecto a DOS AÑOS","TWO-YEAR project",{pt:"Projeto de DOIS ANOS"}),
     L("Sacrificas este año por la promesa de un coche mucho mejor dentro de dos.<br>El salto más grande, y el más arriesgado.","You sacrifice this year for the promise of a much better car in two.<br>The biggest leap, and the riskiest.",{pt:"Sacrifica este ano pela promessa de um carro muito melhor em dois.<br>O maior salto, e o mais arriscado."})+(avisoProyecto||""),
     ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
+      S.tpSinExprimir=(S.tpSinExprimir||0)+1;
       if(S._penProyecto) TPRE(-S._penProyecto);   // el precio de sacrificar el presente, avisado antes
       S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(.5,2));   // el sacrificio del primer año, siempre
       S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+(ch(.75)?rnd(11,15):rnd(-2,4)));
@@ -10949,6 +11016,14 @@ function simTP(row){
   row.tpLine=parts.join(" · ");
   const st=S.tpStints.at(-1); if(st) st.y1=row.year;
   const constrChamp=(row.top3c && row.top3c[0])===tn;
+  /* 🏆 el remate de «Queremos ganar YA»: te plantaste ante el consejo, no quemaste el coche del año
+     que viene… y ganaste igual (medido: pasa el 36% de las veces). Hay que celebrarlo. */
+  if(S._ganarYaFirme===row.year){
+    if(constrChamp){ S.tpPrest=Math.min(99,S.tpPrest+4);
+      row.events.push(L("🏆 Ganaste. Con el plan que querían tirar a la basura y con el coche del año que viene ya rodando en el túnel. Nadie en esa sala te va a pedir perdón, pero todos saben lo que pasó. +fama","🏆 You won. With the plan they wanted to bin and next year's car already turning in the tunnel. Nobody in that room will apologise, but everyone knows what happened. +fame",{pt:"🏆 Você venceu. Com o plano que queriam jogar fora e com o carro do ano que vem já rodando no túnel. Ninguém naquela sala vai pedir desculpa, mas todos sabem o que aconteceu. +fama"}));
+    }
+    S._ganarYaFirme=null;
+  }
   if(constrChamp){ S.titles.constr++; if(st) st.constr++;
     row.events.push(L(`🏭 ¡CAMPEONES DE CONSTRUCTORES! ${tn} conquista el Mundial bajo tu mando.`,
       `🏭 CONSTRUCTORS' CHAMPIONS! ${tn} takes the title under your command.`,
@@ -11201,11 +11276,19 @@ function tpTemptCheck(){
   const G=S.tpGoal||{}; const delta=(G.exp||6)-(last.pos||6);
   // dos puertas: sobre-rendimiento claro, o llevar a un equipo medio/pequeño al podio de constructores
   const brillas = (delta>=2 && S.tpPrest>=60) || ((G.exp||6)>=4 && (last.pos||6)<=3 && S.tpPrest>=55);
-  if(!brillas) return false;
-  if(S.tpTemptY && yearNow()-S.tpTemptY<2) return false;   // no dos inviernos seguidos
+  // 💼 si amenazaste con irte («Queremos ganar YA»), el paddock ya sabe que escuchas ofertas:
+  // este invierno la llamada no exige brillar ni respeta el enfriamiento. La bandera se consume.
+  const _dispo=S._jefeDisponible; S._jefeDisponible=false;
+  if(!brillas && !_dispo) return false;
+  if(!_dispo && S.tpTemptY && yearNow()-S.tpTemptY<2) return false;   // no dos inviernos seguidos
   const myPerf=S.f1perf[S.tpTeam]||70;
-  const cands=F1_TEAMS.filter(t=>t.name!==S.tpTeam && (S.f1perf[t.name]||70)>=myPerf+6 && (S.cache[t.name]||0)>=78);
-  if(!cands.length || !ch(.45)) return false;
+  /* 💼 si te pusiste en el mercado, la llamada no tiene por qué venir de un GIGANTE: desde un equipo
+     top nadie es «6 puntos mejor» y la amenaza quedaba en nada (lo cazó la verificación). Disponible,
+     te llama cualquier proyecto de nivel parecido con caché; sin bandera, solo los grandes de verdad. */
+  const cands=F1_TEAMS.filter(t=>t.name!==S.tpTeam && (_dispo
+    ? ((S.f1perf[t.name]||70)>=myPerf-4 && (S.cache[t.name]||0)>=70)
+    : ((S.f1perf[t.name]||70)>=myPerf+6 && (S.cache[t.name]||0)>=78)));
+  if(!cands.length || !ch(_dispo?.85:.45)) return false;
   const t=cands[irnd(0,cands.length-1)];
   S.tpTemptY=yearNow();
   setDecision(L("📞 Un grande llama a tu puerta","📞 A giant comes knocking",{pt:"📞 Uma grande bate à sua porta"}),
