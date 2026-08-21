@@ -1809,7 +1809,11 @@ const LINEAGE_1990 = [
                          {to:{name:"Arrows",abbr:"ARR",color:"#FF6600",color2:"#111111"}, w:[1996,1998], p:.8, from:"Footwork"},
                          {die:true, w:[2002,2005], p:.8}]},
  {key:"Ligier",   steps:[{to:{name:"Prost GP",abbr:"PRO",color:"#0A1A3F",color2:"#F5F5F5"}, w:[1996,1998], p:.75},
-                         {die:true, w:[2001,2004], p:.8, from:"Prost GP"}]},
+                         /* ⚰️ SIN `from`: era el ÚNICO linaje cuya muerte exigía el rebautizo previo, y como
+                            Ligier→Prost solo ocurre el 75% de las veces, 1 de cada 4 Ligier se volvía
+                            INMORTAL (medido: el linaje vivo en 2010 el 50% de las partidas; la realidad,
+                            0% — Prost quebró en 2001). Muera con el nombre que muera. */
+                         {die:true, w:[2001,2004], p:.8}]},
  {key:"Tyrrell",  steps:[{to:{name:"BAR",abbr:"BAR",color:"#C9BFA6",color2:"#D0021B"}, w:[1998,2000], p:.8},
                          {to:{name:"Honda",abbr:"HON",color:"#F5F5F5",color2:"#D0021B"}, w:[2005,2008], p:.7, from:"BAR"},
                          {to:{name:"Brawn",abbr:"BGP",color:"#C6E600",color2:"#111111"}, w:[2008,2011], p:.5, from:"Honda"},
@@ -7229,8 +7233,24 @@ function processLineage(row){
          Mundial no se sostiene (lo cazo Carlos). Si va entre los tres mejores coches, la quiebra se
          aplaza: los patrocinadores aparecen cuando ganas. */
       if(st.die){
+        /* 🏆 el indulto por ir entre los tres mejores: UN año, y como mucho dos veces (Carlos, 21-ago:
+           «si haces un 3er puesto entiendo que te dé otra oportunidad, pero si vas quedando 3-9-2-10
+           no es realista». Antes era +2 años sin tope y una racha buena te hacía inmortal: Arrows
+           acumulaba aplazamientos de 10 años y sobrevivía el doble de lo diseñado). */
+        /* 👑 …pero GANAR lo cambia todo (Carlos, 21-ago: «¿y si Arrows gana dos títulos en esas
+           oportunidades y las agota, quiebra igual?»). Si el condenado acaba de proclamarse campeón
+           de constructores, la quiebra se aplaza UNA DÉCADA LARGA (10-15 años) y recupera sus
+           indultos — no se cancela para siempre: «Arrows puede ser campeón en 2001 y quebrar para
+           cuando llegue 2020, son muchos años» (Carlos). Medido con cancelación total: el 40% de las
+           partidas largas retenía un superviviente eterno; así, el ciclo de la F1 sigue girando. */
+        if((S.rankC||{})[chn.cur]===1){
+          st.year=yearNow()+irnd(10,15); st.salvado=0;
+          row.events.push(L(`💰 ${chn.cur} iba camino de la quiebra… y ha acabado campeón. Los patrocinadores hacen cola en la puerta: el futuro queda asegurado por años.`,
+            `💰 ${chn.cur} was headed for bankruptcy… and ended up champions. Sponsors are queuing at the door: the future is secured for years to come.`,
+            {pt:`💰 A ${chn.cur} ia rumo à falência… e acabou campeã. Os patrocinadores fazem fila na porta: o futuro está garantido por anos.`}));
+          return; }
         const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).map(t=>t.name);
-        if(ord.indexOf(chn.cur)<3){ st.year=yearNow()+2; return; }
+        if(ord.indexOf(chn.cur)<3 && (st.salvado=(st.salvado||0)+1)<=2){ st.year=yearNow()+1; return; }
       }
       if(st.die){
         // nunca muere con el JUGADOR dentro (titular o probador): agoniza un año, te avisa y te obliga a salir
@@ -7241,7 +7261,9 @@ function processLineage(row){
             row.events.push(L(`💸 ${chn.cur} está en quiebra: los sueldos no llegan y el barco se hunde. Busca asiento YA.`,`💸 ${chn.cur} is going under: wages are late and the ship is sinking. Find a seat NOW.`,{pt:`💸 A ${chn.cur} está falida: os salários não chegam e o barco afunda. Procure vaga JÁ.`})); }
           st.year=yearNow()+1; return; // reintenta al año siguiente, cuando ya hayas salido
         }
-        if(F1_TEAMS.length<=10){ st.done=true; return; } // parrilla mínima de 10: no se muere nadie más
+        // parrilla mínima de 10: la quiebra ESPERA a que entre alguien, no se cancela para siempre
+        // (medido 21-ago: la cancelación regalaba ~4 supervivencias extra por cada 50 partidas)
+        if(F1_TEAMS.length<=10){ st.year=yearNow()+1; return; }
         killTeam(chn.cur, row); st.done=true; return;
       }
       rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true; yaCambio=true;
