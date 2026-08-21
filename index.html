@@ -2069,6 +2069,7 @@ const ERAS = {
     cats:{F4:["Fórmula Ford","Formula Ford","Fórmula Ford"],F3:["F3 Británica","British F3","F3 Britânica"],FR:["F3 Continental","Continental F3","F3 Continental"],F2:"F3000"},
     jr:{F4:FFORD_1990,F3:F3BR_1990,FR:F3EU_1990,F2:F3000_1990}, kart:KART_1990,
     deadly:true, deathWindow:[1993,1995],   // ⚫ los años en los que puede pasar (uno por partida)
+    maxGrid:20,   // 🚪 en esta década la parrilla real llegó a 19-20 equipos: el tope moderno de 13 no vale aquí
     crossovers:CROSSOVERS_1990,
     lineage:LINEAGE_1990, arrivals:ARRIVALS_1990,
     // en 1990 no hay filial de Red Bull: la clave apunta al nombre FUTURO y solo cuenta si Red Bull llega
@@ -7104,7 +7105,15 @@ function processEntries(row){
     /* 🚫 «SIEMPRE Y CUANDO NO HAYA MÁS CAMPOS ANTES» (Carlos). Si ya hay en la parrilla un equipo cuyo
        nombre contiene esta marca, esta entrada no ocurre: dos Campos a la vez no existirían nunca. */
     if(e.noSi && F1_TEAMS.some(t=>t.name.indexOf(e.noSi)>=0)){ e.added=true; return; }
-    if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
+    /* 🚪 EL TOPE ES DE ÉPOCA, no un 13 grabado a fuego (medición del 20-ago: con 18 coches en 1991,
+       el 13 dejaba a JORDAN fuera en el 100% de las partidas — y quemaba la entrada para siempre.
+       El equipo donde debutó Schumacher no existía). En los 90 caben 20; en las eras modernas, 13.
+       Y si la parrilla está llena, la entrada ESPERA hasta 3 años a que se abra hueco, no se quema. */
+    const _cap=(ERAS[SELECTED_ERA]&&ERAS[SELECTED_ERA].maxGrid)||13;
+    if(F1_TEAMS.length>=_cap){
+      if((e.defer=(e.defer||0)+1)<=3) return;
+      e.added=true; return;
+    }
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
     palmSeedTeam(e.team.name, S.baseYear);   // 🏆 si la marca tiene palmarés propio, llega con él puesto
