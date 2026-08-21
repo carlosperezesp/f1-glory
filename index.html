@@ -9350,7 +9350,11 @@ function endCareer(){
     : S.subcamp>0?"runner_up" : S.wins>0?"race_winner" : S.f1Seasons>0?"f1_driver" : "prospect";
   track("career_ended", {result, f1_titles:S.titles.f1, constructors:S.titles.constr, f1_seasons:S.f1Seasons, wins:S.wins, retire_age:S.age, era:S.era||"2026"});
   const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
-  $("endName").textContent=sel.flag+" "+pName()+" #"+sel.num;
+  /* 🏳️ la bandera de la pantalla final pasa por flg(): las naciones históricas (YUG, URS, GDR, TCH)
+     tienen SVG propia y el código pelado parecía parte del nombre («YUG MIROSLAV», lo cazó Carlos).
+     El nombre va como NODO DE TEXTO, nunca por innerHTML: lo escribe el jugador. */
+  $("endName").innerHTML=flg(sel.flag)+" ";
+  $("endName").appendChild(document.createTextNode(pName()+" #"+sel.num));
   $("eGP").textContent=S.gp; $("eW").textContent=S.wins; $("eP").textContent=S.podiums;
   $("ePP").textContent=S.poles; $("eT").textContent=S.titles.f1; $("eC").textContent=S.titles.constr;
   $("eSub").textContent=S.subcamp; $("ePts").textContent=S.ptsF1;
@@ -10833,7 +10837,8 @@ function endTPCareer(){
   const teams=[...new Set((S.tpStints||[]).map(s=>s.team))];
   track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
   const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
-  $("endName").textContent=sel.flag+" "+pName();
+  $("endName").innerHTML=flg(sel.flag)+" ";   // 🏳️ misma corrección que en el final clásico
+  $("endName").appendChild(document.createTextNode(pName()));
   $("endYears").textContent="🧑‍💼 Team Principal · "+L(`Al mando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} escudería${teams.length===1?"":"s"}`,
     `In charge: ${S.baseYear||2026} – ${yearNow()} · ${yrs} season${yrs===1?"":"s"} · ${teams.length} team${teams.length===1?"":"s"}`,
     {pt:`No comando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} equipe${teams.length===1?"":"s"}`});
