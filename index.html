@@ -10065,6 +10065,7 @@ function tpSignTeam(t, how){
 function tpYearStart(){
   if(S.retired) return;
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
+  tpVenganzaCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
   tpBolsaSeCansa();      // ⏳ y el que salió a buscar asiento y no lo encuentra, cruza fuera de la F1
   /* 🧑‍💼 SALIDAS PACTADAS EL AÑO PASADO (dilemas «vienen a por tu estrella» y «dos gallos»). El piloto
@@ -11301,7 +11302,10 @@ function tpTemptCheck(){
   /* 💼 si te pusiste en el mercado, la llamada no tiene por qué venir de un GIGANTE: desde un equipo
      top nadie es «6 puntos mejor» y la amenaza quedaba en nada (lo cazó la verificación). Disponible,
      te llama cualquier proyecto de nivel parecido con caché; sin bandera, solo los grandes de verdad. */
-  const cands=F1_TEAMS.filter(t=>t.name!==S.tpTeam && (_dispo
+  /* ⚔️ el equipo al que le declaraste la guerra («Se va a Ferrari», rama de la venganza) no te
+     ofrece su muro mientras la sangre esté caliente: nadie ficha al que vino a saquearle la fábrica. */
+  const _feud=(S._tpFeud && yearNow()<=S._tpFeud.until) ? S._tpFeud.team : null;
+  const cands=F1_TEAMS.filter(t=>t.name!==S.tpTeam && t.name!==_feud && (_dispo
     ? ((S.f1perf[t.name]||70)>=myPerf-4 && (S.cache[t.name]||0)>=70)
     : ((S.f1perf[t.name]||70)>=myPerf+6 && (S.cache[t.name]||0)>=78)));
   if(!cands.length || !ch(_dispo?.85:.45)) return false;
@@ -11978,6 +11982,57 @@ const TP_DILEMAS=[
     llegar, es cuando montas tu estructura). Una vez por carrera (lo garantiza `usedDilemmas`).
     Es una apuesta de VARIANZA: traerlos puede disparar el coche o resquebrajar el departamento; la
     otra opción es segura y modesta. */
+/* 🧲 «SE VA A FERRARI» — entrada 184 del documento de Carlos (tpElJefeDeAerodinamica), montada el
+   22-ago con sus tres ramas. Es el ESPEJO de tpDreamTeam: allí te llevas a tu gente; aquí te la roban
+   a ti, a mitad de proyecto. Pide un rival con coche mejor que el tuyo (quien puede pagar la fuga) y
+   dos temporadas de rodaje: sin estructura montada no hay departamento que perder. */
+ {id:"tpElJefeDeAerodinamica",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<2) return false;
+    const mio=S.f1perf[S.tpTeam]??75;
+    const cands=F1_TEAMS.filter(t=>t.name!==S.tpTeam && (S.f1perf[t.name]??70)>mio+2);
+    if(!cands.length) return false;
+    S._aeroA=cands[irnd(0,cands.length-1)].name; return true; },
+  t:()=>L(`Se va a ${S._aeroA||"un rival"}`,`He's leaving for ${S._aeroA||"a rival"}`,{pt:`Vai para a ${S._aeroA||"um rival"}`}),
+  d:()=>{ const a=S._aeroA||"un rival";
+    return L(`Tu jefe de aerodinámica entra en el despacho con la carta ya escrita: ${a} le ofrece el doble y un departamento entero a su medida. Sabes que el coche que estáis desarrollando es suyo de arriba abajo. Y hay una segunda parte, la que de verdad duele: quiere llevarse a media docena de los suyos.`,
+      `Your head of aerodynamics walks in with the letter already written: ${a} is offering double and a whole department built around him. You know the car you're developing is his from top to bottom. And there's a second part, the one that really hurts: he wants to take half a dozen of his people with him.`,
+      {pt:`Seu chefe de aerodinâmica entra na sala com a carta já escrita: a ${a} oferece o dobro e um departamento inteiro sob medida. Você sabe que o carro que estão desenvolvendo é dele de cima a baixo. E há uma segunda parte, a que dói de verdade: quer levar meia dúzia dos seus.`}); },
+  opts:[
+   // A · el talonario: el consejo gruñe, y él se queda… pero con la cabeza en otra parte
+   {l:()=>L("Igualar la oferta: que no salga por esa puerta","Match the offer: he's not walking out that door",{pt:"Igualar a oferta: ele não sai por essa porta"}),
+    r:()=>{ TPRE(-2);
+      return roll(
+       [55,()=>{ TPCAR(.5); TPTGT(3);
+         return L(`Firma sin mirarte a los ojos, pero firma. Antes de que acabe el invierno ya está otra vez de pie en el túnel a las once de la noche, y el proyecto no se ha movido un milímetro de su sitio. Al consejo le ha costado lo que cuesta un piloto, y te lo recordará. +proyecto · −prestigio`,
+                  `He signs without meeting your eye, but he signs. Before winter is out he's back on his feet in the tunnel at eleven at night, and the project hasn't shifted an inch. It cost the board what a driver costs, and they'll remind you. +project · −prestige`,
+                  {pt:`Assina sem olhar nos seus olhos, mas assina. Antes de o inverno acabar já está de pé no túnel às onze da noite, e o projeto não saiu do lugar. Custou ao conselho o que custa um piloto, e eles vão lembrar. +projeto · −prestígio`}); }],
+       [45,()=>{ TPTGT(-3);
+         return L(`Se queda, y ese es todo el logro. Pasa el invierno respondiendo llamadas que no son tuyas y delegando lo que antes firmaba él. El dinero compra la firma; las ganas no se compran. −proyecto · −prestigio`,
+                  `He stays, and that's the whole achievement. He spends the winter taking calls that aren't yours and delegating what he used to sign off himself. Money buys the signature; it doesn't buy the appetite. −project · −prestige`,
+                  {pt:`Fica, e essa é toda a conquista. Passa o inverno atendendo ligações que não são suas e delegando o que antes assinava. O dinheiro compra a assinatura; a vontade não se compra. −projeto · −prestígio`}); }]); }},
+   // B · dejarlo ir y ascender de dentro: el coche baja… salvo que hayas destapado a un Newey
+   {l:()=>L("Dejarlo ir y ascender a alguien de dentro","Let him go and promote from within",{pt:"Deixá-lo ir e promover alguém de dentro"}),
+    r:()=>{ const a=S._aeroA||"el rival";
+      return roll(
+       [18,()=>{ TPCAR(1); TPTGT(9); tpRivalSeLoLleva(a);
+         return L(`Asciendes a su número dos, que llevaba cuatro años firmando el trabajo de otro. En las primeras carreras el coche tiene una solución que nadie de la parrilla entiende, y en ${a} empiezan a preguntarse a quién ficharon exactamente. Hay gente que solo necesita que le quiten a alguien de encima. +coche · ++proyecto`,
+                  `You promote his number two, who spent four years signing off someone else's work. In the opening races the car has a solution nobody on the grid understands, and at ${a} they start wondering who exactly they signed. Some people just need someone lifted off them. +car · ++project`,
+                  {pt:`Promove o número dois dele, que passou quatro anos assinando o trabalho de outro. Nas primeiras corridas o carro tem uma solução que ninguém no grid entende, e na ${a} começam a se perguntar quem exatamente contrataram. Há gente que só precisa que tirem alguém de cima. +carro · ++projeto`}); }],
+       [82,()=>{ TPTGT(-5); TPRE(1); tpRivalSeLoLleva(a);
+         return L(`Le das la mano y le dejas marchar con los suyos. Proteges la estructura salarial y el paddock toma nota de que aquí no se secuestra a nadie con dinero. Pero el departamento tarda un año largo en volver a andar solo, y eso se ve en el coche. −proyecto · +prestigio`,
+                  `You shake his hand and let him go with his people. You protect the wage structure, and the paddock notes that nobody gets held hostage here with money. But the department takes a long year to walk on its own again, and that shows up in the car. −project · +prestige`,
+                  {pt:`Você aperta a mão dele e o deixa ir com os seus. Protege a estrutura salarial e o paddock anota que aqui ninguém é sequestrado com dinheiro. Mas o departamento demora um ano longo para voltar a andar sozinho, e isso aparece no carro. −projeto · +prestígio`}); }]); }},
+   // C · la venganza fría: se cobra el invierno SIGUIENTE, y puede salir mal
+   {l:()=>L("Dejarlo ir… y el año que viene voy yo a por el suyo","Let him go… and next year I go after theirs",{pt:"Deixá-lo ir… e no ano que vem eu vou atrás do deles"}),
+    r:()=>{ const a=S._aeroA||"el rival";
+      TPTGT(-5); tpRivalSeLoLleva(a);
+      S._tpVenganza={team:a, year:yearNow()+1};
+      S._tpFeud={team:a, until:yearNow()+4};   // ⚔️ declarada la guerra: ese garaje no te llama
+      return L(`No discutes el finiquito ni pides contraofertas. Le firmas la salida el mismo día, pero esto no quedará así… El invierno es largo y tú tienes memoria y agenda: irás a pescar en ${a}. −proyecto`,
+               `You don't argue the payoff or ask for counter-offers. You sign his release that same day — but this isn't over. Winters are long and you have both a memory and a diary: you'll go fishing at ${a}. −project`,
+               {pt:`Você não discute a rescisão nem pede contrapropostas. Assina a saída no mesmo dia, mas isto não vai ficar assim… O inverno é longo e você tem memória e agenda: vai pescar na ${a}. −projeto`}); }}
+  ]},
  {id:"tpDreamTeam",
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
     const st=S.tpStints||[]; if(st.length<2) return false;
@@ -12017,6 +12072,43 @@ const TP_DILEMAS=[
                 "Without fresh blood, development stalls: rivals bring ideas and you repeat yours. −project",
                 {pt:"Sem sangue novo, o desenvolvimento estagna: os rivais trazem ideias e você repete as suas. −projeto"});}])}]},
 ];
+/* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
+   rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
+/* 🧲 quien te roba el cerebro, se lo lleva puesto: el rival sube un poco su techo. Sin esto, la fuga
+   era un impuesto que pagabas tú y que no cobraba nadie (lo cazó Carlos). Solo cuando SE VA de verdad. */
+function tpRivalSeLoLleva(nombre){
+  if(!nombre || S.f1target[nombre]==null) return;
+  S.f1target[nombre]=Math.max(61,Math.min(95,S.f1target[nombre]+rnd(3,6)));
+}
+/* ⚔️ …y cuando vas a pescar y pescas, ellos se quedan sin lo que se llevaron: el cerebro no se
+   clona, cambia de garaje (Carlos, 22-ago: «¿gano algo yo, o se le resta a Ferrari?» — las dos). */
+function tpRivalPierdeElCerebro(nombre){
+  if(!nombre || S.f1target[nombre]==null) return;
+  S.f1target[nombre]=Math.max(61,Math.min(95,S.f1target[nombre]-rnd(3,6)));
+}
+function tpVenganzaCheck(){
+  const v=S._tpVenganza; if(!v || yearNow()<v.year) return;
+  S._tpVenganza=null;
+  if(!F1_TEAMS.some(t=>t.name===v.team)){
+    S.pendingEvents.push(L(`🧲 Ibas a por el jefe técnico de ${v.team} y resulta que ${v.team} ya no existe. Hay venganzas que te las cobra el tiempo.`,
+      `🧲 You were going after ${v.team}'s technical chief, and it turns out ${v.team} no longer exists. Some revenge time collects for you.`,
+      {pt:`🧲 Você ia atrás do chefe técnico da ${v.team} e a ${v.team} já não existe. Há vinganças que o tempo cobra por você.`}));
+    return;
+  }
+  roll(
+   [45,()=>{ TPCAR(1); TPTGT(6); TPRE(1); tpRivalPierdeElCerebro(v.team);
+     S.pendingEvents.push(L(`🧲 Te llevas al hombre que les hacía el coche a ${v.team}, y con él a dos de su departamento. En el paddock ya no se saluda nadie de los dos garajes, pero tu túnel de viento vuelve a tener quien lo mande. +coche · +proyecto · +prestigio`,
+       `🧲 You take the man who built ${v.team}'s car, and two of his department with him. Nobody from either garage says hello in the paddock any more, but your wind tunnel has someone in charge again. +car · +project · +prestige`,
+       {pt:`🧲 Você leva o homem que fazia o carro da ${v.team}, e com ele dois do departamento. No paddock ninguém dos dois boxes se cumprimenta mais, mas o seu túnel de vento voltou a ter quem mande. +carro · +projeto · +prestígio`})); }],
+   [20,()=>{ TPTGT(-2); TPRE(-1); tpRivalPierdeElCerebro(v.team);
+     S.pendingEvents.push(L(`🧲 Te lo llevas, y ahí se acaba lo bueno. En ${v.team} funcionaba porque tenía detrás una fábrica que tú no tienes, y lo que aquí encuentra no se parece en nada a lo que le vendiste. En julio ya no sabes si has fichado a un genio o a un currante con suerte. Ellos lo han perdido, tú no lo has ganado. −proyecto · −prestigio`,
+       `🧲 You get him, and that's where the good part ends. At ${v.team} he worked because he had a factory behind him that you don't have, and what he finds here looks nothing like what you sold him. By July you no longer know whether you signed a genius or a lucky journeyman. They've lost him, you haven't gained him. −project · −prestige`,
+       {pt:`🧲 Você o leva, e aí acaba a parte boa. Na ${v.team} funcionava porque tinha atrás uma fábrica que você não tem, e o que encontra aqui não se parece nada com o que você vendeu. Em julho você já não sabe se contratou um gênio ou um trabalhador com sorte. Eles o perderam, você não o ganhou. −projeto · −prestígio`})); }],
+   [35,()=>{ TPRE(-2);
+     S.pendingEvents.push(L(`🧲 Haces la llamada y te dicen que no: en ${v.team} han blindado a los suyos en cuanto vieron venir la jugada. Lo único que te llevas es la fama de rencoroso, que en el paddock viaja rápido. −prestigio`,
+       `🧲 You make the call and they turn you down: ${v.team} locked their people in the moment they saw it coming. All you take away is a reputation for holding grudges, which travels fast in the paddock. −prestige`,
+       {pt:`🧲 Você faz a ligação e dizem não: na ${v.team} blindaram os seus assim que viram a jogada chegando. A única coisa que você leva é a fama de rancoroso, que no paddock viaja rápido. −prestígio`})); }]);
+}
 function pickTPDilemma(){
   // 🧪 en un escenario de prueba manda EL dilema que se quiere revisar (mismo criterio que pickDilemma)
   const _T=testNow();
