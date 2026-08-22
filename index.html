@@ -2371,7 +2371,7 @@ const TEAM_LOGOS = {
   "USF1":"USF1.png","Stefan GP":"StefanGP.png","Toyota":"ToyotaRacing.png","Porsche":"Porsche.png","Andretti":"Andretti.png",
   // 🕰️ era 2000 y sus transformaciones
   "Jordan":"Jordan.png","Jaguar":"Jaguar.png","Minardi":"Minardi.png","Benetton":"Benetton.png",
-  "BAR":"BAR.png","Arrows":"Arrows.png","Prost GP":"Prost.png","BMW Sauber":"BMW.png",
+  "BAR":"BAR.png","Arrows":"Arrows.png","Prost GP":"Prost.png","BMW Sauber":"BMW.png","BMW":"BMW.png",
   "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png",
   "Maserati":"maserati.png"
 };
@@ -9867,6 +9867,24 @@ function initTPState(){
   S.deathsOn=false;
   window._tpUiDirty=true;  // al volver al clásico en la misma sesión, la tarjeta se restaura
 }
+/* 🧑‍✈️ EL DUEÑO ERES TÚ (el arco Brawn, Carlos 22-ago). No va en TP_OWNERS: ese array se sortea al
+   empezar y este dueño solo se gana comprando el equipo (tpAcciones). Ser el dueño significa que
+   NADIE puede despedirte — la presión pasa de la silla al bolsillo. */
+const OWNER_SELF={k:"self",
+  lab:()=>L("🧑‍✈️ Dueño: TÚ","🧑‍✈️ Owner: YOU",{pt:"🧑‍✈️ Dono: VOCÊ"}),
+  intro:()=>L("El equipo es tuyo. Nadie te puede echar — pero cada agujero lo pagas tú.",
+              "The team is yours. Nobody can sack you — but every hole comes out of your pocket.",
+              {pt:"A equipe é sua. Ninguém pode te demitir — mas cada rombo sai do seu bolso."})};
+/* 🏷️ el bote de COMPRADORES (Carlos: «podríamos traer a BMW, a Toyota, a Honda…»). Seis marcas con
+   logo en la carpeta; los colores se pisan con los de la entrada de expansión si la era la trae. */
+const COMPRADORES={
+  Hyundai:{abbr:"HYU",color:"#002C5F",color2:"#00AAD2"},
+  Porsche:{abbr:"POR",color:"#D5001C",color2:"#191F22"},
+  Toyota:{abbr:"TOY",color:"#EB0A1E",color2:"#F2F2F2"},
+  Maserati:{abbr:"MAS",color:"#0F2C5C",color2:"#C8102E"},
+  BMW:{abbr:"BMW",color:"#16588E",color2:"#F5F5F5"},
+  Honda:{abbr:"HON",color:"#F5F5F5",color2:"#D0021B"}
+};
 const TP_OWNERS=[
   {k:"win",
    lab:()=>L("🏆 Dueño ganador","🏆 Winner owner",{pt:"🏆 Dono vencedor"}),
@@ -10798,6 +10816,7 @@ function tpSignDriver(i,c){
    prisa que valga) · y nunca al filial de Red Bull (su consejo jamás pide el título; cinturón igual). */
 function ganarYaCond(){
   if(S._ganarYaVisto) return false;
+  if(S.tpOwner && S.tpOwner.k==="self") return false;   // 🧑‍✈️ la directiva eres tú: nadie te aprieta
   if(!S.tpTeam || isRBJr(S.tpTeam)) return false;
   const u=(S.seasons||[]).at(-1);
   if(!u || u.cat!=="TP" || u.pos==null || u.pos<2 || u.pos>4) return false;
@@ -11132,6 +11151,12 @@ function simTP(row){
       : L(`✅ ${cPos===1?"Campeones":cPos+"º"} de constructores: objetivo cumplido, el consejo respira.`,
           `✅ ${cPos===1?"Champions":"P"+cPos} in the constructors: target met, the board breathes.`,
           {pt:`✅ ${cPos===1?"Campeões":cPos+"º"} de construtores: meta cumprida, o conselho respira.`}));
+    if(S.tpOwner && S.tpOwner.k==="self" && S.tpDeuda){
+      S.tpDeuda=0;
+      row.events.push(L(`💚 Cumplir el listón siendo tu propio dueño tiene premio contable: las cuentas vuelven a cuadrar y los números rojos se quedan atrás.`,
+        `💚 Hitting the bar as your own owner has an accounting reward: the books balance again and the red ink is behind you.`,
+        {pt:`💚 Bater a meta sendo o próprio dono tem prêmio contábil: as contas voltam a fechar e o vermelho fica para trás.`}));
+    }
   } else if(S.tpGrace){
     S.tpGrace=false; S.tpLastMet=false;
     row.events.push(L(`🛡️ ${cPos}º: por debajo del listón, pero tu jugada en los despachos te compra un año de aire.`,
@@ -11139,7 +11164,24 @@ function simTP(row){
       {pt:`🛡️ ${cPos}º: abaixo da meta, mas a sua jogada nos bastidores compra um ano de ar.`}));
   } else {
     S.tpMissStreak=(S.tpMissStreak||0)+1; S.tpLastMet=false;
-    if(S.tpMissStreak>=2){
+    if(S.tpMissStreak>=2 && S.tpOwner && S.tpOwner.k==="self"){
+      /* 🧑‍✈️ al dueño no lo despide nadie… pero el agujero lo paga él (Carlos: «¿habría que ver si te
+         pueden despedir o no?» — no: la presión pasa de la silla al bolsillo). Y si insiste en fallar,
+         la respuesta a su segunda pregunta («¿el equipo puede quebrar?») es que SÍ: tres años malos
+         seguidos y no queda equipo que dirigir. Se avisa cada año, con el aviso subiendo de tono. */
+      TPRE(-3); S.cache[tn]=Math.max(30,(S.cache[tn]||60)-2);
+      S.tpDeuda=(S.tpDeuda||0)+1;
+      if(S.tpDeuda>=2){
+        S.tpQuiebra=tn;
+        row.events.push(L(`🪦 Tercer año en números rojos y ya no hay de dónde sacarlo: ${tn} echa el cierre. El equipo que compraste por una libra se lo lleva la deuda, y contigo dentro.`,
+          `🪦 A third year in the red and there's nothing left to draw on: ${tn} shuts down. The team you bought for a pound is taken by its debts, and you with it.`,
+          {pt:`🪦 Terceiro ano no vermelho e não há mais de onde tirar: a ${tn} fecha as portas. A equipe que você comprou por uma libra é levada pela dívida, e você junto.`}));
+      } else {
+        row.events.push(L(`💸 Otro año por debajo del listón, y el dueño eres tú: nadie te echa, pero el agujero sale de tu bolsillo. Un año más así y no habrá equipo que salvar. −fama · −caché`,
+          `💸 Another year below the bar, and the owner is you: nobody sacks you, but the hole comes out of your pocket. One more year like this and there'll be no team to save. −fame · −prestige of the team`,
+          {pt:`💸 Mais um ano abaixo da meta, e o dono é você: ninguém te demite, mas o rombo sai do seu bolso. Mais um ano assim e não haverá equipe para salvar. −fama · −cachê`}));
+      }
+    } else if(S.tpMissStreak>=2){
       S.tpFired=true; S.tpFiredBy=tn;
       row.events.push(L(`🚪 Segundo año sin cumplir: el consejo de ${tn} te destituye.`,
         `🚪 A second year below target: the ${tn} board removes you.`,
@@ -11206,14 +11248,27 @@ function tpFirmarContrato(tn){
 }
 function tpWinter(){
   if(S.retired) return;
+  /* 🪦 EL EQUIPO QUEBRÓ CONTIGO DE DUEÑO. Desaparece de la parrilla de verdad y tú te quedas en la
+     calle: reutiliza la pantalla del despido, donde tu fama decide si alguien te recoge. */
+  if(S.tpQuiebra){
+    const tn=S.tpQuiebra; S.tpQuiebra=null; S.tpDeuda=0;
+    const st=(S.tpStints||[]).at(-1); if(st) st.y1=yearNow()-1;
+    try{ killTeam(tn, {events:[]}); }catch(e){}
+    S.tpOwner=null; S.tpContract=null; S.tpFired=true; S.tpFiredBy=tn;
+    S.tpTeam=null; S.team=null;
+    tpFiredScreen(); return;
+  }
   if(S.tpFired){ tpFiredScreen(); return; }
   if(S.tpContract==null) tpFirmarContrato(S.tpTeam);      // partidas empezadas antes del contrato
   /* ⚠️ tpFirmarContrato marca S.tpFreshY con el año de la firma. El primer invierno de un contrato
      nuevo NO descuenta —si no, un contrato de 2 años recién firmado ya bajaría a 1 esa misma noche,
      y al cambiar de equipo a mitad de recorrido el contador se iba a negativo (medido: −4). */
   if(S.tpFreshY===yearNow()){ S.tpFreshY=null; }
-  else S.tpContract--;
-  if(S.tpContract<=0){ tpContratoScreen(); return; }      // se acabó: hay mercado
+  else if(S.tpContract!=null) S.tpContract--;
+  // 🧑‍✈️ el dueño no tiene contrato que renovar ni muro ajeno que le tiente
+  if(!(S.tpOwner && S.tpOwner.k==="self")){
+    if(S.tpContract<=0){ tpContratoScreen(); return; }      // se acabó: hay mercado
+  }
   if(tpTemptCheck()) return;
   tpYearStart();
 }
@@ -11300,6 +11355,7 @@ function tpFinDeCarrera(){
 function tpFiredScreen(){
   S.tpFired=false;
   const from=S.tpFiredBy||S.tpTeam; S.tpFiredBy=null;
+  S._quebro = !F1_TEAMS.some(t=>t.name===from);   // 🪦 no fue un despido: fue una quiebra
   const myPerf=S.f1perf[from]||75;
   const cands=[...F1_TEAMS].filter(t=>t.name!==from)
     .sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70));
@@ -11309,14 +11365,20 @@ function tpFiredScreen(){
   else if(S.tpPrest>=42) offers=pickN(cands.slice(-4),1);
   if(!offers.length){
     setDecision(L("🚪 Despedido","🚪 Sacked",{pt:"🚪 Demitido"}),
-      L("El teléfono no suena: sin prestigio, nadie te ofrece otro muro. Tu etapa de Team Principal acaba aquí.",
+      S._quebro
+      ? L(`Tu equipo ya no existe y el teléfono no suena: al que hunde su propia casa no lo llama nadie. Tu etapa de Team Principal acaba aquí.`,
+          `Your team no longer exists and the phone stays silent: nobody calls the man who sank his own house. Your Team Principal era ends here.`,
+          {pt:`A sua equipe já não existe e o telefone não toca: ninguém liga para quem afundou a própria casa. A sua era de Team Principal acaba aqui.`})
+      : L("El teléfono no suena: sin prestigio, nadie te ofrece otro muro. Tu etapa de Team Principal acaba aquí.",
         "The phone stays silent: without prestige, nobody offers you another pit wall. Your Team Principal era ends here.",
         {pt:"O telefone não toca: sem prestígio, ninguém te oferece outro muro. A sua era de Team Principal acaba aqui."}));
     $("offerList").innerHTML="";
     setTimeout(endCareer,1600);
     return;
   }
-  setDecision(L("🚪 Despedido… y el teléfono suena","🚪 Sacked… and the phone rings",{pt:"🚪 Demitido… e o telefone toca"}),
+  setDecision(S._quebro
+    ? L("🪦 Sin equipo… y el teléfono suena","🪦 No team… and the phone rings",{pt:"🪦 Sem equipe… e o telefone toca"})
+    : L("🚪 Despedido… y el teléfono suena","🚪 Sacked… and the phone rings",{pt:"🚪 Demitido… e o telefone toca"}),
     L(`${from} te ha destituido, pero tu prestigio te mantiene vivo en el paddock: hay quien quiere tu experiencia en su muro.`,
       `${from} removed you, but your prestige keeps you alive in the paddock: someone wants your experience on their pit wall.`,
       {pt:`A ${from} te destituiu, mas o seu prestígio te mantém vivo no paddock: tem quem queira a sua experiência no muro.`}));
@@ -11343,6 +11405,7 @@ function tpFiredScreen(){
 }
 /* la TENTACIÓN: solo llega si sobre-rindes — la otra puerta del cambio de equipo (1-3 por partida) */
 function tpTemptCheck(){
+  if(S.tpOwner && S.tpOwner.k==="self") return false;   // 🧑‍✈️ al dueño no se le ficha: se le compra
   const last=S.seasons.at(-1); if(!last || last.cat!=="TP") return false;
   const G=S.tpGoal||{}; const delta=(G.exp||6)-(last.pos||6);
   // dos puertas: sobre-rendimiento claro, o llevar a un equipo medio/pequeño al podio de constructores
@@ -11724,7 +11787,7 @@ const TP_DILEMAS=[
      return L(`Te comes la rueda de prensa por él. ${nm} se deja el alma por ti el resto del año. −prestigio, +su rendimiento`,`You take the press conference bullets for him. ${nm} drives his heart out for you all year. −prestige, +his level`,{pt:`Você segura a coletiva por ele. ${nm} se entrega por você o resto do ano. −prestígio, +rendimento dele`}); }},
    {l:()=>L("Multa y disculpa pública","Fine him and force an apology",{pt:"Multa e desculpa pública"}),r:()=>{ const nm=S._dilVars&&S._dilVars.tpLia; const d=tpDrvs().find(x=>surname(x.name)===nm); if(d) tpDrvSkill(d.name,-1); TPRE(1.5);
      return L(`El consejo aplaude tu mano firme. ${nm} paga, se disculpa… y te tacha de su lista de Navidad. +prestigio, −su rendimiento`,`The board applauds your firm hand. ${nm} pays, apologises… and crosses you off his Christmas list. +prestige, −his level`,{pt:`O conselho aplaude a mão firme. ${nm} paga, pede desculpas… e te risca da lista de Natal. +prestígio, −rendimento dele`}); }}]},
- {id:"tpSustituto", cond:()=>S.tpMissStreak>=1,
+ {id:"tpSustituto", cond:()=>S.tpMissStreak>=1 && !(S.tpOwner&&S.tpOwner.k==="self"),
   t:()=>L("El consejo busca sustituto","The board shops for your successor",{pt:"O conselho procura substituto"}),
   d:()=>L("Un periodista de confianza te enseña un mensaje: tu consejo ha sondeado a otro Team Principal «por si acaso». Todavía no es oficial. Todavía.",
           "A trusted journalist shows you a message: your board has sounded out another Team Principal «just in case». It's not official yet. Yet.",
@@ -11743,7 +11806,7 @@ const TP_DILEMAS=[
    {l:()=>L("Que lo decida la pista","Let the track decide",{pt:"Que a pista decida"}),r:()=>roll(
      [5,()=>(TPRE(2),L("La rivalidad interna eleva a los dos y tu equipo es el espectáculo del año. +prestigio","The internal rivalry lifts them both and your team is the show of the season. +prestige",{pt:"A rivalidade interna eleva os dois e a sua equipe é o show do ano. +prestígio"}))],
      [4,()=>(TPRE(-2),L("Sin jerarquía, las estrategias se pisan y los puntos se escapan entre los dos boxes. −prestigio","With no pecking order, strategies collide and points leak between the two garages. −prestige",{pt:"Sem hierarquia, as estratégias se atropelam e os pontos escapam entre os dois boxes. −prestígio"}))])}]},
- {id:"tpFabricante", cond:()=>S.age>=3 && (S.cache[S.tpTeam]||60)<86,
+ {id:"tpFabricante", cond:()=>S.age>=3 && (S.cache[S.tpTeam]||60)<86 && !(S.tpOwner&&S.tpOwner.k==="self"),
   t:()=>L("El fabricante quiere comprar","The manufacturer wants to buy",{pt:"A montadora quer comprar"}),
   d:()=>L("Un gigante del automóvil ofrece comprar el equipo: fábrica nueva, presupuesto de otro planeta… y sus propias ideas sobre quién manda aquí.",
           "A car giant offers to buy the team: a new factory, a budget from another planet… and its own ideas about who runs things here.",
@@ -12036,6 +12099,44 @@ const TP_DILEMAS=[
     llegar, es cuando montas tu estructura). Una vez por carrera (lo garantiza `usedDilemmas`).
     Es una apuesta de VARIANZA: traerlos puede disparar el coche o resquebrajar el departamento; la
     otra opción es segura y modesta. */
+/* 💷 «EL EQUIPO ESTÁ EN VENTA» — entrada 21 del documento (tpAcciones, bloque Brawn), el acto 1
+   del arco: el dueño quiere salir de un equipo hundido y te ofrece comprarlo por lo simbólico —
+   Brawn compró Honda por una libra. Si compras, el dueño eres TÚ: nadie puede despedirte, el
+   contrato desaparece de la tarjeta… y cada agujero lo pagas tú. El acto 3 es tpComprarGloria:
+   si algún día lo vendes campeón, la fortuna es tuya. */
+ {id:"tpAcciones",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+    if(S.tpOwner && S.tpOwner.k==="self") return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<2) return false;
+    const u=(S.seasons||[]).at(-1);
+    if(!u || u.cat!=="TP" || u.pos==null || u.pos<7) return false;
+    return (S.f1perf[S.tpTeam]||75)<=79; },
+  t:()=>L("El equipo está en venta","The team is up for sale",{pt:"A equipe está à venda"}),
+  d:()=>L(`El dueño te cita un martes, que es el día de las malas noticias. Está fuera: los números no salen y quiere firmar la salida antes de que el agujero crezca. Y entonces dice la frase: «O encuentras comprador… o te lo quedas tú. Por lo que debe. Prácticamente por una libra.» Sobre la mesa hay una carpeta con las deudas. No es pequeña. Pero el equipo entero — la fábrica, la gente, el nombre — cabría en tu firma.`,
+    `The owner calls you in on a Tuesday, which is the day for bad news. He's out: the numbers don't add up and he wants to sign his exit before the hole grows. And then he says it: "Either you find a buyer… or you take it yourself. For what it owes. For a pound, practically." On the table sits a folder with the debts. It isn't small. But the whole team — the factory, the people, the name — would fit inside your signature.`,
+    {pt:`O dono te chama numa terça-feira, que é o dia das más notícias. Ele está fora: os números não fecham e quer assinar a saída antes que o rombo cresça. E então diz a frase: «Ou você encontra comprador… ou fica com ela você. Pelo que ela deve. Por uma libra, praticamente.» Sobre a mesa há uma pasta com as dívidas. Não é pequena. Mas a equipe inteira — a fábrica, a gente, o nome — caberia na sua assinatura.`}),
+  opts:[
+   {l:()=>L("Comprarlo tú: por una libra y sus deudas","Buy it yourself: a pound and its debts",{pt:"Comprar você: uma libra e as dívidas"}),
+    r:()=>{ S.tpOwner=OWNER_SELF; S.tpContract=null; TPTGT(-rnd(2,4));
+      return L(`Firmas. La libra es simbólica; las deudas no. El lunes siguiente entras por la misma puerta de siempre y todo es distinto: nadie puede echarte nunca más, y nunca más va a ser culpa de otro. El proyecto arranca cojo — no hay dinero — pero es TUYO. −proyecto`,
+               `You sign. The pound is symbolic; the debts are not. The following Monday you walk through the same door as always and everything is different: nobody can ever sack you again, and it will never be someone else's fault again. The project starts limping — there's no money — but it is YOURS. −project`,
+               {pt:`Você assina. A libra é simbólica; as dívidas não. Na segunda seguinte você entra pela mesma porta de sempre e tudo é diferente: ninguém pode te demitir nunca mais, e nunca mais vai ser culpa de outro. O projeto começa mancando — não há dinheiro — mas é SEU. −projeto`}); }},
+   {l:()=>L("Buscarle un comprador y seguir de jefe","Find it a buyer and stay on as boss",{pt:"Achar um comprador e seguir de chefe"}),
+    r:()=>roll(
+     [60,()=>{ S.tpOwner=TP_OWNERS[irnd(0,2)]; S.cache[S.tpTeam]=Math.min(96,(S.cache[S.tpTeam]||60)+2);
+       return L(`Quemas dos meses de llamadas y encuentras dinero nuevo. El equipo respira, tú sigues en el muro… y arriba hay un desconocido con planes propios. Habrá que conocerle. +caché`,
+                `You burn two months on phone calls and find fresh money. The team breathes, you stay on the pit wall… and upstairs there's a stranger with plans of his own. You'll have to get to know him. +prestige of the team`,
+                {pt:`Você queima dois meses de ligações e encontra dinheiro novo. A equipe respira, você segue no muro… e lá em cima há um desconhecido com planos próprios. Vai ser preciso conhecê-lo. +cachê`}); }],
+     [40,()=>{ TPTGT(-3); TPRE(-1);
+       return L(`Nadie quiere comprar un agujero. El dueño malvende activos para tapar el mes a mes y el proyecto se queda sin gasolina — y en el paddock, el que da la cara del desastre eres tú. −proyecto · −fama`,
+                `Nobody wants to buy a hole. The owner fire-sells assets to cover the month-to-month and the project runs out of fuel — and in the paddock, the face of the mess is yours. −project · −fame`,
+                {pt:`Ninguém quer comprar um rombo. O dono vende ativos a preço de banana para cobrir o mês a mês e o projeto fica sem gasolina — e no paddock, a cara do desastre é a sua. −projeto · −fama`}); }])},
+   {l:()=>L("Salir de ahí antes de que se hunda","Get out before it sinks",{pt:"Sair antes que afunde"}),
+    r:()=>{ S._jefeDisponible=true; TPRE(-1);
+      return L(`Le deseas suerte y haces dos llamadas esa misma tarde. En el paddock nadie te lo reprocha en voz alta — las ratas y los barcos son un clásico — pero se nota en cómo te saludan. El teléfono, eso sí, empieza a sonar. −fama`,
+               `You wish him luck and make two calls that same afternoon. Nobody in the paddock says it to your face — rats and ships are a classic — but you can feel it in how they greet you. The phone, though, starts ringing. −fame`,
+               {pt:`Você deseja sorte a ele e faz duas ligações naquela mesma tarde. No paddock ninguém te cobra em voz alta — ratos e navios são um clássico — mas dá para sentir no jeito como te cumprimentam. O telefone, isso sim, começa a tocar. −fama`}); }}
+  ]},
 /* 💰 «TE QUIEREN COMPRAR DESPUÉS DE GANAR» — entrada 8 del documento (tpComprarGloria), diseñada
    con Carlos el 22-ago. El opuesto de tpFabricante: aquel compra tu debilidad, este compra tu éxito.
    Salta: campeón de constructores el año pasado + caché<88 (a un grande histórico no lo compran) +
@@ -12052,11 +12153,12 @@ const TP_DILEMAS=[
     const LOCK=["Ferrari","Mercedes","Red Bull","McLaren","Alpine","Aston Martin","Audi","Cadillac",
       "Williams","Renault","Honda","Toyota","Porsche","Hyundai","BMW","Maserati","Alfa Romeo","Lotus",
       "Jaguar","APXGP","Andretti","Racing Bulls","AlphaTauri","Toro Rosso","Brawn","Benetton"];
-    const marcas=(S.expansion||[]).map(e=>e&&e.team).filter(t=>t &&
-      ["Hyundai","Porsche","Toyota","Maserati"].indexOf(t.name)>=0 && !F1_TEAMS.some(x=>x.name===t.name));
-    if(LOCK.indexOf(S.tpTeam)<0 && marcas.length){
-      const t0=marcas[irnd(0,marcas.length-1)];
-      S._compra={marca:t0.name, to:{name:t0.name, abbr:t0.abbr, color:t0.color, color2:t0.color2}};
+    const nombres=Object.keys(COMPRADORES).filter(n=>!F1_TEAMS.some(x=>x.name===n||x.name.indexOf(n)===0));
+    if(LOCK.indexOf(S.tpTeam)<0 && nombres.length){
+      const n0=nombres[irnd(0,nombres.length-1)];
+      const exp=(S.expansion||[]).map(e=>e&&e.team).find(t=>t&&t.name===n0);   // colores de la era si los hay
+      const d0=exp||COMPRADORES[n0];
+      S._compra={marca:n0, to:{name:n0, abbr:d0.abbr, color:d0.color, color2:d0.color2}};
     } else {
       const F=["Grupo Vantor","Meridian Capital","Aurora Industries"];
       S._compra={marca:F[irnd(0,F.length-1)], to:null};
@@ -12080,6 +12182,7 @@ const TP_DILEMAS=[
   opts:[
    {l:()=>L("Vender: asegurar el futuro de todos","Sell: secure everyone's future",{pt:"Vender: garantir o futuro de todos"}),
     r:()=>{ const c=S._compra||{}, viejo=S.tpTeam;
+      const _self=S.tpOwner && S.tpOwner.k==="self";   // 🧑‍✈️ el arco Brawn: la venta es TUYA
       // la compra se ejecuta SIEMPRE; lo que varía es cómo aterriza el nuevo dueño
       S.cache[viejo]=Math.min(96,(S.cache[viejo]||60)+rnd(6,10));
       S.tpOwner=TP_OWNERS[0];                                     // 🏆 el ganador: un puesto más cada año, para siempre
@@ -12094,7 +12197,11 @@ const TP_DILEMAS=[
         S.tpStints.push({team:S.tpTeam, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
         S.pendingEvents.push(...fila.events);
       }
-      return roll(
+      /* 💷 el cierre del arco Brawn: compraste por una libra, ganaste, y vendes por una fortuna.
+         El contrato nuevo te lo firma el comprador — vuelves a ser empleado, pero millonario. */
+      if(_self){ TPRE(3); S.tpContract=2; S.tpFreshY=yearNow(); }
+      const _pre=_self ? L("💷 Compraste este equipo cuando no lo quería nadie y lo vendes campeón: la fortuna y la historia son tuyas. ","💷 You bought this team when nobody wanted it and you sell it as champions: the fortune and the story are yours. ",{pt:"💷 Você comprou esta equipe quando ninguém a queria e a vende campeã: a fortuna e a história são suas. "}) : "";
+      return _pre+roll(
        [70,()=>{ TPTGT(rnd(5,8)); TPRE(1);
          return L(`Firmas, y la transición es más fina de lo que temías: llega el dinero, llega el túnel que llevabas años pidiendo, y tu gente sigue en su sitio. Lo único que cambia de verdad es el dueño — y ese ha ganado en todo lo que ha tocado y no entiende que aquí se pueda acabar segundo. +caché · +proyecto`,
                   `You sign, and the transition is smoother than you feared: the money arrives, the tunnel you'd begged for arrives, and your people keep their desks. The only thing that truly changes is the owner — and he has won at everything he's touched and doesn't understand how anyone here could finish second. +prestige of the team · +project`,
