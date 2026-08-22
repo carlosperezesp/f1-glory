@@ -12033,6 +12033,102 @@ const TP_DILEMAS=[
     llegar, es cuando montas tu estructura). Una vez por carrera (lo garantiza `usedDilemmas`).
     Es una apuesta de VARIANZA: traerlos puede disparar el coche o resquebrajar el departamento; la
     otra opción es segura y modesta. */
+/* 💰 «TE QUIEREN COMPRAR DESPUÉS DE GANAR» — entrada 8 del documento (tpComprarGloria), diseñada
+   con Carlos el 22-ago. El opuesto de tpFabricante: aquel compra tu debilidad, este compra tu éxito.
+   Salta: campeón de constructores el año pasado + caché<88 (a un grande histórico no lo compran) +
+   3ª temporada al mando. El comprador TIENE NOMBRE, con la regla de realismo de Carlos: un equipo
+   SIN identidad de marca (Haas, Sauber…) lo compra un fabricante real y hay REBRAND de verdad
+   (Sauber→Audi); a un equipo-marca (Alpine ES Renault) lo compra un conglomerado ficticio y el
+   nombre se queda — los Dorilton de la vida no borran el escudo que gana. */
+ {id:"tpComprarGloria",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<3) return false;
+    const u=(S.seasons||[]).at(-1);
+    if(!u || u.cat!=="TP" || u.pos!==1) return false;
+    if((S.cache[S.tpTeam]||60)>=88) return false;
+    const LOCK=["Ferrari","Mercedes","Red Bull","McLaren","Alpine","Aston Martin","Audi","Cadillac",
+      "Williams","Renault","Honda","Toyota","Porsche","Hyundai","BMW","Maserati","Alfa Romeo","Lotus",
+      "Jaguar","APXGP","Andretti","Racing Bulls","AlphaTauri","Toro Rosso","Brawn","Benetton"];
+    const marcas=(S.expansion||[]).map(e=>e&&e.team).filter(t=>t &&
+      ["Hyundai","Porsche","Toyota","Maserati"].indexOf(t.name)>=0 && !F1_TEAMS.some(x=>x.name===t.name));
+    if(LOCK.indexOf(S.tpTeam)<0 && marcas.length){
+      const t0=marcas[irnd(0,marcas.length-1)];
+      S._compra={marca:t0.name, to:{name:t0.name, abbr:t0.abbr, color:t0.color, color2:t0.color2}};
+    } else {
+      const F=["Grupo Vantor","Meridian Capital","Aurora Industries"];
+      S._compra={marca:F[irnd(0,F.length-1)], to:null};
+    }
+    return true; },
+  t:()=>L("Te quieren comprar después de ganar","They want to buy you after you won",{pt:"Querem te comprar depois de vencer"}),
+  d:()=>{ const c=S._compra||{}, esMarca=!!c.to;
+    const quien=esMarca
+      ? L(`El consejero delegado de ${c.marca}, un fabricante que lleva veinte años mirando esto desde fuera,`,
+          `The CEO of ${c.marca}, a manufacturer that has spent twenty years watching this from the outside,`,
+          {pt:`O CEO da ${c.marca}, uma montadora que passou vinte anos olhando isto de fora,`})
+      : L(`El presidente de ${c.marca}, un grupo inversor que lleva años rondando el paddock,`,
+          `The chairman of ${c.marca}, an investment group that has circled the paddock for years,`,
+          {pt:`O presidente do ${c.marca}, um grupo investidor que ronda o paddock há anos,`});
+    const escudo=esMarca
+      ? L("con nuestro escudo detrás","with our badge behind it",{pt:"com o nosso escudo atrás"})
+      : L("con nuestro dinero detrás","with our money behind it",{pt:"com o nosso dinheiro atrás"});
+    return L(`Ganasteis. Con un presupuesto menor que los grandes y una fábrica que no es la más puntera, ganasteis. Y ahora están aquí. ${quien} te pone delante una cifra que asegura el futuro de todos los que trabajan aquí, para siempre. «No queremos cambiar nada. Solo queremos que lo que habéis hecho lo hagáis ${escudo}.» Nadie dice en voz alta lo evidente: si esa frase fuera verdad, no harían falta abogados.`,
+      `You won. With a smaller budget than the big teams and a factory that isn't the sharpest, you won. And now they're here. ${quien} puts a figure in front of you that secures the future of everyone who works here, forever. "We don't want to change anything. We just want what you've built to run ${escudo}." Nobody says out loud what's obvious: if that sentence were true, there'd be no need for lawyers.`,
+      {pt:`Vocês venceram. Com um orçamento menor que o dos grandes e uma fábrica que não é a mais avançada, venceram. E agora eles estão aqui. ${quien} põe na sua frente um número que garante o futuro de todos que trabalham aqui, para sempre. «Não queremos mudar nada. Só queremos que o que vocês construíram corra ${escudo}.» Ninguém diz em voz alta o óbvio: se essa frase fosse verdade, não seriam necessários advogados.`}); },
+  opts:[
+   {l:()=>L("Vender: asegurar el futuro de todos","Sell: secure everyone's future",{pt:"Vender: garantir o futuro de todos"}),
+    r:()=>{ const c=S._compra||{}, viejo=S.tpTeam;
+      // la compra se ejecuta SIEMPRE; lo que varía es cómo aterriza el nuevo dueño
+      S.cache[viejo]=Math.min(96,(S.cache[viejo]||60)+rnd(6,10));
+      S.tpOwner=TP_OWNERS[0];                                     // 🏆 el ganador: un puesto más cada año, para siempre
+      if(c.to && !F1_TEAMS.some(t=>t.name===c.to.name)){
+        // 🔄 rebrand REAL (Sauber→Audi): fila sintética porque en invierno no hay row, y las dos
+        // migraciones que rebrandTeam no conoce — el nombre del equipo del jefe y el perfil de ejes
+        if(S.f1prof && S.f1prof[viejo]){ S.f1prof[c.to.name]=S.f1prof[viejo]; delete S.f1prof[viejo]; }
+        const fila={events:[]};
+        rebrandTeam(viejo, c.to, fila);
+        S.tpTeam=c.to.name;
+        const st=(S.tpStints||[]).at(-1); if(st) st.y1=yearNow()-1;
+        S.tpStints.push({team:S.tpTeam, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
+        S.pendingEvents.push(...fila.events);
+      }
+      return roll(
+       [70,()=>{ TPTGT(rnd(5,8)); TPRE(1);
+         return L(`Firmas, y la transición es más fina de lo que temías: llega el dinero, llega el túnel que llevabas años pidiendo, y tu gente sigue en su sitio. Lo único que cambia de verdad es el dueño — y ese ha ganado en todo lo que ha tocado y no entiende que aquí se pueda acabar segundo. +caché · +proyecto`,
+                  `You sign, and the transition is smoother than you feared: the money arrives, the tunnel you'd begged for arrives, and your people keep their desks. The only thing that truly changes is the owner — and he has won at everything he's touched and doesn't understand how anyone here could finish second. +prestige of the team · +project`,
+                  {pt:`Você assina, e a transição é mais suave do que temia: chega o dinheiro, chega o túnel que você pedia há anos, e a sua gente segue no lugar. A única coisa que muda de verdade é o dono — e esse ganhou em tudo em que tocou e não entende que aqui se possa terminar em segundo. +cachê · +projeto`}); }],
+       [30,()=>{ TPTGT(rnd(2,4)); TPRE(-2);
+         return L(`Firmas, y la primera decisión que toman es una que no les pediste. La segunda tampoco. El dinero es real y la fábrica también, pero cada semana hay una reunión nueva con alguien que no sabe de qué color es el neumático blando. La transición se come medio año. −fama`,
+                  `You sign, and the first decision they make is one you didn't ask for. So is the second. The money is real and so is the factory, but every week brings a new meeting with someone who doesn't know what colour the soft tyre is. The transition eats half a season. −fame`,
+                  {pt:`Você assina, e a primeira decisão que eles tomam é uma que você não pediu. A segunda também. O dinheiro é real e a fábrica também, mas cada semana traz uma reunião nova com alguém que não sabe de que cor é o pneu macio. A transição come meio ano. −fama`}); }]); }},
+   {l:()=>L("Seguir siendo independientes","Stay independent",{pt:"Seguir independentes"}),
+    r:()=>{ const tn=S.tpTeam;
+      TPTGT(-rnd(3,5));
+      return roll(
+       [60,()=>{ TPRE(2); S.cache[tn]=Math.min(96,(S.cache[tn]||60)+3);
+         return L(`Les dices que no y se te queda cara de tonto durante veinte minutos. Pero el lunes la fábrica es tuya, y la gente que ganó ese campeonato trabaja para ti y no para un comité en otro país. El paddock entero toma nota. +fama · +caché — y defender el título con la mitad de presupuesto es exactamente tan difícil como parecía`,
+                  `You say no and feel like a fool for twenty minutes. But on Monday the factory is yours, and the people who won that championship work for you and not for a committee in another country. The whole paddock takes note. +fame · +prestige of the team — and defending the title on half the budget is exactly as hard as it looked`,
+                  {pt:`Você diz não e fica com cara de bobo por vinte minutos. Mas na segunda a fábrica é sua, e a gente que ganhou aquele campeonato trabalha para você e não para um comitê em outro país. O paddock inteiro anota. +fama · +cachê — e defender o título com metade do orçamento é exatamente tão difícil quanto parecia`}); }],
+       [40,()=>{ const a=tpDrvs().slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0];
+         if(a) a.tpRencor=true;
+         const nm=a?surname(a.name):L("tu piloto","your driver",{pt:"seu piloto"});
+         return L(`Dices que no, y esta vez el paddock no aplaude: más de uno lo lee como falta de ambición. Y el que peor lo encaja está dentro de tu propio garaje — ${nm} quería ese músculo para ganar él, y en su renovación te vas a acordar de esta tarde. −proyecto`,
+                  `You say no, and this time the paddock doesn't applaud: more than one reads it as a lack of ambition. And the person taking it worst is inside your own garage — ${nm} wanted that muscle to win for himself, and come contract time you'll remember this afternoon. −project`,
+                  {pt:`Você diz não, e desta vez o paddock não aplaude: mais de um lê como falta de ambição. E quem pior digere está dentro da sua própria garagem — ${nm} queria esse músculo para vencer ele mesmo, e na renovação dele você vai lembrar desta tarde. −projeto`}); }]); }},
+   {l:()=>L("Venderles una parte y seguir al mando","Sell them a stake and stay in charge",{pt:"Vender uma parte e seguir no comando"}),
+    r:()=>{ const tn=S.tpTeam;
+      let p=.45 + .12*(S.titles.constr||0) + (S.tpPrest>75?.15:0);
+      p=Math.max(.05,Math.min(.9,p));
+      if(ch(p)){
+        S.cache[tn]=Math.min(96,(S.cache[tn]||60)+rnd(4,7)); TPTGT(rnd(4,6)); TPRE(2);
+        return L(`Negocias desde donde se negocia bien: desde arriba. Aceptan una participación minoritaria, el dinero entra, y tú sigues firmando las decisiones. El comunicado dice «alianza estratégica», que es como se dice «he ganado yo» sin herir a nadie. +caché · +proyecto · +fama`,
+                 `You negotiate from the only place worth negotiating: above. They accept a minority stake, the money comes in, and you keep signing the decisions. The press release says "strategic alliance", which is how you say "I won" without hurting anyone. +prestige of the team · +project · +fame`,
+                 {pt:`Você negocia de onde se negocia bem: de cima. Aceitam uma participação minoritária, o dinheiro entra, e você segue assinando as decisões. O comunicado diz «aliança estratégica», que é como se diz «eu ganhei» sem ferir ninguém. +cachê · +projeto · +fama`});
+      }
+      TPRE(-2); S.cache[tn]=Math.max(30,(S.cache[tn]||60)-2);
+      return L(`Se levantan de la mesa. Y lo que trasciende a la prensa no es que se fueron: es que pedisteis demasiado. No hay segunda oferta, y el silencio de tu consejo esa semana se oye desde el túnel de viento. −fama · −caché`,
+               `They get up from the table. And what reaches the press isn't that they left: it's that you asked for too much. There is no second offer, and your board's silence that week can be heard from the wind tunnel. −fame · −prestige of the team`,
+               {pt:`Eles se levantam da mesa. E o que chega à imprensa não é que foram embora: é que vocês pediram demais. Não há segunda oferta, e o silêncio do seu conselho naquela semana se ouve do túnel de vento. −fama · −cachê`}); }}
+  ]},
 /* 🌧️ «LA CARRERA SE GANA DESDE EL MURO» — la entrada 1 del documento (tpEstratega, REVISADO), el
    primero de la familia del domingo (22-ago). El jefe por fin vive una carrera: eres el tapado (coche
    fuera del top-3 pero top-6 el año pasado), llueve en un circuito donde LLUEVE de verdad, y tu jefe
