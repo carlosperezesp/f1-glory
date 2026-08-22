@@ -2444,6 +2444,13 @@ function gpList(yr){
          : c[4] }));
 }
 function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
+/* 🌦️ circuitos por clima (Carlos: «no va a llover en Bahréin»). Los de calor se comparan por prefijo
+   porque Singapur está localizado por idioma. Ambos filtran por era vía gpList. */
+const GP_LLUVIA=["Spa","Silverstone","Interlagos","Suzuka","Hungaroring","Montreal","Zandvoort","Imola","Melbourne"];
+function tpGpLluvia(){ const cs=gpList(yearNow()).filter(c=>GP_LLUVIA.indexOf(c.n)>=0);
+  return cs.length?cs[irnd(0,cs.length-1)]:null; }
+function tpGpCalor(){ const cs=gpList(yearNow()).filter(c=>["Hungaroring","Barcelona","Austin","Singap"].some(p=>String(c.n).indexOf(p)===0));
+  return cs.length?cs[irnd(0,cs.length-1)]:null; }
 
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
@@ -10251,6 +10258,7 @@ function tpMercado(){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=`📜${(c.d.age>=34)?1:2} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
+      const _ro=tpRenovarOdds(c.d); if(_ro.motivo) sub2+=" · "+tpOddsTag(_ro.p);
       dotTxt="🤝";
     } else if(c.kind==="probador"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;   // el 🧢 ya lo pone el punto de color: dos gorras eran una errata
@@ -10605,11 +10613,54 @@ function tpTerna(i){
   cands.push({kind:"rookie"});
   return cands;
 }
+/* 🚪 RENOVAR YA NO ES UNILATERAL (Carlos, 22-ago: «¿el piloto podría no querer renovar para irse a
+   otro equipo mejor, o peor por más dinero?» — hasta hoy solo se negaba al ser degradado de asiento).
+   Cuatro motivos, por orden de peso: RENCOR (le fallaste en un dilema y no lo olvidó) · GLORIA (es
+   top y hay un coche claramente mejor que el tuyo) · HARTAZGO (el Alonso que ve que McLaren no tira
+   para arriba: bueno él, mediocre el coche, dos años sin mejorar) · DINERO (veterano: alguien paga
+   más). Tope de negativa: 60% — nunca es seguro que se vaya. La pastilla del mercado avisa antes. */
+function tpRenovarOdds(d){
+  if(!d) return {p:1, motivo:null};
+  let p=1, motivo=null;
+  const mio=S.f1perf[S.tpTeam]||75;
+  if(d.tpRencor){ p-=.35; motivo="rencor"; }
+  if((d.skill||0)>=86 && F1_TEAMS.some(t=>t.name!==S.tpTeam && (S.f1perf[t.name]||0)>=mio+6)){ p-=.25; motivo=motivo||"gloria"; }
+  const _u=(S.seasons||[]).slice(-2).filter(r=>r.cat==="TP");
+  if((d.skill||0)>=84 && mio<=82 && _u.length>=2 && _u.every(r=>(r.pos??9)>=5)){ p-=.25; motivo=motivo||"hartazgo"; }
+  if((d.age||0)>=32 && (d.skill||0)>=82){ p-=.15; motivo=motivo||"dinero"; }
+  return {p:Math.max(.4,p), motivo};
+}
+function tpNoRenuevaTxt(d, motivo){
+  const n=surname(d.name);
+  if(motivo==="rencor") return L(`❌ ${n} te escucha, asiente… y esa misma tarde firma con su agente la salida. Hay domingos que en un garaje no se olvidan.`,
+    `❌ ${n} hears you out, nods… and that same afternoon his agent signs him out. Some Sundays are never forgotten inside a garage.`,
+    {pt:`❌ ${n} te escuta, assente… e nessa mesma tarde o agente dele assina a saída. Há domingos que numa garagem não se esquecem.`});
+  if(motivo==="gloria") return L(`❌ ${n} no renueva: quiere pelear títulos y sabe que este coche no llega. Se va a buscar un asiento grande.`,
+    `❌ ${n} won't re-sign: he wants to fight for titles and knows this car won't get there. He's off to find a big seat.`,
+    {pt:`❌ ${n} não renova: quer brigar por títulos e sabe que este carro não chega lá. Vai atrás de um assento grande.`});
+  if(motivo==="hartazgo") return L(`❌ ${n} no renueva: lleva años esperando que este coche despegue y se ha cansado de esperar.`,
+    `❌ ${n} won't re-sign: he's spent years waiting for this car to take off, and he's done waiting.`,
+    {pt:`❌ ${n} não renova: passou anos esperando este carro decolar e cansou de esperar.`});
+  return L(`❌ A su edad manda la última gran ficha, y alguien paga más que tú. ${n} no renueva.`,
+    `❌ At his age the last big contract rules, and somebody pays more than you. ${n} won't re-sign.`,
+    {pt:`❌ Na idade dele manda o último grande contrato, e alguém paga mais que você. ${n} não renova.`});
+}
 function tpSignDriver(i,c){
   const tn=S.tpTeam, sl=S.seats[tn], yN=yearNow();
   let d;
   if(c.kind==="renew"){
     d=c.d;
+    // 🚪 ¿quiere él? (las renovaciones de oficio de la directiva no se pueden rechazar: van con _silencioso)
+    if(!c._silencioso){
+      const _ro=tpRenovarOdds(d);
+      if(_ro.motivo && !ch(_ro.p)){
+        const sl0=S.seats[tn]; sl0[c.i]=null;
+        S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d);
+        S._tpNo=S._tpNo||{}; S._tpNo[d.name]=yN;
+        S._tpNoTxt=tpNoRenuevaTxt(d,_ro.motivo);
+        tpMercado(); return;
+      }
+    }
     /* 👇 …«y quizá me dice que sí o que no» (Carlos): renovarle QUITÁNDOLE el asiento 1 es una
        degradación, y un 30% de las veces no la traga: rompe la negociación y se va a la bolsa. */
     if(i===1 && c.i===0 && ch(.30)){
@@ -11982,6 +12033,87 @@ const TP_DILEMAS=[
     llegar, es cuando montas tu estructura). Una vez por carrera (lo garantiza `usedDilemmas`).
     Es una apuesta de VARIANZA: traerlos puede disparar el coche o resquebrajar el departamento; la
     otra opción es segura y modesta. */
+/* 🌧️ «LA CARRERA SE GANA DESDE EL MURO» — la entrada 1 del documento (tpEstratega, REVISADO), el
+   primero de la familia del domingo (22-ago). El jefe por fin vive una carrera: eres el tapado (coche
+   fuera del top-3 pero top-6 el año pasado), llueve en un circuito donde LLUEVE de verdad, y tu jefe
+   de estrategia te ofrece la apuesta. Sin contador de victorias (decisión de Carlos): ganar se paga
+   en nivel del piloto ANTES de simular el año — las victorias salen solas del puesto que eso le da. */
+ {id:"tpEstratega",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const u=(S.seasons||[]).at(-1);
+    if(!u || u.cat!=="TP" || u.pos==null || u.pos>6) return false;
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+    if(ord.indexOf(S.tpTeam)<3) return false;          // con un top-3 no eres el tapado
+    const a=tpDrvs(); if(!a.length) return false;
+    const gp=tpGpLluvia(); if(!gp) return false;
+    S._est={gp:gp.n, vuelta:irnd(Math.round(gp.laps*.3),Math.round(gp.laps*.55)),
+            sector:irnd(1,3), min:irnd(12,25),
+            d:a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0].name};
+    return true; },
+  t:()=>L("La carrera se gana desde el muro","Races are won from the pit wall",{pt:"A corrida se ganha do muro"}),
+  d:()=>{ const e=S._est||{};
+    return L(`${e.gp}, vuelta ${e.vuelta}. ${surname(e.d)} va cuarto, a nueve segundos del podio, y el radar dice que en ${e.min} minutos cae agua sobre el sector ${e.sector}. El de delante tiene medio segundo por vuelta más y no lo vais a recortar rodando. Tu jefe de estrategia se quita los auriculares y te mira: «Si entramos ahora a por intermedios, o somos primeros o somos decimoquintos. No hay término medio.»`,
+      `${e.gp}, lap ${e.vuelta}. ${surname(e.d)} is fourth, nine seconds off the podium, and the radar says rain hits sector ${e.sector} in ${e.min} minutes. The car ahead is half a second a lap faster and you won't close that on track. Your head of strategy takes his headphones off and looks at you: "If we box now for inters, we're either first or fifteenth. There's no in-between."`,
+      {pt:`${e.gp}, volta ${e.vuelta}. ${surname(e.d)} está em quarto, a nove segundos do pódio, e o radar diz que em ${e.min} minutos cai água no setor ${e.sector}. O da frente tem meio segundo por volta a mais e vocês não vão recortar isso rodando. Seu chefe de estratégia tira os fones e te olha: «Se entrarmos agora para intermediários, ou somos primeiros ou somos décimos quintos. Não há meio-termo.»`}); },
+  opts:[
+   {l:()=>L("Entrar YA, antes que nadie","Box NOW, before anyone else",{pt:"Entrar JÁ, antes de todos"}),
+    r:()=>{ const e=S._est||{}, dd=tpDrvs().find(x=>x.name===e.d);
+      return roll(
+       [40,()=>{ if(dd) dd.skill=Math.min(96,(dd.skill||80)+1); TPRE(2);
+         return L(`Entráis cuando la pista aún está seca y el paddock entero piensa que os habéis vuelto locos. Tres vueltas después empieza a llover y vuestro coche es el único con el neumático correcto. ${surname(e.d)} cruza la meta con veinte segundos y la radio del muro es un manicomio. La confianza que le da un día así no se compra. +fama`,
+                  `You box while the track is still dry and the whole paddock thinks you've lost it. Three laps later the rain comes and yours is the only car on the right tyre. ${surname(e.d)} crosses the line twenty seconds clear and the pit wall radio is a madhouse. The confidence a day like that gives a driver can't be bought. +fame`,
+                  {pt:`Vocês entram com a pista ainda seca e o paddock inteiro acha que enlouqueceram. Três voltas depois começa a chover e o carro de vocês é o único com o pneu certo. ${surname(e.d)} cruza a linha com vinte segundos e o rádio do muro é um manicômio. A confiança que um dia desses dá não se compra. +fama`}); }],
+       [60,()=>{ TPRE(-1);
+         return L(`La lluvia llega veinte minutos tarde. Para cuando cae, habéis destrozado un juego de intermedios sobre asfalto seco y ${surname(e.d)} acaba decimotercero. En la rueda de prensa te toca defender a tu gente delante de todos. −fama`,
+                  `The rain arrives twenty minutes late. By the time it falls you've shredded a set of inters on dry tarmac and ${surname(e.d)} finishes thirteenth. At the press conference it's you defending your people in front of everyone. −fame`,
+                  {pt:`A chuva chega vinte minutos atrasada. Quando cai, vocês já destruíram um jogo de intermediários no asfalto seco e ${surname(e.d)} termina em décimo terceiro. Na coletiva, cabe a você defender a sua gente na frente de todos. −fama`}); }]); }},
+   {l:()=>L("La convencional: esperar a que llueva de verdad","Play it straight: wait for real rain",{pt:"A convencional: esperar chover de verdade"}),
+    r:()=>{ const e=S._est||{};
+      return roll(
+       [75,()=>L(`Entráis cuando entran todos. ${surname(e.d)} acaba cuarto, que es donde os deja el coche. Nadie te va a preguntar por esta carrera nunca más.`,
+                 `You box when everyone boxes. ${surname(e.d)} finishes fourth, which is where the car leaves you. Nobody will ever ask you about this race again.`,
+                 {pt:`Vocês entram quando todos entram. ${surname(e.d)} termina em quarto, que é onde o carro deixa vocês. Ninguém nunca mais vai te perguntar sobre esta corrida.`})],
+       [25,()=>{ TPRE(1);
+         return L(`Esperáis, y resulta que la lluvia era un chaparrón de tres vueltas. Los que se lanzaron a por intermedios se hunden y ${surname(e.d)} sube al podio sin hacer nada raro. A veces la valentía es quedarse quieto. +fama`,
+                  `You wait, and the rain turns out to be a three-lap shower. The ones who gambled on inters sink, and ${surname(e.d)} climbs onto the podium without doing anything strange. Sometimes bravery is standing still. +fame`,
+                  {pt:`Vocês esperam, e a chuva era um toró de três voltas. Os que apostaram nos intermediários afundam, e ${surname(e.d)} sobe ao pódio sem fazer nada de estranho. Às vezes a coragem é ficar parado. +fama`}); }]); }}
+  ]},
+/* 🔥 «CUARENTA GRADOS» — el segundo de la familia del domingo. El único que no es una decisión de
+   carrera sino de fin de semana, y el PRIMER dilema que toca el eje de fiabilidad: correr cerrados y
+   romper deja el motor tocado el resto del año (fiab −1 → el riesgo de rotura casi se dobla). */
+ {id:"tpCalor",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || tpDrvs().length<2) return false;
+    const gp=tpGpCalor(); if(!gp) return false;
+    S._cal={gp:gp.n}; return true; },
+  t:()=>L("Cuarenta grados","Forty degrees",{pt:"Quarenta graus"}),
+  d:()=>{ const g=(S._cal||{}).gp||"la pista";
+    return L(`Cuarenta y uno a la sombra en ${g} y tus dos coches están al límite térmico. El jefe de motor lo dice sin adornos: «O abrimos las carrocerías y perdemos casi medio segundo por vuelta todo el fin de semana, o corremos cerrados y rezamos. Con este calor, cerrado, yo no garantizo que lleguen los dos.»`,
+      `Forty-one in the shade at ${g} and both your cars are on the thermal limit. Your head of power unit doesn't dress it up: "Either we open the bodywork and lose nearly half a second a lap all weekend, or we run closed and pray. In this heat, closed, I can't guarantee both cars finish."`,
+      {pt:`Quarenta e um à sombra em ${g} e seus dois carros estão no limite térmico. O chefe de motor não enfeita: «Ou abrimos as carenagens e perdemos quase meio segundo por volta o fim de semana inteiro, ou corremos fechados e rezamos. Com esse calor, fechado, eu não garanto que os dois cheguem.»`}); },
+  opts:[
+   {l:()=>L("Abrir y llegar: fin de semana discreto","Open up and finish: a quiet weekend",{pt:"Abrir e chegar: fim de semana discreto"}),
+    r:()=>L("Abrís las carrocerías y el fin de semana es exactamente lo que prometía: lento, seguro y olvidable. Los dos coches en meta, los dos fuera de donde duele. Hay domingos que solo hay que sobrevivir.",
+            "You open the bodywork and the weekend is exactly what it promised: slow, safe, forgettable. Both cars home, both out of the fight. Some Sundays are just for surviving.",
+            {pt:"Vocês abrem as carenagens e o fim de semana é exatamente o que prometia: lento, seguro e esquecível. Os dois carros na chegada, os dois fora da briga. Há domingos que são só para sobreviver."})},
+   {l:()=>L("Correr cerrados y rezar","Run closed and pray",{pt:"Correr fechados e rezar"}),
+    r:()=>roll(
+       [55,()=>{ TPRE(1);
+         return L("Aguantan. Los dos. Y con el coche entero sacáis un resultado que no os tocaba mientras media parrilla humea en las escapatorias. El jefe de motor no dice nada, pero esa noche cena dos postres. +fama",
+                  "They hold. Both of them. And with the car intact you bag a result that wasn't yours to take, while half the grid smokes in the run-off areas. Your head of power unit says nothing, but that night he has two desserts. +fame",
+                  {pt:"Aguentam. Os dois. E com o carro inteiro vocês tiram um resultado que não era de vocês, enquanto metade do grid fumega nas áreas de escape. O chefe de motor não diz nada, mas naquela noite janta duas sobremesas. +fama"}); }],
+       [45,()=>{ const pr=S.f1prof&&S.f1prof[S.tpTeam]; if(pr) pr.fiab=Math.max(-2,(pr.fiab||0)-1);
+         return L("A veinte vueltas del final, uno de los dos se para echando humo blanco. Y lo peor no es el domingo: el motor queda tocado y la fiabilidad os va a perseguir el resto del año. −fiabilidad",
+                  "Twenty laps from the end, one of them pulls over trailing white smoke. And the worst part isn't the Sunday: the engine is compromised, and reliability will haunt you for the rest of the year. −reliability",
+                  {pt:"A vinte voltas do fim, um dos dois para soltando fumaça branca. E o pior não é o domingo: o motor fica comprometido e a confiabilidade vai perseguir vocês pelo resto do ano. −confiabilidade"}); }])},
+   {l:()=>L("Abrir uno y cerrar el otro","Open one, close the other",{pt:"Abrir um e fechar o outro"}),
+    r:()=>roll(
+       [55,()=>L("El abierto llega donde puede; el cerrado aguanta y rasca lo que el otro no alcanza. La apuesta cubierta: nadie brinda, nadie llora.",
+                 "The open car finishes where it can; the closed one holds and grabs what the other can't reach. The hedge pays: nobody toasts, nobody cries.",
+                 {pt:"O aberto chega onde dá; o fechado aguenta e arranca o que o outro não alcança. A aposta coberta: ninguém brinda, ninguém chora."})],
+       [45,()=>L("El abierto llega. El cerrado no: se queda a diez vueltas, humeando. La mitad prudente del garaje intenta no decir «te lo dije» — y no lo consigue del todo.",
+                 "The open car finishes. The closed one doesn't: it stops ten laps short, smoking. The cautious half of the garage tries not to say \"told you so\" — and doesn't quite manage it.",
+                 {pt:"O aberto chega. O fechado não: para a dez voltas do fim, fumegando. A metade prudente da garagem tenta não dizer «avisei» — e não consegue de todo."})])}
+  ]},
 /* 🧲 «SE VA A FERRARI» — entrada 184 del documento de Carlos (tpElJefeDeAerodinamica), montada el
    22-ago con sus tres ramas. Es el ESPEJO de tpDreamTeam: allí te llevas a tu gente; aquí te la roban
    a ti, a mitad de proyecto. Pide un rival con coche mejor que el tuyo (quien puede pagar la fuga) y
