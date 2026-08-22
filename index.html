@@ -5936,7 +5936,7 @@ const DILEMAS=[
   opts:[
    {l:()=>L("Aceptar el volante de fábrica","Take the factory drive",{pt:"Aceitar o volante de fábrica"}),r:()=>{ S.youngDetour=true;
      const txt=L("Te subes a un coche de resistencia con 18 años y aprendes cosas que en la escalera no se aprenden: gestionar, convivir con el coche, no romperlo. El escaparate es peor, pero el oficio es mejor.","You get into an endurance car at 18 and learn things the ladder never teaches: managing, living with the car, not breaking it. The shop window is worse, but the craft is better.",{pt:"Você sobe num carro de endurance aos 18 anos e aprende coisas que na escada não se aprendem: administrar, conviver com o carro, não quebrá-lo. A vitrine é pior, mas o ofício é melhor."});
-     setTimeout(()=>{ try{ startAdventure("lemans"); }catch(e){} }, 0);
+     try{ startAdventure("lemans", true); }catch(e){}   // 🐞 síncrono y SIN temporada propia
      return txt; }},
    {l:()=>L("Seguir la escalera","Stay on the ladder",{pt:"Seguir a escada"}),r:()=>L("Dices que no. La escalera es la escalera y tú vas a subirla como todo el mundo.","You say no. The ladder is the ladder and you're going to climb it like everyone else.",{pt:"Você diz não. A escada é a escada e você vai subi-la como todo mundo."})},
    {l:()=>L("Las dos cosas a la vez","Both at once",{pt:"As duas coisas ao mesmo tempo"}),r:()=>roll(
@@ -8340,7 +8340,7 @@ function chooseAdventureSeries(){
   opts.push({special:true, em:"🏁", name:L("Retirarse","Retire",{pt:"Retirar-se"}), sub:L("Colgar el casco","Hang up your helmet",{pt:"Pendurar o capacete"}), color:"#71717c", onClick:endCareer});
   renderSpecialOptions(opts);
 }
-function startAdventure(key){
+function startAdventure(key, sinTemporada){
   track("adventure", {series: key, age: S.age, era: S.era||"2026"});
   // 🏛️ TU ERA acaba cuando dejas la F1: congelamos el palmarés de tus rivales aquí. Lo que ganen
   // después (cuando tú ya estás en Indy/NASCAR) es SU época, no la tuya — no cuenta para el duelo generacional.
@@ -8348,7 +8348,10 @@ function startAdventure(key){
   S.advSeries=key; S.cat="ADV";
   S.team={name:SERIES[key].name, series:key, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
   S.role=null; S.roleTeam=null; S.roleMate=null;
-  startSeasonRun();
+  /* 🐞 DOS TEMPORADAS EN UN CLIC (espejo del arreglo de main, 22-ago): el dilema del «camino raro»
+     salta con la temporada de F2 ya en vuelo; con `sinTemporada` solo se PREPARA la aventura y el
+     año en vuelo se corre ya como resistencia. */
+  if(!sinTemporada) startSeasonRun();
 }
 function advOffers(){
   refreshCard(); renderF1State(); renderTimeline();
