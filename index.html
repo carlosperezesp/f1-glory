@@ -380,7 +380,9 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   color:var(--muted);vertical-align:middle}
 /* la bandera dibujada ocupa lo MISMO que un emoji de bandera para que ninguna fila se mueva:
    MEDIDO en el juego: un 🇪🇸 ocupa exactamente 1em de ancho, así que la dibujada también. */
-.fl.hist{display:inline-block;width:1em;vertical-align:-.18em;line-height:0}
+/* 🏳️ 15px FIJOS, no 1em: son SVG dibujadas a mano y a tamaño grande se les ve la costura
+   (Carlos, 22-ago). Pequeñas —como en el selector de países— quedan bien en todas partes. */
+.fl.hist{display:inline-block;width:15px;vertical-align:-.18em;line-height:0}
 .fl.hist .flsvg{display:block;width:100%;height:auto;border-radius:1.5px;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
 .mini-badge{flex-shrink:0;display:inline-block;font-size:9px;font-weight:800;color:#fff;padding:2px 6px;border-radius:6px;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.55);box-shadow:inset 0 -1px 3px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.55);vertical-align:middle}
 @keyframes fsRow{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
@@ -3222,6 +3224,13 @@ function idChanged(){
 /* 🕰️ ¿se puede elegir esta nacionalidad en la era que se está jugando? El 5º campo es el último año
    en que ese país existió. Se mira el año en que ARRANCA la era, no yearNow(): la nacionalidad se
    elige al crear el piloto, antes de que empiece nada. Sin 5º campo, siempre disponible. */
+/* 🕰️ ¿en qué año dejó de existir el país de esta bandera? (null = sigue existiendo).
+   Sirve para no ondear una bandera muerta junto al nombre de quien se retiró después. */
+function paisFin(flag){
+  if(!flag) return null;
+  const c=(COUNTRIES||[]).find(x=>x[1]===flag);
+  return c && c[4]!=null ? c[4] : null;
+}
 function paisVigente(c){
   if(c[4]==null) return true;
   const era = ERAS[SELECTED_ERA] || ERAS["2026"] || {};
@@ -9353,7 +9362,10 @@ function endCareer(){
   /* 🏳️ la bandera de la pantalla final pasa por flg(): las naciones históricas (YUG, URS, GDR, TCH)
      tienen SVG propia y el código pelado parecía parte del nombre («YUG MIROSLAV», lo cazó Carlos).
      El nombre va como NODO DE TEXTO, nunca por innerHTML: lo escribe el jugador. */
-  $("endName").innerHTML=flg(sel.flag)+" ";
+  /* 🕰️ si el país desapareció ANTES de tu retirada, su bandera no preside el titular: para entonces
+     ya no existía. Sigue en el palmarés histórico, que es donde cuenta de dónde saliste. */
+  const _fin=paisFin(sel.flag);
+  $("endName").innerHTML=(_fin && yearNow()>_fin) ? "" : flg(sel.flag)+" ";
   $("endName").appendChild(document.createTextNode(pName()+" #"+sel.num));
   $("eGP").textContent=S.gp; $("eW").textContent=S.wins; $("eP").textContent=S.podiums;
   $("ePP").textContent=S.poles; $("eT").textContent=S.titles.f1; $("eC").textContent=S.titles.constr;
@@ -10837,7 +10849,8 @@ function endTPCareer(){
   const teams=[...new Set((S.tpStints||[]).map(s=>s.team))];
   track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
   const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
-  $("endName").innerHTML=flg(sel.flag)+" ";   // 🏳️ misma corrección que en el final clásico
+  const _finTP=paisFin(sel.flag);   // 🕰️ misma regla en el final del jefe
+  $("endName").innerHTML=(_finTP && yearNow()>_finTP) ? "" : flg(sel.flag)+" ";
   $("endName").appendChild(document.createTextNode(pName()));
   $("endYears").textContent="🧑‍💼 Team Principal · "+L(`Al mando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} escudería${teams.length===1?"":"s"}`,
     `In charge: ${S.baseYear||2026} – ${yearNow()} · ${yrs} season${yrs===1?"":"s"} · ${teams.length} team${teams.length===1?"":"s"}`,
