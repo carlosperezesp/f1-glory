@@ -2756,6 +2756,33 @@ const TESTS = {
      conviene leer: el gigante de palmarés enorme (Williams), el campeón modesto (Alpine) y el caso en
      que el último título de ese equipo se ganó DURANTE la partida y hay a quién nombrar. Esa tercera
      se apunta con la MISMA llamada que usa el juego cuando pasa de verdad. Los demás dilemas, apagados. */
+  /* ⚰️ LAS RESURRECCIONES, EN BANDEJA. Te sienta en 2040 con un Haas recién campeón —que es
+     exactamente cuando la venta ocurre— y FUERZA que quien llama sea un grupo que revive un mito en
+     vez de un fabricante. Sin el forzado habría que repetir la partida ocho veces para verlo. */
+  resurreccion: {
+    t:["Jefe · Vuelve un nombre muerto","Boss · A dead name returns"],
+    d:["Estás en 2040 y acabas de ganar el Mundial de constructores con Haas. Pasa la pantalla de rumbo y llegará la oferta de compra: aquí SIEMPRE es un grupo que ha comprado los derechos de un nombre histórico —Lotus, Brabham, Jordan, Tyrrell, Arrows, March o Minardi— y quiere devolverlo a la parrilla con tu equipo. Si vendes, tu equipo pasa a llamarse así de verdad, con su escudo. Repite la prueba para ver los siete.",
+       "It's 2040 and you've just won the constructors' title with Haas. Get past the direction screen and the takeover offer arrives: here it's ALWAYS a group that has bought the rights to a historic name —Lotus, Brabham, Jordan, Tyrrell, Arrows, March or Minardi— and wants to bring it back with your team. If you sell, your team really is renamed, badge and all. Repeat the test to see all seven."],
+    era:"2026", tp:true, team:"Haas", tpDilema:"tpComprarGloria",
+    run(){
+      S.age=14;                                   // el reloj del jefe: 2026+14 = 2040
+      S.seasons=[{cat:"TP",year:2037,pos:3,events:[]},
+                 {cat:"TP",year:2038,pos:2,events:[]},
+                 {cat:"TP",year:2039,pos:1,events:[]}];
+      S.titles.constr=1; S._testMito=true;
+      return null; }
+  },
+  /* 💷 EL ARCO BRAWN EN BANDEJA: un Haas hundido y su dueño buscando la puerta. */
+  comprarEquipo: {
+    t:["Jefe · Cómpralo tú por una libra","Boss · Buy it yourself for a pound"],
+    d:["Llevas dos años en un Haas que se cae a trozos y el dueño quiere salir. Pasa la pantalla de rumbo: te ofrecerá quedarte el equipo por lo que debe. Si lo compras, nadie podrá despedirte nunca más —pero cada agujero lo pagas tú, y tres años malos seguidos cierran la fábrica—. Y podrás ponerle nombre: Glory GP, con uno de sus tres escudos.",
+       "You've spent two years in a Haas that's falling apart and the owner wants out. Get past the direction screen: he'll offer you the team for what it owes. If you buy it, nobody can ever sack you —but every hole comes out of your pocket, and three bad years in a row shut the factory—. And you get to name it: Glory GP, with one of its three badges."],
+    era:"2026", tp:true, team:"Haas", tpDilema:"tpAcciones",
+    run(){
+      S.age=2;
+      S.seasons=[{cat:"TP",year:2026,pos:9,events:[]},{cat:"TP",year:2027,pos:9,events:[]}];
+      return null; }
+  },
   gigante: {
     t:["El gigante dormido","The sleeping giant"],
     d:["Bicampeón del mundo con 31 años y el mejor coche de la parrilla debajo. En la cola hay un ex campeón que lleva décadas sin ganar y que no está remontando. Corre DOS temporadas normales —con su invierno y sus ofertas— y a la tercera te mandarán a su presidente: así ves la llamada llegar dentro de la partida, y no de un botonazo. Si aceptas, termina el año y mira el mercado del invierno: el gigante estará entre tus puertas, marcado. Si dices que no, ese equipo no vuelve a ofrecerte asiento nunca más. Repite el escenario para ver las tres caras del texto: el gigante enorme, el campeón modesto, y el que puede nombrar al último piloto que ganó allí. El resto de dilemas están apagados.",
@@ -11332,7 +11359,9 @@ function tpWinter(){
     tpFiredScreen(); return;
   }
   if(S.tpFired){ tpFiredScreen(); return; }
-  if(S.tpContract==null) tpFirmarContrato(S.tpTeam);      // partidas empezadas antes del contrato
+  // 🧑‍✈️ al DUEÑO no le firma contrato nadie: sin este guard, el invierno siguiente a comprar el
+  //    equipo le firmaba uno de 4 años (lo cazó el escenario de prueba).
+  if(S.tpContract==null && !(S.tpOwner&&S.tpOwner.k==="self")) tpFirmarContrato(S.tpTeam);
   /* ⚠️ tpFirmarContrato marca S.tpFreshY con el año de la firma. El primer invierno de un contrato
      nuevo NO descuenta —si no, un contrato de 2 años recién firmado ya bajaría a 1 esa misma noche,
      y al cambiar de equipo a mitad de recorrido el contador se iba a negativo (medido: −4). */
@@ -12237,7 +12266,7 @@ const TP_DILEMAS=[
     const conEpoca=o=>Object.keys(o).filter(n=>libre(n) && yr>=(o[n].desde||0));
     const marcas=conEpoca(COMPRADORES), mitos=conEpoca(RESURRECCIONES);
     if(LOCK.indexOf(S.tpTeam)<0 && (marcas.length||mitos.length)){
-      const revive = mitos.length && ch(.12);                      // ⚰️ raro a propósito
+      const revive = mitos.length && (S._testMito || ch(.12));     // ⚰️ raro a propósito (el escenario lo fuerza)
       const pool = revive ? mitos : (marcas.length?marcas:mitos);
       const n0=pool[irnd(0,pool.length-1)];
       const d0=(revive?RESURRECCIONES:COMPRADORES)[n0]
@@ -12286,8 +12315,12 @@ const TP_DILEMAS=[
         const fila={events:[]};
         rebrandTeam(viejo, c.to, fila);
         S.tpTeam=c.to.name;
-        const st=(S.tpStints||[]).at(-1); if(st) st.y1=yearNow()-1;
-        S.tpStints.push({team:S.tpTeam, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
+        /* 📖 el capítulo se parte SOLO si el anterior empezó antes: vendiendo el mismo año en que
+           llegaste salía «Haas 2040-2039», al revés (lo cazó el escenario de prueba). */
+        const st=(S.tpStints||[]).at(-1);
+        if(st && st.y0<yearNow()){ st.y1=yearNow()-1;
+          S.tpStints.push({team:S.tpTeam, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
+        } else if(st) st.team=S.tpTeam;
         S.pendingEvents.push(...fila.events);
       }
       /* 💷 el cierre del arco Brawn: compraste por una libra, ganaste, y vendes por una fortuna.
