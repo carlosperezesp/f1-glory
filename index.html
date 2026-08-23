@@ -5723,17 +5723,17 @@ const DILEMAS=[
     return cabeza + L(` ${b.name} tiene el ${suyo}. Y su director se planta delante de ti con los planos del reglamento que entra dentro de dos años: llevan desde el primer día construyendo para ese coche y te juran que cuando llegue mandarán ellos. Nadie podrá comprobarlo hasta que se apaguen los semáforos, dos temporadas más tarde.`,
                       ` ${b.name} has the ${suyo}. And their boss sits down in front of you with the blueprints of the rulebook that lands in two years: they've been building for that car since day one, and they swear that when it arrives they'll be the ones in charge. Nobody can check it until the lights go out, two seasons later.`,{pt:` A ${b.name} tem o ${suyo}. E o diretor deles planta na sua frente os projetos do regulamento que entra daqui a dois anos: desde o primeiro dia estão construindo para aquele carro e juram que, quando ele chegar, quem vai mandar são eles. Ninguém poderá comprovar isso até que os semáforos se apaguem, duas temporadas depois.`}); },
   opts:[
-   {l:()=>L("Firmar con ellos al acabar la temporada 🎲","Sign with them at the end of this season 🎲",{pt:"Assinar com eles no fim da temporada 🎲"}),r:()=>{ const b=regBetTeam();
+   {l:()=>L("Te vas: firmas con ellos al acabar la temporada 🎲","You leave: you sign with them at the end of the season 🎲",{pt:"Você vai: assina com eles no fim da temporada 🎲"}),r:()=>{ const b=regBetTeam();
      if(!b) return L("La operación se cae en el último momento y te quedas donde estás.","The deal collapses at the last minute and you stay put.",{pt:"A negociação cai no último momento e você fica onde está."});
      S.regBet=b.name; S.commitTeam=b.name; S.commitYears=2; VAL(.93);
      // ⚠️ la firma es para la temporada SIGUIENTE: esta la terminas donde estás. Decirlo o el jugador
      // cree que se cambia de mono a mitad de año (lo cazó Carlos: gana el Mundial y luego "firmas por X").
      return L(`Firmas con ${b.name} AL ACABAR ESTA TEMPORADA: el año en curso lo terminas donde estás. Medio paddock te llama loco. Dos temporadas comprometido y sin puerta de salida: te bajarás de un coche que gana hoy para subirte a unos planos. −fama`,
               `You sign with ${b.name} AT THE END OF THIS SEASON: you'll see out the current year where you are. Half the paddock calls you mad. Two seasons committed, no way out: you'll step off a car that wins today onto a set of blueprints. −fame`,{pt:`Você assina com a ${b.name} NO FIM DESTA TEMPORADA: o ano em curso você termina onde está. Meio paddock te chama de louco. Duas temporadas comprometido e sem porta de saída: você vai descer de um carro que ganha hoje para subir em cima de uns projetos. −fama`}); }},
-   {l:()=>L("Quedarte y no tocar nada","Stay and change nothing",{pt:"Ficar e não mexer em nada"}),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
+   {l:()=>L("Quedarte y confiar en la estructura","Stay and trust the structure you have",{pt:"Ficar e confiar na estrutura"}),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
      return L(`Les das las gracias y te quedas. Tienes un coche que gana AHORA; lo demás son planos y palabras bonitas. Ya se verá dentro de dos años quién tenía razón.`,
               `You thank them and stay. You have a car that wins NOW; the rest is blueprints and pretty words. In two years we'll see who was right.`,{pt:`Você agradece e fica. Tem um carro que ganha AGORA; o resto são projetos e palavras bonitas. Daqui a dois anos se vê quem tinha razão.`}); }},
-   {l:()=>L("Quedarte, pero preparar YA el cambio 🛡️","Stay, but start preparing for the change NOW 🛡️",{pt:"Ficar, mas preparar JÁ a mudança 🛡️"}),r:()=>{ const t=S.team.name;
+   {l:()=>L("Quedarte y empujar al equipo a experimentar 🛡️","Stay and push the team to experiment 🛡️",{pt:"Ficar e empurrar a equipe a experimentar 🛡️"}),r:()=>{ const t=S.team.name;
      // también los estás rechazando: se apunta igual que en la opción de quedarse sin más, para que
      // dos años después recibas el desenlace (la puñalada o la bala esquivada). Antes se perdía.
      const b=regBetTeam(); if(b) S.regBetRefused=b.name;
