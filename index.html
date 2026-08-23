@@ -2471,6 +2471,11 @@ const CHALLENGES = {
        jugadores tienen que partir de las MISMAS condiciones. 2011 es además el primer año en el que
        USF1 podía existir después del desastre, y el que deja la edad real que le tocaba: 28. */
     id:"pechito", era:"2010", year:2011, team:"USF1", role:"2", secret:true,
+    /* 🚫 SIN «¿Retirarte en la cima?» (Carlos, 23-ago). No es que salga más aquí —medido: 25% en el
+       reto frente al 23% de una partida normal—, es que en un reto CON RANKING empujarte a cerrar
+       justo después de tu único título es lo contrario de lo que el jugador quiere. Y el juego ya te
+       deja retirarte cuando te dé la gana. */
+    sinCima:true,
     forceExp:{name:"USF1", year:2011},   // 🇺🇸 el equipo no se sortea: en este reto entra sí o sí
     drop:["J.M. López"],   // ⚠️ está en la cantera Y dentro del propio USF1 (driversBorn)
     who:{ born:1983, ovr:82, ceil:88, flag:"🇦🇷", country:"Argentina", style:"agresivo", num:"37" },
@@ -5683,6 +5688,7 @@ const DILEMAS=[
  {id:"cimaRosberg",stage:"f1",
   cond:()=>{
     if(S.cat!=="F1" || (S.titles.f1||0)!==1 || ((S.seasons.at(-1)||{}).pos)!==1 || S.age<30) return false;
+    if(S.challenge && (CHALLENGES[S.challenge]||{}).sinCima) return false;   // 🚫 retos que no quieren la tentación
     if(S._cimaSorteo==null) S._cimaSorteo = ch(.35);
     return S._cimaSorteo;
   },
@@ -6557,8 +6563,12 @@ function pickDilemma(){
   if(S.cat==="F1" && !S.usedDilemmas.fichajeEnemigo && (S.age-S.lastDilemmaAge>=1) && enemySignable() && ch(.4)){
     return DILEMAS.find(d=>d.id==="fichajeEnemigo");
   }
-  // 🏁 primer Mundial con 30+ (camino Rosberg): la pregunta de la cima llega casi siempre, y ANTES que la del récord
-  if(S.cat==="F1" && !S.usedDilemmas.cimaRosberg && S.titles.f1===1 && S.age>=30 && S.seasons.at(-1)?.pos===1 && (S.age-S.lastDilemmaAge>=1) && ch(.75)){
+  /* 🏁 primer Mundial con 30+ (camino Rosberg): la pregunta de la cima llega casi siempre, y ANTES
+     que la del récord. ⚠️ ESTA VÍA SE SALTA LA `cond` DEL DILEMA —es una prioridad, no un sorteo—,
+     así que el veto de los retos hay que repetirlo aquí: poniéndolo solo en la cond, el dilema
+     seguía saliendo (medido: 13 de 40 partidas del reto Pechito). */
+  if(S.cat==="F1" && !S.usedDilemmas.cimaRosberg && !(S.challenge && (CHALLENGES[S.challenge]||{}).sinCima)
+     && S.titles.f1===1 && S.age>=30 && S.seasons.at(-1)?.pos===1 && (S.age-S.lastDilemmaAge>=1) && ch(.75)){
     return DILEMAS.find(d=>d.id==="cimaRosberg");
   }
   // «La pregunta del récord»: al ganar tu 1er mundial (~50%) o 2 seguidos; una vez por carrera
