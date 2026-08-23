@@ -451,6 +451,24 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .pt-tier:first-child{margin-top:4px}
 .pt-row{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:10px;font-size:14px;font-weight:700}
 .pt-row:nth-child(even){background:var(--panel2)}
+/* 🏁 LA PARRILLA DEL JEFE NO SE RAYA (Carlos, 23-ago: «unos en blanco y otros en gris… NO»). Todas
+   las filas van sobre el mismo fondo, cada equipo se reconoce por su escudo, y la TUYA lleva un
+   degradado de tu color para que tus pilotos canten a la primera. */
+/* cada fila con el REBORDE DE SU EQUIPO (Carlos, 23-ago): identidad sin ruido, en vez del rayado */
+#tpGridList .pt-row,
+#tpGridList .pt-row:nth-child(even){
+  background:var(--panel);
+  border:1px solid color-mix(in srgb, var(--tc) 38%, var(--line));
+  border-left:3px solid var(--tc);
+}
+/* y la TUYA, con el degradado más largo y un halo de tu color */
+#tpGridList .pt-row.mio,
+#tpGridList .pt-row.mio:nth-child(even){
+  background:linear-gradient(100deg, color-mix(in srgb, var(--tc) 26%, var(--panel)), color-mix(in srgb, var(--tc) 14%, var(--panel)) 60%, color-mix(in srgb, var(--tc) 5%, var(--panel)));
+  border-color:var(--tc); border-left-width:5px;
+  box-shadow:0 0 0 1px var(--tc), 0 3px 14px color-mix(in srgb, var(--tc) 26%, transparent);
+}
+#tpGridList .pt-row.mio .drv{border-color:color-mix(in srgb, var(--tc) 45%, transparent); background:var(--panel)}
 .pt-empty{text-align:center;padding:18px 10px 6px;color:var(--muted);font-size:13px;line-height:1.55}
 .pt-cta{display:inline-block;margin-top:12px;background:linear-gradient(135deg,#ff5e5b,#e10600);color:#fff;font-weight:800;font-size:13.5px;padding:9px 20px;border-radius:999px;text-decoration:none}
 .intro-links{margin-top:14px;font-size:13px;color:var(--muted)}
@@ -12619,17 +12637,17 @@ function renderTPGrid(){
       const con=(mine&&d.tpc!=null)?` · 📜${Math.max(0,d.tpc)}`:"";
       // 🆕 debuta con este equipo este año: no estaba aquí al cerrar la temporada pasada
       const nuevo=(S._seatsPrev && S._seatsPrev[d.name]!==t.name)?" 🆕":"";
-      return `<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)}${nuevo} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
+      return `<span class="drv" style="background:var(--panel2,rgba(127,127,127,.12));border:1px solid transparent;border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)}${nuevo} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
     }).join(" ");
     const pos=ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"";
-    html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;${mine?`outline:2px solid ${t.color};border-radius:10px`:""}">
+    html+=`<div class="pt-row${mine?" mio":""}" style="flex-wrap:wrap;gap:6px;--tc:${t.color}">
       ${badge(t,"dot")}<b>${t.name}</b><span style="color:var(--muted);font-size:12px">${pos}${mine?`<span style="color:${t.color}">${tpStars(t.name)}</span>`:tpStars(t.name)}</span>
       <div style="width:100%;display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px">${dr}</div></div>`;
   });
   const resv=tpReservePool();
   if(resv.length){
     html+=`<div class="pt-tier">🧢 ${L("Reservas y cantera","Reserves & academy",{pt:"Reservas e base"})} <span style="font-weight:400;color:var(--muted);font-size:11px">· ${L("varía cada año","shifts every year",{pt:"varia a cada ano"})}</span></div>`;
-    html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;font-size:12.5px">`+resv.map(x=>`<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${x}</span>`).join(" ")+`</div>`;
+    html+=`<div class="pt-row" style="flex-wrap:wrap;gap:6px;font-size:12.5px;--tc:var(--line)">`+resv.map(x=>`<span style="background:var(--panel2,rgba(127,127,127,.12));border-radius:8px;padding:3px 8px">${x}</span>`).join(" ")+`</div>`;
   }
   el.innerHTML=html;
 }
