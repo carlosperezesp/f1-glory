@@ -10871,8 +10871,57 @@ function tpGanarYa(){
       tpRumboScreen(); });
   scrollToDecision();
 }
+/* 🏷️ «PUEDES COMPRAR EL EQUIPO Y LLAMARLO GLORY GP» (idea de Carlos, 23-ago). Solo cuando lo compras
+   tú: el nombre es lo primero que hace tuyo un equipo. Tres salidas —conservarlo, tu apellido, o
+   Glory GP— y los colores NO se tocan: el escudo cambia de nombre, no de identidad visual. */
+function tpBautizo(){
+  const viejo=S.tpTeam, t=F1_TEAMS.find(x=>x.name===viejo);
+  const col=(t&&t.color)||"#c9a227", col2=(t&&t.color2)||"#333";
+  setDecision("🏷️ "+L("El equipo es tuyo. ¿Cómo se va a llamar?","The team is yours. What will it be called?",{pt:"A equipe é sua. Como vai se chamar?"}),
+    L(`Los abogados han terminado y en la puerta de la fábrica sigue el cartel de siempre. Es lo único que nadie te ha dicho que tengas que decidir, y es lo primero que hace tuyo un equipo.`,
+      `The lawyers are done and the sign on the factory gate is still the old one. It's the one thing nobody told you to decide, and it's the first thing that makes a team yours.`,
+      {pt:`Os advogados terminaram e no portão da fábrica continua a placa de sempre. É a única coisa que ninguém te disse que precisa decidir, e é a primeira que torna uma equipe sua.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const mk=(dot,nm,sub,fn)=>{
+    const b=document.createElement("button"); b.className="offer dilemma";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,${col},${col2})">${dot}</span>
+      <span class="info"><span class="name">${nm}</span><span class="sub" style="display:block">${sub}</span></span>`;
+    b.onclick=()=>{ fn(); S._bautizo=false; tpRumboScreen(); };
+    box.appendChild(b);
+  };
+  /* 🏆 los TRES escudos de Glory GP (Carlos los puso en la carpeta el 23-ago): se sortea uno y los
+     colores del equipo se ajustan al que salga, para que el escudo y la pastilla no se peleen. */
+  const GLORY=[{img:"Glory1.png", color:"#7A0006", color2:"#F5F5F5"},
+               {img:"Glory2.png", color:"#0B0B0B", color2:"#F5F5F5"},
+               {img:"Glory3.png", color:"#6B6B6B", color2:"#4A0A0A"}];
+  const rebautiza=(nn, look)=>{
+    if(!nn || nn===viejo || F1_TEAMS.some(x=>x.name===nn)) return;
+    if(S.f1prof && S.f1prof[viejo]){ S.f1prof[nn]=S.f1prof[viejo]; delete S.f1prof[viejo]; }
+    if(look && look.img){ try{ TEAM_LOGOS[nn]=look.img; }catch(e){} }
+    const fila={events:[]};
+    rebrandTeam(viejo, {name:nn, abbr:(nn.slice(0,3)||"GP").toUpperCase(),
+      color:(look&&look.color)||col, color2:(look&&look.color2)||col2}, fila);
+    S.tpTeam=nn;
+    /* 📖 el capítulo se PARTE, no se reescribe: el muro cuenta «Haas '26-'27 · Glory GP '28-», que es
+       la verdad. Misma filosofía que rebrandTeam con el historial de temporadas. */
+    const st=(S.tpStints||[]).at(-1);
+    if(st && st.y0<yearNow()){ st.y1=yearNow()-1;
+      S.tpStints.push({team:nn, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
+    } else if(st) st.team=nn;   // lo compraste el mismo año de llegar: no hay capítulo que partir
+    S.pendingEvents.push(...fila.events);
+  };
+  mk("📛", L(`Dejarlo en ${viejo}`,`Keep it as ${viejo}`,{pt:`Deixar como ${viejo}`}),
+     L("El nombre no lo pusiste tú, pero la historia sí es suya.","You didn't choose the name, but the history is its own.",{pt:"O nome não foi você quem pôs, mas a história é dela."}),
+     ()=>{});
+  mk("🏆", "Glory GP",
+     L("Un nombre nuevo para un equipo que no le debe nada a nadie.","A new name for a team that owes nobody anything.",{pt:"Um nome novo para uma equipe que não deve nada a ninguém."}),
+     ()=>rebautiza("Glory GP", GLORY[irnd(0,GLORY.length-1)]));
+  scrollToDecision();
+}
 function tpRumboScreen(){
   if(S.retired) return;
+  if(S._bautizo){ tpBautizo(); return; }   // 🏷️ acabas de comprar el equipo: ponle nombre
   if(ganarYaCond()){ tpGanarYa(); return; }
   const tn=S.tpTeam, perf=Math.round(S.f1perf[tn]||75);
   const ti=trendInfo(tn);
@@ -12118,6 +12167,7 @@ const TP_DILEMAS=[
   opts:[
    {l:()=>L("Comprarlo tú: por una libra y sus deudas","Buy it yourself: a pound and its debts",{pt:"Comprar você: uma libra e as dívidas"}),
     r:()=>{ S.tpOwner=OWNER_SELF; S.tpContract=null; TPTGT(-rnd(2,4));
+      S._bautizo=true;   // 🏷️ el equipo es tuyo: elegirás su nombre al pasar de pantalla
       return L(`Firmas. La libra es simbólica; las deudas no. El lunes siguiente entras por la misma puerta de siempre y todo es distinto: nadie puede echarte nunca más, y nunca más va a ser culpa de otro. El proyecto arranca cojo — no hay dinero — pero es TUYO. −proyecto`,
                `You sign. The pound is symbolic; the debts are not. The following Monday you walk through the same door as always and everything is different: nobody can ever sack you again, and it will never be someone else's fault again. The project starts limping — there's no money — but it is YOURS. −project`,
                {pt:`Você assina. A libra é simbólica; as dívidas não. Na segunda seguinte você entra pela mesma porta de sempre e tudo é diferente: ninguém pode te demitir nunca mais, e nunca mais vai ser culpa de outro. O projeto começa mancando — não há dinheiro — mas é SEU. −projeto`}); }},
@@ -12150,9 +12200,14 @@ const TP_DILEMAS=[
     const u=(S.seasons||[]).at(-1);
     if(!u || u.cat!=="TP" || u.pos!==1) return false;
     if((S.cache[S.tpTeam]||60)>=88) return false;
-    const LOCK=["Ferrari","Mercedes","Red Bull","McLaren","Alpine","Aston Martin","Audi","Cadillac",
-      "Williams","Renault","Honda","Toyota","Porsche","Hyundai","BMW","Maserati","Alfa Romeo","Lotus",
-      "Jaguar","APXGP","Andretti","Racing Bulls","AlphaTauri","Toro Rosso","Brawn","Benetton"];
+    /* 🔒 SOLO LOS NOMBRES QUE SON EL EQUIPO, no la marca que lo patrocina (revisión de Carlos,
+       23-ago). Alpine dejó los motores Renault en 2026, Aston monta Honda y Cadillac monta Ferrari:
+       son marcas puestas sobre equipos que se pueden vender —y en la vida real se ha hablado de
+       ello—. Se quedan bloqueados los cinco cuyo nombre sobreviviría a cualquier cambio de dueño, y
+       las marcas que ya son un fabricante en pista (a esas no las compra otro fabricante). */
+    const LOCK=["Ferrari","Mercedes","Red Bull","McLaren","Williams",
+      "Renault","Honda","Toyota","Porsche","Hyundai","BMW","Maserati","Alfa Romeo","Lotus",
+      "Jaguar","APXGP","Brawn","Benetton"];
     const nombres=Object.keys(COMPRADORES).filter(n=>!F1_TEAMS.some(x=>x.name===n||x.name.indexOf(n)===0));
     if(LOCK.indexOf(S.tpTeam)<0 && nombres.length){
       const n0=nombres[irnd(0,nombres.length-1)];
