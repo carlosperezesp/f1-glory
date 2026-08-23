@@ -2467,25 +2467,27 @@ const CHALLENGES = {
         texto — Argentina no gana un Mundial desde Fangio y no pone un piloto en la parrilla desde
         Mazzacane en 2001. */
   pechito: {
-    /* 📌 AÑO FIJO 2011, no la ventana 2011-2014 del equipo: en un reto con ranking todos los
-       jugadores tienen que partir de las MISMAS condiciones. 2011 es además el primer año en el que
-       USF1 podía existir después del desastre, y el que deja la edad real que le tocaba: 28. */
-    id:"pechito", era:"2010", year:2011, team:"USF1", role:"2", secret:true,
+    /* 📌 AÑO FIJO 2010, no la ventana 2011-2014 del equipo: en un reto con ranking todos los
+       jugadores parten de las MISMAS condiciones. Y 2010 es SU año (Carlos, 23-ago): la plaza que
+       USF1 tenía concedida y el año para el que López estaba fichado de verdad. La historia
+       alternativa no es «alguien rescató el proyecto al año siguiente», es «el proyecto sí llegó a
+       tiempo». Pechito arranca con 27, los que tenía cuando aquello iba a pasar. */
+    id:"pechito", era:"2010", year:2010, team:"USF1", role:"2", secret:true,
     /* 🚫 SIN «¿Retirarte en la cima?» (Carlos, 23-ago). No es que salga más aquí —medido: 25% en el
        reto frente al 23% de una partida normal—, es que en un reto CON RANKING empujarte a cerrar
        justo después de tu único título es lo contrario de lo que el jugador quiere. Y el juego ya te
        deja retirarte cuando te dé la gana. */
     sinCima:true,
-    forceExp:{name:"USF1", year:2011},   // 🇺🇸 el equipo no se sortea: en este reto entra sí o sí
+    forceExp:{name:"USF1", year:2010},   // 🇺🇸 el equipo no se sortea: en este reto entra sí o sí
     drop:["J.M. López"],   // ⚠️ está en la cantera Y dentro del propio USF1 (driversBorn)
     who:{ born:1983, ovr:82, ceil:88, flag:"🇦🇷", country:"Argentina", style:"agresivo", num:"37" },
     t:["Pechito","Pechito","Pechito"],   // el apodo funciona igual en los tres idiomas
-    sub:["El equipo que no llegó a existir · 2011 · 28 años",
-         "The team that never made it to the grid · 2011 · aged 28",
-         "A equipe que nunca chegou a existir · 2011 · 28 anos"],
-    d:["Enero de 2010: te presentan como piloto de USF1, el primer equipo americano en treinta años, y el Gobierno argentino pone 2 de los 8 millones. En marzo el equipo se deshace sin haber montado un coche y te quedas sin volante, sin dinero y sin F1. Aquí USF1 aguanta y en 2011 te sube a un coche que nace de cero, en el fondo de la parrilla, con 28 años. Argentina no ve un piloto suyo en la F1 desde Mazzacane y no gana un Mundial desde Fangio. ¿Lo traes tú?",
-       "January 2010: you are unveiled as a USF1 driver, the first American team in thirty years, and the Argentine government puts up 2 of the 8 million. By March the team has collapsed without ever building a car and you are left with no seat, no money and no F1. Here USF1 holds on, and in 2011 it puts you in a car built from nothing, at the back of the grid, aged 28. Argentina hasn't had a driver in F1 since Mazzacane and hasn't won a title since Fangio. Are you the one who brings it home?",
-       "Janeiro de 2010: você é apresentado como piloto da USF1, a primeira equipe americana em trinta anos, e o governo argentino põe 2 dos 8 milhões. Em março a equipe se desfaz sem ter montado um carro e você fica sem vaga, sem dinheiro e sem F1. Aqui a USF1 aguenta e em 2011 coloca você num carro que nasce do zero, no fundo do grid, aos 28 anos. A Argentina não vê um piloto seu na F1 desde Mazzacane e não ganha um Mundial desde Fangio. É você quem traz?"],
+    sub:["El equipo que no llegó a existir · 2010 · 27 años",
+         "The team that never made it to the grid · 2010 · aged 27",
+         "A equipe que nunca chegou a existir · 2010 · 27 anos"],
+    d:["Enero de 2010: te presentan como piloto de USF1, el primer equipo americano en treinta años, y el Gobierno argentino pone 2 de los 8 millones. En la realidad, en marzo el equipo se deshizo sin haber montado un coche y te quedaste sin volante, sin dinero y sin F1. Aquí no: USF1 llega a tiempo a Bahréin y te sube a un coche que nace de cero, en el fondo de la parrilla, con 27 años. Argentina no ve un piloto suyo en la F1 desde Mazzacane y no gana un Mundial desde Fangio. ¿Lo traes tú?",
+       "January 2010: you are unveiled as a USF1 driver, the first American team in thirty years, and the Argentine government puts up 2 of the 8 million. In reality, by March the team had collapsed without ever building a car and you were left with no seat, no money and no F1. Not here: USF1 makes it to Bahrain and puts you in a car built from nothing, at the back of the grid, aged 27. Argentina hasn't had a driver in F1 since Mazzacane and hasn't won a title since Fangio. Are you the one who brings it home?",
+       "Janeiro de 2010: você é apresentado como piloto da USF1, a primeira equipe americana em trinta anos, e o governo argentino põe 2 dos 8 milhões. Na realidade, em março a equipe se desfez sem ter montado um carro e você ficou sem vaga, sem dinheiro e sem F1. Aqui não: a USF1 chega a tempo ao Bahrein e coloca você num carro que nasce do zero, no fundo do grid, aos 27 anos. A Argentina não vê um piloto seu na F1 desde Mazzacane e não ganha um Mundial desde Fangio. É você quem traz?"],
     persona:"PECHITO",
     at:"2026-08-24T10:00:00Z",
   },
@@ -2844,7 +2846,14 @@ function startChallengeFlow(id){
    No toca nada si el año pedido es el año base. */
 function advanceEraTo(year){
   const desde = S.baseYear||year;
-  if(year<=desde){ S.baseYear=year; return; }
+  if(year<=desde){
+    S.baseYear=year;
+    /* 🇺🇸 …pero las entradas del PROPIO año base sí hay que procesarlas. Un reto que arranca en el
+       primer año de su era (Pechito en 2010) necesita que su equipo forzado esté en la parrilla
+       ANTES de sentarse: sin esto, USF1 no existía y el reto se quedaba sin asiento. */
+    if(S.chForceExp){ try{ processEntries({events:[], year:year}); }catch(e){} }
+    return;
+  }
   // los procesos anuales leen el año de yearNow(); movemos baseYear paso a paso para simularlo.
   // Los sucesos del pasado NO se narran (van a una fila que se tira): ya han ocurrido.
   const guardaEdad=S.age, guardaIni=S.startAge;
