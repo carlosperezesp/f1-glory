@@ -7205,8 +7205,13 @@ function rebrandTeam(oldName, to, row){
   // el filial de Red Bull conserva su condición bajo el nuevo nombre (Toro Rosso→AlphaTauri→Racing Bulls)
   if(JUNIOR_OF[oldName]!=null){ JUNIOR_OF[nn]=JUNIOR_OF[oldName]; delete JUNIOR_OF[oldName]; }
   Object.keys(JUNIOR_OF).forEach(k=>{ if(JUNIOR_OF[k]===oldName) JUNIOR_OF[k]=nn; });
+  /* 🪞 ¿ES TU EQUIPO? Hay que preguntarlo ANTES de renombrar. Cuando S.team y la entrada de
+     F1_TEAMS son EL MISMO objeto, el Object.assign de abajo ya le había cambiado el nombre, así que
+     `S.team.name===oldName` daba false y el equipo dejaba de ser «tuyo» justo cuando más importaba:
+     la fila de la temporada se quedaba con el nombre viejo en la cabecera mientras el escudo de al
+     lado de TÚ ya usaba el nuevo (lo cazó Carlos con Sauber→Alfa y Force India→Aston Martin). */
+  const mine = !!(S.team && S.team.name===oldName);
   Object.assign(t,{name:nn, abbr:to.abbr||t.abbr, color:to.color||t.color, color2:to.color2||t.color2});
-  const mine = S.team && S.team.name===oldName;
   if(mine && S.team!==t){ S.team.name=nn; S.team.abbr=t.abbr; S.team.color=t.color; S.team.color2=t.color2; }
   /* 🔄 …Y LA FILA DE ESTA TEMPORADA. row.team es una COPIA tomada al empezar el año; si el renombrado
      ocurre ahora, esa copia se queda con el nombre viejo mientras el resto de la fila (el top-3 de
