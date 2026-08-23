@@ -7229,9 +7229,18 @@ function rebrandTeam(oldName, to, row){
   if(mine && row && row.team && row.team.name===oldName){
     row.team.name=nn; row.team.abbr=t.abbr; row.team.color=t.color; row.team.color2=t.color2;
   }
+  /* ✂️ CUANDO SOLO SE CAE UNA PALABRA. «Mercedes GP se transforma en Mercedes» suena a que no ha
+     pasado nada (lo cazó Carlos). Es el caso real de los nombres que se acortan —Mercedes GP dejó el
+     «GP» en 2012, igual que Sauber soltó el «BMW»—, y merece su propia frase: no es una compra, es
+     un rótulo que se cae. Se detecta cuando un nombre contiene al otro. */
+  const _corto = oldName.indexOf(nn)===0 || nn.indexOf(oldName)===0;
   row.events.push(mine
-    ? L(`🔄 Tu equipo cambia de manos: ${oldName} pasa a ser ${nn}. Nuevos colores, mismo box.`,`🔄 Your team changes hands: ${oldName} becomes ${nn}. New colours, same garage.`,{pt:`🔄 A sua equipe muda de mãos: a ${oldName} passa a ser ${nn}. Cores novas, mesmo box.`})
-    : L(`🔄 ${oldName} se transforma en ${nn}.`,`🔄 ${oldName} becomes ${nn}.`,{pt:`🔄 A ${oldName} se transforma em ${nn}.`}));
+    ? (_corto
+      ? L(`🔄 Tu equipo se queda con el nombre a secas: ${oldName} pasa a ser ${nn}. Mismo box, un rótulo menos.`,`🔄 Your team trims its name: ${oldName} becomes plain ${nn}. Same garage, one word less.`,{pt:`🔄 A sua equipe encurta o nome: a ${oldName} passa a ser ${nn}. Mesmo box, uma palavra a menos.`})
+      : L(`🔄 Tu equipo cambia de manos: ${oldName} pasa a ser ${nn}. Nuevos colores, mismo box.`,`🔄 Your team changes hands: ${oldName} becomes ${nn}. New colours, same garage.`,{pt:`🔄 A sua equipe muda de mãos: a ${oldName} passa a ser ${nn}. Cores novas, mesmo box.`}))
+    : (_corto
+      ? L(`🔄 ${oldName} se deja el apellido por el camino y pasa a llamarse ${nn} a secas.`,`🔄 ${oldName} drops the second half of its name and becomes plain ${nn}.`,{pt:`🔄 A ${oldName} deixa o sobrenome pelo caminho e passa a se chamar só ${nn}.`})
+      : L(`🔄 ${oldName} se transforma en ${nn}.`,`🔄 ${oldName} becomes ${nn}.`,{pt:`🔄 A ${oldName} se transforma em ${nn}.`})));
 }
 function killTeam(name, row){
   const i=F1_TEAMS.findIndex(t=>t.name===name); if(i<0) return;
