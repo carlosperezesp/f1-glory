@@ -9877,13 +9877,37 @@ const OWNER_SELF={k:"self",
               {pt:"A equipe é sua. Ninguém pode te demitir — mas cada rombo sai do seu bolso."})};
 /* 🏷️ el bote de COMPRADORES (Carlos: «podríamos traer a BMW, a Toyota, a Honda…»). Seis marcas con
    logo en la carpeta; los colores se pisan con los de la entrada de expansión si la era la trae. */
+/* 🏷️ el bote de COMPRADORES, ocho marcas con logo en la carpeta y cada una con SU ÉPOCA (Carlos,
+   23-ago: «si las ventas tienen lugar en 2030 o 2040… pues tienen que encajar»). El `desde` mide la
+   distancia que cada marca necesita para que su compra se lea creíble:
+   · Porsche/Hyundai/Toyota — han coqueteado con entrar ahora mismo: disponibles desde el minuto uno
+   · Maserati — Stellantis anda por la Fórmula E; le damos un par de años
+   · Honda — en 2026 es el motorista de Aston: comprar un equipo entero es otro paso, más adelante
+   · BMW — se fue en 2009; volver COMPRANDO pide una década larga de distancia
+   · Alfa Romeo — dejó Sauber en 2023; mismo criterio
+   · Renault — acaba de cerrar Viry en 2026: volver comprando es lo que más años necesita */
 const COMPRADORES={
-  Hyundai:{abbr:"HYU",color:"#002C5F",color2:"#00AAD2"},
-  Porsche:{abbr:"POR",color:"#D5001C",color2:"#191F22"},
-  Toyota:{abbr:"TOY",color:"#EB0A1E",color2:"#F2F2F2"},
-  Maserati:{abbr:"MAS",color:"#0F2C5C",color2:"#C8102E"},
-  BMW:{abbr:"BMW",color:"#16588E",color2:"#F5F5F5"},
-  Honda:{abbr:"HON",color:"#F5F5F5",color2:"#D0021B"}
+  Porsche:{abbr:"POR",color:"#D5001C",color2:"#191F22", desde:2026},
+  Hyundai:{abbr:"HYU",color:"#002C5F",color2:"#00AAD2", desde:2026},
+  Toyota:{abbr:"TOY",color:"#EB0A1E",color2:"#F2F2F2", desde:2026},
+  Maserati:{abbr:"MAS",color:"#0F2C5C",color2:"#C8102E", desde:2028},
+  Honda:{abbr:"HON",color:"#F5F5F5",color2:"#D0021B", desde:2031},
+  BMW:{abbr:"BMW",color:"#16588E",color2:"#F5F5F5", desde:2034},
+  "Alfa Romeo":{abbr:"ALF",color:"#8C1720",color2:"#F5F5F5", desde:2034},
+  Renault:{abbr:"REN",color:"#F5D800",color2:"#0A0A0A", desde:2038}
+};
+/* ⚰️ …y el bote de RESURRECCIONES (Carlos: «hazlas también, pero poco probables»). No es un
+   fabricante moderno: es un grupo que compra tu equipo para devolver a la parrilla un nombre que la
+   F1 no ha olvidado. 12% de las compras, y solo con años de por medio: revivir un mito pide que el
+   mito lleve tiempo muerto. */
+const RESURRECCIONES={
+  Lotus:{abbr:"LOT",color:"#00543d",color2:"#c9a227", desde:2030},
+  Brabham:{abbr:"BRA",color:"#35578A",color2:"#F5F5F5", desde:2030},
+  Jordan:{abbr:"JOR",color:"#2F9E2F",color2:"#111111", desde:2032},
+  Tyrrell:{abbr:"TYR",color:"#0A1A6B",color2:"#F5F5F5", desde:2032},
+  Arrows:{abbr:"ARR",color:"#FF6600",color2:"#111111", desde:2032},
+  March:{abbr:"MAR",color:"#8AA0B0",color2:"#33414d", desde:2035},
+  Minardi:{abbr:"MIN",color:"#0A0A0A",color2:"#F5D800", desde:2035}
 };
 const TP_OWNERS=[
   {k:"win",
@@ -12208,12 +12232,20 @@ const TP_DILEMAS=[
     const LOCK=["Ferrari","Mercedes","Red Bull","McLaren","Williams",
       "Renault","Honda","Toyota","Porsche","Hyundai","BMW","Maserati","Alfa Romeo","Lotus",
       "Jaguar","APXGP","Brawn","Benetton"];
-    const nombres=Object.keys(COMPRADORES).filter(n=>!F1_TEAMS.some(x=>x.name===n||x.name.indexOf(n)===0));
-    if(LOCK.indexOf(S.tpTeam)<0 && nombres.length){
-      const n0=nombres[irnd(0,nombres.length-1)];
+    const yr=yearNow();
+    const libre=n=>!F1_TEAMS.some(x=>x.name===n||x.name.indexOf(n)===0);
+    const conEpoca=o=>Object.keys(o).filter(n=>libre(n) && yr>=(o[n].desde||0));
+    const marcas=conEpoca(COMPRADORES), mitos=conEpoca(RESURRECCIONES);
+    if(LOCK.indexOf(S.tpTeam)<0 && (marcas.length||mitos.length)){
+      const revive = mitos.length && ch(.12);                      // ⚰️ raro a propósito
+      const pool = revive ? mitos : (marcas.length?marcas:mitos);
+      const n0=pool[irnd(0,pool.length-1)];
+      const d0=(revive?RESURRECCIONES:COMPRADORES)[n0]
+        || (S.expansion||[]).map(e=>e&&e.team).find(t=>t&&t.name===n0);
       const exp=(S.expansion||[]).map(e=>e&&e.team).find(t=>t&&t.name===n0);   // colores de la era si los hay
-      const d0=exp||COMPRADORES[n0];
-      S._compra={marca:n0, to:{name:n0, abbr:d0.abbr, color:d0.color, color2:d0.color2}};
+      const dd=(!revive && exp) ? exp : d0;
+      S._compra={marca:n0, tipo:(revive?"mito":"marca"),
+        to:{name:n0, abbr:dd.abbr, color:dd.color, color2:dd.color2}};
     } else {
       const F=["Grupo Vantor","Meridian Capital","Aurora Industries"];
       S._compra={marca:F[irnd(0,F.length-1)], to:null};
@@ -12221,14 +12253,20 @@ const TP_DILEMAS=[
     return true; },
   t:()=>L("Te quieren comprar después de ganar","They want to buy you after you won",{pt:"Querem te comprar depois de vencer"}),
   d:()=>{ const c=S._compra||{}, esMarca=!!c.to;
-    const quien=esMarca
+    const quien=(c.tipo==="mito")
+      ? L(`Un grupo de inversores que ha comprado los derechos del nombre ${c.marca} —sí, ese ${c.marca}—`,
+          `A group of investors that has bought the rights to the ${c.marca} name —yes, that ${c.marca}—`,
+          {pt:`Um grupo de investidores que comprou os direitos do nome ${c.marca} —sim, essa ${c.marca}—`})
+      : esMarca
       ? L(`El consejero delegado de ${c.marca}, un fabricante que lleva veinte años mirando esto desde fuera,`,
           `The CEO of ${c.marca}, a manufacturer that has spent twenty years watching this from the outside,`,
           {pt:`O CEO da ${c.marca}, uma montadora que passou vinte anos olhando isto de fora,`})
       : L(`El presidente de ${c.marca}, un grupo inversor que lleva años rondando el paddock,`,
           `The chairman of ${c.marca}, an investment group that has circled the paddock for years,`,
           {pt:`O presidente do ${c.marca}, um grupo investidor que ronda o paddock há anos,`});
-    const escudo=esMarca
+    const escudo=(c.tipo==="mito")
+      ? L(`bajo un nombre que esta parrilla no ha olvidado`,`under a name this grid has not forgotten`,{pt:`sob um nome que este grid não esqueceu`})
+      : esMarca
       ? L("con nuestro escudo detrás","with our badge behind it",{pt:"com o nosso escudo atrás"})
       : L("con nuestro dinero detrás","with our money behind it",{pt:"com o nosso dinheiro atrás"});
     return L(`Ganasteis. Con un presupuesto menor que los grandes y una fábrica que no es la más puntera, ganasteis. Y ahora están aquí. ${quien} te pone delante una cifra que asegura el futuro de todos los que trabajan aquí, para siempre. «No queremos cambiar nada. Solo queremos que lo que habéis hecho lo hagáis ${escudo}.» Nadie dice en voz alta lo evidente: si esa frase fuera verdad, no harían falta abogados.`,
