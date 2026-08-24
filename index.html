@@ -2797,6 +2797,30 @@ const TESTS = {
       S.titles.constr=1; S._testMito=true;
       return null; }
   },
+  /* 📰 LA PRENSA EN BANDEJA. El dilema lee tu HISTORIAL, así que el escenario le fabrica uno: te
+     pone los cinco rastros jugosos encima y deja que gane el de más arriba de la lista. Con
+     `_pmCiclo` (que solo existe aquí) cada repetición de la prueba tacha el titular anterior, así
+     que jugándolo siete veces seguidas los ves TODOS sin tener que provocarlos en partida. */
+  prensa: {
+    t:["Jefe · El jefe es la noticia","Boss · The boss is the story"],
+    d:["Estás en 2035 con Haas y la prensa te ha puesto en portada. Pasa la pantalla de rumbo y saldrá el dilema. El titular cita algo que hiciste: aquí te fabricamos el historial entero, y CADA VEZ QUE REPITAS LA PRUEBA sale el siguiente de los ocho titulares —vendiste el equipo campeón, te arruinas, un piloto no te habla, saqueaste una fábrica, diste la orden de equipo, te plantaste ante el consejo, no cumpliste el objetivo, y el comodín de que no hay nada que contar—. Prueba las tres salidas: dar la cara, callarte, o señalar a otro garaje.",
+       "It's 2035, you're at Haas and the press has put you on the front page. Get past the direction screen and the dilemma appears. The headline cites something you did: here we fabricate the whole history, and EACH TIME YOU REPEAT THE TEST the next of the eight headlines appears —you sold the champion team, you're going broke, a driver won't speak to you, you raided a factory, you gave the team order, you stood up to the board, you missed the target, and the wildcard that there's nothing to tell—. Try all three ways out: face them, say nothing, or point at another garage."],
+    era:"2026", tp:true, team:"Haas", tpDilema:"tpPresionMedios",
+    run(){
+      S.age=9;                                    // 2026+9 = 2035
+      S.seasons=[{cat:"TP",year:2032,pos:4,events:[]},
+                 {cat:"TP",year:2033,pos:3,events:[]},
+                 {cat:"TP",year:2034,pos:5,events:[]}];
+      S.titles.constr=1;
+      /* ⚠️ NO se fabrican aquí los rastros: `setupTest` llama a `run()` ANTES de `tpSignTeam`, que
+         resetea tpOwner, tpMissStreak y los asientos. Lo único que sobrevive es una marca propia,
+         y el dilema la lee al llegar el invierno. El ciclo se guarda en el navegador para que cada
+         repetición de la prueba enseñe el siguiente de los ocho titulares. */
+      let n=0; try{ n=(parseInt(localStorage.getItem("f1g_pmciclo")||"0",10)||0)%8;
+                    localStorage.setItem("f1g_pmciclo",String((n+1)%8)); }catch(e){}
+      S._pmTest=n;
+      return null; }
+  },
   /* 💷 EL ARCO BRAWN EN BANDEJA: un Haas hundido y su dueño buscando la puerta. */
   comprarEquipo: {
     t:["Jefe · Cómpralo tú por una libra","Boss · Buy it yourself for a pound"],
@@ -12671,6 +12695,16 @@ const TP_DILEMAS=[
     Salta con fama > 60: si nadie te conoce, no eres noticia. */
  {id:"tpPresionMedios",
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    /* 🧪 SOLO EN EL ESCENARIO DE PRUEBA: los rastros de verdad se van creando a lo largo de una
+       partida entera y en la prueba no hay partida, solo un muro recién estrenado. Aquí se fuerza
+       directamente el titular que toca ver. Fuera de TEST_MODE esta puerta no existe. */
+    if(TEST_MODE && S._pmTest!=null){
+      const K=["venta","ruina","rencor","guerra","orden","plante","incumple","nada"];
+      const kk=K[S._pmTest%8], d0=tpDrvs()[0];
+      S._pm={k:kk, dato: kk==="rencor" ? (d0?surname(d0.name):L("tu piloto","your driver",{pt:"seu piloto"}))
+                       : kk==="guerra" ? "Ferrari" : null};
+      return true;
+    }
     /* 📏 el umbral se midió, no se eligió a ojo: empezaste con 52 y la MEDIANA del techo de fama en
        una partida TP es 51, así que pedir 60 dejaba el dilema en el 8% de las partidas —era un premio
        para jefes ganadores, no un dilema—. Con 52 salta cuando ya has hecho algo que contar. */
