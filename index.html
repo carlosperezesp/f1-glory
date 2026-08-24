@@ -6770,6 +6770,24 @@ function gomaRemate(p){
   return p===1 ? L(" Y era la victoria."," And that was the win.",{pt:" E era a vitória."})
        : p<=3  ? L(" Y era podio."," And that was a podium.",{pt:" E era pódio."}) : "";
 }
+/* 📰 EL TITULAR DEL RENCOR, EN TRES SABORES POR MOTIVO (Carlos, 24-ago: «es que siempre dices que no
+   le dirige la palabra, mejor variar»). Cada motivo trae su porqué dentro del titular, y se elige uno
+   de los tres con `dilVar` para que no baile al cambiar de idioma. */
+function rencorTitular(q, yo){
+  const n=q.n||"", y=q.year||"", i=dilVar("rencorTit",()=>irnd(0,2));
+  if(q.motivo==="regla"){
+    return [
+      L(`«Guerra en el garaje: ${n} enfría su relación con ${yo} desde que la 'regla del más rápido' lo convirtió en el segundo de a bordo»`,`«War in the garage: ${n} has cooled towards ${yo} ever since the 'fastest man passes' rule made him the number two»`,{pt:`«Guerra na garagem: ${n} esfriou com ${yo} desde que a 'regra do mais rápido' o transformou no segundo piloto»`}),
+      L(`«Frío en el box: entre ${yo} y ${n} ya no hay más conversación que la estrictamente necesaria desde que se impuso la norma del ritmo»`,`«Cold in the garage: since the pace rule came in, ${yo} and ${n} exchange only what's strictly necessary»`,{pt:`«Frio no box: entre ${yo} e ${n} já não há mais conversa que a estritamente necessária desde que se impôs a regra do ritmo»`}),
+      L(`«${n}, a un palmo de ${yo} y a un mundo de distancia: en el garaje llaman 'la línea que nadie cruza' a la regla de ${y}»`,`«${n}, an arm's length from ${yo} and a world away: in the garage they call the ${y} rule 'the line nobody crosses'»`,{pt:`«${n}, a um palmo de ${yo} e a um mundo de distância: na garagem chamam a regra de ${y} de 'a linha que ninguém cruza'»`})
+    ][i];
+  }
+  return [
+    L(`«Guerra en el garaje: ${n} enfría su relación con ${yo} desde que en ${y} rechazó la compra que les habría hecho ricos a todos»`,`«War in the garage: ${n} has cooled towards ${yo} since he turned down, in ${y}, the takeover that would have made everyone rich»`,{pt:`«Guerra na garagem: ${n} esfriou com ${yo} desde que em ${y} recusou a compra que teria deixado todo mundo rico»`}),
+    L(`«Frío en el box: ${n} y ${yo} no se dirigen más que lo justo desde aquel 'no' de ${y} a la oferta de compra»`,`«Cold in the garage: ${n} and ${yo} keep it to the minimum since that ${y} 'no' to the takeover»`,{pt:`«Frio no box: ${n} e ${yo} só falam o mínimo desde aquele 'não' de ${y} à oferta de compra»`}),
+    L(`«El cheque que ${yo} rompió en ${y} sigue encima de la mesa: ${n} no lo ha olvidado y en el garaje se nota»`,`«The cheque ${yo} tore up in ${y} is still on the table: ${n} hasn't forgotten, and the garage can tell»`,{pt:`«O cheque que ${yo} rasgou em ${y} continua na mesa: ${n} não esqueceu, e na garagem se nota»`})
+  ][i];
+}
 function dilVar(k, gen){ S._dilVars=S._dilVars||{}; if(S._dilVars[k]===undefined) S._dilVars[k]=gen(); return S._dilVars[k]; }
 /* 🦠 LAS OCHO MANERAS DE PASAR EL PARÓN DE 2020 (petición de Carlos, 24-ago). Antes eran siempre las
    mismas tres opciones, así que revivir 2020 era revivir la misma pantalla. Ahora salen TRES DE OCHO
@@ -12817,7 +12835,7 @@ const TP_DILEMAS=[
     let k=null, dato=null;
     if(S._histVenta){ k="venta"; dato=S._histVenta; }
     else if(mio && hundido && S._histCompra){ k="ruina"; dato=S._histCompra; }
-    else if(rencoroso){ k="rencor"; dato={n:surname(rencoroso.name), year:rencoroso.tpRencorPor.year}; }
+    else if(rencoroso){ k="rencor"; dato={n:surname(rencoroso.name), year:rencoroso.tpRencorPor.year, motivo:rencoroso.tpRencorPor.motivo}; }
     else if(S._histGuerra){ k="guerra"; dato=S._histGuerra; }
     else if(S._histOrden){ k="orden"; dato={year:S._histOrden}; }
     else if(S._histPlante){ k="plante"; dato={year:S._histPlante}; }
@@ -12837,7 +12855,7 @@ const TP_DILEMAS=[
     const puesto = L(`${PP.p}º de ${PP.n}`, `P${PP.p} of ${PP.n}`, {pt:`${PP.p}º de ${PP.n}`});
     const tit = p.k==="venta"  ? L(`«Ganó, cobró y se fue: ${yo} levantó el título con ${q.team} y lo vendió en ${q.year}»`,`«He won, he cashed in, he left: ${yo} took the title with ${q.team} and sold it in ${q.year}»`,{pt:`«Venceu, embolsou e foi embora: ${yo} levantou o título com a ${q.team} e a vendeu em ${q.year}»`})
               : p.k==="ruina"  ? L(`«El dueño que se arruina en directo: ${yo} compró ${q.team} en ${q.year} y hoy va ${puesto} en la parrilla»`,`«The owner going broke in public: ${yo} bought ${q.team} in ${q.year} and today runs ${puesto} on the grid»`,{pt:`«O dono que se arruína ao vivo: ${yo} comprou a ${q.team} em ${q.year} e hoje está em ${puesto} no grid»`})
-              : p.k==="rencor" ? L(`«Guerra en el garaje: ${q.n} no le dirige la palabra a ${yo} desde que en ${q.year} rechazó la compra que les habría hecho ricos a todos»`,`«War in the garage: ${q.n} hasn't spoken to ${yo} since he turned down, in ${q.year}, the takeover that would have made everyone rich»`,{pt:`«Guerra na garagem: ${q.n} não fala com ${yo} desde que em ${q.year} recusou a compra que teria deixado todo mundo rico»`})
+              : p.k==="rencor" ? rencorTitular(q, yo)
               : p.k==="guerra" ? L(`«${yo} fue a saquear la fábrica de ${q.team}: desde ${q.year} les llama a los ingenieros uno por uno»`,`«${yo} went to raid ${q.team}'s factory: since ${q.year} he's been calling their engineers one by one»`,{pt:`«${yo} foi saquear a fábrica da ${q.team}: desde ${q.year} liga para os engenheiros deles um a um»`})
               : p.k==="orden"  ? L(`«Los coches teledirigidos de ${yo}: en ${q.year} ordenó a sus pilotos mantener posiciones y todavía se le recuerda»`,`«${yo}'s remote-controlled cars: in ${q.year} he ordered his drivers to hold position and nobody has forgotten»`,{pt:`«Os carros teleguiados de ${yo}: em ${q.year} mandou os pilotos manterem posições e ninguém esqueceu»`})
               : p.k==="plante" ? L(`«¿Ambición o cobardía?: ${yo} le dijo al consejo en ${q.year} que no quemaría el coche del año siguiente por un título»`,`«Ambition or cowardice?: in ${q.year} ${yo} told the board he wouldn't burn next year's car for a title»`,{pt:`«Ambição ou covardia?: ${yo} disse ao conselho em ${q.year} que não queimaria o carro do ano seguinte por um título»`})
@@ -12989,6 +13007,43 @@ const TP_DILEMAS=[
       return ch(.55)
         ? (TPTGT(2),L("Ni te sientas a escuchar la cifra. Aguantáis el año entero siendo los únicos que lo llevan, y la fábrica lo convierte en la base del coche que viene. +proyecto","You don't even sit down to hear the number. You spend the whole year as the only ones running it, and the factory turns it into the basis of next year's car. +project",{pt:"Você nem senta para ouvir o número. Vocês passam o ano inteiro sendo os únicos a usá-lo, e a fábrica o transforma na base do próximo carro. +projeto"}))
         : (up(1.5),L(`Dices que no… y en verano ${v.b} lleva algo sospechosamente parecido. No hacía falta vendérselo: bastaba con dejarlo a la vista de treinta cámaras. Ellos suben, y vosotros sin el dinero`,`You say no… and by summer ${v.b} is running something suspiciously similar. You didn't need to sell it to them: leaving it in view of thirty cameras was enough. They gain, and you never saw the money`,{pt:`Você diz não… e no verão a ${v.b} está com algo suspeitosamente parecido. Não era preciso vender: bastava deixá-lo à vista de trinta câmeras. Eles sobem, e vocês sem o dinheiro`})); }}]},
+
+ /* ⚖️ «LA REGLA O LA LIBERTAD» (idea de Carlos del fin de semana Hamilton–Leclerc, 24-ago). No es
+    tpOrdenes con otro nombre: aquél decide UNA carrera concreta a falta de una vuelta; este fija la
+    POLÍTICA de la casa para lo que queda de temporada. Por eso el texto NO dice «no existe una norma»
+    —lo cazó Carlos: en una partida donde ya diste la orden, esa frase se contradice.
+    El umbral se MIDIÓ, no se eligió: entre tus dos titulares la diferencia mediana de nivel es de casi
+    6 puntos, y pedir ≤2 dejaba el dilema en el 22% de los inviernos. Con ≤3 sale en el 39%: siguen
+    siendo dos pilotos parejos de verdad, pero la conversación llega a ocurrir.
+    La rama mala de la regla enciende `tpRencor` — su SEGUNDA fuente en todo el juego, que además
+    alimenta al dilema de la prensa y encarece la renovación de ese piloto (−35%). */
+ {id:"tpReglaDePaso",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs(); if(a.length<2) return false;
+    if(Math.abs((a[0].skill||0)-(a[1].skill||0))>3) return false;   // parejos DE VERDAD (medido)
+    const u=(S.seasons||[]).at(-1);
+    if(!u || u.cat!=="TP" || u.pos==null || u.pos>8) return false;   // los dos en zona de puntos
+    const ord=a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0));
+    S._rgl={rapido:surname(ord[0].name), delante:surname(ord[1].name), nSlow:ord[1].name};
+    return true; },
+  t:()=>L("La regla o la libertad","The rule or the freedom",{pt:"A regra ou a liberdade"}),
+  d:()=>{ const r=S._rgl||{};
+    return L(`Tercera vez este año: ${r.rapido} con más ritmo, ${r.delante} delante, dos vueltas discutiendo por radio y el coche de detrás pasándoos a los dos. Tu jefe de estrategia te mira. Quiere saber tu decisión.`,
+             `Third time this year: ${r.rapido} with more pace, ${r.delante} ahead, two laps arguing on the radio and the car behind passing you both. Your head of strategy looks at you. He wants your decision.`,
+             {pt:`Terceira vez este ano: ${r.rapido} com mais ritmo, ${r.delante} à frente, duas voltas discutindo no rádio e o carro de trás ultrapassando os dois. O seu chefe de estratégia te olha. Quer a sua decisão.`}); },
+  opts:[
+   {l:()=>L("Regla clara: el que tenga más ritmo, pasa","A clear rule: whoever has the pace, passes",{pt:"Regra clara: quem tem ritmo, passa"}),
+    r:()=>{ const r=S._rgl||{};
+      return roll(
+       [6,()=>(TPCAR(1.5),L(`Se acabaron las discusiones por radio: el dato decide y los puntos dejan de escaparse. A ninguno de los dos le encanta; los dos lo aceptan. +coche`,`No more radio arguments: the data decides and the points stop leaking away. Neither of them loves it; both accept it. +car`,{pt:`Acabaram as discussões no rádio: o dado decide e os pontos param de escapar. Nenhum dos dois adora; os dois aceitam. +carro`}))],
+       [4,()=>{ TPCAR(1.5);
+         const d=tpDrvs().find(x=>x&&x.name===r.nSlow);
+         if(d){ d.tpRencor=true; d.tpRencorPor={motivo:"regla", year:yearNow(), team:S.tpTeam}; }
+         return L(`La regla funciona sobre el papel. Lo que el papel no dice es que siempre cede el mismo, y ${r.delante} ha empezado a preguntarse en voz alta para quién trabaja. +coche, y te lo guarda`,`The rule works on paper. What the paper doesn't say is that it's always the same man who yields, and ${r.delante} has started asking out loud who he works for. +car, and he holds it against you`,{pt:`A regra funciona no papel. O que o papel não diz é que quem cede é sempre o mesmo, e ${r.delante} começou a perguntar em voz alta para quem trabalha. +carro, e ele guarda mágoa`}); }]); }},
+   {l:()=>L("Libertad: son pilotos, no peones","Freedom: they're drivers, not pawns",{pt:"Liberdade: são pilotos, não peões"}),
+    r:()=>roll(
+     [55,()=>(TPRE(2),L("Se pelean limpio, el espectáculo es vuestro y la prensa os adora. Los puntos que se pierden, se pierden con estilo. +fama","They race each other clean, the show is yours and the press adores you. The points you lose, you lose with style. +fame",{pt:"Brigam limpo, o espetáculo é de vocês e a imprensa adora. Os pontos que se perdem, se perdem com estilo. +fama"}))],
+     [45,()=>(TPCAR(-1.5),TPRE(-1.5),L("La libertad se cobra su precio en la curva 1: los dos fuera. El consejo te pregunta, muy despacio, si el espectáculo puntúa. −coche, −fama","Freedom collects its due at turn 1: both of them out. The board asks you, very slowly, whether the show scores points. −car, −fame",{pt:"A liberdade cobra seu preço na curva 1: os dois fora. O conselho te pergunta, bem devagar, se o espetáculo pontua. −carro, −fama"}))])}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
