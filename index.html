@@ -2484,16 +2484,66 @@ function yearNow(){ return (S.baseYear||2026)+(S.age-(S.startAge??16)); } // el 
    baja llega o no a la temporada siguiente. Dos circuitos han cambiado de sitio en el calendario y se
    resuelven por año: Australia CERRABA el campeonato hasta 1995 (Adelaida) y lo abre desde 1996;
    Brasil lo abría hasta 2003 y lo cierra desde 2004. */
+/* 📅 …Y EL AÑO EN QUE SE VAN (24-ago-2026). Hasta ahora un circuito entraba y no salía jamás: en
+   2040 seguías corriendo en Hockenheim. El SEXTO campo es el último año, y con él el calendario
+   respira como el de verdad — Alemania se cae en 2019, Francia en 2022, Barcelona cede el sitio a
+   Madrid en 2026. Y respira en los dos sentidos: hay circuitos que VUELVEN (Portimão, Paul Ricard,
+   Hockenheim, Corea, India) y estrenos plausibles a partir de los treinta (Hanói, Kyalami, Buenos
+   Aires, Santiago). Un circuito con dos épocas son dos entradas con la misma etiqueta: sus ventanas
+   no se solapan, así que nunca aparece dos veces el mismo año.
+   ⚠️ esto lo ve TODO el juego: la bolsa de lluvia, la de calor, el ambiente de los dilemas y el
+   accidente de época. Por eso las vueltas, las curvas y el mes son los reales de cada trazado. */
 function gpList(yr){
   return [[L("Mónaco","Monaco",{pt:"Mônaco"}),0,78,19,5],["Silverstone",0,52,18,7],["Spa",0,44,19,8],["Monza",0,53,11,9],["Suzuka",0,53,18,10],
-    ["Interlagos",0,71,15,3],["Hungaroring",0,70,14,8],["Barcelona",0,66,14,5],["Montreal",0,70,14,6],["Melbourne",0,58,14,3],
-    [L("Singapur","Singapore",{pt:"Singapura"}),2008,62,19,9],[L("Abu Dabi","Abu Dhabi",{pt:"Abu Dhabi"}),2009,58,16,12],["Austin",2012,56,20,10],[L("Bakú","Baku",{pt:"Baku"}),2016,51,20,6],
-    ["Imola",2020,63,19,4],["Zandvoort",2021,72,14,8],[L("Yeda","Jeddah",{pt:"Jeddah"}),2021,50,27,3],["Las Vegas",2023,50,17,11]]
-    .filter(c=>!c[1]||yr>=c[1])
+    ["Interlagos",0,71,15,3],["Hungaroring",0,70,14,8],["Barcelona",0,66,14,5,2025],["Montreal",0,70,14,6],["Melbourne",0,58,14,3],
+    ["Hockenheim",0,67,17,7,2019],[L("Shanghái","Shanghai",{pt:"Xangai"}),2004,56,16,4],
+    [L("Singapur","Singapore",{pt:"Singapura"}),2008,62,19,9],[L("Abu Dabi","Abu Dhabi",{pt:"Abu Dhabi"}),2009,58,16,12],
+    ["Yeongam",2010,55,18,10,2013],["Buddh",2011,60,16,10,2013],
+    ["Austin",2012,56,20,10],[L("México","Mexico City",{pt:"México"}),2015,71,17,10],["Red Bull Ring",2014,71,10,7],
+    [L("Bakú","Baku",{pt:"Baku"}),2016,51,20,6],["Paul Ricard",2018,53,15,6,2022],
+    ["Imola",2020,63,19,4],[L("Portimão","Portimao",{pt:"Portimão"}),2020,66,15,10,2021],
+    ["Zandvoort",2021,72,14,8,2035],[L("Yeda","Jeddah",{pt:"Jeddah"}),2021,50,27,3],
+    ["Miami",2022,57,19,5],["Las Vegas",2023,50,17,11],[L("Madrid","Madrid",{pt:"Madri"}),2026,57,22,9],
+    /* 🔮 los que vuelven y los que estrenan, ya en los treinta */
+    [L("Portimão","Portimao",{pt:"Portimão"}),2029,66,15,10],
+    ["Hockenheim",2031,67,17,7],["Paul Ricard",2031,53,15,6],[L("Hanói","Hanoi",{pt:"Hanói"}),2031,55,23,4],
+    ["Kyalami",2032,60,16,3],["Yeongam",2033,55,18,10],[L("Buenos Aires","Buenos Aires",{pt:"Buenos Aires"}),2033,72,15,11],
+    ["Buddh",2034,60,16,10],[L("Santiago","Santiago",{pt:"Santiago"}),2034,58,18,11]]
+    .filter(c=>(!c[1]||yr>=c[1]) && (!c[5]||yr<=c[5]))
     .map(c=>({n:c[0], laps:c[2], turns:c[3],
       mes: c[0]==="Melbourne"  ? (yr<=1995?11:3)
          : c[0]==="Interlagos" ? (yr>=2004?11:3)
          : c[4] }));
+}
+/* 🏠 LA CARRERA DE CASA. País del piloto → sus circuitos, en orden de preferencia. Se cruza con el
+   calendario del año, así que la respuesta cambia con la época: un español corre en casa en
+   Barcelona hasta 2025 y en Madrid desde 2026; un coreano solo tiene casa en 2010-13 y otra vez
+   desde 2033; y a un argentino de la era 2026 le NACE la carrera de casa a mitad de su carrera.
+   Los nombres son los planos del calendario a propósito: los que pasan por L() cambian con el
+   idioma y no se pueden comparar por texto. */
+const GP_CASA={
+  "Italia":["Monza","Imola"], "España":["Madrid","Barcelona"], "Reino Unido":["Silverstone"],
+  "Alemania":["Hockenheim"], "Brasil":["Interlagos"], "Japón":["Suzuka"],
+  "Australia":["Melbourne"], "Austria":["Red Bull Ring"], "Bélgica":["Spa"],
+  "Hungría":["Hungaroring"], "Canadá":["Montreal"], "Países Bajos":["Zandvoort"],
+  "Estados Unidos":["Austin","Miami","Las Vegas"], "Francia":["Paul Ricard"],
+  "Portugal":["Portimão"], "Corea del Sur":["Yeongam"], "India":["Buddh"],
+  "Vietnam":["Hanói"], "Sudáfrica":["Kyalami"], "Argentina":["Buenos Aires"],
+  "Chile":["Santiago"], "China":["Shanghái"], "México":["México"], "Singapur":["Singapur"]
+};
+/* el GP de casa de un piloto ESTE año, o null si su país no corre (todavía, o ya nunca).
+   `estreno` marca si es la PRIMERA vez que ese circuito aparece: correr en casa por primera vez
+   en la historia de tu país no es lo mismo que hacerlo por décima vez. */
+function gpCasa(pais, yr){
+  if(!pais) return null;
+  const quiere=GP_CASA[pais]; if(!quiere) return null;
+  const y=yr||yearNow(), hoy=gpList(y);
+  for(const nombre of quiere){
+    const c=hoy.find(x=>x.n===nombre || (typeof x.n==="string" && x.n===nombre));
+    if(c) return {n:c.n, laps:c.laps, turns:c.turns, mes:c.mes,
+                  estreno: !gpList(y-1).some(x=>x.n===c.n)};
+  }
+  return null;
 }
 function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
 /* 🌦️ circuitos por clima (Carlos: «no va a llover en Bahréin»). Los de calor se comparan por prefijo
@@ -2501,7 +2551,9 @@ function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
 const GP_LLUVIA=["Spa","Silverstone","Interlagos","Suzuka","Hungaroring","Montreal","Zandvoort","Imola","Melbourne"];
 function tpGpLluvia(){ const cs=gpList(yearNow()).filter(c=>GP_LLUVIA.indexOf(c.n)>=0);
   return cs.length?cs[irnd(0,cs.length-1)]:null; }
-function tpGpCalor(){ const cs=gpList(yearNow()).filter(c=>["Hungaroring","Barcelona","Austin","Singap"].some(p=>String(c.n).indexOf(p)===0));
+/* ☀️ Madrid y México entran en la bolsa de calor: Barcelona se cae del calendario en 2026 y sin
+   ellos la bolsa se quedaba coja justo en la era más jugada (lo vi al montar el calendario). */
+function tpGpCalor(){ const cs=gpList(yearNow()).filter(c=>["Hungaroring","Barcelona","Austin","Singap","Madrid","México","Mexico","Kyalami"].some(p=>String(c.n).indexOf(p)===0));
   return cs.length?cs[irnd(0,cs.length-1)]:null; }
 
 /* ================= IDENTIDAD ================= */
