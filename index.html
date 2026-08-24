@@ -4895,7 +4895,7 @@ const fiaOpt=(a,b,c)=>[{l:()=>a,r:fiaSupport},{l:()=>b,r:fiaOppose},{l:()=>c,r:f
 // ¿candidato al título de verdad? (para que el fallo que decide el mundial no salga siendo 20º)
 function fiaContender(){ const lp=S.seasons.at(-1)?.pos??20; return lp<=3 && S.ovr>=84 && (S.f1perf[S.team?.name]??70)>=84; }
 const FIA_SCENARIOS=[
-  { sit:()=>{ const win=ch(.4); if(win){ S.wins++; S.podiums++; } return win
+  { sit:()=>{ const win=dilVar("fiaSafety",()=>{ const w=ch(.4); if(w){ S.wins++; S.podiums++; } return w; }); return win
       ? L("Un coche de seguridad de gestión dudosa en la última vuelta te REGALA la victoria: te la llevas con asterisco. 🏆","A dubiously-managed safety car on the last lap HANDS you the win: you take it with an asterisk. 🏆",{pt:"Um safety car de gestão duvidosa na última volta te DÁ DE PRESENTE a vitória: você leva com asterisco. 🏆"})
       : L("Un coche de seguridad de gestión dudosa en la última vuelta te ARREBATA la victoria que ya tenías en el bolsillo.","A dubiously-managed safety car on the last lap ROBS you of a win you already had in the bag.",{pt:"Um safety car de gestão duvidosa na última volta te TIRA a vitória que você já tinha no bolso."}); },
     opts:()=>fiaOpt(L("Las reglas son las reglas","Rules are rules",{pt:"Regras são regras"}),L("Montar el pollo por la radio","Kick off on the radio",{pt:"Explodir no rádio"}),L("Morderte la lengua","Bite your tongue",{pt:"Morder a língua"})) },
@@ -4914,7 +4914,7 @@ const FIA_SCENARIOS=[
   { sit:()=>L("La FIA congela el desarrollo de motores para «ahorrar costes». Unos lo ven justo; los que iban por detrás, una condena.","The FIA freezes engine development to «cut costs». Some call it fair; those catching up call it a life sentence.",{pt:"A FIA congela o desenvolvimento de motores para «economizar custos». Uns acham justo; quem estava atrás, uma condenação."}),
     opts:()=>fiaOpt(L("Aceptar el congelado","Accept the freeze",{pt:"Aceitar o congelamento"}),L("Cargar contra la falta de competencia","Rail against killing the fight",{pt:"Atacar a falta de competição"}),L("Quedarte al margen","Stay on the sidelines",{pt:"Ficar de fora"})) },
   // 🏆 el fallo que DECIDE EL MUNDIAL: solo si eres candidato de verdad y máx 2 por partida. Fuerza el resultado del año.
-  { titleDecider:true, sit:()=>{ const win=ch(.5); S.fiaTitlePending=win?"win":"lose"; S.fiaTitleCount=(S.fiaTitleCount||0)+1; return win
+  { titleDecider:true, sit:()=>{ const win=dilVar("fiaTitle",()=>{ const w=ch(.5); S.fiaTitlePending=w?"win":"lose"; S.fiaTitleCount=(S.fiaTitleCount||0)+1; return w; }); return win
       ? L("El mundial se decide en la última carrera y un fallo de la FIA inclina la balanza… esta vez de TU lado. Vas camino de ser CAMPEÓN. 🏆","The title comes down to the final race and an FIA ruling tips the scales… this time in YOUR favour. You're on course to be CHAMPION. 🏆",{pt:"O mundial se decide na última corrida e uma decisão da FIA inclina a balança… desta vez para o SEU lado. Você está a caminho de ser CAMPEÃO. 🏆"})
       : L("El mundial se decide en la última carrera y un fallo de la FIA inclina la balanza… en tu contra. Te quedas SUBCAMPEÓN por una decisión que dolerá siempre.","The title comes down to the final race and an FIA ruling tips the scales… against you. You end up RUNNER-UP by a call that will always sting.",{pt:"O mundial se decide na última corrida e uma decisão da FIA inclina a balança… contra você. Você fica em SEGUNDO por uma decisão que vai doer para sempre."}); },
     opts:()=>fiaOpt(L("Aceptar el veredicto","Accept the verdict",{pt:"Aceitar o veredito"}),L("Denunciar el atraco al mundo entero","Denounce the robbery to the world",{pt:"Denunciar o roubo ao mundo inteiro"}),L("Callar y tragarte la rabia","Say nothing and swallow the rage",{pt:"Calar e engolir a raiva"})) },
@@ -4924,9 +4924,25 @@ const DILEMAS=[
  {id:"testsecreto",stage:"jr",t:()=>L("Test secreto","Secret test",{pt:"Teste secreto"}),d:()=>L("Un equipo rival te ofrece probar su coche a escondidas. Si tu equipo se entera, habrá bronca.","A rival team offers you a secret test in their car. If your team finds out, there'll be trouble.",{pt:"Uma equipe rival te oferece testar o carro dela escondido. Se a sua equipe descobrir, vai dar confusão."}),opts:[
    {l:()=>L("Ir a escondidas","Go in secret",{pt:"Ir escondido"}),r:()=>ch(.6)?(OVR(1),L("Aprendes muchísimo de otro coche. +1 OVR","You learn a huge amount from another car. +1 OVR",{pt:"Você aprende muito com outro carro. +1 OVR"})):(VAL(.8),L("Tu equipo se entera. Te señalan como desleal. Fama -20%","Your team finds out. You're branded disloyal. Fame -20%",{pt:"A sua equipe descobre. Te apontam como desleal. Fama -20%"}))},
    {l:()=>L("Contárselo a tu jefe","Tell your boss",{pt:"Contar ao seu chefe"}),r:()=>ch(.5)?L("Te lo prohíben. Todo sigue igual.","They forbid it. Nothing changes.",{pt:"Eles proíbem. Tudo continua igual."}):(OVR(1),VAL(1.1),L("Lo organizan oficialmente: pruebas con permiso. +1 OVR y +fama","They set it up officially: a sanctioned test. +1 OVR and +fame",{pt:"Organizam oficialmente: você testa com permissão. +1 OVR e +fama"}))}]},
- {id:"manager",stage:"jr",t:()=>L("El mánager tiburón","The shark agent",{pt:"O empresário tubarão"}),d:()=>L("Un representante estrella quiere llevarte. Tiene los contactos… y fama de quedarse con todo.","A star agent wants to represent you. He has the contacts… and a reputation for taking everything.",{pt:"Um empresário estrela quer te agenciar. Tem os contatos… e fama de ficar com tudo."}),opts:[
-   {l:()=>L("Firmar con él","Sign with him",{pt:"Assinar com ele"}),r:()=>ch(.6)?(VAL(1.3),L("Te abre puertas que ni sabías que existían. Fama +30%","He opens doors you didn't know existed. Fame +30%",{pt:"Ele abre portas que você nem sabia que existiam. Fama +30%"})):(VAL(.8),L("Sus comisiones te ahogan y decide él por ti. Fama -20%","His commissions choke you and he calls the shots. Fame -20%",{pt:"As comissões dele te sufocam e quem decide é ele. Fama -20%"}))},
-   {l:()=>L("Seguir con tu familia","Stick with your family",{pt:"Seguir com a sua família"}),r:()=>ch(.7)?L("Menos ruido, mismo camino. Sin cambios.","Less noise, same path. No change.",{pt:"Menos barulho, mesmo caminho. Sem mudanças."}):(VAL(1.1),L("Tu historia humilde enamora a un patrocinador. +fama","Your humble story wins over a sponsor. +fame",{pt:"A sua história humilde encanta um patrocinador. +fama"}))}]},
+ /* 🦈 EL TIBURÓN NO PUEDE ACERTAR CASI SIEMPRE (lo cazó Carlos, 24-ago). Antes firmar con él era
+    60% gloria / 40% ruina, y quedarte con los tuyos NO tenía ningún riesgo: era regalo o nada, así
+    que la decisión no era una decisión. Ahora firmar abre cuatro caminos —te abre puertas, te abre
+    agenda, te ahoga a comisiones, o te suelta por otro más joven— y quedarte también puede costarte
+    un asiento que se lleva alguien peor con mejor representante. */
+ {id:"manager",stage:"jr",cond:()=>S.age<=22,t:()=>L("El mánager tiburón","The shark agent",{pt:"O empresário tubarão"}),d:()=>L("Un representante estrella quiere llevarte. Tiene los contactos… y fama de quedarse con todo.","A star agent wants to represent you. He has the contacts… and a reputation for taking everything.",{pt:"Um empresário estrela quer te agenciar. Tem os contatos… e fama de ficar com tudo."}),opts:[
+   /* 🔥 AL AGRESIVO LE SALE MEJOR (petición de Carlos, 24-ago), pero no siempre: es el único de los
+      tres que le aguanta la mirada a un tipo así —no se deja apabullar por la agenda ni traga con las
+      comisiones sin rechistar—. Le sale bien el 54% frente al 38% de los demás, y que lo suelten por
+      otro más barato baja del 15% al 8%. Sigue pudiendo salir mal: el tiburón es el tiburón. */
+   {l:()=>L("Firmar con él","Sign with him",{pt:"Assinar com ele"}),r:()=>roll(
+     [sel.style==="agresivo"?7:5,()=>(VAL(1.3),L("Te abre puertas que ni sabías que existían. Fama +30%","He opens doors you didn't know existed. Fame +30%",{pt:"Ele abre portas que você nem sabia que existiam. Fama +30%"}))],
+     [3,()=>(VAL(1.12),OVR(-1),L("Te abre puertas, sí. Y también agenda: cenas, fotos y actos donde antes había vueltas. +fama, −1 OVR","He opens doors, sure. And a diary: dinners, photocalls and appearances where laps used to be. +fame, −1 OVR",{pt:"Ele abre portas, sim. E agenda também: jantares, fotos e eventos onde antes havia voltas. +fama, −1 OVR"}))],
+     [sel.style==="agresivo"?2:3,()=>(VAL(.8),L("Sus comisiones te ahogan y decide él por ti. Fama -20%","His commissions choke you and he calls the shots. Fame -20%",{pt:"As comissões dele te sufocam e quem decide é ele. Fama -20%"}))],
+     [sel.style==="agresivo"?1:2,()=>(VAL(.72),L("Aparece un chaval más joven y más barato, y tú pasas a ser la segunda llamada del día. Luego ni eso. −fama","A younger, cheaper kid turns up and you become the second call of the day. Then not even that. −fame",{pt:"Aparece um garoto mais novo e mais barato, e você vira a segunda ligação do dia. Depois nem isso. −fama"}))])},
+   {l:()=>L("Seguir con tu familia","Stick with your family",{pt:"Seguir com a sua família"}),r:()=>roll(
+     [4,()=>L("Menos ruido, mismo camino. Sin cambios.","Less noise, same path. No change.",{pt:"Menos barulho, mesmo caminho. Sem mudanças."})],
+     [3,()=>(VAL(1.1),L("Tu historia humilde enamora a un patrocinador. +fama","Your humble story wins over a sponsor. +fame",{pt:"A sua história humilde encanta um patrocinador. +fama"}))],
+     [3,()=>(VAL(.9),L("Un asiento que era para ti acaba en manos de un chaval con peor volante y mejor representante. Nadie llamó por ti. −fama","A seat that was yours ends up with a kid who's slower and better represented. Nobody made the call for you. −fame",{pt:"Um lugar que era seu acaba com um garoto mais lento e melhor representado. Ninguém ligou por você. −fama"}))])}]},
  {id:"invierno",stage:"jr",t:()=>L("Invierno de hierro","Iron winter",{pt:"Inverno de ferro"}),d:()=>L("Te ofrecen una pretemporada de entrenamiento extremo con un preparador militar.","You're offered an extreme pre-season with a military-style trainer.",{pt:"Te oferecem uma pré-temporada de treino extremo com um preparador militar."}),opts:[
    {l:()=>L("Al límite","Push to the limit",{pt:"No limite"}),r:()=>ch(.65)?(OVR(1),L("Llegas como una máquina. +1 OVR","You arrive like a machine. +1 OVR",{pt:"Você chega como uma máquina. +1 OVR"})):(OVR(-1),L("Te lesionas un hombro entrenando. -1 OVR","You hurt a shoulder training. -1 OVR",{pt:"Você machuca o ombro treinando. -1 OVR"}))},
    {l:()=>L("Invierno clásico","Normal winter",{pt:"Inverno clássico"}),r:()=>ch(.8)?L("Un invierno normal. Sin cambios.","A normal winter. No change.",{pt:"Um inverno normal. Sem mudanças."}):(OVR(1),L("El descanso te sienta de maravilla. +1 OVR","The rest does you a world of good. +1 OVR",{pt:"O descanso te faz um bem enorme. +1 OVR"}))}]},
@@ -5355,8 +5371,13 @@ const DILEMAS=[
      [2,()=>L(`Convivencia tensa con ${en}, pero sin sangre. Sin cambios.`,`An uneasy coexistence with ${en}, but no blood. No change.`,{pt:`Convivência tensa com ${en}, mas sem sangue. Sem mudanças.`})]); }}]},
  // 🏛️ la FIA toma una decisión polémica (rota entre FIA_SCENARIOS, cada uno con sus opciones) y el paddock se parte
  {id:"falloFIA",stage:"f1",cond:()=>S.cat==="F1",t:()=>L("El fallo de la FIA","The FIA's ruling",{pt:"A decisão da FIA"}),
+  /* 🌐 el escenario se sortea UNA vez. Guardamos su posición en FIA_SCENARIOS, no en `pool`: el
+     filtro de arriba depende de `fiaTitleCount`, que el propio escenario del título incrementa, así
+     que un índice sobre `pool` apuntaría a OTRO caso en el siguiente repintado. Los `opts` sí se
+     recalculan cada vez —son deterministas dado el escenario— para que las etiquetas se traduzcan. */
   d:()=>{ const pool=FIA_SCENARIOS.filter(sc=>!sc.titleDecider || (fiaContender() && (S.fiaTitleCount||0)<2));
-    const sc=pool[irnd(0,pool.length-1)]; S._fiaSc=sc; S._fiaOpts=sc.opts();
+    const sc=FIA_SCENARIOS[dilVar("fiaSc",()=>FIA_SCENARIOS.indexOf(pool[irnd(0,pool.length-1)]))];
+    S._fiaSc=sc; S._fiaOpts=sc.opts();
     return sc.sit()+L(" ¿Qué postura tomas?"," What stance do you take?",{pt:" Que posição você toma?"}); },
   opts:[
    {l:()=>S._fiaOpts?S._fiaOpts[0].l():"", r:()=>S._fiaOpts?S._fiaOpts[0].r():""},
@@ -5468,9 +5489,25 @@ const DILEMAS=[
   t:()=>L("El desprecio de la leyenda","The legend's disdain",{pt:"O desprezo da lenda"}),
   d:()=>{ const c=oldChampion(); S._leg=c?surname(c.name):"un mito"; const n=c?c.titles:5;
     return L(`${S._leg}, ${n} veces campeón, te señala en una entrevista: «Esta generación lo tiene todo regalado. En mi época se peleaba de verdad. ${surname(sel.name)} no habría durado ni media temporada conmigo en pista». El titular corre como la pólvora.`,`${S._leg}, a ${n}-time champion, singles you out: «This generation has it all handed to them. In my day you had to really fight. ${surname(sel.name)} wouldn't have lasted half a season against me». The headline spreads like wildfire.`,{pt:`${S._leg}, ${n} vezes campeão, te aponta numa entrevista: «Esta geração tem tudo de bandeja. No meu tempo se brigava de verdade. ${surname(sel.name)} não teria durado nem meia temporada comigo na pista». A manchete corre como pólvora.`}); },opts:[
-   {l:()=>L("Responderle con tu palmarés","Answer him with your record",{pt:"Responder com os seus títulos"}),r:()=>roll(
-     [5,()=>(VAL(1.15),L("Le contestas con datos y clase: le callas la boca y el paddock disfruta. +fama","You reply with facts and class: you shut him up and the paddock enjoys it. +fame",{pt:"Você responde com dados e classe: cala a boca dele e o paddock se diverte. +fama"}))],
-     [4,()=>(VAL(.9),L("Se enciende una guerra mediática y muchos te ven soberbio. −fama","A media war ignites and many see you as arrogant. −fame",{pt:"Começa uma guerra na mídia e muitos te acham arrogante. −fama"}))])},
+   /* 🗣️ EL TEXTO TIENE QUE CUADRAR CON LO QUE LLEVAS ENCIMA (lo cazó Carlos, 24-ago): un chaval sin
+      un solo podio no puede «responderle con su palmarés». La etiqueta baja tres escalones —títulos,
+      victorias, nada— y el desenlace baja con ella: con galones le callas la boca casi siempre; sin
+      nada que enseñar, contestarle a un multicampeón es sobre todo una manera de parecer soberbio. */
+   {l:()=>{ const t=S.titles.f1||0, w=S.wins||0;
+      return t>0 ? L("Responderle con tu palmarés","Answer him with your record",{pt:"Responder com os seus títulos"})
+           : w>0 ? L("Responderle con tus victorias","Answer him with your wins",{pt:"Responder com as suas vitórias"})
+                 : L("Responderle de tú a tú","Answer him as an equal",{pt:"Responder de igual para igual"}); },
+    r:()=>{ const t=S.titles.f1||0, w=S.wins||0;
+      if(t>0) return roll(
+        [6,()=>(VAL(1.15),L("Le contestas con datos y clase: le callas la boca y el paddock disfruta. +fama","You reply with facts and class: you shut him up and the paddock enjoys it. +fame",{pt:"Você responde com dados e classe: cala a boca dele e o paddock se diverte. +fama"}))],
+        [3,()=>(VAL(.9),L("Se enciende una guerra mediática y muchos te ven soberbio. −fama","A media war ignites and many see you as arrogant. −fame",{pt:"Começa uma guerra na mídia e muitos te acham arrogante. −fama"}))]);
+      if(w>0) return roll(
+        [4,()=>(VAL(1.12),L("Títulos no tienes, pero victorias sí, y las pones encima de la mesa una por una. El paddock toma nota. +fama","No titles, but you do have wins, and you lay them out one by one. The paddock takes note. +fame",{pt:"Títulos você não tem, mas vitórias sim, e as coloca na mesa uma a uma. O paddock toma nota. +fama"}))],
+        [4,()=>(VAL(.92),L("Le sacas tus victorias a un hombre que las cuenta por decenas. El titular se escribe solo. −fama","You wave your wins at a man who counts his in dozens. The headline writes itself. −fame",{pt:"Você mostra as suas vitórias a um homem que as conta às dezenas. A manchete se escreve sozinha. −fama"}))]);
+      return roll(
+        [3,()=>(VAL(1.1),L("«Ya hablaremos cuando me haya visto correr». Descarado, pero al paddock le gusta el chaval que no agacha la cabeza. +fama","«We'll talk once he's actually watched me race». Cheeky, but the paddock likes a kid who won't look down. +fame",{pt:"«A gente conversa quando ele tiver me visto correr». Atrevido, mas o paddock gosta do garoto que não abaixa a cabeça. +fama"}))],
+        [5,()=>(VAL(.88),L("Un piloto sin un solo podio contestándole a un multicampeón. El paddock entero se pone del lado de él. −fama","A driver without a single podium answering back to a multiple champion. The whole paddock takes his side. −fame",{pt:"Um piloto sem um único pódio respondendo a um multicampeão. O paddock inteiro fica do lado dele. −fama"}))]);
+    }},
    {l:()=>L("Callar con humildad","Stay humble and quiet",{pt:"Calar com humildade"}),r:()=>roll(
      [4,()=>(VAL(1.08),L("«Es una leyenda, le respeto». Tu elegancia gusta. +fama leve","«He's a legend, I respect him». Your grace goes down well. slight +fame",{pt:"«É uma lenda, eu respeito». A sua elegância agrada. +fama leve"}))],
      [3,()=>L("Algunos interpretan que le das la razón, pero tú sigues a lo tuyo. Sin cambios.","Some read it as you conceding the point, but you carry on. No change.",{pt:"Alguns entendem que você deu razão a ele, mas você segue no seu. Sem mudanças."})])}]},
@@ -5637,21 +5674,15 @@ const DILEMAS=[
      [6,()=>L("Cero distracciones: el cine puede esperar. Sin cambios.","Zero distractions: the movies can wait. No change.",{pt:"Zero distrações: o cinema pode esperar. Sem mudanças."})],
      [2,()=>(OVR(1),L("Mientras otros ruedan escenas, tú ruedas tandas. +1 OVR","While others shoot scenes, you pound out laps. +1 OVR",{pt:"Enquanto uns gravam cenas, você grava voltas. +1 OVR"}))],
      [2,()=>(VAL(.95),L("Te llaman soso por decirle que no a Hollywood. −fama leve","They call you dull for saying no to Hollywood. slight −fame",{pt:"Te chamam de sem graça por dizer não a Hollywood. −fama leve"}))])}]},
- // 🦠 2020 (solo se vive en la línea retro de 2010): la pandemia detiene el mundo
+ // 🦠 2020 (solo se vive en la línea retro de 2010): la pandemia detiene el mundo.
+ // Tres opciones de OCHO, sorteadas según tu estilo → pandemiaPool() / pandemiaOpts().
  {id:"pandemia",stage:"f1",cond:()=>S.cat==="F1"&&yearNow()===2020,
   t:()=>L("El año que el mundo se detuvo","The year the world stopped",{pt:"O ano em que o mundo parou"}),
-  d:()=>L("Una pandemia global congela el planeta: GPs cancelados, paddocks vacíos y la temporada en el aire. Encerrado en casa, tienes que decidir cómo pasar el parón.","A global pandemic freezes the planet: cancelled GPs, empty paddocks and the season in limbo. Locked down at home, you must decide how to spend the stoppage.",{pt:"Uma pandemia global congela o planeta: GPs cancelados, paddocks vazios e a temporada no ar. Trancado em casa, você tem que decidir como passar a parada."}),opts:[
-   {l:()=>L("Dominar los GP virtuales","Rule the virtual GPs",{pt:"Dominar os GPs virtuais"}),r:()=>roll(
-     [5,()=>(VAL(1.3),L("Arrasas en el simulador y conquistas a una generación nueva de fans. Fama +30%","You crush it on the sim and win over a whole new generation of fans. Fame +30%",{pt:"Você arrasa no simulador e conquista uma geração nova de fãs. Fama +30%"}))],
-     [3,()=>(VAL(1.08),L("Buenas carreras, buenos clips. +fama","Good races, good clips. +fame",{pt:"Boas corridas, bons clipes. +fama"}))],
-     [2,()=>(VAL(.92),L("Un rage-quit tuyo en pleno directo se hace viral. −fama","Your mid-stream rage-quit goes viral. −fame",{pt:"Um rage-quit seu ao vivo viraliza. −fama"}))])},
-   {l:()=>L("Recortarte el sueldo por el equipo","Take a pay cut for the team",{pt:"Cortar o próprio salário pela equipe"}),r:()=>roll(
-     [6,()=>(CAR(1),L("Tu gesto salva empleos y el garaje te lo devuelve con creces. +1 coche","Your gesture saves jobs and the garage repays you tenfold. +1 car",{pt:"O seu gesto salva empregos e a garagem te retribui com juros. +1 carro"}))],
-     [4,()=>(VAL(1.05),L("El paddock aplaude el detalle. +fama leve","The paddock applauds the gesture. slight +fame",{pt:"O paddock aplaude o gesto. +fama leve"}))])},
-   {l:()=>L("Desconectar del todo","Switch off completely",{pt:"Desligar de tudo"}),r:()=>roll(
-     [5,()=>(OVR(1),L("Vuelves al monoplaza descansado y con hambre. +1 OVR","You return to the car rested and hungry. +1 OVR",{pt:"Você volta ao carro descansado e com fome. +1 OVR"}))],
-     [3,()=>L("Bicicleta, familia y silencio. Sin cambios.","Bike rides, family and silence. No change.",{pt:"Bicicleta, família e silêncio. Sem mudanças."})],
-     [2,()=>(VAL(.94),L("Desapareces del mapa y los medios te olvidan un poco. −fama leve","You vanish off the map and the media half-forget you. slight −fame",{pt:"Você some do mapa e a mídia te esquece um pouco. −fama leve"}))])}]},
+  d:()=>L("Una pandemia global congela el planeta: GPs cancelados, paddocks vacíos y la temporada en el aire. Encerrado en casa, tienes que decidir cómo pasar el parón.","A global pandemic freezes the planet: cancelled GPs, empty paddocks and the season in limbo. Locked down at home, you must decide how to spend the stoppage.",{pt:"Uma pandemia global congela o planeta: GPs cancelados, paddocks vazios e a temporada no ar. Trancado em casa, você tem que decidir como passar a parada."}),
+  opts:[
+   {l:()=>pandemiaOpts()[0].l(), r:()=>pandemiaOpts()[0].r()},
+   {l:()=>pandemiaOpts()[1].l(), r:()=>pandemiaOpts()[1].r()},
+   {l:()=>pandemiaOpts()[2].l(), r:()=>pandemiaOpts()[2].r()}]},
  // 🧮 inspirado en 2010: Ferrari cubrió al rival mediático (Webber) y el título se lo llevó otro (Vettel)
  {id:"muroRival",stage:"f1",cond:()=>{ // SOLO si de verdad peleas el título: top-3 del campeonato Y uno de los 3 mejores coches
    if(S.cat!=="F1"||!S.team||((S.seasons.at(-1)||{}).pos??20)>3) return false;
@@ -6648,6 +6679,62 @@ function gomaRemate(p){
        : p<=3  ? L(" Y era podio."," And that was a podium.",{pt:" E era pódio."}) : "";
 }
 function dilVar(k, gen){ S._dilVars=S._dilVars||{}; if(S._dilVars[k]===undefined) S._dilVars[k]=gen(); return S._dilVars[k]; }
+/* 🦠 LAS OCHO MANERAS DE PASAR EL PARÓN DE 2020 (petición de Carlos, 24-ago). Antes eran siempre las
+   mismas tres opciones, así que revivir 2020 era revivir la misma pantalla. Ahora salen TRES DE OCHO
+   y el sorteo va pesado por tu estilo: al técnico casi siempre le aparecen los datos, al agresivo los
+   karts y al consistente el gimnasio —pero no en exclusiva, y ahí está la gracia: cuando te sale la
+   opción de otro, el desenlace se te pone cuesta arriba, porque las probabilidades de cada final
+   también miran tu estilo—. Ocho de tres son 56 combinaciones: dos partidas de 2020 no se parecen. */
+function pandemiaPool(){
+  const st=sel.style, agr=st==="agresivo", tec=st==="tecnico", con=st==="consistente";
+  return [
+   {id:"virtual", l:()=>L("Dominar los GP virtuales","Rule the virtual GPs",{pt:"Dominar os GPs virtuais"}), r:()=>roll(
+     [agr||tec?6:4,()=>(VAL(1.3),L("Arrasas en el simulador y conquistas a una generación nueva de fans. Fama +30%","You crush it on the sim and win over a whole new generation of fans. Fame +30%",{pt:"Você arrasa no simulador e conquista uma geração nova de fãs. Fama +30%"}))],
+     [3,()=>(VAL(1.08),L("Buenas carreras, buenos clips. +fama","Good races, good clips. +fame",{pt:"Boas corridas, bons clipes. +fama"}))],
+     [agr?3:2,()=>(VAL(.92),L("Un rage-quit tuyo en pleno directo se hace viral. −fama","Your mid-stream rage-quit goes viral. −fame",{pt:"Um rage-quit seu ao vivo viraliza. −fama"}))])},
+   {id:"sueldo", st:"consistente", l:()=>L("Recortarte el sueldo por el equipo","Take a pay cut for the team",{pt:"Cortar o próprio salário pela equipe"}), r:()=>roll(
+     [con?7:5,()=>(CAR(1),L("Tu gesto salva empleos y el garaje te lo devuelve con creces. +1 coche","Your gesture saves jobs and the garage repays you tenfold. +1 car",{pt:"O seu gesto salva empregos e a garagem te retribui com juros. +1 carro"}))],
+     [4,()=>(VAL(1.05),L("El paddock aplaude el detalle. +fama leve","The paddock applauds the gesture. slight +fame",{pt:"O paddock aplaude o gesto. +fama leve"}))])},
+   {id:"desconectar", l:()=>L("Desconectar del todo","Switch off completely",{pt:"Desligar de tudo"}), r:()=>roll(
+     [con?7:4,()=>(OVR(1),L("Vuelves al monoplaza descansado y con hambre. +1 OVR","You return to the car rested and hungry. +1 OVR",{pt:"Você volta ao carro descansado e com fome. +1 OVR"}))],
+     [3,()=>L("Bicicleta, familia y silencio. Sin cambios.","Bike rides, family and silence. No change.",{pt:"Bicicleta, família e silêncio. Sem mudanças."})],
+     [agr?4:2,()=>(VAL(.94),L("Desapareces del mapa y los medios te olvidan un poco. −fama leve","You vanish off the map and the media half-forget you. slight −fame",{pt:"Você some do mapa e a mídia te esquece um pouco. −fama leve"}))])},
+   {id:"karts", st:"agresivo", l:()=>L("Volver a los karts con los de siempre","Back to karting with the old crowd",{pt:"Voltar aos karts com os de sempre"}), r:()=>roll(
+     [agr?7:4,()=>(OVR(1),L("Pista mojada, kart viejo y los mismos piques de cuando no eras nadie. Vuelves con el instinto afiladísimo. +1 OVR","Wet track, an old kart and the same scraps as back when you were nobody. You come back with your instincts razor-sharp. +1 OVR",{pt:"Pista molhada, kart velho e as mesmas brigas de quando você não era ninguém. Volta com o instinto afiadíssimo. +1 OVR"}))],
+     [3,()=>L("Un mes de karts, barbacoas y nada más. Sin cambios.","A month of karting, barbecues and nothing else. No change.",{pt:"Um mês de karts, churrascos e nada mais. Sem mudanças."})],
+     [agr?2:4,()=>(OVR(-1),L("Un toque tonto a 60 por hora y te vas al suelo. La clavícula tarda seis semanas. −1 OVR","A silly tap at 40mph and you're on the deck. The collarbone takes six weeks. −1 OVR",{pt:"Um toque bobo a 60 por hora e você vai ao chão. A clavícula leva seis semanas. −1 OVR"}))])},
+   {id:"datos", st:"tecnico", l:()=>L("Encerrarte con los datos de toda la temporada","Lock yourself in with a season's worth of data",{pt:"Trancar-se com os dados da temporada inteira"}), r:()=>roll(
+     [tec?7:3,()=>(CAR(1),L("Sales del parón con una lista de cosas que el coche hacía mal y nadie había mirado. Los ingenieros te escuchan. +1 coche","You come out of lockdown with a list of things the car was doing wrong that nobody had looked at. The engineers listen. +1 car",{pt:"Você sai da parada com uma lista de coisas que o carro fazia mal e ninguém tinha olhado. Os engenheiros te escutam. +1 carro"}))],
+     [3,()=>(OVR(1),L("Te aprendes de memoria dónde perdías una décima en cada curva. +1 OVR","You learn by heart exactly where you were losing a tenth in every corner. +1 OVR",{pt:"Você decora onde perdia um décimo em cada curva. +1 OVR"}))],
+     [tec?2:5,()=>L("Miras gráficas durante semanas y acabas donde empezaste. Sin cambios.","You stare at graphs for weeks and end up where you started. No change.",{pt:"Você olha gráficos por semanas e acaba onde começou. Sem mudanças."})])},
+   {id:"fisico", st:"consistente", l:()=>L("Convertir el salón en un gimnasio","Turn the living room into a gym",{pt:"Transformar a sala num ginásio"}), r:()=>roll(
+     [con?7:4,()=>(OVR(1),L("Llegas al primer test en la mejor forma de tu vida, y en un año raro eso se nota desde la primera vuelta. +1 OVR","You turn up to the first test in the best shape of your life, and in a strange year that shows from lap one. +1 OVR",{pt:"Você chega ao primeiro teste na melhor forma da vida, e num ano estranho isso aparece desde a primeira volta. +1 OVR"}))],
+     [3,()=>L("Cuatro meses de cinta y mancuernas. Ni mejor ni peor. Sin cambios.","Four months of treadmill and dumbbells. No better, no worse. No change.",{pt:"Quatro meses de esteira e halteres. Nem melhor nem pior. Sem mudanças."})],
+     [con?2:4,()=>(OVR(-1),L("Sin fisio, sin criterio y con demasiadas horas libres, te pasas de vueltas y vuelves cargado. −1 OVR","No physio, no plan and far too many free hours: you overcook it and come back stiff. −1 OVR",{pt:"Sem fisio, sem critério e com horas demais, você exagera e volta travado. −1 OVR"}))])},
+   {id:"voz", l:()=>L("Usar tu altavoz para algo que no es la F1","Use your platform for something that isn't F1",{pt:"Usar o seu alcance para algo que não é F1"}), r:()=>roll(
+     [4,()=>(VAL(1.25),L("Dices en voz alta lo que muchos pensaban y no se atrevían. Ganas un respeto que no da ningún podio. +fama","You say out loud what plenty were thinking and nobody dared. You earn a kind of respect no podium gives you. +fame",{pt:"Você diz em voz alta o que muitos pensavam e não ousavam. Ganha um respeito que nenhum pódio dá. +fama"}))],
+     [3,()=>L("Unos te aplauden, otros te dicen que te calles y conduzcas. Sin cambios.","Some applaud, others tell you to shut up and drive. No change.",{pt:"Uns aplaudem, outros mandam você calar a boca e dirigir. Sem mudanças."})],
+     [3,()=>(VAL(.88),L("Un patrocinador se pone nervioso y tu equipo te pide que bajes el tono. −fama","A sponsor gets nervous and your team asks you to tone it down. −fame",{pt:"Um patrocinador fica nervoso e a sua equipe pede que você baixe o tom. −fama"}))])},
+   {id:"ayuda", l:()=>L("Colaborar con organizaciones solidarias","Work with charities",{pt:"Colaborar com organizações solidárias"}), r:()=>roll(
+     [5,()=>(VAL(1.2),L("Pones el nombre, el tiempo y la cartera donde hacen falta, y con tu altavoz llega mucho más lejos. La gente no lo olvida. +fama","You put your name, your time and your wallet where they're needed, and your platform carries it much further. People don't forget it. +fame",{pt:"Você põe o nome, o tempo e a carteira onde fazem falta, e com o seu alcance chega muito mais longe. As pessoas não esquecem. +fama"}))],
+     [3,()=>(VAL(1.06),L("Discreto, sin cámaras, pero se sabe. +fama leve","Quietly, no cameras, but word gets around. slight +fame",{pt:"Discreto, sem câmeras, mas se sabe. +fama leve"}))],
+     [2,()=>L("Lo haces y no lo cuentas. Nadie se entera. Sin cambios.","You do it and don't talk about it. Nobody finds out. No change.",{pt:"Você faz e não conta. Ninguém fica sabendo. Sem mudanças."})])}];
+}
+/* Tres de las ocho, elegidas UNA vez: `dilVar` guarda los índices, no las opciones, para que cambiar
+   de idioma con el dilema en pantalla te repinte exactamente las mismas tres y no otras. */
+function pandemiaOpts(){
+  const pool=pandemiaPool();
+  const idx=dilVar("pandOpts", ()=>{
+    const st=sel.style, cand=pool.map((o,i)=>({i, w:o.st ? (o.st===st?4:.35) : 1.6})), out=[];
+    while(out.length<3 && cand.length){
+      let tot=cand.reduce((a,c)=>a+c.w,0), x=Math.random()*tot, k=0;
+      for(; k<cand.length-1; k++){ if((x-=cand[k].w)<0) break; }
+      out.push(cand.splice(k,1)[0].i);
+    }
+    return out;
+  });
+  return idx.map(i=>pool[i]);
+}
 
 // `repintar`=true cuando solo se está cambiando el idioma: no vuelve a contar como dilema nuevo
 function renderDilemma(dl, repintar){
