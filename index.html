@@ -1617,8 +1617,15 @@ const LINEAGE_2010 = [
                        {to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2031], p:.65}]},
  {key:"Lotus", steps:[{to:{name:"Caterham",abbr:"CAT",color:"#00573F",color2:"#F5D800"}, w:[2011,2013], p:.6},
                       {die:true, w:[2013,2017], p:.6}]},
+ /* 🏁 VIRGIN → MARUSSIA → MANOR, la cadena real del equipo que nunca puntuó de verdad. El último
+    paso lleva `siFondo`: Manor solo llega si el equipo SIGUE en la cola de la parrilla, que es lo que
+    pasó —Marussia entró en administración y el nombre de la escuela de John Booth, ya en el juego
+    formando pilotos en F3 y GP3, acabó dando nombre al equipo de F1—. Un Marussia que se ha hecho
+    grande no necesita que nadie lo rescate: ahí el nombre aguanta. Y aun cumpliéndose, p:.55: a veces
+    sí y a veces no (petición de Carlos, 24-ago). */
  {key:"Virgin", steps:[{to:{name:"Marussia",abbr:"MAR",color:"#B01717",color2:"#151515"}, w:[2011,2013], p:.6},
-                       {die:true, w:[2014,2018], p:.6}]},
+                       {to:{name:"Manor",abbr:"MNR",color:"#FF5A1F",color2:"#0090D4"}, w:[2015,2017], p:.55, from:"Marussia", siFondo:true},
+                       {die:true, w:[2016,2019], p:.6}]},
  {key:"HRT", steps:[{die:true, w:[2012,2015], p:.7}]},
 ];
 const LINEAGE_2020 = [
@@ -2374,7 +2381,7 @@ const TEAM_LOGOS = {
   // 🕰️ escudos de las eras retro (2010/2020) y sus transformaciones de linaje
   "Renault":"renault.png","Force India":"ForceIndia.png","Toro Rosso":"ToroRosso.png","Sauber":"Sauber.png",
   "Virgin":"virgin-new.png","Spyker":"Spyker.png","HRT":"HRTnew.png","Campos Meta":"camposmeta.png","Racing Point":"RacingPoint.png","AlphaTauri":"AlphaTauri.png",
-  "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png",
+  "Alfa Romeo":"AlfaRomeo.png","Caterham":"Caterham.png","Marussia":"Marussia.png","Manor":"Manor.png",
   // 🕰️ escuderías de los 90 (agosto de 2026)
   "Tyrrell":"Tyrrell.png","Ligier":"Ligier.png","Brabham":"brabham.png","Stewart":"stewart.png",
   "Footwork":"Footwork.png","Larrousse":"Larrouse.png","Leyton House":"leytonhouse.png",
@@ -7280,6 +7287,13 @@ function processLineage(row){
       if(st.needs && !F1_TEAMS.some(x=>x.name===st.needs)){ st.done=true; return; }
       // 🔗 y cada rebautizo tiene que venir del anterior: sin Toro Rosso no hay AlphaTauri
       if(st.from && chn.cur!==st.from){ st.done=true; return; }
+      /* 🛟 RESCATES QUE SOLO OCURREN SI HACE FALTA. Un equipo al que le va bien no cambia de dueño
+         para sobrevivir: `siFondo` exige estar en el tercio de cola. Si ese año va bien, no se
+         descarta —se reintenta al siguiente—, porque la mala racha puede llegar más tarde. */
+      if(st.siFondo){
+        const _ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).map(x=>x.name);
+        if(_ord.indexOf(chn.cur) < Math.ceil(_ord.length*2/3)){ st.year=yearNow()+1; return; }
+      }
       const t=F1_TEAMS.find(x=>x.name===chn.cur);
       if(!t){ st.done=true; return; } // el equipo ya no existe (murió antes)
       // 📜 el padrino te prometió pagarte la escalera: no puede hundirse mientras la subes
