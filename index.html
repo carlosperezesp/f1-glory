@@ -252,7 +252,10 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 /* 🏷️ insignia de patrocinador: círculo del color de la marca + silueta del equipo tintada con su
    segundo color. Misma huella que un tlogo para poder sustituirlo en cualquier sitio. */
 .spbadge{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
-  vertical-align:middle;box-shadow:0 1px 3px rgba(0,0,0,.28);flex:none}
+  vertical-align:middle;flex:none;
+  /* plana a propósito (petición de Carlos): sin el reborde blanco ni las sombras que team-dot
+     le pega a las pastillas de siglas — la insignia debe verse como sus PNG, limpia */
+  border:none !important; box-shadow:none !important; text-shadow:none}
 .spbadge i{display:block;width:82%;height:82%}
 .spbadge.mb{width:20px;height:20px}
 #teamDot.haslogo{background-size:cover;background-position:center;border:none !important;box-shadow:none}
@@ -2428,6 +2431,12 @@ const TEAM_LOGOS_ERA = {
 const TEAM_SILUETAS={"Haas":"haas_logo.png","Sauber":"sauber_logo.png","Williams":"williams_logo.png",
   "Alpine":"Alpine_logo.png","Cadillac":"cadillac_logo.png","Audi":"audi_logo.png"};
 const SPONSOR_BADGE={};
+/* la TARJETA rellena #teamDot a mano, sin pasar por badge()/teamBadge(): este ayudante la pinta */
+function spBadgeDot(d, sb){
+  d.className="team-dot"; d.textContent="";
+  d.style.cssText=`background:${sb.c1};border:none;box-shadow:none`;
+  d.innerHTML=`<i style="display:block;width:82%;height:82%;background:${sb.c2};-webkit-mask:url(${sb.sil}) center/contain no-repeat;mask:url(${sb.sil}) center/contain no-repeat"></i>`;
+}
 function spBadgeHTML(sb, cls){
   const m=`center/contain no-repeat`;
   return `<span class="spbadge ${cls}" style="background:${sb.c1}"><i style="background:${sb.c2};-webkit-mask:url(${sb.sil}) ${m};mask:url(${sb.sil}) ${m}"></i></span>`;
@@ -3666,8 +3675,10 @@ function refreshCard(){
     $("teamName").textContent = S.team.name;
     $("teamRole").textContent = roleTxt;
     const d=$("teamDot");
+    const _sb=SPONSOR_BADGE[S.team.name];
     const _lg=logoFor(S.team.name);
-    if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
+    if(_sb){ spBadgeDot(d,_sb); }
+    else if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
   } else {
@@ -10223,8 +10234,9 @@ function tpRefreshCard(){
   if(S.team){
     $("teamName").textContent=S.team.name;
     $("teamRole").textContent="TEAM PRINCIPAL";
-    const d=$("teamDot"); const _lg=logoFor(S.team.name);
-    if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
+    const d=$("teamDot"); const _sb=SPONSOR_BADGE[S.team.name]; const _lg=logoFor(S.team.name);
+    if(_sb){ spBadgeDot(d,_sb); }
+    else if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
   } else {
