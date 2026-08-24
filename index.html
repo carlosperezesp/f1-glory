@@ -11381,6 +11381,7 @@ function simTP(row){
   row.tpGoalTxt = G.target===1
     ? L("título de constructores","constructors' title",{pt:"título de construtores"})
     : L(`${G.target}º de constructores o mejor`,`P${G.target} constructors or better`,{pt:`${G.target}º de construtores ou melhor`});
+  if(!met) S._histFallo={target:G.target, pos:cPos, year:row.year};   // 📰 el titular necesita los DOS números
   if(met){
     S.tpMissStreak=0; S.tpLastMet=true;
     row.events.push(delta>=2
@@ -12370,6 +12371,7 @@ const TP_DILEMAS=[
    {l:()=>L("Comprarlo tú: por una libra y sus deudas","Buy it yourself: a pound and its debts",{pt:"Comprar você: uma libra e as dívidas"}),
     r:()=>{ S.tpOwner=OWNER_SELF; S.tpContract=null; TPTGT(-rnd(2,4));
       S._bautizo=true;   // 🏷️ el equipo es tuyo: elegirás su nombre al pasar de pantalla
+      S._histCompra={team:S.tpTeam, year:yearNow()};   // 📰 el día que lo compraste, para el titular
       return L(`Firmas. La libra es simbólica; las deudas no. El lunes siguiente entras por la misma puerta de siempre y todo es distinto: nadie puede echarte nunca más, y nunca más va a ser culpa de otro. El proyecto arranca cojo — no hay dinero — pero es TUYO. −proyecto`,
                `You sign. The pound is symbolic; the debts are not. The following Monday you walk through the same door as always and everything is different: nobody can ever sack you again, and it will never be someone else's fault again. The project starts limping — there's no money — but it is YOURS. −project`,
                {pt:`Você assina. A libra é simbólica; as dívidas não. Na segunda seguinte você entra pela mesma porta de sempre e tudo é diferente: ninguém pode te demitir nunca mais, e nunca mais vai ser culpa de outro. O projeto começa mancando — não há dinheiro — mas é SEU. −projeto`}); }},
@@ -12495,7 +12497,10 @@ const TP_DILEMAS=[
                   `You say no and feel like a fool for twenty minutes. But on Monday the factory is yours, and the people who won that championship work for you and not for a committee in another country. The whole paddock takes note. +fame · +prestige of the team — and defending the title on half the budget is exactly as hard as it looked`,
                   {pt:`Você diz não e fica com cara de bobo por vinte minutos. Mas na segunda a fábrica é sua, e a gente que ganhou aquele campeonato trabalha para você e não para um comitê em outro país. O paddock inteiro anota. +fama · +cachê — e defender o título com metade do orçamento é exatamente tão difícil quanto parecia`}); }],
        [40,()=>{ const a=tpDrvs().slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0];
-         if(a) a.tpRencor=true;
+         if(a){ a.tpRencor=true;
+           /* 📰 el rencor se guarda CON su año y su equipo: el titular tiene que poder decir desde
+              cuándo, y sobre todo no puede acusar de estar picado a alguien que no estaba allí. */
+           a.tpRencorPor={motivo:"noVender", year:yearNow(), team:S.tpTeam}; }
          const nm=a?surname(a.name):L("tu piloto","your driver",{pt:"seu piloto"});
          return L(`Dices que no, y esta vez el paddock no aplaude: más de uno lo lee como falta de ambición. Y el que peor lo encaja está dentro de tu propio garaje — ${nm} quería ese músculo para ganar él, y en su renovación te vas a acordar de esta tarde. −proyecto`,
                   `You say no, and this time the paddock doesn't applaud: more than one reads it as a lack of ambition. And the person taking it worst is inside your own garage — ${nm} wanted that muscle to win for himself, and come contract time you'll remember this afternoon. −project`,
@@ -12700,9 +12705,18 @@ const TP_DILEMAS=[
        directamente el titular que toca ver. Fuera de TEST_MODE esta puerta no existe. */
     if(TEST_MODE && S._pmTest!=null){
       const K=["venta","ruina","rencor","guerra","orden","plante","incumple","nada"];
-      const kk=K[S._pmTest%8], d0=tpDrvs()[0];
-      S._pm={k:kk, dato: kk==="rencor" ? (d0?surname(d0.name):L("tu piloto","your driver",{pt:"seu piloto"}))
-                       : kk==="guerra" ? "Ferrari" : null};
+      const kk=K[S._pmTest%8], d0=tpDrvs()[0], y=yearNow(), tn0=S.tpTeam;
+      const ordT=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+      S._pmPuesto={p:ordT.indexOf(tn0)+1, n:ordT.length};
+      const D={ venta:{team:"Brawn", year:y-2},
+                ruina:{team:tn0, year:y-3},
+                rencor:{n:(d0?surname(d0.name):L("tu piloto","your driver",{pt:"seu piloto"})), year:y-1},
+                guerra:{team:"Ferrari", year:y-3},
+                orden:{year:y-1},
+                plante:{year:y-2},
+                incumple:{target:6, pos:9, year:y-1},
+                nada:{n:(S.seasons||[]).filter(r=>r.cat==="TP").length||8} };
+      S._pm={k:kk, dato:D[kk]};
       return true;
     }
     /* 📏 el umbral se midió, no se eligió a ojo: empezaste con 52 y la MEDIANA del techo de fama en
@@ -12713,31 +12727,46 @@ const TP_DILEMAS=[
     const mio=!!(S.tpOwner && S.tpOwner.k==="self");
     const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
     const hundido=ord.indexOf(tn)>=Math.ceil(ord.length/2) || ((u&&u.cat==="TP"&&u.pos!=null)?u.pos>=7:false);
-    const rencoroso=tpDrvs().find(d=>d&&d.tpRencor);
+    S._pmPuesto={p:ord.indexOf(tn)+1, n:ord.length};   // 🌐 números crudos: el texto se arma al pintar
+    /* ⚖️ (lo cazó Carlos, 24-ago) el rencor solo vale como titular si ese piloto estaba DENTRO cuando
+       pasó: un fichaje posterior no puede estar picado por algo que no vivió. Los rencores viejos, sin
+       fecha guardada, no se usan — se pasa al siguiente rastro en vez de escribir una acusación falsa. */
+    const rencoroso=tpDrvs().find(d=>{
+      if(!d || !d.tpRencor || !d.tpRencorPor) return false;
+      const r=d.tpRencorPor;
+      return r.team===tn && (S.tpStints||[]).some(st=>st && st.team===tn && r.year>=st.y0 && r.year<=(st.y1||yearNow()));
+    });
     /* el orden importa: gana el rastro más jugoso, no el más reciente. Vender un equipo campeón
        es mejor titular que arruinarse, y arruinarse mejor que una guerra de hace cinco años. */
     let k=null, dato=null;
-    if(S._histVenta){ k="venta"; dato=S._histVenta.team; }
-    else if(mio && hundido){ k="ruina"; }
-    else if(rencoroso){ k="rencor"; dato=surname(rencoroso.name); }
-    else if(S._histGuerra){ k="guerra"; dato=S._histGuerra.team; }
-    else if(S._histOrden){ k="orden"; }
-    else if(S._histPlante){ k="plante"; }
-    else if((S.tpMissStreak||0)>=1){ k="incumple"; }
-    else if((S.seasons||[]).filter(r=>r.cat==="TP").length>=3){ k="nada"; }
+    if(S._histVenta){ k="venta"; dato=S._histVenta; }
+    else if(mio && hundido && S._histCompra){ k="ruina"; dato=S._histCompra; }
+    else if(rencoroso){ k="rencor"; dato={n:surname(rencoroso.name), year:rencoroso.tpRencorPor.year}; }
+    else if(S._histGuerra){ k="guerra"; dato=S._histGuerra; }
+    else if(S._histOrden){ k="orden"; dato={year:S._histOrden}; }
+    else if(S._histPlante){ k="plante"; dato={year:S._histPlante}; }
+    else if((S.tpMissStreak||0)>=1 && S._histFallo){ k="incumple"; dato=S._histFallo; }
+    else if((S.seasons||[]).filter(r=>r.cat==="TP").length>=3){ k="nada"; dato={n:(S.seasons||[]).filter(r=>r.cat==="TP").length}; }
     if(!k) return false;
     S._pm={k:k, dato:dato};
     return true; },
   t:()=>L("El jefe se convierte en la noticia","The boss becomes the story",{pt:"O chefe vira a notícia"}),
-  d:()=>{ const p=S._pm||{}, q=p.dato||"";
-    const tit = p.k==="venta"  ? L(`«Ganó, cobró y se fue: el hombre que le puso precio a la gloria»`,`«He won, he cashed in, he left: the man who put a price on glory»`,{pt:`«Venceu, embolsou e foi embora: o homem que pôs preço na glória»`})
-              : p.k==="ruina"  ? L(`«El dueño que se está arruinando en directo»`,`«The owner going broke in public»`,{pt:`«O dono que está se arruinando ao vivo»`})
-              : p.k==="rencor" ? L(`«Guerra en el garaje: ${q} no le dirige la palabra»`,`«War in the garage: ${q} isn't speaking to him»`,{pt:`«Guerra na garagem: ${q} não fala com ele»`})
-              : p.k==="guerra" ? L(`«El jefe que fue a saquear la fábrica de ${q}»`,`«The boss who went to raid ${q}'s factory»`,{pt:`«O chefe que foi saquear a fábrica da ${q}»`})
-              : p.k==="orden"  ? L(`«El jefe de los coches teledirigidos»`,`«The boss of the remote-controlled cars»`,{pt:`«O chefe dos carros teleguiados»`})
-              : p.k==="plante" ? L(`«Se niega a apretar: ¿ambición o cobardía?»`,`«He refuses to push: ambition or cowardice?»`,{pt:`«Recusa-se a apertar: ambição ou covardia?»`})
-              : p.k==="incumple" ? L(`«Prometió, y el consejo ha empezado a mirar el reloj»`,`«He promised, and the board has started checking the clock»`,{pt:`«Prometeu, e o conselho começou a olhar o relógio»`})
-                               : L(`«Un año más sin nada que contar»`,`«Another year with nothing to say»`,{pt:`«Mais um ano sem nada para contar»`});
+  /* 📰 CADA TITULAR SE EXPLICA SOLO (petición de Carlos, 24-ago). Antes eran frases de efecto —«el
+     hombre que le puso precio a la gloria»— que no le decían nada a quien no recordara qué hizo hace
+     cinco temporadas. Ahora cada uno lleva DENTRO tu apellido y el dato que lo aterriza: el nombre
+     del equipo, el año y el número. Se lee como un titular de verdad y se entiende sin memoria. */
+  d:()=>{ const p=S._pm||{}, q=p.dato||{}, yo=surname(sel.name);
+    const pos = n => n===1 ? L("campeón","champion",{pt:"campeão"}) : (LANG==="en" ? "P"+n : n+"º");
+    const PP = S._pmPuesto||{p:0,n:0};
+    const puesto = L(`${PP.p}º de ${PP.n}`, `P${PP.p} of ${PP.n}`, {pt:`${PP.p}º de ${PP.n}`});
+    const tit = p.k==="venta"  ? L(`«Ganó, cobró y se fue: ${yo} levantó el título con ${q.team} y lo vendió en ${q.year}»`,`«He won, he cashed in, he left: ${yo} took the title with ${q.team} and sold it in ${q.year}»`,{pt:`«Venceu, embolsou e foi embora: ${yo} levantou o título com a ${q.team} e a vendeu em ${q.year}»`})
+              : p.k==="ruina"  ? L(`«El dueño que se arruina en directo: ${yo} compró ${q.team} en ${q.year} y hoy va ${puesto} en la parrilla»`,`«The owner going broke in public: ${yo} bought ${q.team} in ${q.year} and today runs ${puesto} on the grid»`,{pt:`«O dono que se arruína ao vivo: ${yo} comprou a ${q.team} em ${q.year} e hoje está em ${puesto} no grid»`})
+              : p.k==="rencor" ? L(`«Guerra en el garaje: ${q.n} no le dirige la palabra a ${yo} desde que en ${q.year} rechazó la compra que les habría hecho ricos a todos»`,`«War in the garage: ${q.n} hasn't spoken to ${yo} since he turned down, in ${q.year}, the takeover that would have made everyone rich»`,{pt:`«Guerra na garagem: ${q.n} não fala com ${yo} desde que em ${q.year} recusou a compra que teria deixado todo mundo rico»`})
+              : p.k==="guerra" ? L(`«${yo} fue a saquear la fábrica de ${q.team}: desde ${q.year} les llama a los ingenieros uno por uno»`,`«${yo} went to raid ${q.team}'s factory: since ${q.year} he's been calling their engineers one by one»`,{pt:`«${yo} foi saquear a fábrica da ${q.team}: desde ${q.year} liga para os engenheiros deles um a um»`})
+              : p.k==="orden"  ? L(`«Los coches teledirigidos de ${yo}: en ${q.year} ordenó a sus pilotos mantener posiciones y todavía se le recuerda»`,`«${yo}'s remote-controlled cars: in ${q.year} he ordered his drivers to hold position and nobody has forgotten»`,{pt:`«Os carros teleguiados de ${yo}: em ${q.year} mandou os pilotos manterem posições e ninguém esqueceu»`})
+              : p.k==="plante" ? L(`«¿Ambición o cobardía?: ${yo} le dijo al consejo en ${q.year} que no quemaría el coche del año siguiente por un título»`,`«Ambition or cowardice?: in ${q.year} ${yo} told the board he wouldn't burn next year's car for a title»`,{pt:`«Ambição ou covardia?: ${yo} disse ao conselho em ${q.year} que não queimaria o carro do ano seguinte por um título»`})
+              : p.k==="incumple" ? L(`«${yo} prometió ${q.target===1?"el título":"el "+q.target+"º puesto"} y acabó ${pos(q.pos)}: el consejo ha empezado a mirar el reloj»`,`«${yo} promised ${q.target===1?"the title":"P"+q.target} and finished ${q.pos===1?"champion":"P"+q.pos}: the board has started checking the clock»`,{pt:`«${yo} prometeu ${q.target===1?"o título":"o "+q.target+"º lugar"} e terminou ${pos(q.pos)}: o conselho começou a olhar o relógio»`})
+                               : L(`«${q.n} temporadas de ${yo} en el muro y ni una portada: un año más sin nada que contar»`,`«${q.n} seasons of ${yo} on the pit wall and not one front page: another year with nothing to say»`,{pt:`«${q.n} temporadas de ${yo} no muro e nem uma capa: mais um ano sem nada para contar»`});
     const cola = p.k==="nada"
       ? L("No es una acusación, es peor: es un bostezo. Llevas años en el muro y el titular del jueves es que no hay titular. En este oficio, que dejen de hablar de ti es la antesala de que dejen de llamarte.","It isn't an accusation, it's worse: it's a yawn. Years on the pit wall and Thursday's headline is that there is no headline. In this trade, people going quiet about you is the run-up to people not calling you.",{pt:"Não é uma acusação, é pior: é um bocejo. Anos no muro e a manchete de quinta é que não há manchete. Neste ofício, pararem de falar de você é a antessala de pararem de te ligar."})
       : L("No es tu piloto quien abre los periódicos esta semana. Eres tú. Y a diferencia de una carrera, esto no se corrige el domingo.","It isn't your driver leading the papers this week. It's you. And unlike a race, this doesn't get fixed on Sunday.",{pt:"Não é o seu piloto que abre os jornais esta semana. É você. E, diferente de uma corrida, isto não se conserta no domingo."});
