@@ -2521,6 +2521,15 @@ function gpList(yr){
    desde 2033; y a un argentino de la era 2026 le NACE la carrera de casa a mitad de su carrera.
    Los nombres son los planos del calendario a propósito: los que pasan por L() cambian con el
    idioma y no se pueden comparar por texto. */
+/* 🏳️ BANDERA → PAÍS. Un piloto guarda su bandera, no su nombre de país, y GP_CASA está indexada por
+   la clave interna de COUNTRIES (el nombre en español). El índice se construye la primera vez que se
+   pide y se queda cacheado: son 207 países y esto se consulta en cada invierno. */
+let _PAIS_X_BANDERA=null;
+function paisDeBandera(flag){
+  if(!flag) return null;
+  if(!_PAIS_X_BANDERA){ _PAIS_X_BANDERA={}; COUNTRIES.forEach(c=>{ if(c&&c[1]) _PAIS_X_BANDERA[c[1]]=c[0]; }); }
+  return _PAIS_X_BANDERA[flag]||null;
+}
 const GP_CASA={
   "Italia":["Monza","Imola"], "España":["Madrid","Barcelona"], "Reino Unido":["Silverstone"],
   "Alemania":["Hockenheim"], "Brasil":["Interlagos"], "Japón":["Suzuka"],
@@ -13108,6 +13117,45 @@ const TP_DILEMAS=[
     r:()=>roll(
      [55,()=>(TPRE(2),L("Se pelean limpio, el espectáculo es vuestro y la prensa os adora. Los puntos que se pierden, se pierden con estilo. +fama","They race each other clean, the show is yours and the press adores you. The points you lose, you lose with style. +fame",{pt:"Brigam limpo, o espetáculo é de vocês e a imprensa adora. Os pontos que se perdem, se perdem com estilo. +fama"}))],
      [45,()=>(TPCAR(-1.5),TPRE(-1.5),L("La libertad se cobra su precio en la curva 1: los dos fuera. El consejo te pregunta, muy despacio, si el espectáculo puntúa. −coche, −fama","Freedom collects its due at turn 1: both of them out. The board asks you, very slowly, whether the show scores points. −car, −fame",{pt:"A liberdade cobra seu preço na curva 1: os dois fora. O conselho te pergunta, bem devagar, se o espetáculo pontua. −carro, −fama"}))])}]},
+
+ /* 🏠 «SU CARRERA DE CASA» (idea de Carlos del fin de semana Antonelli–Monza, 24-ago). El calendario
+    vivo hace el trabajo: `gpCasa(país, año)` sabe si tu mejor piloto tiene Gran Premio en su tierra
+    ESE año — un español corre en Barcelona hasta 2025 y en Madrid desde 2026, un coreano solo en
+    2010-13 y otra vez desde 2033, y a un argentino de la era 2026 la carrera de casa le NACE a mitad
+    de su carrera. Si además es la PRIMERA edición, el texto lo dice: estropear el estreno pesa más.
+    Pide fiabilidad floja de verdad (es el eje peor del coche): sin problema mecánico no hay decisión
+    que tomar. */
+ {id:"tpMotorEnCasa",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs(); if(!a.length) return false;
+    const pr=(S.f1prof||{})[S.tpTeam]; if(!pr) return false;
+    if(pr.fiab > Math.min(pr.aero, pr.motor)) return false;   // la fiabilidad tiene que ser lo PEOR
+    const mejor=a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0];
+    const pais=paisDeBandera(mejor.flag); if(!pais) return false;
+    const gp=gpCasa(pais, yearNow()); if(!gp) return false;
+    S._casa={n:surname(mejor.name), nom:mejor.name, gp:gp.n, estreno:!!gp.estreno, pais:pais};
+    return true; },
+  t:()=>L("Su carrera de casa","His home race",{pt:"A corrida de casa dele"}),
+  d:()=>{ const c=S._casa||{};
+    const cola = c.estreno
+      ? L(`Y no es una carrera de casa cualquiera: es la PRIMERA que se corre allí, y lleva su nombre en las gradas desde que se anunció.`,`And it isn't just any home race: it's the FIRST one ever held there, and his name has been on the grandstands since it was announced.`,{pt:`E não é uma corrida de casa qualquer: é a PRIMEIRA que se corre ali, e leva o nome dele nas arquibancadas desde que foi anunciada.`})
+      : L(`Su casa. Las gradas llevan su nombre desde el jueves.`,`His home. The grandstands have carried his name since Thursday.`,{pt:`A casa dele. As arquibancadas levam o nome dele desde quinta.`});
+    return L(`El calendario ha hecho la peor de sus bromas: toca cambiar el motor de ${c.n}, y la cuenta sale en ${c.gp}. ${cola} Los ingenieros lo dicen sin levantar la voz: o lo cambiamos aquí, o cruzamos los dedos cuatro carreras más con el viejo.`,
+             `The calendar has played its cruellest joke: ${c.n}'s engine is due for a change, and the maths lands on ${c.gp}. ${cola} The engineers say it without raising their voices: we change it here, or we cross our fingers for four more races with the old one.`,
+             {pt:`O calendário fez a pior das suas piadas: toca trocar o motor de ${c.n}, e a conta cai em ${c.gp}. ${cola} Os engenheiros dizem sem levantar a voz: ou trocamos aqui, ou cruzamos os dedos por mais quatro corridas com o velho.`}); },
+  opts:[
+   /* A · los números no saben de banderas: seguro, y el precio lo paga la relación */
+   {l:()=>L("Cambiarlo aquí: los números no saben de banderas","Change it here: numbers don't know about flags",{pt:"Trocar aqui: os números não sabem de bandeiras"}),
+    r:()=>{ const c=S._casa||{}; TPCAR(1.5); tpDrvSkill(c.nom,-1);
+      return L(`Sale desde el fondo delante de su gente y remonta lo que se puede remontar. En la fábrica te lo agradecen; él tarda semanas en hablarte de otra cosa. +coche, −moral de ${c.n}`,
+               `He starts from the back in front of his own people and climbs as far as anyone could. The factory thanks you; he takes weeks before he talks to you about anything else. +car, −${c.n}'s morale`,
+               {pt:`Ele larga do fundo diante da sua gente e recupera o que dá para recuperar. Na fábrica te agradecem; ele leva semanas para falar de outra coisa com você. +carro, −moral de ${c.n}`}); }},
+   /* B · en su casa, no: el dado, y el desenlace malo es la foto que nadie olvida */
+   {l:()=>L("En su casa, no: que aguante el motor viejo","Not at his home race: the old engine holds on",{pt:"Na casa dele, não: que aguente o motor velho"}),
+    r:()=>{ const c=S._casa||{};
+      return roll(
+       [55,()=>(TPRE(2),tpDrvSkill(c.nom,1),L(`El motor aguanta, el podio en casa vale doble y nadie sabrá nunca lo cerca que estuvo la avería. +fama, +moral de ${c.n}`,`The engine holds, a home podium counts double and nobody will ever know how close the failure came. +fame, +${c.n}'s morale`,{pt:`O motor aguenta, o pódio em casa vale dobrado e ninguém jamais saberá o quão perto esteve a quebra. +fama, +moral de ${c.n}`}))],
+       [45,()=>(TPCAR(-1.5),TPRE(-1.5),L(`Vuelta 34, humo. Se baja del coche en ${c.gp}, delante de su gente, y la foto es peor que cualquier última posición. −coche, −fama`,`Lap 34, smoke. He climbs out of the car at ${c.gp}, in front of his own people, and the photograph is worse than any last place. −car, −fame`,{pt:`Volta 34, fumaça. Ele desce do carro em ${c.gp}, diante da sua gente, e a foto é pior que qualquer última posição. −carro, −fama`}))]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
