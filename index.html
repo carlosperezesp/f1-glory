@@ -2797,6 +2797,25 @@ const TESTS = {
       S.titles.constr=1; S._testMito=true;
       return null; }
   },
+  /* 💰 EL PATROCINADOR DE LA VÍSPERA, EN BANDEJA: un Haas hundido, sin un duro, y una marca
+     inventada llamando a la puerta. El cambio de nombre, si firmas todo, es REAL. */
+  patrocinador: {
+    t:["Jefe · El patrocinador de la víspera","Boss · The eleventh-hour sponsor"],
+    d:["Estás en un Haas de fondo de parrilla y las cuentas no cuadran. Pasa la pantalla de rumbo: un patrocinador ofrecerá salvarte el año a cambio de pintar el coche de su color y poner su nombre DELANTE del vuestro. Si lo firmas todo, el cambio de nombre es real: la parrilla, los asientos y tu trayectoria pasan a decir «Zurvok Haas» (o la marca que toque), con el escudo de siempre y los colores de la marca. Repite la prueba para ver marcas distintas y prueba también a negociar el nombre o a decir que no.",
+       "You're at a backmarker Haas and the numbers don't add up. Get past the direction screen: a sponsor will offer to save your year in exchange for painting the car their colour and putting their name IN FRONT of yours. Sign it all and the rename is real: the grid, the seats and your career history now read «Zurvok Haas» (or whichever brand), with the badge you know and the sponsor's colours. Repeat the test for different brands, and also try negotiating the name away or saying no."],
+    era:"2026", tp:true, team:"Haas", tpDilema:"tpUltimoDinero",
+    run(){ S.f1perf["Haas"]=62; S.f1target["Haas"]=63; return null; } },
+  /* 🔧 VIENEN A POR TU TECNOLOGÍA, EN BANDEJA: un Aston Martin de mitad alta con la mejor
+     aerodinámica de su historia, y Ferrari con el talonario fuera. */
+  componentes: {
+    t:["Jefe · Vienen a por tu tecnología","Boss · They want your tech"],
+    d:["Diriges un Aston Martin con el cuarto mejor coche y una aerodinámica que es la envidia del pit-lane. Pasa la pantalla de rumbo: Ferrari querrá comprar componentes de vuestro paquete aerodinámico. Vender os financia el año pero les arma a ellos; venderlo con retraso os da un año de exclusiva; y guardároslo puede salir bien… o pueden copiároslo de las fotos igualmente.",
+       "You run an Aston Martin with the grid's fourth-best car and an aero package the pit lane envies. Get past the direction screen: Ferrari will want to buy components of your aero package. Selling funds your year but arms them; selling with a delay keeps a year of exclusivity; and keeping it may pay off… or they may copy it from photographs anyway."],
+    era:"2026", tp:true, team:"Aston Martin", tpDilema:"tpVenderTecnologia",
+    run(){ S.f1perf["Aston Martin"]=86; S.f1target["Aston Martin"]=88;
+           S.f1perf["Ferrari"]=91; if(S.cache) S.cache["Ferrari"]=90;
+           if(S.f1prof && S.f1prof["Aston Martin"]){ const pr=S.f1prof["Aston Martin"]; pr.aero=2; pr.motor=1; pr.fiab=1; }
+           return null; } },
   /* 📰 LA PRENSA EN BANDEJA. El dilema lee tu HISTORIAL, así que el escenario le fabrica uno: te
      pone los cinco rastros jugosos encima y deja que gane el de más arriba de la lista. Con
      `_pmCiclo` (que solo existe aquí) cada repetición de la prueba tacha el titular anterior, así
@@ -7359,8 +7378,8 @@ function rebrandTeam(oldName, to, row){
   // el filial de Red Bull conserva su condición bajo el nuevo nombre (Toro Rosso→AlphaTauri→Racing Bulls)
   if(JUNIOR_OF[oldName]!=null){ JUNIOR_OF[nn]=JUNIOR_OF[oldName]; delete JUNIOR_OF[oldName]; }
   Object.keys(JUNIOR_OF).forEach(k=>{ if(JUNIOR_OF[k]===oldName) JUNIOR_OF[k]=nn; });
+  const mine = !!(S.team && S.team.name===oldName);
   Object.assign(t,{name:nn, abbr:to.abbr||t.abbr, color:to.color||t.color, color2:to.color2||t.color2});
-  const mine = S.team && S.team.name===oldName;
   if(mine && S.team!==t){ S.team.name=nn; S.team.abbr=t.abbr; S.team.color=t.color; S.team.color2=t.color2; }
   /* 🔄 …Y LA FILA DE ESTA TEMPORADA. row.team es una COPIA tomada al empezar el año; si el renombrado
      ocurre ahora, esa copia se queda con el nombre viejo mientras el resto de la fila (el top-3 de
@@ -7369,9 +7388,18 @@ function rebrandTeam(oldName, to, row){
   if(mine && row && row.team && row.team.name===oldName){
     row.team.name=nn; row.team.abbr=t.abbr; row.team.color=t.color; row.team.color2=t.color2;
   }
+  /* ✂️ CUANDO SOLO SE CAE UNA PALABRA. «Mercedes GP se transforma en Mercedes» suena a que no ha
+     pasado nada (lo cazó Carlos). Es el caso real de los nombres que se acortan —Mercedes GP dejó el
+     «GP» en 2012, igual que Sauber soltó el «BMW»—, y merece su propia frase: no es una compra, es
+     un rótulo que se cae. Se detecta cuando un nombre contiene al otro. */
+  const _corto = oldName.indexOf(nn)===0 || nn.indexOf(oldName)===0;
   row.events.push(mine
-    ? L(`🔄 Tu equipo cambia de manos: ${oldName} pasa a ser ${nn}. Nuevos colores, mismo box.`,`🔄 Your team changes hands: ${oldName} becomes ${nn}. New colours, same garage.`,{pt:`🔄 A sua equipe muda de mãos: a ${oldName} passa a ser ${nn}. Cores novas, mesmo box.`})
-    : L(`🔄 ${oldName} se transforma en ${nn}.`,`🔄 ${oldName} becomes ${nn}.`,{pt:`🔄 A ${oldName} se transforma em ${nn}.`}));
+    ? (_corto
+      ? L(`🔄 Tu equipo se queda con el nombre a secas: ${oldName} pasa a ser ${nn}. Mismo box, un rótulo menos.`,`🔄 Your team trims its name: ${oldName} becomes plain ${nn}. Same garage, one word less.`,{pt:`🔄 A sua equipe encurta o nome: a ${oldName} passa a ser ${nn}. Mesmo box, uma palavra a menos.`})
+      : L(`🔄 Tu equipo cambia de manos: ${oldName} pasa a ser ${nn}. Nuevos colores, mismo box.`,`🔄 Your team changes hands: ${oldName} becomes ${nn}. New colours, same garage.`,{pt:`🔄 A sua equipe muda de mãos: a ${oldName} passa a ser ${nn}. Cores novas, mesmo box.`}))
+    : (_corto
+      ? L(`🔄 ${oldName} se deja el apellido por el camino y pasa a llamarse ${nn} a secas.`,`🔄 ${oldName} drops the second half of its name and becomes plain ${nn}.`,{pt:`🔄 A ${oldName} deixa o sobrenome pelo caminho e passa a se chamar só ${nn}.`})
+      : L(`🔄 ${oldName} se transforma en ${nn}.`,`🔄 ${oldName} becomes ${nn}.`,{pt:`🔄 A ${oldName} se transforma em ${nn}.`})));
 }
 function killTeam(name, row){
   const i=F1_TEAMS.findIndex(t=>t.name===name); if(i<0) return;
@@ -10056,6 +10084,23 @@ const OWNER_SELF={k:"self",
    · BMW — se fue en 2009; volver COMPRANDO pide una década larga de distancia
    · Alfa Romeo — dejó Sauber en 2023; mismo criterio
    · Renault — acaba de cerrar Viry en 2026: volver comprando es lo que más años necesita */
+/* 🏷️ PATROCINADORES-SALVAVIDAS («El patrocinador llega la víspera»). Marcas INVENTADAS a propósito
+   —Carlos, 24-ago: «prefiero que sean marcas inventadas, que no existan»— y verificadas una a una en
+   la web ese mismo día: ninguna es una empresa real. Seis sectores; cripto e IA llegan con su época,
+   igual que hacen los COMPRADORES con `desde`. Si el equipo firma el paquete entero, la marca se pone
+   DELANTE del nombre (Zurvok Haas) con el escudo de siempre y los colores del patrocinador. */
+const PATROCINADORES=[
+  {n:"Zurvok",        color:"#E8590C", color2:"#141414", desde:1990},   // bebida energética
+  {n:"Bravasca",      color:"#C1121F", color2:"#F7E8C9", desde:1990},   // refresco
+  {n:"Orbanet",       color:"#0F4C81", color2:"#8FD0EA", desde:1990},   // telecomunicaciones
+  {n:"Telzur",        color:"#5A2A82", color2:"#EDEDED", desde:1990},   // telecomunicaciones
+  {n:"Banco Orvadal", color:"#0B3D2E", color2:"#C9A227", desde:1990},   // banca
+  {n:"Aerdana",       color:"#B22234", color2:"#F5F5F5", desde:1990},   // aerolínea
+  {n:"Vientara",      color:"#0E7490", color2:"#FDE68A", desde:1990},   // aerolínea
+  {n:"Zelnark",       color:"#101826", color2:"#22D3EE", desde:2017},   // cripto
+  {n:"Koinarth",      color:"#F7931A", color2:"#232323", desde:2017},   // cripto
+  {n:"Nurath",        color:"#3B0764", color2:"#B79CF5", desde:2023},   // inteligencia artificial
+];
 const COMPRADORES={
   Porsche:{abbr:"POR",color:"#D5001C",color2:"#191F22", desde:2026},
   Hyundai:{abbr:"HYU",color:"#002C5F",color2:"#00AAD2", desde:2026},
@@ -12800,6 +12845,116 @@ const TP_DILEMAS=[
       return roll(
        [6,()=>(TPRE(2),L(`Cambias de tema con nombre y apellido: dices que esto sale de ${q} y que ya sabemos por qué. El jueves nadie habla de ti; hablan de ellos. +fama… y en ${q} han tomado nota`,`You change the subject with a name attached: you say this comes out of ${q} and we all know why. By Thursday nobody's talking about you; they're talking about them. +fame… and ${q} have taken note`,{pt:`Você muda de assunto com nome e sobrenome: diz que isto sai da ${q} e que já sabemos por quê. Na quinta ninguém fala de você; falam deles. +fama… e na ${q} tomaram nota`}))],
        [4,()=>(TPRE(-1),L(`Señalas a ${q} y no cuela: queda como lo que es, un jefe buscando culpables fuera de su propia casa. El titular sigue siendo tuyo, ahora con una capa de excusa encima. −fama, y en ${q} han tomado nota igual`,`You point at ${q} and it doesn't wash: it reads as what it is, a boss hunting for culprits outside his own house. The headline is still yours, now with a layer of excuse on top. −fame, and ${q} have taken note anyway`,{pt:`Você aponta para a ${q} e não cola: fica como o que é, um chefe procurando culpados fora da própria casa. A manchete continua sendo sua, agora com uma camada de desculpa por cima. −fama, e na ${q} tomaram nota do mesmo jeito`}))]); }}]},
+
+ /* 💰 «EL PATROCINADOR LLEGA LA VÍSPERA» (entrada 7 del doc de Carlos, con su nota: «esto solo vale
+    para equipo pequeño»). El dinero como PRESIÓN, sin caja que cuadrar: lo que entra y lo que sale se
+    paga en coche, fama, caché y proyecto. La cláusula de asientos se quitó a propósito —eso ya lo
+    cubre tpPago—; aquí lo que se vende es EL NOMBRE, y si se firma, el cambio es real (petición de
+    Carlos: «si se cambia de nombre, debería haber un cambio de nombre real»): rebrandTeam de verdad,
+    con el escudo de siempre bajo el nombre nuevo y los colores de la marca. Y si el equipo llevaba una
+    cadena de linaje pendiente (la quiebra de Haas, Alpine→Renault), el renombrado la ARRASTRA:
+    la historia persigue al nombre nuevo en vez de quedarse huérfana. */
+ {id:"tpUltimoDinero",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+    const tn=S.tpTeam;
+    if(PATROCINADORES.some(p=>tn.indexOf(p.n+" ")===0)) return false;   // ya lleva una marca delante
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+    if(ord.indexOf(tn) < Math.floor(ord.length*2/3)) return false;      // tercio de cola
+    const pool=PATROCINADORES.filter(p=>yearNow()>=p.desde && !F1_TEAMS.some(t=>t.name.indexOf(p.n)===0));
+    if(!pool.length) return false;
+    if(!S._ud) S._ud=pool[irnd(0,pool.length-1)];
+    return true; },
+  t:()=>L("El patrocinador llega la víspera","The sponsor arrives on the eve",{pt:"O patrocinador chega na véspera"}),
+  d:()=>{ const sp=S._ud||{n:"—"};
+    return L(`Faltan tres semanas para el primer Gran Premio y las cuentas no cuadran. ${sp.n} aparece con el dinero encima de la mesa y las condiciones debajo: quieren el coche entero de su color y su nombre delante del vuestro en la inscripción.`,
+             `Three weeks to the first Grand Prix and the numbers don't add up. ${sp.n} turns up with the money on the table and the conditions underneath: they want the whole car in their colours and their name in front of yours on the entry list.`,
+             {pt:`Faltam três semanas para o primeiro GP e as contas não fecham. A ${sp.n} aparece com o dinheiro na mesa e as condições embaixo: querem o carro inteiro na cor deles e o nome deles na frente do seu na inscrição.`}); },
+  opts:[
+   /* A · firmarlo todo: el renombrado ocurre SIEMPRE (es lo que han comprado); el dado decide cómo
+      aterriza. El escudo de siempre queda registrado como alias del nombre nuevo. */
+   {l:()=>L("Firmarlo todo y salir a competir","Sign it all and go racing",{pt:"Assinar tudo e ir correr"}),
+    r:()=>{ const sp=S._ud||PATROCINADORES[0], viejo=S.tpTeam, nn=sp.n+" "+viejo;
+      if(!F1_TEAMS.some(t=>t.name===nn)){
+        const src=logoFor(viejo);
+        if(S.f1prof && S.f1prof[viejo]){ S.f1prof[nn]=S.f1prof[viejo]; delete S.f1prof[viejo]; }
+        const fila={events:[]};
+        rebrandTeam(viejo, {name:nn, color:sp.color, color2:sp.color2}, fila);
+        if(src) TEAM_LOGOS[nn]=src;                          // el escudo de siempre bajo el nombre nuevo
+        S.tpTeam=nn;
+        const st=(S.tpStints||[]).at(-1);
+        if(st && st.y0<yearNow()){ st.y1=yearNow()-1; S.tpStints.push({team:nn, y0:yearNow(), y1:yearNow(), constr:0, drv:0}); }
+        else if(st) st.team=nn;
+        /* 🔗 la historia pendiente PERSIGUE al nombre nuevo: si Haas iba camino de la quiebra y ahora
+           se llama Zurvok Haas, la quiebra va a por Zurvok Haas — sin esto, la cadena apuntaba a un
+           nombre que ya no existe y el equipo se volvía inmortal (el mismo bug del Prost eterno). */
+        (S.lineage||[]).forEach(c=>{ if(c.cur===viejo) c.cur=nn; });
+        S.pendingEvents.push(...fila.events);
+        S._histNombre={sp:sp.n, team:viejo, year:yearNow()};  // 📰 rastro para la prensa del futuro
+      }
+      const NN=S.tpTeam;
+      return roll(
+       [7,()=>(TPCAR(2),TPRE(-1),L(`El camión sale a tiempo y el coche llega terminado a la primera carrera. Desde marzo la inscripción dice ${NN} y el box es de su color; nadie de fuera sabe lo cerca que estuvisteis de no salir. +coche, −fama leve`,`The truck leaves on time and the car arrives finished at the first race. From March the entry list reads ${NN} and the garage wears their colour; nobody outside knows how close you came to not making it. +car, slight −fame`,{pt:`O caminhão sai a tempo e o carro chega pronto à primeira corrida. Desde março a inscrição diz ${NN} e o box tem a cor deles; ninguém de fora sabe o quão perto vocês estiveram de não sair. +carro, −fama leve`}))],
+       [3,()=>{ const tn=S.tpTeam; TPCAR(1.5); if(S.cache[tn]!=null) S.cache[tn]=Math.max(40,S.cache[tn]-3);
+         return L(`Firmáis, y en marzo el equipo ya no se llama como se llamaba: sois ${NN} y el coche es suyo hasta en el color. Los de la fábrica lo dicen en voz baja: trabajamos para ellos. +coche, −caché`,`You sign, and by March the team no longer goes by its own name: you are ${NN} and the car is theirs down to the paint. In the factory they say it quietly: we work for them now. +car, −standing`,{pt:`Vocês assinam, e em março a equipe já não se chama como se chamava: são ${NN} e o carro é deles até na cor. Na fábrica dizem baixinho: trabalhamos para eles. +carro, −cachê`}); }]); }},
+   /* B · negociar el nombre: pagan menos si ceden, y a veces se van por el pasillo */
+   {l:()=>L("El dinero sí; el nombre, no","The money yes; the name, no",{pt:"O dinheiro sim; o nome, não"}),
+    r:()=>ch(.5)
+      ? (TPCAR(1.5),TPRE(1),L("Aguantas ese punto media reunión y acaban cediendo. Pagan menos, pero la inscripción sigue diciendo vuestro nombre. +coche, +fama","You hold that clause for half the meeting and they finally give in. They pay less, but the entry list still reads your name. +car, +fame",{pt:"Você segura essa cláusula por meia reunião e eles acabam cedendo. Pagam menos, mas a inscrição continua com o seu nome. +carro, +fama"}))
+      : (TPTGT(-2),L("Se levantan de la mesa a los diez minutos. Había otros esperando en el pasillo, y vuestro plan de desarrollo se queda sin financiar. −proyecto","They get up from the table after ten minutes. Others were waiting in the corridor, and your development plan goes unfunded. −project",{pt:"Eles se levantam da mesa em dez minutos. Havia outros esperando no corredor, e o seu plano de desenvolvimento fica sem financiamento. −projeto"}))},
+   /* C · decir que no: la dignidad cotiza, pero el coche del año pasado también */
+   {l:()=>L("Decir que no y salir con lo que hay","Say no and race what you have",{pt:"Dizer não e correr com o que há"}),
+    r:()=>ch(.5)
+      ? (TPRE(2),TPCAR(-1.5),L("Arrancáis con el coche del año pasado repintado, pero arrancáis. El paddock sabe lo que has hecho, y a alguna gente eso le gusta mucho. +fama, −coche","You start the season with last year's car repainted, but you start it. The paddock knows what you did, and some people like that a lot. +fame, −car",{pt:"Vocês começam com o carro do ano passado repintado, mas começam. O paddock sabe o que você fez, e tem gente que gosta muito disso. +fama, −carro"}))
+      : (TPCAR(-2.5),TPTGT(-2),L("Se nota desde el primer libre: falta medio segundo y falta dinero, y las dos cosas se ven en la tele. −coche, −proyecto","You can tell from first practice: half a second missing and money missing, and both show on TV. −car, −project",{pt:"Dá para notar desde o primeiro treino: falta meio segundo e falta dinheiro, e as duas coisas aparecem na TV. −carro, −projeto"}))}]},
+
+ /* 🔧 «FINANCIARSE CON EL RIVAL» (entrada 78 del doc). La tecnología no es «algo»: es TU MEJOR EJE,
+    con su nombre (aerodinámica, motor o fiabilidad), y el comprador es un equipo con mejor coche y
+    caché alto — los únicos que pueden pagarlo. La consecuencia SE VE EN LA PARRILLA: si vendes, su
+    coche sube de verdad. Y no vender también puede costar caro: en la F1 real te copian de las fotos
+    (petición de Carlos: que hubiera una opción con castigo, no un menú de regalos). El filial de Red
+    Bull no compra: un empujón directo a su coche podría dejarlo por encima de Red Bull, y eso está
+    prohibido por diseño. */
+ {id:"tpVenderTecnologia",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const tn=S.tpTeam;
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+    const p=ord.indexOf(tn);
+    if(p<0 || p>=Math.ceil(ord.length/2)) return false;                 // mitad alta
+    const buyers=F1_TEAMS.filter(t=>t.name!==tn && !isRBJr(t.name)
+      && (S.f1perf[t.name]||70)>=(S.f1perf[tn]||70)+3 && (S.cache[t.name]||0)>=80);
+    if(!buyers.length) return false;
+    const pr=(S.f1prof||{})[tn]||{aero:1,motor:1,fiab:1};
+    const eje=["aero","motor","fiab"].sort((a,b)=>(pr[b]||0)-(pr[a]||0))[0];
+    if(!S._vt) S._vt={b:buyers[irnd(0,buyers.length-1)].name, eje:eje};
+    return true; },
+  t:()=>L("Financiarse con el rival","Bankrolled by the rival",{pt:"Financiar-se com o rival"}),
+  d:()=>{ const v=S._vt||{}, eje=v.eje||"aero";
+    const cosa = eje==="motor" ? L("Vuestro motor","Your engine",{pt:"O seu motor"})
+               : eje==="fiab"  ? L("Vuestra fiabilidad","Your reliability",{pt:"A sua confiabilidade"})
+                               : L("Vuestra aerodinámica","Your aerodynamics",{pt:"A sua aerodinâmica"});
+    const comp = eje==="motor" ? L("componentes de vuestro motor","components of your engine",{pt:"componentes do seu motor"})
+               : eje==="fiab"  ? L("vuestro sistema de refrigeración","your cooling system",{pt:"o seu sistema de refrigeração"})
+                               : L("componentes de vuestro paquete aerodinámico","components of your aero package",{pt:"componentes do seu pacote aerodinâmico"});
+    return L(`${cosa} es lo mejor que ha salido de esa fábrica en veinte años, y en el pit-lane no se habla de otra cosa. ${v.b} ha llamado: quieren comprar ${comp}. Lo que pagan financia vuestro desarrollo del resto del año. Lo que se llevan, lo montan ellos.`,
+             `${cosa} is the best thing to come out of that factory in twenty years, and the pit lane talks of little else. ${v.b} has called: they want to buy ${comp}. What they pay funds your development for the rest of the year. What they take, they bolt onto their own car.`,
+             {pt:`${cosa} é o melhor que saiu daquela fábrica em vinte anos, e no pit-lane não se fala de outra coisa. A ${v.b} ligou: querem comprar ${comp}. O que pagam financia o desenvolvimento do resto do ano. O que levam, montam no carro deles.`}); },
+  opts:[
+   {l:()=>{ const v=S._vt||{}; return L(`Vender a ${v.b}`,`Sell to ${v.b}`,{pt:`Vender à ${v.b}`}); },
+    r:()=>{ const v=S._vt||{}, up=n=>{ if(S.f1perf[v.b]!=null) S.f1perf[v.b]=Math.min(96,S.f1perf[v.b]+n); };
+      return roll(
+       [6,()=>(TPCAR(2),up(1),L(`El dinero entra y lo veis en vuestro coche antes del verano. Ellos también lo montan, pero no acaban de sacarle todo. +coche (y el suyo, un poco)`,`The money lands and you see it on your own car before the summer. They bolt it on too, but never quite extract everything. +car (and theirs, a little)`,{pt:`O dinheiro entra e vocês o veem no próprio carro antes do verão. Eles também montam, mas não conseguem extrair tudo. +carro (e o deles, um pouco)`}))],
+       [4,()=>(TPCAR(1),up(2.5),L(`Ellos le sacan más partido que vosotros, y lo entendéis viendo su telemetría, que es la peor manera de entender algo. +coche… y el suyo más`,`They get more out of it than you do, and you learn that reading their telemetry, which is the worst way to learn anything. +car… and theirs more`,{pt:`Eles tiram mais proveito do que vocês, e vocês entendem isso vendo a telemetria deles, que é o pior jeito de entender algo. +carro… e o deles mais`}))]); }},
+   /* B · vender con retraso: cobras menos y el empujón del comprador va al OBJETIVO, no al coche —
+      así llega la temporada siguiente por el camino normal de evolveF1, sin trucos */
+   {l:()=>L("Vender, pero que no lo monten hasta el año que viene","Sell, but they can't run it until next year",{pt:"Vender, mas só podem montar no ano que vem"}),
+    r:()=>{ const v=S._vt||{};
+      TPCAR(1); if(S.f1target[v.b]!=null) S.f1target[v.b]=Math.min(95,S.f1target[v.b]+2);
+      return L(`Pagan bastante menos por esperar. Pero un año de ventaja es un año de ventaja, y este año la ventaja es solo vuestra. +coche; lo suyo llega la temporada que viene`,`They pay quite a bit less for waiting. But a year's head start is a year's head start, and this year it's yours alone. +car; theirs arrives next season`,{pt:`Pagam bem menos por esperar. Mas um ano de vantagem é um ano de vantagem, e este ano a vantagem é só sua. +carro; o deles chega na próxima temporada`}); }},
+   {l:()=>L("No vender: es vuestro","Don't sell: it's yours",{pt:"Não vender: é seu"}),
+    r:()=>{ const v=S._vt||{}, up=n=>{ if(S.f1perf[v.b]!=null) S.f1perf[v.b]=Math.min(96,S.f1perf[v.b]+n); };
+      return ch(.55)
+        ? (TPTGT(2),L("Ni te sientas a escuchar la cifra. Aguantáis el año entero siendo los únicos que lo llevan, y la fábrica lo convierte en la base del coche que viene. +proyecto","You don't even sit down to hear the number. You spend the whole year as the only ones running it, and the factory turns it into the basis of next year's car. +project",{pt:"Você nem senta para ouvir o número. Vocês passam o ano inteiro sendo os únicos a usá-lo, e a fábrica o transforma na base do próximo carro. +projeto"}))
+        : (up(1.5),L(`Dices que no… y en verano ${v.b} lleva algo sospechosamente parecido. No hacía falta vendérselo: bastaba con dejarlo a la vista de treinta cámaras. Ellos suben, y vosotros sin el dinero`,`You say no… and by summer ${v.b} is running something suspiciously similar. You didn't need to sell it to them: leaving it in view of thirty cameras was enough. They gain, and you never saw the money`,{pt:`Você diz não… e no verão a ${v.b} está com algo suspeitosamente parecido. Não era preciso vender: bastava deixá-lo à vista de trinta câmeras. Eles sobem, e vocês sem o dinheiro`})); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
