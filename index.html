@@ -2637,7 +2637,6 @@ const CHALLENGES = {
      número de un reto es su posición en este registro, y Pechito y Valentino son los dos debutantes
      tardíos, así que no pueden ir seguidos (decisión de Carlos, 10-ago-2026).
      PARA CONSTRUIRLO: se rellena esta entrada, se le quita `wip` y se le pone su `at`. Nada más. */
-  reto3: { id:"reto3", wip:true },
   /* 🏍️ VALENTINO (idea de Carlos). Todo lo de aquí pasó: el test de Fiorano de abril de
      2004 con el casco prestado de Schumacher, los 1:00.5 de 2005 haciendo tandas largas con Montezemolo
      y Todt mirando, y la pretemporada de Cheste en febrero de 2006, donde con un F2004 adaptado se
@@ -2704,6 +2703,10 @@ const CHALLENGES = {
     //    espera. Fecha lejana a propósito para que NO se dispare sola; se le pone la buena al sacarla.
     at:"2027-01-01T10:00:00Z",
   },
+  /* 🅿️ EL SITIO GUARDADO, AL FINAL A PROPÓSITO (Carlos, 24-ago: «Valentino es el III, el IV todavía
+     no está 100% decidido»). Estaba entre Pechito y Valentino y se comía el III aunque no exista.
+     Aquí abajo no puede robarle el número a nadie ya publicado, ni siquiera el día que se publique. */
+  reto3: { id:"reto3", wip:true },
 };
 // el nombre del monstruo se fija AL CREARLO, en el idioma de la partida (como los eventos del historial)
 function beastName(){ return L("La Bestia","The Beast",{pt:"A Fera"}); }
