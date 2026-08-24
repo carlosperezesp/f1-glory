@@ -2638,7 +2638,7 @@ const CHALLENGES = {
      tardíos, así que no pueden ir seguidos (decisión de Carlos, 10-ago-2026).
      PARA CONSTRUIRLO: se rellena esta entrada, se le quita `wip` y se le pone su `at`. Nada más. */
   reto3: { id:"reto3", wip:true },
-  /* 🏍️ RETO IV · VALENTINO (idea de Carlos). Todo lo de aquí pasó: el test de Fiorano de abril de
+  /* 🏍️ VALENTINO (idea de Carlos). Todo lo de aquí pasó: el test de Fiorano de abril de
      2004 con el casco prestado de Schumacher, los 1:00.5 de 2005 haciendo tandas largas con Montezemolo
      y Todt mirando, y la pretemporada de Cheste en febrero de 2006, donde con un F2004 adaptado se
      quedó a 7 décimas de Schumacher y por delante de los dos McLaren, del Toyota de Trulli y del BMW
@@ -2690,7 +2690,7 @@ const CHALLENGES = {
     //    la traducción al italiano, su lanzamiento y el del idioma se refuerzan solos.
     at:"2026-09-07T10:00:00Z",
   },
-  // 🐲 RETO III · LA BESTIA (idea de Carlos). Familia «reglas», no «revivir a alguien»: partida NORMAL
+  // 🐲 LA BESTIA (idea de Carlos). Familia «reglas», no «revivir a alguien»: partida NORMAL
   // desde el karting, pero el año que pisas la F1 debuta un piloto ficticio de OVR 99 que NO envejece,
   // NO declina y NO se retira. Sin comparativa: el listón es cuántos Mundiales le arrancas.
   bestia: {
@@ -3025,10 +3025,13 @@ function maybeCampos(){
 }
 let CHALLENGE = null;
 function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
-// «Reto I · El Nano»: el número sale del orden en el registro, así los siguientes se numeran solos
+/* «Reto I · El Nano»: el número sale del orden en el registro, así los siguientes se numeran solos.
+   ⚠️ SALTÁNDOSE LOS HUECOS RESERVADOS (lo cazó Carlos, 24-ago): `reto3` es un sitio guardado sin
+   publicar, y al contarlo se comía el III — Valentino salía anunciado como «Reto IV» cuando el
+   público solo ha visto el I y el II. Un `wip` no ocupa número hasta que existe de verdad. */
 const ROMANOS=["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
 function challengeLabel(c){
-  const i=Object.keys(CHALLENGES).indexOf(c.id)+1;
+  const i=Object.keys(CHALLENGES).filter(k=>!CHALLENGES[k].wip).indexOf(c.id)+1;
   return L(`Reto ${ROMANOS[i]||i} · ${c.t[0]}`, `Challenge ${ROMANOS[i]||i} · ${c.t[1]}`,{pt:`Desafio ${ROMANOS[i]||i} · ${c.t[0]}`});
 }
 /* 🪪 NOMBRE VISIBLE. En un reto NO eres tú con su coche: ERES ÉL, y tu apodo va entre paréntesis →
