@@ -11026,10 +11026,10 @@ function tpGanarYa(){
     ()=>{ let p=.35 + .15*(S.titles.constr||0) + (S.tpPrest>85?.20:S.tpPrest>70?.10:0) - (S.tpMissStreak>=1?.15:0);
       p=Math.max(.05,Math.min(.97,p));
       if(ch(p)){
-        S.tpPrest=Math.min(99,S.tpPrest+3); S._ganarYaFirme=yearNow();
+        S.tpPrest=Math.min(99,S.tpPrest+3); S._ganarYaFirme=yearNow(); S._histPlante=yearNow();
         S.pendingEvents.push(L("🏛️ Se hace un silencio largo. El presidente cierra la carpeta. «Un año más. Uno.» No has ganado nada todavía, pero sales del despacho con tu plan intacto y con algo que no tenías al entrar: te han escuchado. +fama","🏛️ A long silence. The chairman closes the folder. \"One more year. One.\" You haven't won anything yet, but you leave with your plan intact and something you didn't have walking in: they listened. +fame",{pt:"🏛️ Um silêncio longo. O presidente fecha a pasta. «Mais um ano. Um.» Você ainda não ganhou nada, mas sai com o plano intacto e com algo que não tinha ao entrar: te ouviram. +fama"}));
       } else {
-        S.tpMissStreak=Math.max(S.tpMissStreak||0,1); S._ganarYaFirme=yearNow();
+        S.tpMissStreak=Math.max(S.tpMissStreak||0,1); S._ganarYaFirme=yearNow(); S._histPlante=yearNow();
         S.pendingEvents.push(L("🚨 No se molestan ni en discutirlo. «Tomamos nota de tu posición. Nosotros tomamos nota de los resultados.» El plan sigue siendo tuyo, pero ya no tienes crédito: el próximo tropiezo no lo vas a poder explicar.","🚨 They don't even argue. \"We note your position. We'll be noting the results.\" The plan is still yours, but your credit is gone: the next stumble won't be explainable.",{pt:"🚨 Nem se dão ao trabalho de discutir. «Tomamos nota da sua posição. Nós tomaremos nota dos resultados.» O plano segue sendo seu, mas o crédito acabou: o próximo tropeço não terá explicação."}));
       }
       tpRumboScreen(); });
@@ -11679,6 +11679,9 @@ function tpTemptCheck(){
 
 /* ── DILEMAS PROPIOS DEL MURO (semilla Fase 1) — regla de GPD: la decisión no otorga el
    resultado, ALTERA LAS CONDICIONES; la simulación es el juez. Efectos pequeños, historia grande. ── */
+/* ⚠️ TPRE REDONDEA, y `tpPrest` siempre es entero: eso hace que TPRE(-.5) NO HAGA NADA —75−0,5=74,5
+   y Math.round lo devuelve a 75—. Para un castigo leve hay que usar −.8 o −1. Hacia arriba sí
+   funciona (+.5 sube a 76), así que la trampa es asimétrica y solo muerde en negativo. */
 const TPRE=n=>{S.tpPrest=Math.round(Math.max(5,Math.min(99,S.tpPrest+n)));};
 const TPCAR=n=>{ if(S.f1perf[S.tpTeam]!=null){ S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+n)); tpCapFilial(); } };
 const TPTGT=n=>{ if(S.f1target[S.tpTeam]!=null) S.f1target[S.tpTeam]=Math.max(61,Math.min(95,S.f1target[S.tpTeam]+n)); };
@@ -11938,12 +11941,15 @@ const TP_DILEMAS=[
     return L(`${n1} y ${n2} llegan a la última vuelta peleando por la misma posición, rueda contra rueda. La radio espera tu voz.`,
              `${n1} and ${n2} reach the final lap fighting for the same position, wheel to wheel. The radio waits for your voice.`,
              {pt:`${n1} e ${n2} chegam à última volta brigando pela mesma posição, roda com roda. O rádio espera a sua voz.`}); },opts:[
-   {l:()=>L("«Mantened posiciones»","«Hold positions»",{pt:"«Mantenham posições»"}),r:()=>roll(
+   {l:()=>L("«Mantened posiciones»","«Hold positions»",{pt:"«Mantenham posições»"}),
+    r:()=>{ S._histOrden=yearNow();   // 📰 diste la orden: la prensa lo recuerda años después
+      return roll(
      [5,()=>{TPRE(1.5); const a=tpDrvs(), w=a.length>1?((a[0].skill||0)<=(a[1].skill||0)?a[0]:a[1]):null; if(w) tpDrvSkill(w.name,-1);
        return L("Los puntos llegan intactos y el consejo aplaude tu frialdad… pero el que iba detrás no olvida la orden. +prestigio, −moral de tu segundo",
                 "The points come home intact and the board applauds your cool… but the man behind won't forget the order. +prestige, your second's morale dips",
                 {pt:"Os pontos chegam intactos e o conselho aplaude a sua frieza… mas quem vinha atrás não esquece a ordem. +prestígio, −moral do segundo"});}],
-     [3,()=>(TPRE(-1.5),L("La afición te cruje por matar la carrera y la prensa habla de «teledirigidos». −prestigio","The fans roast you for killing the race and the press cries «remote control». −prestige",{pt:"A torcida te detona por matar a corrida e a imprensa fala em «carros teleguiados». −prestígio"}))])},
+     [3,()=>(TPRE(-1.5),L("La afición te cruje por matar la carrera y la prensa habla de «teledirigidos». −prestigio","The fans roast you for killing the race and the press cries «remote control». −prestige",{pt:"A torcida te detona por matar a corrida e a imprensa fala em «carros teleguiados». −prestígio"}))]); }},
+
    {l:()=>L("«Dejadlos correr»","«Let them race»",{pt:"«Deixem correr»"}),r:()=>roll(
      [5,()=>(TPRE(2),L("Se baten en un duelo limpio que abre telediarios: el paddock celebra a un jefe con agallas. +prestigio","They fight a clean duel that leads the news: the paddock salutes a boss with guts. +prestige",{pt:"Eles duelam limpo e abrem os telejornais: o paddock celebra um chefe com coragem. +prestígio"}))],
      [4,()=>(TPRE(-2.5),TPCAR(-.5),L("Se tocan y los dos coches vuelven en grúa. El consejo te mira fijamente. −prestigio, −coche","They collide and both cars come home on a truck. The board stares right at you. −prestige, −car",{pt:"Eles se tocam e os dois carros voltam de guincho. O conselho te encara. −prestígio, −carro"}))])}]},
@@ -12167,7 +12173,7 @@ const TP_DILEMAS=[
          return L(`Levanta el pie, cruza la meta con la goma entera y los puntos entran enteros. El consejo no aplaude estas cosas, pero las apunta. +prestigio`,
                   `He lifts, crosses the line with the tyre intact and the points come in whole. The board doesn't applaud these things, but it notes them. +prestige`,
                   {pt:`Ele alivia, cruza a linha com o pneu inteiro e os pontos entram inteiros. O conselho não aplaude essas coisas, mas anota. +prestígio`});}],
-       [4,()=>{tpDrvSkill(n,-1);TPRE(-.5);
+       [4,()=>{tpDrvSkill(n,-1);TPRE(-.8);
          return L(`Obedece, pierde la posición en la penúltima vuelta y baja del coche sin mirar al muro. «Yo la tenía», repite en el box. −moral de ${n}, −prestigio leve`,
                   `He obeys, loses the place on the penultimate lap and climbs out without looking at the wall. «I had him», he keeps saying in the garage. −${n}'s morale, slight −prestige`,
                   {pt:`Ele obedece, perde a posição na penúltima volta e desce do carro sem olhar para o muro. «Eu tinha ele», repete no box. −moral de ${n}, −prestígio leve`});}])}},
@@ -12287,7 +12293,7 @@ const TP_DILEMAS=[
                   {pt:`${v} entrega os galões sem uma palavra ruim: ninguém lê um cronômetro melhor que ele. ${j} corre desde já com o melhor carro da garagem, e a equipe inteira anota como essas coisas se fazem. +prestígio leve, +moral de ${j}`});}],
        [3,()=>{tpDrvSkill(e.n1.name,-2);
          const seVa=ch(.35);
-         if(seVa){ S.tpSaleQ=(S.tpSaleQ||[]).concat([{name:e.n1.name,to:null}]); TPRE(-.5); }
+         if(seVa){ S.tpSaleQ=(S.tpSaleQ||[]).concat([{name:e.n1.name,to:null}]); TPRE(-.8); }
          return seVa
            ? L(`${j} se lleva el asiento 1… y ${v} no lo encaja: a su edad no ha venido a escudar a nadie. Pide salir a final de temporada. −moral de ${v}, −prestigio leve`,
                `${j} takes seat 1… and ${v} doesn't swallow it: at his age he didn't come here to shield anyone. He asks out at the end of the season. −${v}'s morale, slight −prestige`,
@@ -12424,6 +12430,7 @@ const TP_DILEMAS=[
    {l:()=>L("Vender: asegurar el futuro de todos","Sell: secure everyone's future",{pt:"Vender: garantir o futuro de todos"}),
     r:()=>{ const c=S._compra||{}, viejo=S.tpTeam;
       const _self=S.tpOwner && S.tpOwner.k==="self";   // 🧑‍✈️ el arco Brawn: la venta es TUYA
+      if(_self) S._histVenta={team:viejo, year:yearNow()};   // 📰 vendiste tu equipo campeón: titular para años
       // la compra se ejecuta SIEMPRE; lo que varía es cómo aterriza el nuevo dueño
       S.cache[viejo]=Math.min(96,(S.cache[viejo]||60)+rnd(6,10));
       S.tpOwner=TP_OWNERS[0];                                     // 🏆 el ganador: un puesto más cada año, para siempre
@@ -12612,6 +12619,7 @@ const TP_DILEMAS=[
       TPTGT(-5); tpRivalSeLoLleva(a);
       S._tpVenganza={team:a, year:yearNow()+1};
       S._tpFeud={team:a, until:yearNow()+4};   // ⚔️ declarada la guerra: ese garaje no te llama
+      S._histGuerra={team:a, year:yearNow()};  // 📰 …y la prensa se acuerda mucho después de que caduque
       return L(`No discutes el finiquito ni pides contraofertas. Le firmas la salida el mismo día, pero esto no quedará así… El invierno es largo y tú tienes memoria y agenda: irás a pescar en ${a}. −proyecto`,
                `You don't argue the payoff or ask for counter-offers. You sign his release that same day — but this isn't over. Winters are long and you have both a memory and a diary: you'll go fishing at ${a}. −project`,
                {pt:`Você não discute a rescisão nem pede contrapropostas. Assina a saída no mesmo dia, mas isto não vai ficar assim… O inverno é longo e você tem memória e agenda: vai pescar na ${a}. −projeto`}); }}
@@ -12654,6 +12662,81 @@ const TP_DILEMAS=[
        return L("Sin savia nueva, el desarrollo se estanca: los rivales traen ideas y tú repites las tuyas. −proyecto",
                 "Without fresh blood, development stalls: rivals bring ideas and you repeat yours. −project",
                 {pt:"Sem sangue novo, o desenvolvimento estagna: os rivais trazem ideias e você repete as suas. −projeto"});}])}]},
+
+ /* 📰 «EL JEFE SE CONVIERTE EN LA NOTICIA» (diseñado con Carlos el 22-ago, construido el 24).
+    Es el primer dilema del modo que LEE TU HISTORIAL en vez de mirar el estado de hoy: el titular
+    cita algo que hiciste tú —saqueaste una fábrica, te plantaste ante el consejo, compraste el
+    equipo, lo vendiste tras ganar, tienes a un piloto que no te habla— y por eso duele. Si no has
+    hecho nada de eso, el titular es que no hay titular, que en este oficio también escuece.
+    Salta con fama > 60: si nadie te conoce, no eres noticia. */
+ {id:"tpPresionMedios",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    /* 📏 el umbral se midió, no se eligió a ojo: empezaste con 52 y la MEDIANA del techo de fama en
+       una partida TP es 51, así que pedir 60 dejaba el dilema en el 8% de las partidas —era un premio
+       para jefes ganadores, no un dilema—. Con 52 salta cuando ya has hecho algo que contar. */
+    if((S.tpPrest||0)<=52) return false;
+    const tn=S.tpTeam, u=(S.seasons||[]).at(-1);
+    const mio=!!(S.tpOwner && S.tpOwner.k==="self");
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+    const hundido=ord.indexOf(tn)>=Math.ceil(ord.length/2) || ((u&&u.cat==="TP"&&u.pos!=null)?u.pos>=7:false);
+    const rencoroso=tpDrvs().find(d=>d&&d.tpRencor);
+    /* el orden importa: gana el rastro más jugoso, no el más reciente. Vender un equipo campeón
+       es mejor titular que arruinarse, y arruinarse mejor que una guerra de hace cinco años. */
+    let k=null, dato=null;
+    if(S._histVenta){ k="venta"; dato=S._histVenta.team; }
+    else if(mio && hundido){ k="ruina"; }
+    else if(rencoroso){ k="rencor"; dato=surname(rencoroso.name); }
+    else if(S._histGuerra){ k="guerra"; dato=S._histGuerra.team; }
+    else if(S._histOrden){ k="orden"; }
+    else if(S._histPlante){ k="plante"; }
+    else if((S.tpMissStreak||0)>=1){ k="incumple"; }
+    else if((S.seasons||[]).filter(r=>r.cat==="TP").length>=3){ k="nada"; }
+    if(!k) return false;
+    S._pm={k:k, dato:dato};
+    return true; },
+  t:()=>L("El jefe se convierte en la noticia","The boss becomes the story",{pt:"O chefe vira a notícia"}),
+  d:()=>{ const p=S._pm||{}, q=p.dato||"";
+    const tit = p.k==="venta"  ? L(`«Ganó, cobró y se fue: el hombre que le puso precio a la gloria»`,`«He won, he cashed in, he left: the man who put a price on glory»`,{pt:`«Venceu, embolsou e foi embora: o homem que pôs preço na glória»`})
+              : p.k==="ruina"  ? L(`«El dueño que se está arruinando en directo»`,`«The owner going broke in public»`,{pt:`«O dono que está se arruinando ao vivo»`})
+              : p.k==="rencor" ? L(`«Guerra en el garaje: ${q} no le dirige la palabra»`,`«War in the garage: ${q} isn't speaking to him»`,{pt:`«Guerra na garagem: ${q} não fala com ele»`})
+              : p.k==="guerra" ? L(`«El jefe que fue a saquear la fábrica de ${q}»`,`«The boss who went to raid ${q}'s factory»`,{pt:`«O chefe que foi saquear a fábrica da ${q}»`})
+              : p.k==="orden"  ? L(`«El jefe de los coches teledirigidos»`,`«The boss of the remote-controlled cars»`,{pt:`«O chefe dos carros teleguiados»`})
+              : p.k==="plante" ? L(`«Se niega a apretar: ¿ambición o cobardía?»`,`«He refuses to push: ambition or cowardice?»`,{pt:`«Recusa-se a apertar: ambição ou covardia?»`})
+              : p.k==="incumple" ? L(`«Prometió, y el consejo ha empezado a mirar el reloj»`,`«He promised, and the board has started checking the clock»`,{pt:`«Prometeu, e o conselho começou a olhar o relógio»`})
+                               : L(`«Un año más sin nada que contar»`,`«Another year with nothing to say»`,{pt:`«Mais um ano sem nada para contar»`});
+    const cola = p.k==="nada"
+      ? L("No es una acusación, es peor: es un bostezo. Llevas años en el muro y el titular del jueves es que no hay titular. En este oficio, que dejen de hablar de ti es la antesala de que dejen de llamarte.","It isn't an accusation, it's worse: it's a yawn. Years on the pit wall and Thursday's headline is that there is no headline. In this trade, people going quiet about you is the run-up to people not calling you.",{pt:"Não é uma acusação, é pior: é um bocejo. Anos no muro e a manchete de quinta é que não há manchete. Neste ofício, pararem de falar de você é a antessala de pararem de te ligar."})
+      : L("No es tu piloto quien abre los periódicos esta semana. Eres tú. Y a diferencia de una carrera, esto no se corrige el domingo.","It isn't your driver leading the papers this week. It's you. And unlike a race, this doesn't get fixed on Sunday.",{pt:"Não é o seu piloto que abre os jornais esta semana. É você. E, diferente de uma corrida, isto não se conserta no domingo."});
+    return L(`${tit}. ${cola} El viernes tienes rueda de prensa.`,`${tit}. ${cola} You have a press conference on Friday.`,{pt:`${tit}. ${cola} Na sexta você tem coletiva.`}); },
+  opts:[
+   /* A · dar la cara. Dado CARGADO con lo que has ganado y con tu fama, igual que «Queremos ganar YA»:
+      un jefe con dos constructores y crédito se come una sala; uno recién llegado, no. */
+   {l:()=>L("Rueda de prensa y dar la cara","Face the press head-on",{pt:"Coletiva e dar a cara"}),
+    r:()=>{ let p=.40 + .12*(S.titles.constr||0) + (S.tpPrest>85?.18:S.tpPrest>72?.09:0);
+      p=Math.max(.10,Math.min(.95,p));
+      if(ch(p)){ TPRE(3);
+        return L("Hablas veinte minutos sin una sola nota delante. No niegas nada: lo explicas, y explicado suena a decisión y no a escándalo. Sales de la sala con el relato en el bolsillo. +fama","You talk for twenty minutes without a single note in front of you. You deny nothing: you explain it, and explained it sounds like a decision rather than a scandal. You leave the room with the story in your pocket. +fame",{pt:"Você fala vinte minutos sem uma nota à frente. Não nega nada: explica, e explicado soa a decisão e não a escândalo. Sai da sala com a narrativa no bolso. +fama"}); }
+      const tn=S.tpTeam; TPRE(-3); if(S.cache[tn]!=null) S.cache[tn]=Math.max(40,S.cache[tn]-rnd(1,3));
+      return L("Aguantas bien media hora y en el minuto treinta y uno dices una frase de más. Para el lunes hay dos titulares nuevos y el peor es el que has escrito tú. −fama, y la casa pierde brillo","You hold up well for half an hour and in the thirty-first minute you say one sentence too many. By Monday there are two fresh headlines and the worst of them is the one you wrote. −fame, and the team loses some shine",{pt:"Você aguenta bem meia hora e no minuto trinta e um diz uma frase a mais. Na segunda há duas manchetes novas e a pior é a que você escreveu. −fama, e a casa perde brilho"}); }},
+   /* B · el silencio: SIN dado, seguro y agrio. No pierdes fama —pierdes el relato, y eso lo paga
+      el caché del equipo, que es con lo que atraes talento. */
+   {l:()=>L("No decir nada y dejar que pase","Say nothing and let it blow over",{pt:"Não dizer nada e deixar passar"}),
+    r:()=>{ const tn=S.tpTeam;   // 🔇 a propósito SIN tocar la fama: callarte no te desprestigia,
+      // te quita el relato, y eso lo paga el caché de la casa. Es la opción segura y agria.
+      if(S.cache[tn]!=null) S.cache[tn]=Math.max(40,S.cache[tn]-rnd(2,4));
+      return L("No sales, no llamas, no aclaras. En diez días el circo se ha ido a otra parte y tenías razón: se pasa. Lo que no se pasa es que la versión que queda escrita no es la tuya, y esa es la que leen los que se plantean venir a trabajar aquí. −caché del equipo","You don't appear, don't call, don't clarify. In ten days the circus has moved on and you were right: it passes. What doesn't pass is that the version left in writing isn't yours, and that's the one read by people considering coming to work here. −team standing",{pt:"Você não aparece, não liga, não esclarece. Em dez dias o circo foi embora e você tinha razão: passa. O que não passa é que a versão que fica escrita não é a sua, e é essa que leem os que pensam em vir trabalhar aqui. −cachê da equipe"}); }},
+   /* C · señalar afuera. Funciona casi siempre a corto plazo —al público le gusta el jefe que se
+      pelea— pero te ganas un garaje que deja de llamarte, con el mismo `_tpFeud` de la venganza
+      del ingeniero. Es la única opción del dilema que te cierra puertas de verdad. */
+   {l:()=>L("Señalar afuera: el ruido viene de otro garaje","Point outside: the noise comes from another garage",{pt:"Apontar para fora: o barulho vem de outra garagem"}),
+    r:()=>{ const ord=[...F1_TEAMS].filter(t=>t.name!==S.tpTeam)
+              .sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+      const riv=ord.length?ord[irnd(0,Math.min(2,ord.length-1))].name:null;
+      if(riv){ S._tpFeud={team:riv, until:yearNow()+3}; S._histGuerra=S._histGuerra||{team:riv, year:yearNow()}; }
+      const q=riv||L("el de siempre","the usual suspects",{pt:"o de sempre"});
+      return roll(
+       [6,()=>(TPRE(2),L(`Cambias de tema con nombre y apellido: dices que esto sale de ${q} y que ya sabemos por qué. El jueves nadie habla de ti; hablan de ellos. +fama… y en ${q} han tomado nota`,`You change the subject with a name attached: you say this comes out of ${q} and we all know why. By Thursday nobody's talking about you; they're talking about them. +fame… and ${q} have taken note`,{pt:`Você muda de assunto com nome e sobrenome: diz que isto sai da ${q} e que já sabemos por quê. Na quinta ninguém fala de você; falam deles. +fama… e na ${q} tomaram nota`}))],
+       [4,()=>(TPRE(-1),L(`Señalas a ${q} y no cuela: queda como lo que es, un jefe buscando culpables fuera de su propia casa. El titular sigue siendo tuyo, ahora con una capa de excusa encima. −fama, y en ${q} han tomado nota igual`,`You point at ${q} and it doesn't wash: it reads as what it is, a boss hunting for culprits outside his own house. The headline is still yours, now with a layer of excuse on top. −fame, and ${q} have taken note anyway`,{pt:`Você aponta para a ${q} e não cola: fica como o que é, um chefe procurando culpados fora da própria casa. A manchete continua sendo sua, agora com uma camada de desculpa por cima. −fama, e na ${q} tomaram nota do mesmo jeito`}))]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
