@@ -8012,13 +8012,19 @@ function simF1(row,st){
       if(p<=3)pods++;
     }
   }
-  const pts=me.pts;
   // victoria concedida por un dilema (muro de control, órdenes, multi-21…): cuenta como victoria y podio de esta temporada
-  if(S.dilWin){ wins+=S.dilWin; pods+=S.dilWin; S.dilWin=0; }
+  /* 🏆 …Y PAGA SUS PUNTOS (lo cazó Carlos en el reto de Pechito, 25-ago: «gané una carrera y un
+     podio y solo tuve 4 puntos»). La victoria y el podio llegaban al palmarés pero no al mundial:
+     el jugador aparecía como ganador de carrera con 4 puntos y clasificado como si no hubiera
+     ganado nada. Ahora la victoria suma lo que paga la tabla del año (25 desde 2010, 10 antes) y
+     el podio suelto lo del 3º, ANTES de congelar los puntos y de calcular la clasificación, así
+     que el campeonato también los ve. */
+  if(S.dilWin){ wins+=S.dilWin; pods+=S.dilWin; me.pts+=S.dilWin*ptsFor(1); S.dilWin=0; }
   /* 🥉 …y el PODIO suelto: hay adelantamientos de dilema que te dejan 2º o 3º, no 1º. Sin esto, un
      «cruzas la meta 3º» en «La goma no llega» era una frase bonita que no llegaba a tu palmarés
      (lo cazó Carlos: «si al final te llevas el podio o la victoria, hay que sumarlo al total»). */
-  if(S.dilPod){ pods+=S.dilPod; S.dilPod=0; }
+  if(S.dilPod){ pods+=S.dilPod; me.pts+=S.dilPod*ptsFor(3); S.dilPod=0; }
+  const pts=me.pts;
   S.wins+=wins;S.podiums+=pods;S.poles+=poles;S.ptsF1+=pts;
   // ¿alguna de tus victorias fue en Mónaco? (cuenta para la 👑 Triple Corona). Más victorias → más probable
   if(wins>0 && !S.tripleCrown.monaco && ch(Math.min(.55, wins*0.13))){
