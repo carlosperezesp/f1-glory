@@ -249,6 +249,12 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .team-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 -2px 4px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.25);border:2px solid #fff}
 img.tlogo{object-fit:cover;background:transparent;padding:0;text-shadow:none;border:none;box-shadow:none;vertical-align:middle}
 img.tlogo.mb{width:20px;height:20px;border:none}
+/* 🏷️ insignia de patrocinador: círculo del color de la marca + silueta del equipo tintada con su
+   segundo color. Misma huella que un tlogo para poder sustituirlo en cualquier sitio. */
+.spbadge{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  vertical-align:middle;box-shadow:0 1px 3px rgba(0,0,0,.28);flex:none}
+.spbadge i{display:block;width:82%;height:82%}
+.spbadge.mb{width:20px;height:20px}
 #teamDot.haslogo{background-size:cover;background-position:center;border:none !important;box-shadow:none}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
 .stat{background:var(--panel2);border-radius:12px;padding:8px 4px}
@@ -2415,6 +2421,17 @@ const TEAM_LOGOS_ERA = {
   // verde y oro que la expansión mete en los años 30. Mismo nombre, dos escudos, resueltos por año.
   "Lotus":[[0,"lotus_OLD.png"],[2010,"lotus.png"]],
 };
+/* 🏷️ SILUETAS TINTABLES (las dibujó Carlos, 24-ago): un solo PNG por equipo —silueta de un color
+   sobre fondo transparente— y el CSS lo pinta del color que toque. Un fichero cubre las 10 marcas.
+   `SPONSOR_BADGE` es el registro VIVO: se rellena al renombrar y las dos funciones de insignia lo
+   consultan antes que nada. */
+const TEAM_SILUETAS={"Haas":"haas_logo.png","Sauber":"sauber_logo.png","Williams":"williams_logo.png",
+  "Alpine":"Alpine_logo.png","Cadillac":"cadillac_logo.png","Audi":"audi_logo.png"};
+const SPONSOR_BADGE={};
+function spBadgeHTML(sb, cls){
+  const m=`center/contain no-repeat`;
+  return `<span class="spbadge ${cls}" style="background:${sb.c1}"><i style="background:${sb.c2};-webkit-mask:url(${sb.sil}) ${m};mask:url(${sb.sil}) ${m}"></i></span>`;
+}
 function logoFor(name, year){
   const eras=TEAM_LOGOS_ERA[name];
   // sin partida en curso (S null) no hay año que resolver: se usa el logo actual
@@ -2427,6 +2444,7 @@ function badge(team, extraCls, year){
   const name = typeof team==="string" ? team : (team&&team.name);
   const obj  = (team && typeof team==="object") ? team : (F1_TEAMS.find(x=>x.name===name)||(name==="APXGP"?APXGP:null));
   const cls  = extraCls||"";
+  if(SPONSOR_BADGE[name]) return spBadgeHTML(SPONSOR_BADGE[name], "team-dot "+cls);
   const src  = logoFor(name, year);
   if(src) return `<img class="team-dot tlogo ${cls}" src="${src}" alt="${name}">`;
   return `<span class="team-dot ${cls}" style="${obj?badgeStyle(obj):'background:#bbb'}">${(obj&&obj.abbr)||""}</span>`;
@@ -7805,6 +7823,7 @@ function trackRanks(driverOrder, teamOrder){
 // pastilla neutra con las iniciales, para que NUNCA falte el distintivo.
 function teamBadge(name, year){
   if(!name) return "";
+  if(SPONSOR_BADGE[name]) return spBadgeHTML(SPONSOR_BADGE[name], "mb");
   const src=logoFor(name, year);
   if(src) return `<img class="tlogo mb" src="${src}" alt="${name}">`;
   const T=F1_TEAMS.find(t=>t.name===name)||(name==="APXGP"?APXGP:null);
@@ -12880,6 +12899,9 @@ const TP_DILEMAS=[
         const fila={events:[]};
         rebrandTeam(viejo, {name:nn, color:sp.color, color2:sp.color2}, fila);
         if(src) TEAM_LOGOS[nn]=src;                          // el escudo de siempre bajo el nombre nuevo
+        /* 🎨 y si Carlos dibujó la silueta de este equipo, la insignia pasa a ser el círculo de la
+           marca con la silueta tintada — el «saborcito». Sin silueta, se queda el escudo original. */
+        if(TEAM_SILUETAS[viejo]) SPONSOR_BADGE[nn]={c1:sp.color, c2:sp.color2, sil:TEAM_SILUETAS[viejo]};
         S.tpTeam=nn;
         const st=(S.tpStints||[]).at(-1);
         if(st && st.y0<yearNow()){ st.y1=yearNow()-1; S.tpStints.push({team:nn, y0:yearNow(), y1:yearNow(), constr:0, drv:0}); }
