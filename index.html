@@ -6843,6 +6843,13 @@ function gomaRemate(p){
    de los tres con `dilVar` para que no baile al cambiar de idioma. */
 function rencorTitular(q, yo){
   const n=q.n||"", y=q.year||"", i=dilVar("rencorTit",()=>irnd(0,2));
+  if(q.motivo==="apartado"){
+    return [
+      L(`«Guerra en el garaje: ${n} enfría su relación con ${yo} desde que en ${y} decidió que las piezas nuevas eran para el otro coche»`,`«War in the garage: ${n} has cooled towards ${yo} since he decided, in ${y}, that the new parts were for the other car»`,{pt:`«Guerra na garagem: ${n} esfriou com ${yo} desde que em ${y} decidiu que as peças novas eram para o outro carro»`}),
+      L(`«Frío en el box: ${n} lleva desde ${y} trabajando en un coche que sabe que no es el prioritario, y con ${yo} habla lo justo»`,`«Cold in the garage: since ${y}, ${n} has been working on a car he knows isn't the priority, and he speaks to ${yo} only when he has to»`,{pt:`«Frio no box: ${n} trabalha desde ${y} num carro que sabe não ser o prioritário, e com ${yo} fala o mínimo»`}),
+      L(`«Medio garaje para uno y medio para otro: ${n} no ha olvidado de qué lado lo puso ${yo} en ${y}»`,`«Half a garage for one and half for the other: ${n} hasn't forgotten which side ${yo} put him on in ${y}»`,{pt:`«Meia garagem para um e meia para outro: ${n} não esqueceu de que lado ${yo} o colocou em ${y}»`})
+    ][i];
+  }
   if(q.motivo==="silencio"){
     return [
       L(`«Guerra en el garaje: ${n} enfría su relación con ${yo} desde que en ${y} le dejó solo delante de la prensa»`,`«War in the garage: ${n} has cooled towards ${yo} since being left alone in front of the press in ${y}»`,{pt:`«Guerra na garagem: ${n} esfriou com ${yo} desde que em ${y} o deixou sozinho diante da imprensa»`}),
@@ -13518,6 +13525,61 @@ const TP_DILEMAS=[
         ? (function(){ if(S.f1perf[v.r]!=null) S.f1perf[v.r]=Math.max(60,S.f1perf[v.r]-1);
             return (TPRE(1.5), L(`Sueltas la palabra «fiabilidad» tres viernes seguidos y para el cuarto ya la usan ellos. En su garaje empiezan a leerse más de lo que se escuchan, y un equipo que duda de su propio motor lo aprieta menos. Su coche baja, +fama`,`You drop the word «reliability» three Fridays running and by the fourth they're using it themselves. In their garage they start reading about themselves more than listening to each other, and a team that doubts its own engine pushes it less. Their car drops, +fame`,{pt:`Você solta a palavra «confiabilidade» três sextas seguidas e na quarta já são eles que a usam. Na garagem deles começam a se ler mais do que a se ouvir, e uma equipe que duvida do próprio motor o aperta menos. O carro deles cai, +fama`})); })()
         : (TPRE(-1.5),L(`Se te ve el plumero: el paddock te retrata como el buitre que vuela en círculos esperando. Y su motor, de momento, aguanta. −fama`,`You're too obvious about it: the paddock paints you as the vulture circling and waiting. And their engine, for now, holds. −fame`,{pt:`Fica evidente demais: o paddock te retrata como o abutre voando em círculos à espera. E o motor deles, por enquanto, aguenta. −fama`})); }}]},
+
+ /* 🎯 «LAS PIEZAS NUEVAS NO DAN PARA DOS» (idea nº8 de Carlos, adaptada a toda la parrilla). No es
+    tpNumeroUno con otro nombre: aquél decide QUIÉN MANDA en la estrategia del domingo entre dos
+    pilotos igualados y buenos; este decide DÓNDE VAN LOS RECURSOS entre dos que están lejos el uno
+    del otro. Jerarquía deportiva contra reparto de fábrica.
+    Vale a cualquier altura de la parrilla porque lo que está en juego lo pone el CONSEJO —su objetivo
+    ya se adapta a tu equipo—, no un puesto fijo.
+    ⚠️ PERO el de delante tiene que ir CUARTO O PEOR (lo cazó Carlos: «si un piloto está para ganar el
+    mundial y el otro va quinto, no hay debate; solo un necio no le daría todo al que puede ganar»).
+    Con un piloto en el podio del mundial la respuesta es obvia y esto deja de ser un dilema. */
+ {id:"tpTodoAUnCoche",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs(); if(a.length<2) return false;
+    const rk=n=>(S.rankD&&S.rankD[n])||20;
+    const ord=a.slice().sort((x,y)=>rk(x.name)-rk(y.name));
+    const p1=rk(ord[0].name), p2=rk(ord[1].name);
+    if(p1<=3) return false;              // si pelea el mundial, no hay debate
+    if(p2-p1<5) return false;            // y tienen que estar LEJOS de verdad
+    S._piezas={a:surname(ord[0].name), b:surname(ord[1].name),
+               nA:ord[0].name, nB:ord[1].name, pA:p1, pB:p2};
+    return true; },
+  t:()=>L("Las piezas nuevas no dan para dos","The new parts won't cover two cars",{pt:"As peças novas não dão para dois"}),
+  d:()=>{ const c=S._piezas||{}, g=S.tpGoal||{};
+    /* ✍️ la meta se redacta para encajar detrás de «una opción real de…»: con «el 6º puesto» salía
+       «una opción real de el 6º puesto», sin contracción (y en portugués igual). */
+    const meta = g.target===1
+      ? L("pelear el título de constructores","fighting for the constructors' title",{pt:"brigar pelo título de construtores"})
+      : L(`acabar ${g.target}º, que es lo que os pidió el consejo`,`finishing P${g.target}, which is what the board asked for`,{pt:`terminar em ${g.target}º, que é o que o conselho pediu`});
+    return L(`${c.a} va ${c.pA}º en el mundial y ${c.b} ${c.pB}º, y de aquí a noviembre las piezas nuevas no dan para los dos coches. Tu jefe técnico lo dice sin rodeos: si todo va a un solo coche, tenéis una opción real de ${meta}. Si se reparte, los dos irán algo mejor y ninguno lo suficiente.`,
+             `${c.a} is P${c.pA} in the championship and ${c.b} is P${c.pB}, and between now and November the new parts won't cover both cars. Your technical director says it plainly: put everything on one car and you have a real shot at ${meta}. Split it and both go a little better and neither goes well enough.`,
+             {pt:`${c.a} está em ${c.pA}º no mundial e ${c.b} em ${c.pB}º, e daqui a novembro as peças novas não dão para os dois carros. O seu diretor técnico diz sem rodeios: se tudo for para um só carro, vocês têm chance real de ${meta}. Se dividir, os dois vão um pouco melhor e nenhum o suficiente.`}); },
+  opts:[
+   {l:()=>{ const c=S._piezas||{}; return L(`Todo para ${c.a}`,`Everything to ${c.a}`,{pt:`Tudo para ${c.a}`}); },
+    r:()=>{ const c=S._piezas||{};
+      return roll(
+       [6,()=>{ TPCAR(2); tpDrvSkill(c.nB,-1);
+         return L(`Concentráis cada pieza, cada hora de túnel y cada simulación en un solo coche, y se nota desde la primera carrera. El otro lado del garaje trabaja igual, pero ya sabe para qué. +coche, −moral de ${c.b}`,`You concentrate every part, every hour in the tunnel and every simulation on one car, and it shows from the first race. The other side of the garage works just as hard, but now it knows what for. +car, −${c.b}'s morale`,{pt:`Vocês concentram cada peça, cada hora de túnel e cada simulação num só carro, e se nota desde a primeira corrida. O outro lado da garagem trabalha igual, mas já sabe para quê. +carro, −moral de ${c.b}`}); }],
+       [4,()=>{ TPCAR(2); tpDrvSkill(c.nB,-1);
+         const d=tpDrvs().find(x=>x&&x.name===c.nB);
+         if(d){ d.tpRencor=true; d.tpRencorPor={motivo:"apartado", year:yearNow(), team:S.tpTeam}; }
+         return L(`${c.a} mejora, sí. Y ${c.b} deja de intentarlo en algún momento de septiembre, sin decírselo a nadie. +coche, −moral, y te lo guarda`,`${c.a} improves, yes. And ${c.b} stops trying somewhere around September, without telling anyone. +car, −morale, and he holds it against you`,{pt:`${c.a} melhora, sim. E ${c.b} para de tentar em algum momento de setembro, sem dizer a ninguém. +carro, −moral, e ele guarda mágoa`}); }]); }},
+   {l:()=>L("Repartir: son dos coches y dos contratos","Split it: two cars and two contracts",{pt:"Dividir: são dois carros e dois contratos"}),
+    r:()=>{ const tn=S.tpTeam;
+      if(S.cache[tn]!=null) S.cache[tn]=Math.min(96,S.cache[tn]+2);
+      return L("Ni uno ni otro tienen queja, y esa es exactamente la cuestión: los dos van un poco mejor y ninguno va lo bastante bien. Pero en ese garaje nadie trabaja para nadie. +caché","Neither of them has a complaint, and that is exactly the problem: both go a little better and neither goes well enough. But in that garage nobody works for anybody. +standing",{pt:"Nem um nem outro reclamam, e é exatamente essa a questão: os dois vão um pouco melhor e nenhum vai bem o bastante. Mas naquela garagem ninguém trabalha para ninguém. +cachê"}); }},
+   /* C · la solución que usan de verdad los equipos cuando no quieren decidir: una fecha y un dato.
+      El texto NOMBRA a quien gana y a quien pierde el duelo (petición de Carlos, 25-ago). */
+   {l:()=>L("Que lo decida la pista: tres carreras","Let the track decide: three races",{pt:"Que a pista decida: três corridas"}),
+    r:()=>{ const c=S._piezas||{};
+      const gana = ch(.7) ? c.a : c.b, pierde = gana===c.a ? c.b : c.a;
+      return roll(
+       [55,()=>(TPCAR(1.5),TPRE(1.5),
+         L(`Os lo tomáis en serio: las tres carreras son las mejores del año y cada uno saca de donde no tenía. ${gana} se impone sobre ${pierde}. +coche, +fama`,`You all take it seriously: those three races are the best of the year and each of them finds something he didn't have. ${gana} comes out on top of ${pierde}. +car, +fame`,{pt:`Vocês levam a sério: as três corridas são as melhores do ano e cada um tira de onde não tinha. ${gana} se impõe sobre ${pierde}. +carro, +fama`}))],
+       [45,()=>(TPCAR(-1.5),
+         L(`Tres carreras compitiendo entre ellos en vez de contra los demás. ${gana} se impone a ${pierde}, pero el sitio que peleabais ya lo tiene otro. −coche`,`Three races racing each other instead of the rest. ${gana} beats ${pierde}, but the position you were fighting for already belongs to someone else. −car`,{pt:`Três corridas competindo entre eles em vez de contra os outros. ${gana} se impõe a ${pierde}, mas o lugar que disputavam já é de outro. −carro`}))]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
