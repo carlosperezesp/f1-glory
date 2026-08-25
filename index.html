@@ -6842,6 +6842,13 @@ function gomaRemate(p){
    de los tres con `dilVar` para que no baile al cambiar de idioma. */
 function rencorTitular(q, yo){
   const n=q.n||"", y=q.year||"", i=dilVar("rencorTit",()=>irnd(0,2));
+  if(q.motivo==="silencio"){
+    return [
+      L(`«Guerra en el garaje: ${n} enfría su relación con ${yo} desde que en ${y} le dejó solo delante de la prensa»`,`«War in the garage: ${n} has cooled towards ${yo} since being left alone in front of the press in ${y}»`,{pt:`«Guerra na garagem: ${n} esfriou com ${yo} desde que em ${y} o deixou sozinho diante da imprensa»`}),
+      L(`«Frío en el box: ${yo} no dio la cara por su piloto en ${y}, y desde entonces ${n} y él hablan lo justo»`,`«Cold in the garage: ${yo} didn't front up for his driver in ${y}, and since then he and ${n} say only what's needed»`,{pt:`«Frio no box: ${yo} não deu a cara pelo seu piloto em ${y}, e desde então ele e ${n} falam o mínimo»`}),
+      L(`«El silencio que ${yo} guardó en ${y} lo acabó llenando ${n}, y en ese box todavía se nota»`,`«The silence ${yo} kept in ${y} was filled by ${n} himself, and that garage can still feel it»`,{pt:`«O silêncio que ${yo} guardou em ${y} acabou sendo preenchido por ${n}, e naquele box ainda se nota»`})
+    ][i];
+  }
   if(q.motivo==="regla"){
     return [
       L(`«Guerra en el garaje: ${n} enfría su relación con ${yo} desde que la 'regla del más rápido' lo convirtió en el segundo de a bordo»`,`«War in the garage: ${n} has cooled towards ${yo} ever since the 'fastest man passes' rule made him the number two»`,{pt:`«Guerra na garagem: ${n} esfriou com ${yo} desde que a 'regra do mais rápido' o transformou no segundo piloto»`}),
@@ -13156,6 +13163,50 @@ const TP_DILEMAS=[
       return roll(
        [55,()=>(TPRE(2),tpDrvSkill(c.nom,1),L(`El motor aguanta, el podio en casa vale doble y nadie sabrá nunca lo cerca que estuvo la avería. +fama, +moral de ${c.n}`,`The engine holds, a home podium counts double and nobody will ever know how close the failure came. +fame, +${c.n}'s morale`,{pt:`O motor aguenta, o pódio em casa vale dobrado e ninguém jamais saberá o quão perto esteve a quebra. +fama, +moral de ${c.n}`}))],
        [45,()=>(TPCAR(-1.5),TPRE(-1.5),L(`Vuelta 34, humo. Se baja del coche en ${c.gp}, delante de su gente, y la foto es peor que cualquier última posición. −coche, −fama`,`Lap 34, smoke. He climbs out of the car at ${c.gp}, in front of his own people, and the photograph is worse than any last place. −car, −fame`,{pt:`Volta 34, fumaça. Ele desce do carro em ${c.gp}, diante da sua gente, e a foto é pior que qualquer última posição. −carro, −fama`}))]); }}]},
+
+ /* 🤒 «EL PILOTO O EL COCHE» (idea de Carlos del fin de semana Verstappen–Zandvoort, 25-ago). El jefe
+    tiene dos verdades y solo puede subrayar una: el piloto estaba enfermo, o el coche tiene un
+    problema de fondo. Ninguna salida es gratis — y la honesta menos que ninguna: decirlo en alto NO
+    arregla el coche (lo cazó Carlos: «si el coche está mal, el coche está mal»), así que la mitad de
+    las veces no sirve de nada o se vuelve contra ti. El silencio deja que hable otro, y ese otro es
+    tu propio piloto: tercera fuente de `tpRencor`, con sus propios titulares de prensa. */
+ {id:"tpNarrativa",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const tn=S.tpTeam;
+    if((S.tpMissStreak||0)<1) return false;                       // el año quedó por debajo del listón
+    if((S.f1perf[tn]||75) >= (S.f1target[tn]||75)-1) return false; // …y hay un problema técnico REAL
+    const a=tpDrvs(); if(!a.length) return false;
+    const mejor=a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0];
+    const cs=gpList(yearNow()); if(!cs.length) return false;
+    S._nar={n:surname(mejor.name), nom:mejor.name,
+            gp:cs[dilVar("narGp",()=>irnd(0,cs.length-1))].n};
+    return true; },
+  t:()=>L("El piloto o el coche","The driver or the car",{pt:"O piloto ou o carro"}),
+  d:()=>{ const c=S._nar||{};
+    return L(`${c.n} llegó a ${c.gp} el jueves con fiebre y no levantó cabeza en todo el fin de semana. Pero el coche tampoco: en un circuito donde la expectativa era alta, no aparecisteis por ningún lado. El domingo acabó mal y ahora hay que explicarlo. Tienes dos verdades sobre la mesa y solo puedes subrayar una.`,
+             `${c.n} arrived at ${c.gp} on Thursday with a fever and never got going all weekend. But neither did the car: at a track where expectations were high, you were nowhere. Sunday ended badly and now it has to be explained. You have two truths on the table and you can only underline one.`,
+             {pt:`${c.n} chegou a ${c.gp} na quinta com febre e não levantou a cabeça o fim de semana inteiro. Mas o carro também não: num circuito onde a expectativa era alta, vocês não apareceram. O domingo acabou mal e agora é preciso explicar. Você tem duas verdades na mesa e só pode sublinhar uma.`}); },
+  opts:[
+   /* A · el piloto: protege su imagen y entierra el problema */
+   {l:()=>L("«No estaba al cien por cien»: proteger al piloto","«He wasn't at 100%»: protect the driver",{pt:"«Não estava a 100%»: proteger o piloto"}),
+    r:()=>roll(
+     [6,()=>(TPRE(1.5),TPTGT(-2),L("La prensa compra la gripe y su imagen queda intacta. El problema del coche sigue dentro, tapado, cogiendo polvo. +fama, −proyecto","The press buys the flu and his image survives untouched. The car's problem stays inside, covered up, gathering dust. +fame, −project",{pt:"A imprensa compra a gripe e a imagem dele fica intacta. O problema do carro continua lá dentro, tapado, juntando poeira. +fama, −projeto"}))],
+     [4,()=>(TPRE(-2),L("Un ingeniero de otro equipo se lo dice a un micrófono: «con ese coche, sano tampoco». Ahora tienes las dos historias, y de cada una la peor versión. −fama","An engineer from another team says it into a microphone: «with that car, healthy wouldn't have helped either». Now you have both stories, and the worst version of each. −fame",{pt:"Um engenheiro de outra equipe diz a um microfone: «com aquele carro, são também não». Agora você tem as duas histórias, e de cada uma a pior versão. −fama"}))])},
+   /* B · la verdad técnica. Con dado A PROPÓSITO: decirlo en voz alta no arregla nada por sí solo */
+   {l:()=>L("«El coche no está donde debe»: diagnóstico en público","«The car isn't where it should be»: diagnose in public",{pt:"«O carro não está onde deveria»: diagnóstico em público"}),
+    r:()=>roll(
+     [5,()=>(TPRE(-.8),TPTGT(2),L("Feo de leer, honesto de decir. El lunes hay tres reuniones que no estaban en el calendario y, por primera vez en meses, todo el mundo habla del mismo problema. −fama leve, +proyecto","Ugly to read, honest to say. On Monday there are three meetings that weren't in the diary and, for the first time in months, everyone is talking about the same problem. slight −fame, +project",{pt:"Feio de ler, honesto de dizer. Na segunda há três reuniões que não estavam na agenda e, pela primeira vez em meses, todo mundo fala do mesmo problema. −fama leve, +projeto"}))],
+     [3,()=>(TPRE(-.8),L("Lo dices, sale publicado, y el lunes la fábrica sigue exactamente donde estaba. Decir en voz alta lo que falla no lo arregla: eso se arregla con horas. −fama leve","You say it, it gets printed, and on Monday the factory is exactly where it was. Saying out loud what's broken doesn't fix it: that takes hours in the building. slight −fame",{pt:"Você diz, sai publicado, e na segunda a fábrica continua exatamente onde estava. Dizer em voz alta o que falha não conserta: isso se conserta com horas. −fama leve"}))],
+     [2,()=>(TPRE(-.8),TPTGT(-2),L("Tu jefe técnico lo lee como lo que es: un jefe señalando a su propia fábrica delante de todo el mundo. A partir de ahí cada reunión tiene un tono raro, y los mejores empiezan a coger el teléfono. −fama leve, −proyecto","Your technical director reads it as exactly what it is: a boss pointing at his own factory in front of everyone. From then on every meeting has an odd tone, and the best people start picking up the phone. slight −fame, −project",{pt:"O seu diretor técnico lê como o que é: um chefe apontando para a própria fábrica diante de todo mundo. A partir daí cada reunião tem um tom estranho, e os melhores começam a atender o telefone. −fama leve, −projeto"}))])},
+   /* C · la salida cobarde: no dices nada… y el hueco lo llena tu piloto */
+   {l:()=>L("«Ni una cosa ni la otra»: no dar explicaciones","«Neither one nor the other»: give no explanation",{pt:"«Nem uma coisa nem outra»: não dar explicações"}),
+    r:()=>{ const c=S._nar||{};
+      return roll(
+       [55,()=>L("Ni gripe ni coche: «fue un mal fin de semana». Nadie se lo cree, pero tampoco tienen titular. Se apaga solo. Sin cambios.","Neither flu nor car: «it was a bad weekend». Nobody believes it, but nobody has a headline either. It dies down on its own. No change.",{pt:"Nem gripe nem carro: «foi um fim de semana ruim». Ninguém acredita, mas também não têm manchete. Se apaga sozinho. Sem mudanças."})],
+       [45,()=>{ TPRE(-2);
+         const d=tpDrvs().find(x=>x&&x.name===c.nom);
+         if(d){ d.tpRencor=true; d.tpRencorPor={motivo:"silencio", year:yearNow(), team:S.tpTeam}; }
+         return L(`El silencio lo llena otro: ${c.n} suelta en una entrevista que el coche «no es lo que le prometieron». Ahora el titular lo ha escrito él, y no ha olvidado quién no dio la cara. −fama, y te lo guarda`,`Someone else fills the silence: ${c.n} tells an interview the car «isn't what he was promised». Now he has written the headline, and he hasn't forgotten who failed to front up. −fame, and he holds it against you`,{pt:`O silêncio é preenchido por outro: ${c.n} solta numa entrevista que o carro «não é o que prometeram». Agora a manchete escreveu ele, e não esqueceu quem não deu a cara. −fama, e ele guarda mágoa`}); }]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
