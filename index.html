@@ -6990,7 +6990,14 @@ function pandemiaOpts(){
 
 // `repintar`=true cuando solo se está cambiando el idioma: no vuelve a contar como dilema nuevo
 function renderDilemma(dl, repintar){
-  if(!repintar){ S.usedDilemmas[dl.id]=true; S.dilemmaCount++; S.lastDilemmaAge=S.age; S._dilVars={}; }
+  /* 📅 UN DILEMA USADO GUARDA EL AÑO EN QUE SALIÓ, no un simple `true` (25-ago-2026). Sirve para que
+     un dilema pueda mirar cuándo salió otro y no pisarle la escena: si a tu jefe de aerodinámica se le
+     acaba de ir, que no venga el director técnico al invierno siguiente con la misma conversación
+     (pega de Carlos: «sería raro que un año llegara un tipo y al año siguiente se fuera»).
+     El año siempre es un número verdadero, así que los cientos de `if(S.usedDilemmas[id])` que hay por
+     todas partes siguen valiendo igual — y una partida guardada antes de hoy trae `true`, que también
+     es verdadero. Por eso quien lea el año debe comprobar `typeof === "number"` antes de restar. */
+  if(!repintar){ S.usedDilemmas[dl.id]=yearNow()||true; S.dilemmaCount++; S.lastDilemmaAge=S.age; S._dilVars={}; }
   S._curDilemma=dl;   // 🌐 para poder repintarlo si cambias de idioma con el dilema en pantalla
   // 🏆 los dilemas de pelea por el título se deciden ANTES de simar el año: son un PRONÓSTICO (vienes de
   // podio y tienes cochazo). Lo apuntamos para que, si luego el año se tuerce, la temporada lo explique.
@@ -10278,7 +10285,7 @@ function initTPState(){
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
-  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false;
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null;   // lo que prometiste allí no viaja contigo
   S.tpFired=false; S.tpFiredBy=null; S.tpTemptY=null;
   S.tpOverSum=0; S.tpBestPos=99; S.tpStints=[];
   S.deathsOn=false;
@@ -10523,7 +10530,7 @@ function tpSignTeam(t, how){
   S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
   S.tpTeam=S.team.name;
   S.tpOwner=TP_OWNERS[irnd(0,2)];
-  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   // contratos escalonados al llegar (1 y 2 años): así toca UNA decisión de asiento casi cada invierno
   const sl=S.seats[S.tpTeam]||[]; const flip=ch(.5);
   sl.forEach((d,i)=>{ if(d&&d!=="PLAYER") d.tpc=((i===0)===flip)?1:2; });
@@ -11665,6 +11672,18 @@ function simTP(row){
      no te echa por eso. */
   const rescataTitulo = !!champDrv;
   const met=cPos<=G.target || rescataTitulo;
+  /* 🎤 LO QUE PROMETISTE EN PRETEMPORADA SE COBRA AQUÍ (`tpMejorDelResto`, opción B). Dijiste en alto
+     que este año dabais un salto grande. Si lo das, el paddock te lo apunta. Si no, te quedas sin el
+     año de aire justo el año en que lo necesitabas, y encima se publica que lo habías prometido. */
+  let _promesaRota=false;
+  if(S._tpPromesa===row.year){
+    S._tpPromesa=null;
+    if(met){ TPRE(2);
+      row.events.push(L(`🎤 Dijiste en pretemporada que este año dabais un salto grande, y lo disteis. En el paddock eso se apunta. +fama`,
+        `🎤 You said in pre-season that you'd take a big step this year, and you did. The paddock notes that. +fame`,
+        {pt:`🎤 Você disse na pré-temporada que este ano dariam um salto grande, e deram. No paddock isso fica anotado. +fama`}));
+    } else { _promesaRota=true; TPRE(-3); S.tpGrace=false; }
+  }
   const delta=(G.exp-cPos);
   S.tpOverSum=(S.tpOverSum||0)+delta;
   S.tpBestPos=Math.min(S.tpBestPos||99, cPos);
@@ -11692,13 +11711,17 @@ function simTP(row){
         `💚 Hitting the bar as your own owner has an accounting reward: the books balance again and the red ink is behind you.`,
         {pt:`💚 Bater a meta sendo o próprio dono tem prêmio contábil: as contas voltam a fechar e o vermelho fica para trás.`}));
     }
-  } else if(S.tpGrace){
+  } else if(S.tpGrace && !_promesaRota){
     S.tpGrace=false; S.tpLastMet=false;
     row.events.push(L(`🛡️ ${cPos}º: por debajo del listón, pero tu jugada en los despachos te compra un año de aire.`,
       `🛡️ P${cPos}: below the bar, but your boardroom play buys you a year of air.`,
       {pt:`🛡️ ${cPos}º: abaixo da meta, mas a sua jogada nos bastidores compra um ano de ar.`}));
   } else {
     S.tpMissStreak=(S.tpMissStreak||0)+1; S.tpLastMet=false;
+    if(_promesaRota) row.events.push(L(
+      `🎤 Y no es solo el resultado: en pretemporada prometiste en alto un salto que no ha llegado. El consejo lo tenía apuntado, y ya no queda margen que gastar. −fama`,
+      `🎤 And it isn't just the result: in pre-season you publicly promised a step that never came. The board had it written down, and there's no room left to spend. −fame`,
+      {pt:`🎤 E não é só o resultado: na pré-temporada você prometeu em alto e bom som um salto que não veio. O conselho tinha anotado, e já não sobra margem. −fama`}));
     if(S.tpMissStreak>=2 && S.tpOwner && S.tpOwner.k==="self"){
       /* 🧑‍✈️ al dueño no lo despide nadie… pero el agujero lo paga él (Carlos: «¿habría que ver si te
          pueden despedir o no?» — no: la presión pasa de la silla al bolsillo). Y si insiste en fallar,
@@ -13813,6 +13836,69 @@ const TP_DILEMAS=[
      [45,()=>(TPTGT(4),L("Este año no. El que viene salís con ella de fábrica y probada, sin la duda de si el problema era ella o vosotros. +proyecto","Not this year. Next season you start with it built in and proven, without the doubt of whether the problem was the part or you. +project",{pt:"Este ano não. No próximo vocês saem com ela de fábrica e testada, sem a dúvida de se o problema era ela ou vocês. +projeto"}))],
      [35,()=>(TPTGT(1.5),L("Llega validada, sí, pero medio pit-lane desarrolla algo parecido. +proyecto leve","It arrives validated, yes, but half the pit lane develops something similar. slight +project",{pt:"Chega validada, sim, mas meio pit-lane desenvolve algo parecido. +projeto leve"}))],
      [20,()=>L("La validáis despacio… y en diciembre el reglamento cambia lo justo para que no sirva. Sin cambios.","You validate it slowly… and in December the rules change just enough to make it useless. No change.",{pt:"Vocês validam devagar… e em dezembro o regulamento muda o suficiente para não servir. Sem mudanças."})])}]},
+
+ /* 🥂 «EL MEJOR DEL RESTO» (idea de Carlos, 25-ago-2026, para tapar el agujero de la media tabla: se
+    midió que ningún dilema estaba VETADO ahí, pero que tampoco había ninguno que tratara de estar ahí
+    — la media tabla veía las sobras de los dos extremos en versión descafeinada).
+    El dilema solo existe en ese sitio exacto de la parrilla: has CUMPLIDO —el consejo está contento—
+    y aun así has acabado cuarto o peor. Arriba no cabe (cumplir es ganar) y en el fondo tampoco
+    (cumplir es sobrevivir). Solo en medio cumplir y ganar son cosas distintas.
+    ⏰ SALE EN PRETEMPORADA, no en fin de año: `pickTPDilemma` corre justo después de que el consejo
+    fije el listón y justo antes de arrancar la temporada. Por eso el puesto que se nombra es el del
+    AÑO PASADO y lo que se promete en la opción B es el año que EMPIEZA (lo cazó Carlos: «¿a qué se
+    refiere el año que viene?»). Esa promesa se cobra sola al cerrar esa misma temporada.
+    🚪 No es tu jefe de aerodinámica: ese ya tiene su propio dilema (`tpElJefeDeAerodinamica`) con esta
+    misma escena, y salir los dos seguidos haría que el equipo pareciera una puerta giratoria. De ahí
+    la guarda de tres años entre uno y otro. */
+ {id:"tpMejorDelResto",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<3) return false;   // que lleve años aquí de verdad
+    if(S.tpLastMet!==true || (S.tpMissStreak||0)>0) return false;        // el consejo, contento
+    /* el tramo de en medio, y NADA más. Por arriba lo cierra el 4º: del podio para arriba, cumplir ya
+       es ganar. Por abajo lo cierra los dos tercios de la parrilla: medido, sin este tope el dilema
+       saltaba el 41% de los inviernos en el fondo y llegaba a decir «acabasteis 11º, que era
+       exactamente lo que os pidieron» — cierto, pero eso ya no es el mejor del resto, es otra
+       conversación bastante más triste que merece su propio dilema. */
+    const pos=(S.rankC||{})[S.tpTeam], nT=F1_TEAMS.length||11;
+    if(!pos || pos<4 || pos>Math.ceil(nT*2/3)) return false;
+    const ja=S.usedDilemmas.tpElJefeDeAerodinamica;                      // no dos fugas seguidas
+    if(typeof ja==="number" && yearNow()-ja<3) return false;
+    S._mrPos=pos; S._mrLis=(S.tpGoal||{}).target||pos; return true; },
+  t:()=>L("El mejor del resto","Best of the rest",{pt:"O melhor do resto"}),
+  /* 📉 EL LISTÓN LO MARCA EL COCHE, NO TU RESULTADO. Medido sobre 154 apariciones: el consejo NUNCA te
+     pide ganar aquí (0%) ni subir al podio de constructores (0%) — casi siempre te pide MENOS de lo que
+     acabas de hacer (acabas 5º y te ponen el listón en 8º). El primer texto decía «acabasteis 5º, que
+     era exactamente lo que os pidieron» y era mentira la mayoría de las veces: te habías pasado de
+     largo. Y lo que hay debajo es mejor: el consejo está contento y acaba de ponerte por escrito que
+     espera menos. Los tres casos están cubiertos por si algún año el listón sube. */
+  d:()=>{ const p=S._mrPos||5, t=S._mrLis||p;
+    const liston = t>p
+      ? L(`y este año os han puesto el listón más abajo, en ${t}º: con el coche que hay, dicen, es lo razonable`,`and this year they've set the bar lower, at P${t}: with the car you've got, they say, that's the sensible number`,{pt:`e este ano puseram a meta mais abaixo, em ${t}º: com o carro que há, dizem, é o razoável`})
+      : t===p
+      ? L(`y este año os han puesto el listón exactamente en el mismo sitio`,`and this year they've set the bar in exactly the same place`,{pt:`e este ano puseram a meta exatamente no mesmo lugar`})
+      : L(`y este año os piden un paso más: ${t}º`,`and this year they're asking for one step more: P${t}`,{pt:`e este ano pedem um passo a mais: ${t}º`});
+    return L(`El consejo está contento. El año pasado acabasteis ${p}º, ${liston}. Tu director técnico te espera fuera de la sala. No viene a hablar de presupuesto: tiene una oferta encima de la mesa y ha venido a que le digas la verdad. «¿Vamos a ganar alguna vez, o esto es lo que hay?»`,
+             `The board is happy. Last year you finished P${p}, ${liston}. Your technical director is waiting for you outside the room. He hasn't come to talk about budget: he has an offer on the table and he's come for the truth. «Are we ever going to win, or is this it?»`,
+             {pt:`O conselho está contente. No ano passado vocês terminaram em ${p}º, ${liston}. O seu diretor técnico espera do lado de fora da sala. Não veio falar de orçamento: tem uma proposta na mesa e veio ouvir a verdade. «Vamos ganhar algum dia, ou é isto?»`}); },
+  opts:[
+   /* A · la verdad. Cuesta fama y la mayoría de las veces te lo devuelve en gente que se queda */
+   {l:()=>L("«Te soy sincero: todavía no estamos preparados para ganar»","«I'll be straight with you: we're not ready to win yet»",{pt:"«Vou ser sincero: ainda não estamos prontos para ganhar»"}),
+    r:()=>roll(
+     [7,()=>(TPRE(-1.5),TPTGT(2),L("Se queda. La frase sale publicada y en el paddock se lee como una rendición, pero el lunes en la fábrica nadie tiene que fingir delante de nadie, y eso se nota en cómo se trabaja. −fama, +proyecto","He stays. The line gets printed and the paddock reads it as surrender, but on Monday nobody in the factory has to pretend in front of anybody, and you can feel it in how the work goes. −fame, +project",{pt:"Ele fica. A frase sai publicada e no paddock é lida como rendição, mas na segunda-feira ninguém na fábrica precisa fingir na frente de ninguém, e isso se nota no trabalho. −fama, +projeto"}))],
+     [3,()=>(TPRE(-1.5),TPTGT(-1),L("Se va igual, y sin ruido: «gracias por no venderme humo; justo por eso me voy, yo ya no tengo tiempo». Te deja a su gente y el número de teléfono. −fama, −proyecto leve","He leaves anyway, and quietly: «thank you for not selling me smoke; that's exactly why I'm going, I've run out of time». He leaves you his people and his phone number. −fame, slight −project",{pt:"Ele vai embora do mesmo jeito, e sem barulho: «obrigado por não me vender fumaça; é justamente por isso que vou, eu já não tenho tempo». Deixa a sua gente e o telefone. −fama, −projeto leve"}))])},
+   /* B · el humo. Se paga en la MISMA temporada: `_tpPromesa` lo cobra el veredicto de fin de año */
+   {l:()=>L("«Este año daremos un salto grande»","«This year we're taking a big step»",{pt:"«Este ano vamos dar um salto grande»"}),
+    r:()=>roll(
+     [3,()=>{ TPRE(2); S._tpPromesa=yearNow();
+       return L("Se lo cree y se queda. Y como te has venido arriba, lo dices también fuera de la sala: el paddock recoge la promesa y la guarda. Ahora este año tiene que salir. +fama, y la promesa queda hecha","He believes it and stays. And since you're on a roll you say it outside the room too: the paddock picks the promise up and files it. Now this year has to work. +fame, and the promise is on record",{pt:"Ele acredita e fica. E como você se empolgou, diz também fora da sala: o paddock recolhe a promessa e guarda. Agora este ano tem que dar certo. +fama, e a promessa fica feita"}); }],
+     [1,()=>{ TPRE(2); TPTGT(-2); S._tpPromesa=yearNow();
+       return L("No se lo cree: «llevo cuatro años aquí, sé lo que hay en la fábrica». Se va. Y la promesa, que ya la habías dicho en alto, se queda hecha igual. El peor sitio posible. +fama, −proyecto, y la promesa queda hecha","He doesn't buy it: «I've been here four years, I know what's in that factory». He leaves. And the promise, already said out loud, stands anyway. The worst place to be. +fame, −project, and the promise is on record",{pt:"Ele não acredita: «estou aqui há quatro anos, sei o que tem na fábrica». Vai embora. E a promessa, que você já tinha dito em voz alta, fica feita do mesmo jeito. O pior lugar possível. +fama, −projeto, e a promessa fica feita"}); }])},
+   /* C · no le contestas: le devuelves la pregunta y con ella la responsabilidad */
+   {l:()=>L("«Dime tú qué nos falta»","«You tell me what we're missing»",{pt:"«Diga você o que nos falta»"}),
+    r:()=>roll(
+     [45,()=>(TPTGT(4),L("Vuelve en una semana con un plan corto, caro y real: tres cosas, por orden, sin literatura. Se queda — y ahora el plan es suyo, no tuyo, que es exactamente lo que hacía falta. +proyecto","He comes back in a week with a plan that's short, expensive and real: three things, in order, no waffle. He stays — and now the plan is his, not yours, which is exactly what was needed. +project",{pt:"Volta em uma semana com um plano curto, caro e real: três coisas, em ordem, sem literatura. Ele fica — e agora o plano é dele, não seu, que era exatamente o que faltava. +projeto"}))],
+     [35,()=>(TPTGT(-2),L("Vuelve y te dice que lo que falta son fichajes clave y un presupuesto que tú no le puedes dar. Se va. Y tiene razón, que es lo que peor sienta. −proyecto","He comes back and tells you what's missing is key signings and a budget you can't give him. He leaves. And he's right, which is the part that stings. −project",{pt:"Volta e diz que o que falta são contratações-chave e um orçamento que você não pode dar. Vai embora. E tem razão, que é o que dói mais. −projeto"}))],
+     [20,()=>(TPRE(-1.5),TPTGT(-2),L("Lo lee como una esquiva — le has devuelto la pregunta para no contestarla — y no vuelve a sacar el tema. En marzo ya no está. −fama, −proyecto","He reads it as a dodge — you handed the question back so you wouldn't have to answer it — and never raises it again. By March he's gone. −fame, −project",{pt:"Ele lê como um desvio — você devolveu a pergunta para não respondê-la — e não toca mais no assunto. Em março já não está. −fama, −projeto"}))])}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
