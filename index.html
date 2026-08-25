@@ -13406,6 +13406,66 @@ const TP_DILEMAS=[
       : (function(){ const tn=S.tpTeam;
           if(S.cache[tn]!=null) S.cache[tn]=Math.max(40,S.cache[tn]-2);
           return L(`Contestan que no y lo prohíben para todos, con circular y fecha. Vosotros no lo montáis… y en el pit-lane saben perfectamente quién preguntó. −caché`,`They answer no and ban it for everyone, with a circular and a date. You don't fit it… and everyone in the pit lane knows exactly who asked. −standing`,{pt:`Respondem que não e proíbem para todos, com circular e data. Vocês não montam… e no pit-lane sabem perfeitamente quem perguntou. −cachê`}); })()}]},
+
+ /* 🏎️ «RÁPIDOS EL SÁBADO, LENTOS EL DOMINGO» (entrada 16 del doc). DOS VERSIONES EN UN SOLO DILEMA
+    (petición de Carlos, 25-ago: «si estoy en un equipo malo no tiene sentido hacer poles»). El texto
+    cambia según dónde estés en la parrilla: el grande cuenta poles y las pierde el domingo; el
+    modesto ni siquiera habla de poles, habla de rendir el sábado y evaporarse el domingo. Y así la
+    exclusión mutua sale gratis: como es UN dilema, `usedDilemmas` ya impide que salga la otra versión
+    en la misma partida —con dos entradas separadas habría que vetarlas a mano.
+    Filtro: hace falta velocidad pura de verdad (aero o motor por encima de cero), porque sin eso no
+    hay nada que exprimir el sábado.
+    Las dos opciones son ESPEJO —una te da hoy y te quita mañana, la otra al revés— para que ninguna
+    sea «la sensata» (Carlos preguntó si +coche/−proyecto en la B era demasiado: es lo que la salva).
+    Y una pole vale más cuanto peor es tu coche: al modesto la fama le renta el doble. */
+ {id:"tpPoleInutil",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const tn=S.tpTeam, pr=(S.f1prof||{})[tn];
+    if(!pr || (pr.aero||0)<1 && (pr.motor||0)<1) return false;   // sin velocidad pura no hay sábado
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+    const p=ord.indexOf(tn); if(p<0) return false;
+    S._pole={grande:p<3, n:dilVar("poleN",()=>irnd(3,6))};
+    return true; },
+  t:()=>L("Rápidos el sábado, lentos el domingo","Fast on Saturday, slow on Sunday",{pt:"Rápidos no sábado, lentos no domingo"}),
+  d:()=>{ const c=S._pole||{}; const k=Math.max(0,Math.min(3,(c.n||4)-3));
+    /* ✍️ el ordinal lleva GÉNERO en español y portugués: «cuarta pole» pero «cuarto domingo». En
+       inglés da igual, así que la misma pareja sirve para los tres idiomas. */
+    const FEM=[L("tercera","third",{pt:"terceira"}),L("cuarta","fourth",{pt:"quarta"}),L("quinta","fifth",{pt:"quinta"}),L("sexta","sixth",{pt:"sexta"})][k];
+    const MAS=[L("tercer","third",{pt:"terceiro"}),L("cuarto","fourth",{pt:"quarto"}),L("quinto","fifth",{pt:"quinto"}),L("sexto","sixth",{pt:"sexto"})][k];
+    const May=t=>t.charAt(0).toUpperCase()+t.slice(1);
+    const dudan=L("En la fábrica ya no saben si eso se arregla o es sencillamente lo que hay. Arreglarlo cuesta el desarrollo de medio año.",
+                  "In the factory nobody knows any more whether that can be fixed or is simply what you have. Fixing it costs half a year of development.",
+                  {pt:"Na fábrica já não sabem se isso se conserta ou é simplesmente o que há. Consertar custa o desenvolvimento de meio ano."});
+    return c.grande
+      ? L(`${May(FEM)} pole del año y ${MAS} domingo viendo cómo os pasan. El coche vuela a una vuelta y se come las gomas en carrera. ${dudan}`,
+          `${May(FEM)} pole of the year and the ${MAS} Sunday watching them go by. The car flies over one lap and eats its tyres in the race. ${dudan}`,
+          {pt:`${May(FEM)} pole do ano e ${MAS} domingo vendo como passam por vocês. O carro voa numa volta e come os pneus na corrida. ${dudan}`})
+      : L(`Se acumulan las semanas en las que el coche rinde en las clasificaciones y se evapora en carrera: vuela a una vuelta y se come las gomas en cuanto la tanda se alarga. ${dudan}`,
+          `The weeks pile up in which the car performs in qualifying and evaporates in the race: it flies over one lap and eats its tyres as soon as the stint gets long. ${dudan}`,
+          {pt:`Acumulam-se as semanas em que o carro rende nas classificações e evapora na corrida: voa numa volta e come os pneus assim que o stint se alonga. ${dudan}`}); },
+  opts:[
+   {l:()=>L("Arreglar el ritmo de carrera","Fix the race pace",{pt:"Consertar o ritmo de corrida"}),
+    r:()=>(TPTGT(3),TPCAR(-1.5),
+      L("Aparcáis lo que brilla para arreglar lo que puntúa. Este año no lo veréis; el que viene, sí. +proyecto, −coche",
+        "You park what shines to fix what scores. You won't see it this year; next year you will. +project, −car",
+        {pt:"Vocês guardam o que brilha para consertar o que pontua. Este ano não vão ver; no que vem, sim. +projeto, −carro"}))},
+   /* ESPEJO de la A: das el volantazo al revés — más coche ahora, menos techo después */
+   {l:()=>L("Exprimir el sábado","Squeeze Saturday",{pt:"Espremer o sábado"}),
+    r:()=>{ const c=S._pole||{};
+      TPCAR(1.5); TPTGT(-3);
+      return roll(
+       [55,()=>(TPRE(c.grande?1.5:3),
+         c.grande
+           ? L("Poles, portadas y algún domingo que aguantáis por delante. Se puede vivir de eso una temporada. +coche, −proyecto, +fama",
+               "Poles, front pages and the odd Sunday you hold on out front. You can live off that for a season. +car, −project, +fame",
+               {pt:"Poles, capas e algum domingo em que vocês aguentam à frente. Dá para viver disso uma temporada. +carro, −projeto, +fama"})
+           : L("Un coche como el vuestro peleando por la pole es un notición, y lo exprimís hasta el último titular. Los domingos siguen doliendo, pero el sábado es vuestro. +coche, −proyecto, +fama",
+               "A car like yours fighting for pole is a real story, and you squeeze it to the last headline. Sundays still hurt, but Saturday belongs to you. +car, −project, +fame",
+               {pt:"Um carro como o de vocês brigando pela pole é notícia grande, e vocês espremem até a última manchete. Os domingos continuam doendo, mas o sábado é de vocês. +carro, −projeto, +fama"}))],
+       [45,()=>(TPRE(-1.5),
+         L("Las poles dejan de ser noticia y los domingos duelen igual. Alguien lo dice en voz alta y se queda: sois un equipo de sábado. +coche, −proyecto, −fama",
+           "The poles stop being news and the Sundays hurt just the same. Somebody says it out loud and it sticks: you're a Saturday team. +car, −project, −fame",
+           {pt:"As poles deixam de ser notícia e os domingos doem igual. Alguém diz em voz alta e fica: vocês são uma equipe de sábado. +carro, −projeto, −fama"}))]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
