@@ -7847,6 +7847,7 @@ function alphaClash(row){
   });
 }
 /* la F1 sigue su curso aunque estés en karting: campeones, fichajes, retiradas */
+const INERCIA_RANK=0.20;   // cuánto pesa el puesto del año pasado en el score (calibrado abajo)
 function bgF1Season(row){
   const rows=[];
   F1_TEAMS.forEach(t=>{
@@ -7876,6 +7877,14 @@ function bgF1Season(row){
         const coche = S.f1perf[t.name] + (pr ? pr.motor*PROF_K : 0) + _n1;
         const disp  = 3.4 + (pr ? pr.aero*0.9 : 0);          // aero ensancha, sin desplazar la media
         let sc = d.skill*w + coche*(1-w) + gauss()*Math.max(1.2, disp);
+        /* 📊 INERCIA DEL RANKING (calibrada contra 2005-2025 reales, 25-ago). Sin ella, la zona media
+           —media docena de coches en 3 puntos— la decidía el gauss: un 5% de los pilotos se movía 10+
+           puestos con el MISMO coche, cuando en la realidad es el 2,3% (213 transiciones medidas de
+           los PDF de Carlos). El año anterior pesa un poco: quien acabó arriba arranca con crédito.
+           OJO: no frena a los coches que se transforman —el término del coche queda intacto—, así que
+           un Brawn 2009 (Button 18º→1º, real) sigue siendo posible. */
+        const _pr=(S.rankD&&S.rankD[d.name])||null;
+        if(_pr!=null) sc += INERCIA_RANK*(11-_pr);
         if(pr){
           const riesgo = 0.10 - pr.fiab*0.045;               // +2 → 1% · 0 → 10% · −2 → 19%
           if(ch(Math.max(0, riesgo))) sc -= rnd(4,10);       // el año que se rompe
