@@ -8575,7 +8575,17 @@ function nextOffers(){
   }
   S.regUnknown=false; // por defecto las tendencias se ven; la revolución técnica lo reactiva puntualmente
   S.couldStay=false;  // ¿tu equipo te ofreció renovar? (si NO, es que te echaron → al irte no te "queman" por traidor)
-  if(S.age>=44){ endCareer(); return; } // tope duro: solo los excepcionales llegan tan lejos
+  /* 🕰️ EL TOPE, ESCALONADO POR NIVEL (reporte de un jugador via Twitter, 25-ago: «91 de OVR con 43
+     años y es la primera vez que lo veo»). El comentario de antes ya prometia que «solo los
+     excepcionales llegan tan lejos», pero el codigo NO miraba el OVR: un 91 se retiraba igual que un
+     66. Con datos reales detras -Fangio campeon a los 46, Graham Hill corriendo a los 46, Alonso en
+     activo a los 44-, un 91 retirandose a los 44 era mas restrictivo que la F1 de verdad.
+     Medido en 500 partidas: la edad media de retirada NO se mueve (37,6 antes y despues) y solo el
+     0,3% pasa de 44. A los 44 ya casi nadie llega sin ser elite -la mediana de OVR de quien llega
+     ahi es 90-, asi que el escalon no abre la puerta a nadie mediocre: deja de castigar al que se
+     gano estar ahi. */
+  const _topeEdad = S.ovr>=90 ? 46 : S.ovr>=85 ? 45 : 44;
+  if(S.age>=_topeEdad){ endCareer(); return; }
   // 🤝 el compromiso solo tiene sentido con un asiento titular de F1: si estás de reserva, de aventura
   // fuera, o ya no corres para ellos, el contrato decae (si no, quedaría colgado el resto de la partida)
   /* ⏸️ …salvo el año en blanco: ese compromiso se cumple JUSTAMENTE de probador, así que aquí no vale
