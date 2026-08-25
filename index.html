@@ -13466,6 +13466,58 @@ const TP_DILEMAS=[
          L("Las poles dejan de ser noticia y los domingos duelen igual. Alguien lo dice en voz alta y se queda: sois un equipo de sábado. +coche, −proyecto, −fama",
            "The poles stop being news and the Sundays hurt just the same. Somebody says it out loud and it sticks: you're a Saturday team. +car, −project, −fame",
            {pt:"As poles deixam de ser notícia e os domingos doem igual. Alguém diz em voz alta e fica: vocês são uma equipe de sábado. +carro, −projeto, −fama"}))]); }}]},
+
+ /* 🦈 «EL RIVAL FRÁGIL» (entrada 10 de la tanda de Carlos). El filtro es de ALCANCE, no de puesto
+    (Carlos: «el rival frágil implica mirar a un equipo que no vaya a ganar el mundial»): el rival
+    tiene que estar entre una y tres posiciones POR DELANTE de ti. Si va último su fiabilidad da
+    igual, y si está a diez puestos su avería no te regala nada — el dilema solo existe si ese sitio
+    en el campeonato es alcanzable.
+    Y el enunciado dice QUÉ es arriesgar, que era lo que le faltaba: correr a la contra el resto del
+    año —estrategias agresivas, paradas raras— apostando a que revienten. Sin eso la pregunta era
+    «¿arriesgas?» sin decir en qué. */
+ {id:"tpOlerLaSangre",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const tn=S.tpTeam;
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+    const p=ord.indexOf(tn); if(p<1) return false;              // si ya eres el primero, no hay nadie delante
+    /* 🏆 Y NINGUNO DE LOS DOS PUEDE ESTAR PELEANDO EL TÍTULO (lo cazó Carlos: «este dilema no encaja
+       si sois los 2-3 mejores equipos»). «Paradas raras, todo a una carta» es lenguaje de equipo que
+       va a robar un puesto, no de equipo que se juega el campeonato: un top-3 hace lo contrario,
+       minimizar riesgos. Exigiendo que el rival esté fuera del podio, tú quedas 5º o peor por
+       construcción, y la escena encaja con quien de verdad la viviría. */
+    const cand=[];
+    for(let i=Math.max(3,p-3); i<p; i++){
+      const nm=ord[i], pr=(S.f1prof||{})[nm];
+      if(!pr) continue;
+      /* ESTRICTAMENTE peor: con <= un coche equilibrado (0,0,0 — el arquetipo más común) contaba
+         como frágil y el dilema saltaba siempre, hasta sin un solo rival roto. */
+      if((pr.fiab||0) < Math.min(pr.aero||0, pr.motor||0)) cand.push(nm);   // su punto flojo es aguantar
+    }
+    if(!cand.length) return false;
+    S._sangre={r:cand[dilVar("sangreR",()=>irnd(0,cand.length-1))]};
+    return true; },
+  t:()=>L("El rival frágil","The fragile rival",{pt:"O rival frágil"}),
+  d:()=>{ const v=S._sangre||{};
+    return L(`${v.r} lleva tres cambios de motor en media temporada y está justo por delante de vosotros en el campeonato. Tu jefe de estrategia pone los números sobre la mesa: si se les rompe una vez más en una carrera que importe, ese sitio es vuestro. Y propone algo incómodo: correr lo que queda de año a la contra —estrategias agresivas, paradas raras, todo a una carta—, apostando a que se rompan, o correr nuestras carreras sin pensar en ellos.`,
+             `${v.r} have taken three engine changes in half a season and sit just ahead of you in the championship. Your head of strategy puts the numbers on the table: if it breaks once more in a race that matters, that place is yours. And he proposes something uncomfortable: to race the rest of the year against the grain —aggressive strategies, odd stops, everything on one card— betting that they break, or to race our own races without thinking about them.`,
+             {pt:`A ${v.r} levou três trocas de motor em meia temporada e está logo à frente de vocês no campeonato. O seu chefe de estratégia põe os números na mesa: se quebrar mais uma vez numa corrida que importe, aquele lugar é de vocês. E propõe algo incômodo: correr o resto do ano na contramão —estratégias agressivas, paradas estranhas, tudo numa carta—, apostando que eles quebrem, ou correr as nossas corridas sem pensar neles.`}); },
+  opts:[
+   {l:()=>L("Correr a la contra","Race against the grain",{pt:"Correr na contramão"}),
+    r:()=>{ const v=S._sangre||{};
+      return roll(
+       [4,()=>(TPCAR(1.5),TPRE(1.5),L(`Su avería llega, y vosotros estáis exactamente donde había que estar. Ese sitio en el campeonato cambia de manos, y no por suerte. +coche, +fama`,`Their failure comes, and you are exactly where you needed to be. That place in the championship changes hands, and not by luck. +car, +fame`,{pt:`A quebra deles chega, e vocês estão exatamente onde era preciso estar. Aquele lugar no campeonato muda de mãos, e não por sorte. +carro, +fama`}))],
+       [3,()=>L(`Ni se rompen ni os salís del guion: unas apuestas salen, otras no, y en noviembre estáis donde ya estabais en junio. Sin cambios.`,`They don't break and you don't come off the rails either: some gambles land, others don't, and in November you're where you already were in June. No change.`,{pt:`Nem quebram nem vocês saem do roteiro: umas apostas dão certo, outras não, e em novembro vocês estão onde já estavam em junho. Sem mudanças.`})],
+       [3,()=>(TPCAR(-1.5),L(`Ellos aguantan el año entero. Vosotros, no: media docena de estrategias raras que salieron mal os han costado más de lo que ellos llegaron a regalar. −coche`,`They hold together all year. You don't: half a dozen odd strategies that went wrong have cost you more than they ever gave away. −car`,{pt:`Eles aguentam o ano inteiro. Vocês, não: meia dúzia de estratégias estranhas que deram errado custaram mais do que eles chegaram a dar de presente. −carro`}))]); }},
+   {l:()=>L("Correr nuestras carreras","Race our own races",{pt:"Correr as nossas corridas"}),
+    r:()=>(TPTGT(1.5),L("No cambias nada. Si se rompen, ya estaréis ahí; y si no, no habréis quemado la temporada persiguiendo un fantasma. +proyecto leve","You change nothing. If they break, you'll be there; and if they don't, you won't have burned the season chasing a ghost. slight +project",{pt:"Você não muda nada. Se quebrarem, vocês estarão lá; e se não, não terão queimado a temporada perseguindo um fantasma. +projeto leve"}))},
+   /* C · la etiqueta dice lo que HACES, no jerga: hablar de su fiabilidad en público hasta que la
+      duda entre en su propio garaje. Y toca su coche de verdad, no solo tu fama. */
+   {l:()=>L("Hablar de su fiabilidad en cada rueda de prensa","Talk about their reliability at every press conference",{pt:"Falar da confiabilidade deles em cada coletiva"}),
+    r:()=>{ const v=S._sangre||{};
+      return ch(.55)
+        ? (function(){ if(S.f1perf[v.r]!=null) S.f1perf[v.r]=Math.max(60,S.f1perf[v.r]-1);
+            return (TPRE(1.5), L(`Sueltas la palabra «fiabilidad» tres viernes seguidos y para el cuarto ya la usan ellos. En su garaje empiezan a leerse más de lo que se escuchan, y un equipo que duda de su propio motor lo aprieta menos. Su coche baja, +fama`,`You drop the word «reliability» three Fridays running and by the fourth they're using it themselves. In their garage they start reading about themselves more than listening to each other, and a team that doubts its own engine pushes it less. Their car drops, +fame`,{pt:`Você solta a palavra «confiabilidade» três sextas seguidas e na quarta já são eles que a usam. Na garagem deles começam a se ler mais do que a se ouvir, e uma equipe que duvida do próprio motor o aperta menos. O carro deles cai, +fama`})); })()
+        : (TPRE(-1.5),L(`Se te ve el plumero: el paddock te retrata como el buitre que vuela en círculos esperando. Y su motor, de momento, aguanta. −fama`,`You're too obvious about it: the paddock paints you as the vulture circling and waiting. And their engine, for now, holds. −fame`,{pt:`Fica evidente demais: o paddock te retrata como o abutre voando em círculos à espera. E o motor deles, por enquanto, aguenta. −fama`})); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
