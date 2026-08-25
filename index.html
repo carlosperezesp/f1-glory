@@ -3651,8 +3651,17 @@ function mkRookie(noCross, forTeam){
   }
   // si la entrada YA trae inicial ("J. Taylor"), se respeta tal cual: es un mecenas que ha elegido
   // con qué nombre quiere correr. El resto son apellidos y se les pone una inicial al azar.
-  else { const g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)];
-    name = /\.\s/.test(g[0]) ? g[0] : GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0]; flag=g[1]; }
+  /* 🪪 DOS NOVATOS CON EL MISMO NOMBRE (25-ago-2026). La lista curada (`S.rookies`) sí se purga contra
+     los que ya existen, unas líneas más arriba; la genérica no lo hacía, así que de vez en cuando
+     debutaban dos «A. Grixti» el mismo año en dos equipos distintos. Medido: el 1,5% de las
+     temporadas tenía un nombre repetido en la parrilla, y siempre eran DOS pilotos distintos, nunca
+     uno sentado en dos sitios. Se reintenta con otro apellido y otra inicial hasta que el nombre esté
+     libre; si tras doce intentos sigue chocando, se acepta el último antes que quedarse sin novato. */
+  else { let g, _n, _i2=0;
+    do{ g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)];
+        _n = /\.\s/.test(g[0]) ? g[0] : GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0];
+    } while(++_i2<12 && S.dpool.some(d=>d && d.name===_n));
+    name=_n; flag=g[1]; }
   // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
   // reemplaza a los Verstappen que se retiran → cada época conserva sus estrellas y el top no se hunde con los años.
   // El resto: campo fuerte y variado (varios llegan a muy bueno / crack), como en la parrilla real.
@@ -3692,8 +3701,43 @@ function mkRookie(noCross, forTeam){
   S.dpool.push(d);
   return d;
 }
+/* 🎩 CUÁNDO CUELGA EL CASCO UN PILOTO DE LA IA (25-ago-2026, a petición de Carlos: «un piloto bueno
+   pero que lleva años al fondo de la parrilla es difícil que lo quiera nadie. y al revés»).
+   La tabla es POR TRAMOS, no un multiplicador. Se intentó dos veces modular la probabilidad vieja
+   (×0,58 al que fue crack) y NO movía la mediana ni un año: con un 34% anual a los 40, dividir el
+   riesgo a la mitad te da un año más de vida y el redondeo se lo come. Así que aquí hay tres curvas
+   de verdad, una por techo, y la mediana sale sola: el que fue crack aguanta hasta los 42, el bueno
+   hasta los 39, el del montón hasta los 37.
+   Se mira el TECHO (`ceil`) y no el nivel de hoy, porque el nivel decae con la edad: a los 40 un
+   campeón del mundo tiene el mismo `skill` que un piloto de relleno, y el mercado no los trata igual.
+   Y los resultados no multiplican nada: mueven la EDAD EFECTIVA. Estar en un coche ganador te quita
+   año y medio de encima; estar en el último tercio de la parrilla te lo añade. Un título quita otro
+   medio. Es un empujón, no una garantía: sigue siendo un dado. */
+const RETIRO_CURVA={
+  crack: [.02,.03,.04,.06,.08,.10,.14,.18,.25,.33,.45,.60,1],  // techo 90+   → mediana ~42
+  bueno: [.04,.06,.08,.12,.16,.22,.30,.40,.55,.70,.85,1,1],    // techo 84-89 → mediana ~39
+  resto: [.08,.12,.16,.22,.30,.40,.55,.70,.85,1,1,1,1]         // techo <84   → mediana ~37
+};
+function probRetiro(d, puestoCoche, nCoches){
+  if(d.age<34) return null;                    // los jóvenes no se «retiran»: pierden el asiento, y eso va aparte
+  const techo=d.ceil||d.skill||75;
+  const c = techo>=90 ? RETIRO_CURVA.crack : techo>=84 ? RETIRO_CURVA.bueno : RETIRO_CURVA.resto;
+  let e = d.age-34;                            // la edad EFECTIVA, que los resultados mueven
+  if(puestoCoche>0 && nCoches>0){
+    if(puestoCoche<=4) e-=1.5;                                     // gana: le siguen llamando
+    else if(puestoCoche>Math.ceil(nCoches*2/3)) e+=1.5;            // último tercio: ya no le llama nadie
+  }
+  if((d.titles||0)>=1) e-=.5;                  // un campeón del mundo siempre tiene una puerta abierta
+  if(e<=0) return c[0];
+  if(e>=c.length-1) return 1;
+  const i=Math.floor(e), f=e-i;                // los tramos son enteros; la edad efectiva no, así que se interpola
+  return c[i]+(c[i+1]-c[i])*f;
+}
 function npcSeason(row){
   // los pilotos con nombre crecen, envejecen y se retiran
+  // el orden de coches de este año, para saber quién está ganando y quién está al fondo
+  const _ordCoches=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+  const _nCoches=_ordCoches.length||11;
   Object.entries(S.seats).forEach(([teamName,slots])=>{
     const isRB = isRBJr(teamName); // el filial de RB no ficha veteranos → su relevo nunca es un crossover
     slots.forEach((d,i)=>{
@@ -3712,10 +3756,10 @@ function npcSeason(row){
       d.age++;
       // retirada con lógica de edad: los mayores cuelgan el casco; los jóvenes solo pierden
       // el asiento si de verdad no cuajan (no se "retiran" a los 22)
-      const pRet = d.age>=44?.6 : d.age>=40?.34 : d.age>=37?.17
-        : (d.age>=33 && d.skill<75)?.30
-        : (d.age>=28 && d.skill<71)?.07
-        : .008;
+      const pRet = probRetiro(d, _ordCoches.indexOf(teamName)+1, _nCoches)
+        ?? ((d.age>=33 && d.skill<75)?.30
+          : (d.age>=28 && d.skill<71)?.07
+          : .008);
       // al retirarse NO se pone un novato de oficio: el asiento queda LIBRE y lo cubre el mercado
       // (si se retira un piloto de un top, ese volante lo pelea la parrilla; el novato acaba abajo)
       if(mktMoved(d)) return;   // acaba de firmar un traspaso anunciado: no se retira el mismo invierno
@@ -3918,10 +3962,26 @@ function npcMercadoOrdinario(){
       if(d.beast) return;   // 🐲 a la Bestia no la echa nadie: su asiento es suyo mientras quiera
       // ¿le renuevan? los 3 primeros años son tranquilos; luego pesa la antigüedad, y rendir por
       // debajo de lo que da el coche te pone en la calle antes
+      /* ⏳ AL VETERANO SE LE JUZGA POR LO QUE HACE, NO POR EL COCHE QUE TIENE (25-ago-2026, petición de
+         Carlos: «un piloto bueno pero que lleva años al fondo de la parrilla es difícil que lo quiera
+         nadie. y al revés»). El listón de abajo, `flojo`, compara tu nivel con el de tu coche — y en un
+         veterano sale AL REVÉS de lo que debería: como el nivel decae con la edad, el que envejece en un
+         coche ganador incumple el listón enseguida, y el que se pudre en la cola no lo incumple nunca.
+         Medido: apagando del todo el dado de la retirada, el mercado seguía borrando a TODOS —cracks,
+         buenos y del montón— con la mediana clavada en los 40, la misma para los tres.
+         Así que a partir de los 34 el listón lo pone el clasificador del año que acaba: si sigues
+         apareciendo arriba, te renuevan; si llevas tiempo sin aparecer, no te llama nadie, fueras quien
+         fueras. Sustituye a `flojo`, no se suma: es el mismo listón, leído como toca a esa edad. */
       const flojo=(d.skill||75) < perf(tm)-6;
+      let vet=null;
+      if((d.age||0)>=34){
+        const pos=((S.rankD||{})[d.name])||99;
+        vet = pos<=5 ? -.10 : pos<=10 ? -.03 : .20;
+      }
       // 🔄 ROTACIÓN calibrada como parámetros para poder medirla A/B: la parrilla real cambia un 25-30%
       // al año y la nuestra iba al ~15% (2,2 traspasos/temporada). Base más alta, gracia de 2 años.
-      const p=Math.min(ROT.tope, ROT.base + Math.max(0,d.yrs-ROT.gracia)*ROT.porAno + (flojo?ROT.flojo:0));
+      const p=Math.min(ROT.tope, Math.max(.02,
+        ROT.base + Math.max(0,d.yrs-ROT.gracia)*ROT.porAno + (vet!==null ? vet : (flojo?ROT.flojo:0))));
       // a un galáctico en su prime NO lo echa su propio equipo (y con el caché activo, echarlo podía
       // hacerlo desaparecer de la F1 si ningún equipo con pedigrí tenía hueco ese año)
       if(!primeGalactico(d) && !mktMoved(d) && ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
