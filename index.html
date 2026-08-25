@@ -13692,6 +13692,53 @@ const TP_DILEMAS=[
        return L("Se queda, pero algo se rompió esa tarde. A partir de marzo devuelve las llamadas que antes no devolvía, y en el paddock eso se sabe antes que en tu despacho. −proyecto",
                 "He stays, but something broke that afternoon. From March he starts returning calls he used to ignore, and in the paddock that gets known before it does in your office. −project",
                 {pt:"Ele fica, mas algo quebrou naquela tarde. A partir de março devolve as ligações que antes não devolvia, e no paddock isso se sabe antes que no seu escritório. −projeto"}); }])}]},
+
+ /* 🎴 «TODO A UNA CARTA» (entrada 88 del doc). SIN filtro de posición (petición de Carlos, 25-ago:
+    «si vamos 2 o 3 de constructores, ya es un filtro»): basta con tener dos pilotos y alguien por
+    delante, así que le pasa igual al 2º que al 9º — siempre hay un puesto que robar.
+    El enunciado da TODO el contexto que hace falta para decidir (lo cazó Carlos: «si estoy con
+    Racing Bulls, ¿Mercedes es media tabla o el favorito?»): qué puesto de constructores está en
+    juego, contra quién, y en qué posición del mundial va CADA UNO de tus dos pilotos. Sin ese último
+    dato no se puede elegir a quién arriesgar, que es el corazón del dilema.
+    ⚠️ Acertar NO garantiza ganar ese duelo, y el texto no lo promete (medido: con +2 de coche pasas
+    de ser 4º el 23% de las veces a serlo el 28%… y se te abre un 20% de acabar 2º o 3º). Mueves
+    probabilidades, no resultados — decisión de Carlos. */
+ {id:"tpUltimaApuesta",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs(); if(a.length<2) return false;
+    const tn=S.tpTeam;
+    const ord=[...F1_TEAMS].sort((x,y)=>(S.f1perf[y.name]||70)-(S.f1perf[x.name]||70)).map(t=>t.name);
+    const p=ord.indexOf(tn); if(p<1) return false;          // alguien por delante: da igual quién seas
+    const rk=n=>(S.rankD&&S.rankD[n])||20;
+    const dos=a.slice().sort((x,y)=>rk(x.name)-rk(y.name));
+    S._carta={rival:ord[p-1], puesto:p+1,
+              a:surname(dos[0].name), nA:dos[0].name, pA:rk(dos[0].name),
+              b:surname(dos[1].name), nB:dos[1].name, pB:rk(dos[1].name),
+              n:dilVar("cartaN",()=>irnd(3,6))};
+    return true; },
+  t:()=>L("Todo a una carta","All on one card",{pt:"Tudo numa carta"}),
+  d:()=>{ const c=S._carta||{};
+    const NUM=[L("tres","three",{pt:"três"}),L("cuatro","four",{pt:"quatro"}),
+               L("cinco","five",{pt:"cinco"}),L("seis","six",{pt:"seis"})][Math.max(0,Math.min(3,(c.n||4)-3))];
+    return L(`Quedan ${NUM} carreras y os separan pocos puntos de ${c.rival} en la pelea por el ${c.puesto}º puesto de constructores. En la fábrica hay una evolución que en el túnel vuela, pero nadie ha podido validarla en pista, y tu jefe técnico usa dos veces la palabra «probablemente». ${c.a} va ${c.pA}º del mundial de pilotos; ${c.b}, ${c.pB}º.`,
+             `${NUM.charAt(0).toUpperCase()+NUM.slice(1)} races to go and only a few points separate you from ${c.rival} in the fight for P${c.puesto} in the constructors. In the factory there's an upgrade that flies in the tunnel, but nobody has been able to validate it on track, and your technical chief uses the word «probably» twice. ${c.a} is P${c.pA} in the drivers' championship; ${c.b}, P${c.pB}.`,
+             {pt:`Faltam ${NUM} corridas e vocês estão a poucos pontos da ${c.rival} na briga pelo ${c.puesto}º lugar de construtores. Na fábrica há uma evolução que voa no túnel, mas ninguém conseguiu validá-la na pista, e o seu diretor técnico usa duas vezes a palavra «provavelmente». ${c.a} está em ${c.pA}º no mundial de pilotos; ${c.b}, em ${c.pB}º.`}); },
+  opts:[
+   {l:()=>L("Montarla en los dos coches","Fit it to both cars",{pt:"Montar nos dois carros"}),
+    r:()=>roll(
+     [5,()=>(TPCAR(2.5),L("Funciona. Las últimas carreras el coche es otro, y de repente estáis peleando cosas que en agosto no os tocaban. +coche","It works. For the closing races the car is a different animal, and suddenly you're fighting for things that weren't yours in August. +car",{pt:"Funciona. Nas últimas corridas o carro é outro, e de repente vocês brigam por coisas que em agosto não eram de vocês. +carro"}))],
+     [5,()=>(TPCAR(-1.5),TPRE(-1.5),L("El viernes ya se ve que algo no va, y para cuando lo entendéis quedan dos carreras. Habéis tirado el final de temporada. −coche, −fama","By Friday you can see something isn't right, and by the time you understand it there are two races left. You've thrown away the end of the season. −car, −fame",{pt:"Na sexta já se vê que algo não vai, e quando entendem faltam duas corridas. Vocês jogaram fora o fim de temporada. −carro, −fama"}))])},
+   /* B y C · el mismo experimento, distinto conejillo de indias. Que el jugador elija A QUIÉN
+      arriesga es el corazón del dilema: no es lo mismo si uno se juega algo en el mundial. */
+   {l:()=>{ const c=S._carta||{}; return L(`Solo en el coche de ${c.a} (${c.pA}º)`,`Only on ${c.a}'s car (P${c.pA})`,{pt:`Só no carro de ${c.a} (${c.pA}º)`}); },
+    r:()=>tpCartaEnUno(true)},
+   {l:()=>{ const c=S._carta||{}; return L(`Solo en el coche de ${c.b} (${c.pB}º)`,`Only on ${c.b}'s car (P${c.pB})`,{pt:`Só no carro de ${c.b} (${c.pB}º)`}); },
+    r:()=>tpCartaEnUno(false)},
+   {l:()=>L("Validarla bien y estrenarla en enero","Validate it properly and debut it in January",{pt:"Validar bem e estrear em janeiro"}),
+    r:()=>roll(
+     [45,()=>(TPTGT(4),L("Este año no. El que viene salís con ella de fábrica y probada, sin la duda de si el problema era ella o vosotros. +proyecto","Not this year. Next season you start with it built in and proven, without the doubt of whether the problem was the part or you. +project",{pt:"Este ano não. No próximo vocês saem com ela de fábrica e testada, sem a dúvida de se o problema era ela ou vocês. +projeto"}))],
+     [35,()=>(TPTGT(1.5),L("Llega validada, sí, pero medio pit-lane desarrolla algo parecido. +proyecto leve","It arrives validated, yes, but half the pit lane develops something similar. slight +project",{pt:"Chega validada, sim, mas meio pit-lane desenvolve algo parecido. +projeto leve"}))],
+     [20,()=>L("La validáis despacio… y en diciembre el reglamento cambia lo justo para que no sirva. Sin cambios.","You validate it slowly… and in December the rules change just enough to make it useless. No change.",{pt:"Vocês validam devagar… e em dezembro o regulamento muda o suficiente para não servir. Sem mudanças."})])}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
@@ -13710,6 +13757,19 @@ function tpRivalPierdeElCerebro(nombre){
 /* 🧠 EL REGRESO DEL SABÁTICO. Se apunta en la agenda igual que la venganza del ingeniero y se cobra
    —o no— al invierno siguiente. Si mientras estaba fuera alguien lo llamó, no vuelve: y eso es
    exactamente el riesgo que aceptaste al dárselo. */
+/* 🎴 el experimento en UN solo coche: tres finales, y los nombres se colocan según a quién se la
+   pusiste (petición de Carlos: «(Piloto usado) nota la mejoría. (El que se queda sin ella) queda
+   tocado»). Sirve para las dos opciones intermedias de «Todo a una carta». */
+function tpCartaEnUno(alPrimero){
+  const c=S._carta||{};
+  const usa = alPrimero ? c.a : c.b, nUsa = alPrimero ? c.nA : c.nB;
+  const otro = alPrimero ? c.b : c.a, nOtro = alPrimero ? c.nB : c.nA;
+  return roll(
+   [45,()=>(TPCAR(1.5),TPTGT(3),L(`El domingo os da la respuesta que el túnel no daba, y la lleváis al otro coche antes de que acabe el año. +coche, +proyecto`,`Sunday gives you the answer the tunnel couldn't, and you have it on the other car before the year is out. +car, +project`,{pt:`O domingo dá a resposta que o túnel não dava, e vocês a levam ao outro carro antes de o ano acabar. +carro, +projeto`}))],
+   [30,()=>L(`Ni mejor ni peor: los datos no concluyen nada. Sin cambios.`,`Neither better nor worse: the data concludes nothing. No change.`,{pt:`Nem melhor nem pior: os dados não concluem nada. Sem mudanças.`})],
+   [25,()=>{ TPCAR(.8); tpDrvSkill(nOtro,-1);
+     return L(`${usa} nota la mejoría. ${otro} queda tocado. +coche leve, −moral de ${otro}`,`${usa} feels the difference. ${otro} is left bruised. slight +car, −${otro}'s morale`,{pt:`${usa} sente a melhoria. ${otro} fica abalado. +carro leve, −moral de ${otro}`}); }]);
+}
 function tpSabbaticalCheck(){
   const v=S._sabbat; if(!v || yearNow()<v.year) return;
   S._sabbat=null;
