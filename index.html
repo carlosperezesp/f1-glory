@@ -11566,9 +11566,31 @@ function tpGoalFor(){
   let target;
   if(p<=3) target=2;                                  // grande: pelea el título
   else if(p>=n-2) target=n-1;                         // colista: no seáis últimos
-  else target=Math.min(n-2, Math.ceil(n*.55));        // medio: mitad alta
+  /* 🎯 EN MEDIO, EL LISTÓN SIGUE A TU COCHE (25-ago-2026, pega de Carlos: «se me hace raro que me
+     pidan ser 6º»). Antes todo el pelotón recibía el MISMO número plano —la mitad alta de la
+     parrilla— así que al 4º coche de la parrilla le pedían menos de lo que ya hacía y al 8º le pedían
+     algo que su coche no daba. Ahora se te pide el puesto de tu coche más uno: exigente pero posible,
+     y distinto según lo que tengas en el garaje. */
+  else target=Math.min(n-2, Math.max(4, p+1));
+  /* 🧠 …Y EL CONSEJO TIENE MEMORIA. Esto es lo que de verdad faltaba: el listón no miraba tu historial
+     en absoluto. Medido antes de tocarlo: 88 años en que te pasaste del listón por dos puestos o más,
+     y en 55 de ellos te volvían a pedir exactamente lo mismo al año siguiente. Había carreras enteras
+     de «coche 5º · te piden 7º · acabas 5º» repetido tres veces seguidas.
+     Se leen las TRES últimas temporadas EN ESTE EQUIPO (al cambiar de equipo, el consejo nuevo no
+     sabe nada de ti) y se mira cuánto te pasaste del listón de media. Si te pasas de largo, te suben
+     la vara; si te quedas corto sin llegar a que te echen, te dan aire. Un solo puesto por año, así
+     que no se dispara: en cuanto el listón te aprieta, la media baja y vuelve a su sitio. */
+  const _hist=(S.seasons||[]).filter(r=>r.cat==="TP" && r.tpTeam===S.tpTeam && r.tpPos>0).slice(-3);
+  if(_hist.length>=2){
+    const _m=_hist.reduce((a,r)=>a+(r.tpTarget-r.tpPos),0)/_hist.length;
+    if(_m>=1.5) target--;            // llevas años pasándote: ahora esperan más de ti
+    else if(_m<=-1.5) target++;      // llevas años quedándote corto: bajan la vara antes de echarte
+  }
   if(S.tpOwner && S.tpOwner.k==="win") target=Math.max(1,target-1);      // el ganador aprieta
   if(S.tpOwner && S.tpOwner.k==="young") target=Math.min(n-1,target+1);  // el paciente da aire
+  /* el suelo: por muy contento que esté el consejo, no se te puede pedir batir a tu propio coche por
+     más de un puesto. Sin esto la memoria se convertiría en un trinquete que sube y no baja nunca. */
+  target=Math.max(1, Math.max(p-1, Math.min(n-1, target)));
   const meta = target===1 ? L("el título de constructores","the constructors' title",{pt:"o título de construtores"})
     : L(`terminar ${target}º de constructores o mejor`,`P${target} in the constructors or better`,{pt:`terminar em ${target}º dos construtores ou melhor`});
   const voz = !S.tpOwner? "" : S.tpOwner.k==="win"
@@ -11688,6 +11710,9 @@ function simTP(row){
   S.tpOverSum=(S.tpOverSum||0)+delta;
   S.tpBestPos=Math.min(S.tpBestPos||99, cPos);
   row.tpVerdict = met ? (rescataTitulo && cPos>G.target ? "titulo" : "ok") : (S.tpGrace ? "gracia" : (S.tpMissStreak>=1 ? "fuera" : "fallo"));
+  /* 🧠 los NÚMEROS del año, no solo el veredicto: el consejo los relee al fijar el listón siguiente.
+     `tpGoalTxt` ya guardaba esto, pero como frase escrita, y de una frase no se saca una media. */
+  row.tpTeam=tn; row.tpPos=cPos; row.tpTarget=G.target;
   row.tpGoalTxt = G.target===1
     ? L("título de constructores","constructors' title",{pt:"título de construtores"})
     : L(`${G.target}º de constructores o mejor`,`P${G.target} constructors or better`,{pt:`${G.target}º de construtores ou melhor`});
