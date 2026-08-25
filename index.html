@@ -13257,7 +13257,11 @@ function pickTPDilemma(){
     const dEx=TP_DILEMAS.find(x=>x.id==="tpExige");
     if(dEx && dEx.cond() && ch(.75)) return dEx;
   }
-  if(!ch(.55)) return null;
+  /* 🎲 CUÁNTOS INVIERNOS TRAEN DILEMA. Medido el 25-ago: con .55 salían 4,3 por partida y UNO DE CADA
+     CUATRO jugadores veía un solo dilema en toda su carrera de jefe (y un 4%, ninguno). El límite no
+     eran los filtros —cada invierno hay ~8,7 dilemas elegibles esperando turno— sino este dado y que
+     la partida típica dura 9 temporadas. Subido a .70 a petición de Carlos (su horquilla: 65-75%). */
+  if(!ch(.70)) return null;
   const pool=TP_DILEMAS.filter(d=>!S.usedDilemmas[d.id] && (!d.cond || d.cond()));
   if(!pool.length) return null;
   return pool[irnd(0,pool.length-1)];
