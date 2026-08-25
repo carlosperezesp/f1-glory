@@ -11645,6 +11645,7 @@ function simTP(row){
        invisible: la última oferta te dice a la cara que es la última.
    El contrato manda en el invierno. Mientras dure, sigues; cuando se acaba, hay mercado. */
 const TP_TOPE=20;                      // temporadas máximas en el muro
+const TP_DESPEDIDA=17;                 // …y la temporada en la que al DUEÑO se le pregunta hasta cuándo
 function tpDuracionContrato(tn){
   // los grandes atan corto (te exigen ya); los pequeños dan margen porque necesitan paciencia
   const perf=S.f1perf[tn]??75;
@@ -11688,6 +11689,14 @@ function tpWinter(){
   // 🧑‍✈️ el dueño no tiene contrato que renovar ni muro ajeno que le tiente
   if(!(S.tpOwner && S.tpOwner.k==="self")){
     if(S.tpContract<=0){ tpContratoScreen(); return; }      // se acabó: hay mercado
+  } else {
+    /* 🏁 …Y POR ESO NO SE JUBILABA NUNCA. Al dueño no le firma nadie, así que no pasaba por
+       tpContratoScreen y TP_TOPE no le tocaba: medido el 25-ago, media de 25 temporadas y una
+       partida de 43 contra un tope de 20. La decisión de Carlos («que no te echen» no es «que no te
+       jubiles») se resuelve preguntándoselo A ÉL en rueda de prensa: se anuncia una fecha y esa
+       fecha se cumple. El aviso deja de ser una pastilla y pasa a ser una promesa suya. */
+    if(S._despedida!=null && yearNow()>S._despedida){ tpFinDeCarrera(); return; }
+    if(cuantoQuedaCond()){ tpCuantoQueda(); return; }
   }
   if(tpTemptCheck()) return;
   tpYearStart();
@@ -11758,11 +11767,71 @@ function tpContratoScreen(){
   scrollToDecision();
 }
 /* 🏁 el final anunciado: cumpliste el último contrato y te retiras sabiéndolo desde que lo firmaste */
+/* 🎙️ «¿HASTA CUÁNDO?» (idea de Carlos, 25-ago). No es un dilema del bote: es una escena GARANTIZADA,
+   como «Queremos ganar YA», porque de ella depende que la partida termine. Una sola condición cubre
+   todos los casos sin excepciones — dueño, temporada 17 o más, y solo una vez:
+     · compras en la 7  → te lo preguntan en la 17 → acabas en la 19, 20 o 21
+     · compras en la 19 → te lo preguntan en el acto → acabas en la 21, 22 o 23
+   Así comprar tarde nunca te castiga, y no hace falta bloquear la compra ni regalar años a dedo.
+   Y ninguna respuesta es gratis: irte pronto aprieta el coche pero te seca el mercado; quedarte da
+   tiempo de construir y el paddock te lo cobra en imagen. */
+function cuantoQuedaCond(){
+  if(S.cat!=="TP" || !S.tpTeam) return false;
+  if(!(S.tpOwner && S.tpOwner.k==="self")) return false;
+  if(S._despedida!=null) return false;              // ya diste tu fecha
+  return S.age >= TP_DESPEDIDA;
+}
+function tpCuantoQueda(){
+  const tn=S.tpTeam, años=S.age;
+  setDecision("🎙️ "+L("¿Hasta cuándo?","How much longer?",{pt:"Até quando?"})+" · "+teamDisp(S.team||{name:tn}),
+    L(`El equipo es tuyo y llevas ${años} años al frente. En la rueda de prensa de pretemporada, un periodista al que conoces desde hace una década te lo pregunta sin maldad, casi con cariño: ¿hasta cuándo piensas seguir? No es una pregunta de hoy. Lo que digas aquí lo van a leer tus ingenieros, tus pilotos y los que se plantean venir.`,
+      `The team is yours and you've been in charge for ${años} years. At the pre-season press conference, a journalist you've known for a decade asks it without malice, almost fondly: how much longer do you plan to go on? It isn't a question about today. What you say here will be read by your engineers, your drivers, and everyone thinking of joining.`,
+      {pt:`A equipe é sua e você está no comando há ${años} anos. Na coletiva de pré-temporada, um jornalista que você conhece há uma década pergunta sem maldade, quase com carinho: até quando pretende seguir? Não é uma pergunta sobre hoje. O que você disser aqui vão ler os seus engenheiros, os seus pilotos e quem pensa em vir.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const mk=(emoji,txt,sub,fn)=>{
+    const b=document.createElement("button"); b.className="offer dilemma";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${emoji}</span>
+      <span class="info"><span class="name">${txt}</span><span class="sub" style="display:block">${sub}</span></span>`;
+    b.onclick=()=>{ box.innerHTML=""; fn(); refreshCard(); tpYearStart(); };
+    box.appendChild(b);
+  };
+  mk("⏳", L("«Dos años más y me retiro»","«Two more years and I retire»",{pt:"«Mais dois anos e me aposento»"}),
+     L("Todo a este proyecto, y a correr","Everything into this project, and go",{pt:"Tudo neste projeto, e vamos"}),
+     ()=>{ S._despedida=años+2; TPCAR(1.5);
+       if(S.cache[tn]!=null) S.cache[tn]=Math.max(40,S.cache[tn]-3);
+       TPTGT(-2);
+       S.pendingEvents.push(L(`🎙️ Lo dices con fecha, que es como se dicen las cosas que van en serio. La fábrica entiende que no hay tiempo que perder y aprieta desde enero… pero los que estaban pensando en firmar aquí se lo piensan otra vez: tienen dudas de entrar en una casa que va a cambiar de dueño. +coche, −caché, −proyecto`,
+         `🎙️ You say it with a date on it, which is how serious things get said. The factory understands there's no time to lose and pushes from January… but those who were thinking of signing here think again: they have doubts about joining a house that's about to change hands. +car, −standing, −project`,
+         {pt:`🎙️ Você diz com data, que é como se dizem as coisas sérias. A fábrica entende que não há tempo a perder e aperta desde janeiro… mas quem pensava em assinar aqui pensa de novo: tem dúvidas de entrar numa casa que vai mudar de dono. +carro, −cachê, −projeto`})); });
+  mk("🎯", L("«Tres. Ni uno más»","«Three. Not one more»",{pt:"«Três. Nem um a mais»"}),
+     L("Suficiente para acabar lo empezado","Enough to finish what you started",{pt:"Suficiente para terminar o começado"}),
+     ()=>{ S._despedida=años+3;
+       if(S.cache[tn]!=null) S.cache[tn]=Math.min(96,S.cache[tn]+1);
+       S.pendingEvents.push(L(`🎙️ Ni carrera de fondo ni sprint. Suficiente para acabar lo empezado, corto para que nadie se acomode. +caché leve`,
+         `🎙️ Neither a marathon nor a sprint. Long enough to finish what you started, short enough that nobody settles in. slight +standing`,
+         {pt:`🎙️ Nem maratona nem sprint. Suficiente para terminar o começado, curto para que ninguém se acomode. +cachê leve`})); });
+  mk("🏗️", L("«Cuatro: aquí hay proyecto»","«Four: there's a project here»",{pt:"«Quatro: aqui há projeto»"}),
+     L("Hablar de lo que se está construyendo","Talk about what's being built",{pt:"Falar do que se está construindo"}),
+     ()=>{ S._despedida=años+4; TPTGT(3); TPRE(-.8);
+       S.pendingEvents.push(L(`🎙️ Hablas de lo que se está construyendo y de la gente que lo construye, y en la fábrica sienta bien. Fuera, alguno levanta la ceja: hay quien lee que te cuesta soltar el sitio. +proyecto, −fama leve`,
+         `🎙️ You talk about what's being built and the people building it, and it goes down well in the factory. Outside, an eyebrow or two goes up: some read it as a man who finds it hard to let go. +project, slight −fame`,
+         {pt:`🎙️ Você fala do que se está construindo e de quem constrói, e na fábrica cai bem. Lá fora, alguém levanta a sobrancelha: há quem leia que custa soltar o posto. +projeto, −fama leve`})); });
+  scrollToDecision();
+}
 function tpFinDeCarrera(){
-  setDecision(L("🏁 Se acaba tu último contrato",`🏁 Your last contract is up`,{pt:"🏁 Acaba o seu último contrato"}),
-    L(`Lo sabías al firmarlo: ${S.tpTeam} era tu última parada. ${TP_TOPE} temporadas en el muro y el paddock ya es otro. Es hora.`,
-      `You knew when you signed it: ${S.tpTeam} was your last stop. ${TP_TOPE} seasons on the pit wall and the paddock is a different place now. It's time.`,
-      {pt:`Você sabia ao assinar: a ${S.tpTeam} era a sua última parada. ${TP_TOPE} temporadas no muro e o paddock já é outro. É hora.`}));
+  /* 🧑‍✈️ el dueño no se despide de un contrato: se despide de la fecha que anunció él mismo */
+  const _mio=!!(S.tpOwner && S.tpOwner.k==="self");
+  setDecision(_mio
+      ? L("🏁 La fecha que diste","🏁 The date you gave",{pt:"🏁 A data que você deu"})
+      : L("🏁 Se acaba tu último contrato",`🏁 Your last contract is up`,{pt:"🏁 Acaba o seu último contrato"}),
+    _mio
+    ? L(`Lo dijiste en una rueda de prensa y el paddock tomó nota. ${S.tpTeam} es tuyo y seguirá siéndolo, pero el muro ya no. Has cumplido tu palabra: es hora.`,
+        `You said it in a press conference and the paddock made a note. ${S.tpTeam} is yours and will stay yours, but the pit wall isn't any more. You kept your word: it's time.`,
+        {pt:`Você disse numa coletiva e o paddock anotou. A ${S.tpTeam} é sua e continuará sendo, mas o muro já não. Cumpriu a sua palavra: é hora.`})
+    : L(`Lo sabías al firmarlo: ${S.tpTeam} era tu última parada. ${TP_TOPE} temporadas en el muro y el paddock ya es otro. Es hora.`,
+        `You knew when you signed it: ${S.tpTeam} was your last stop. ${TP_TOPE} seasons on the pit wall and the paddock is a different place now. It's time.`,
+        {pt:`Você sabia ao assinar: a ${S.tpTeam} era a sua última parada. ${TP_TOPE} temporadas no muro e o paddock já é outro. É hora.`}));
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   const b=document.createElement("button"); b.className="offer retire";
