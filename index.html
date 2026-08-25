@@ -3559,6 +3559,7 @@ function startCareer(){
     seats:{}, dpool:[], rookies:[...ERA.rookies], crossovers:ERA.crossovers.map(c=>({...c})), burned:{}, neverHire:{}, poachTeam:null, mySeatTeam:null,
     palm:{}, gigTeam:null, gigResucitado:null, gigDesde:null, gigFuga:null, llegadaExp:{}, gigOfrecidos:[],   // 🛌 palmarés vivo + el pacto del gigante dormido
     dilPod:0,              // 🥉 podios ganados en un dilema, a sumar al cerrar la temporada
+    tpDilWin:0, tpDilPod:0, // 🏁 …y sus gemelos del modo JEFE: los suma simTP, no simF1
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
@@ -11518,6 +11519,12 @@ function simTP(row){
     if(r===1) champDrv=d;
   });
   if(tWins>races){ const f=races/tWins; tWins=Math.round(tWins*f); tPods=Math.round(tPods*f); }
+  /* 🏁 LO QUE PROMETE UN DILEMA, SE PAGA. Va DESPUÉS del recorte de arriba a propósito: ese recorte
+     ajusta los números narrativos al calendario, y un podio que te has ganado en una decisión no es
+     un número narrativo — es un hecho. Si el texto dice «el podio es vuestro», aparece en la
+     temporada (aviso de Carlos, 25-ago). */
+  if(S.tpDilWin){ tWins+=S.tpDilWin; tPods+=S.tpDilWin; S.tpDilWin=0; }
+  if(S.tpDilPod){ tPods+=S.tpDilPod; S.tpDilPod=0; }
   S.wins+=tWins; S.podiums+=tPods; S.gp+=races;
   row.wins=tWins; row.pods=tPods; row.pos=cPos; row.pts=null; row.constrPos=null;
   row.tpLine=parts.join(" · ");
@@ -11644,6 +11651,24 @@ function simTP(row){
      · «gané 8 mundiales y a los 20 años el juego me echó sin avisar» → el tope deja de ser un muro
        invisible: la última oferta te dice a la cara que es la última.
    El contrato manda en el invierno. Mientras dure, sigues; cuando se acaba, hay mercado. */
+/* 💷 LA MONEDA DE LA VENTA SIMBÓLICA (petición de Carlos, 25-ago: «1 libra es poco universal»). El
+   precio de una libra viene de la historia real —Ross Brawn compró Honda por £1— y encaja porque la
+   inmensa MAYORÍA de los equipos de F1 se dirigen desde Inglaterra, incluidos los de nombre alemán o
+   japonés. Así que la libra se queda de norma y aquí solo viven las excepciones: los equipos cuya
+   casa está de verdad fuera. El euro no existía antes de 1999, así que en las eras viejas esos
+   mismos equipos venden por un dólar. */
+const MONEDA_NO_BRITANICA={
+  "Ferrari":"€", "Alfa Romeo":"€", "Toro Rosso":"€", "AlphaTauri":"€", "Fondmetal":"€",
+  "Sauber":"€", "BMW Sauber":"€", "Audi":"€", "Prost GP":"€", "Renault":"€", "Toyota":"€",
+  "Haas":"$", "Cadillac":"$", "Andretti":"$"
+};
+function monedaSimbolica(tn){
+  const m=MONEDA_NO_BRITANICA[tn];
+  if(!m) return L("una libra","a pound",{pt:"uma libra"});
+  if(m==="$") return L("un dólar","a dollar",{pt:"um dólar"});
+  return yearNow()>=1999 ? L("un euro","a euro",{pt:"um euro"})
+                         : L("un dólar","a dollar",{pt:"um dólar"});
+}
 const TP_TOPE=20;                      // temporadas máximas en el muro
 const TP_DESPEDIDA=17;                 // …y la temporada en la que al DUEÑO se le pregunta hasta cuándo
 function tpDuracionContrato(tn){
@@ -12611,11 +12636,12 @@ const TP_DILEMAS=[
     `The owner calls you in on a Tuesday, which is the day for bad news. He's out: the numbers don't add up and he wants to sign his exit before the hole grows. And then he says it: "Either you find a buyer… or you take it yourself. For what it owes. For a pound, practically." On the table sits a folder with the debts. It isn't small. But the whole team — the factory, the people, the name — would fit inside your signature.`,
     {pt:`O dono te chama numa terça-feira, que é o dia das más notícias. Ele está fora: os números não fecham e quer assinar a saída antes que o rombo cresça. E então diz a frase: «Ou você encontra comprador… ou fica com ela você. Pelo que ela deve. Por uma libra, praticamente.» Sobre a mesa há uma pasta com as dívidas. Não é pequena. Mas a equipe inteira — a fábrica, a gente, o nome — caberia na sua assinatura.`}),
   opts:[
-   {l:()=>L("Comprarlo tú: por una libra y sus deudas","Buy it yourself: a pound and its debts",{pt:"Comprar você: uma libra e as dívidas"}),
+   {l:()=>{ const mo=monedaSimbolica(S.tpTeam);
+      return L(`Comprarlo tú: por ${mo} y sus deudas`,`Buy it yourself: ${mo} and its debts`,{pt:`Comprar você: ${mo} e as dívidas`}); },
     r:()=>{ S.tpOwner=OWNER_SELF; S.tpContract=null; TPTGT(-rnd(2,4));
       S._bautizo=true;   // 🏷️ el equipo es tuyo: elegirás su nombre al pasar de pantalla
       S._histCompra={team:S.tpTeam, year:yearNow()};   // 📰 el día que lo compraste, para el titular
-      return L(`Firmas. La libra es simbólica; las deudas no. El lunes siguiente entras por la misma puerta de siempre y todo es distinto: nadie puede echarte nunca más, y nunca más va a ser culpa de otro. El proyecto arranca cojo — no hay dinero — pero es TUYO. −proyecto`,
+      return L(`Firmas. El precio es simbólico; las deudas no. El lunes siguiente entras por la misma puerta de siempre y todo es distinto: nadie puede echarte nunca más, y nunca más va a ser culpa de otro. El proyecto arranca cojo — no hay dinero — pero es TUYO. −proyecto`,
                `You sign. The pound is symbolic; the debts are not. The following Monday you walk through the same door as always and everything is different: nobody can ever sack you again, and it will never be someone else's fault again. The project starts limping — there's no money — but it is YOURS. −project`,
                {pt:`Você assina. A libra é simbólica; as dívidas não. Na segunda seguinte você entra pela mesma porta de sempre e tudo é diferente: ninguém pode te demitir nunca mais, e nunca mais vai ser culpa de outro. O projeto começa mancando — não há dinheiro — mas é SEU. −projeto`}); }},
    {l:()=>L("Buscarle un comprador y seguir de jefe","Find it a buyer and stay on as boss",{pt:"Achar um comprador e seguir de chefe"}),
@@ -13276,6 +13302,110 @@ const TP_DILEMAS=[
          const d=tpDrvs().find(x=>x&&x.name===c.nom);
          if(d){ d.tpRencor=true; d.tpRencorPor={motivo:"silencio", year:yearNow(), team:S.tpTeam}; }
          return L(`El silencio lo llena otro: ${c.n} suelta en una entrevista que el coche «no es lo que le prometieron». Ahora el titular lo ha escrito él, y no ha olvidado quién no dio la cara. −fama, y te lo guarda`,`Someone else fills the silence: ${c.n} tells an interview the car «isn't what he was promised». Now he has written the headline, and he hasn't forgotten who failed to front up. −fame, and he holds it against you`,{pt:`O silêncio é preenchido por outro: ${c.n} solta numa entrevista que o carro «não é o que prometeram». Agora a manchete escreveu ele, e não esqueceu quem não deu a cara. −fama, e ele guarda mágoa`}); }]); }}]},
+
+ /* 🚩 «LA BANDERA ROJA» (tanda de domingo de Carlos, 25-ago). SIN FILTRO a propósito: basta con tener
+    equipo y un piloto, así que puede salir en cualquier partida y en cualquier era — que es lo que
+    pide el catálogo para dejar de repetirse. Y lo que promete, lo paga: la rama buena de la salida
+    agresiva acredita un PODIO de verdad vía `tpDilPod`, que simTP suma a la temporada (aviso de
+    Carlos: «si prometes que sumas un podio hay que sumarlo eh»). */
+ {id:"tpBanderaRoja",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs(); if(!a.length) return false;
+    const cs=gpList(yearNow()); if(!cs.length) return false;
+    const c=cs[dilVar("brGp",()=>irnd(0,cs.length-1))];
+    S._br={n:surname(a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0].name),
+           nom:a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0].name,
+           gp:c.n, v:dilVar("brV",()=>irnd(20,Math.max(24,Math.round(c.laps*.6))))};
+    return true; },
+  t:()=>L("La bandera roja","The red flag",{pt:"A bandeira vermelha"}),
+  d:()=>{ const b=S._br||{};
+    return L(`Vuelta ${b.v} en ${b.gp} y hay un coche contra el muro. Bandera roja: la carrera se para y todo el mundo puede montar gomas nuevas sin pagar peaje. ${b.n} iba segundo con una estrategia que os había salido redonda, y acaba de evaporarse. Quedan veinte minutos de parón y en el muro te miran.`,
+             `Lap ${b.v} at ${b.gp} and there's a car in the wall. Red flag: the race stops and everyone gets fresh tyres without paying for them. ${b.n} was running second on a strategy that had worked perfectly, and it has just evaporated. There are twenty minutes of stoppage left and the pit wall is looking at you.`,
+             {pt:`Volta ${b.v} em ${b.gp} e há um carro no muro. Bandeira vermelha: a corrida para e todo mundo pode montar pneus novos sem pagar pedágio. ${b.n} estava em segundo com uma estratégia que tinha saído redonda, e acaba de evaporar. Faltam vinte minutos de parada e no muro olham para você.`}); },
+  opts:[
+   {l:()=>L("«Arriesgamos con blandos»","«We gamble on softs»",{pt:"«Arriscamos com macios»"}),
+    r:()=>{ const b=S._br||{};
+      return roll(
+       [5,()=>{ S.tpDilPod=(S.tpDilPod||0)+1; TPRE(1.5);
+         return L(`Sale como un misil, se come a dos coches en tres vueltas y el podio es vuestro. +fama, y ese podio va a la temporada`,`He launches, eats two cars in three laps and the podium is yours. +fame, and that podium goes into the season`,{pt:`Ele sai como um míssil, come dois carros em três voltas e o pódio é de vocês. +fama, e esse pódio vai para a temporada`}); }],
+       [5,()=>(TPCAR(-1),L(`A ocho vueltas del final las gomas dicen basta y os pasan por dentro. Se veía venir desde la vuelta cincuenta, y aun así dolió. −coche`,`With eight laps to go the tyres give up and they come past on the inside. You could see it coming from lap fifty, and it still hurt. −car`,{pt:`A oito voltas do fim os pneus dizem basta e passam por dentro. Dava para ver desde a volta cinquenta, e ainda assim doeu. −carro`}))]); }},
+   {l:()=>L("«Aseguramos con medios»","«We play safe on mediums»",{pt:"«Asseguramos com médios»"}),
+    r:()=>{ const tn=S.tpTeam;
+      if(S.cache[tn]!=null) S.cache[tn]=Math.min(96,S.cache[tn]+1);
+      return L("Ni épica ni desastre: los puntos entran, que es lo que había que hacer. En el muro nadie se hace famoso, pero nadie se estrella. +caché leve","Neither glory nor disaster: the points come home, which is what had to happen. Nobody on a pit wall becomes famous, but nobody crashes either. slight +standing",{pt:"Nem épico nem desastre: os pontos entram, que era o que tinha de acontecer. No muro ninguém fica famoso, mas ninguém se estraga. +cachê leve"}); }},
+   /* C · dejarle elegir. Cuatro finales, porque acertar y fiarse no son lo mismo: hay pilotos que
+      aciertan y siguen queriendo que decidas tú, y hay quien falla y lo asume como un adulto. */
+   {l:()=>L("«Que decida él»","«Let him choose»",{pt:"«Que ele decida»"}),
+    r:()=>{ const b=S._br||{};
+      return roll(
+       [4,()=>{ tpDrvSkill(b.nom,1); TPRE(1);
+         return L(`Elige blandos, acierta, y a partir de ese domingo se fía de vosotros un poco más: le disteis el volante cuando importaba. +moral, +fama`,`He picks softs, gets it right, and from that Sunday on he trusts you a little more: you handed him the wheel when it mattered. +morale, +fame`,{pt:`Ele escolhe macios, acerta, e a partir daquele domingo confia um pouco mais em vocês: deram a ele o volante quando importava. +moral, +fama`}); }],
+       [3,()=>(TPRE(1),L(`Elige bien y sale bien, pero en el corrillo de después suelta que para eso está el muro. Hay pilotos que no quieren el volante fuera de la pista. +fama`,`He chooses well and it works, but afterwards he mutters that this is what the pit wall is for. Some drivers don't want the wheel once they're out of the car. +fame`,{pt:`Ele escolhe bem e dá certo, mas depois solta que é para isso que existe o muro. Há pilotos que não querem o volante fora da pista. +fama`}))],
+       [2,()=>L(`Elige, falla, y es el primero en decirlo por radio antes de llegar al box. Nadie le pide explicaciones porque ya las ha dado él. Sin cambios.`,`He chooses, gets it wrong, and is the first to say so on the radio before he reaches the garage. Nobody asks him to explain because he already has. No change.`,{pt:`Ele escolhe, erra, e é o primeiro a dizer no rádio antes de chegar ao box. Ninguém pede explicações porque ele já as deu. Sem mudanças.`})],
+       [3,()=>{ tpDrvSkill(b.nom,-1);
+         return L(`Elige, falla, y en la rueda de prensa cuenta que le dejasteis solo con esa decisión. Técnicamente es verdad, y eso es lo que más escuece. −moral`,`He chooses, gets it wrong, and tells the press you left him alone with that call. Technically it's true, and that's the part that stings. −morale`,{pt:`Ele escolhe, erra, e na coletiva conta que o deixaram sozinho com aquela decisão. Tecnicamente é verdade, e é isso que mais arde. −moral`}); }]); }}]},
+
+ /* 📻 «LA RADIO SE VUELVE CONTRA TI» (entrada 27 del doc, texto de Carlos). Sin filtro más allá de
+    tener un piloto. La opción privada tiene tres finales porque a veces una conversación de una hora
+    simplemente… no cambia nada, y eso también es verdad en un garaje. */
+ {id:"tpPilotoEnLlamas",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs(); if(!a.length) return false;
+    const d=a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0];
+    S._llamas={n:surname(d.name), nom:d.name};
+    return true; },
+  t:()=>L("La radio se vuelve contra ti","The radio turns on you",{pt:"O rádio se vira contra você"}),
+  d:()=>{ const c=S._llamas||{};
+    return L(`La carrera no va bien para ${c.n}. A mitad de carrera suelta por radio que le habéis arruinado la estrategia, y explota con unas palabras que la televisión emite antes de que acabe la vuelta. Para el lunes es un vídeo con dos millones de reproducciones. Y pide veros a solas antes del próximo Gran Premio.`,
+             `The race is going badly for ${c.n}. Halfway through he says on the radio that you've ruined his strategy, and he explodes with words television broadcasts before the lap is over. By Monday it's a video with two million views. And he asks to see you alone before the next Grand Prix.`,
+             {pt:`A corrida não vai bem para ${c.n}. No meio da prova ele solta no rádio que arruinaram a estratégia dele, e explode com palavras que a televisão transmite antes de a volta acabar. Na segunda é um vídeo com dois milhões de visualizações. E pede para vê-los a sós antes do próximo Grande Prêmio.`}); },
+  opts:[
+   {l:()=>L("Resolverlo en privado","Sort it out in private",{pt:"Resolver em privado"}),
+    r:()=>{ const c=S._llamas||{};
+      return roll(
+       [5,()=>{ tpDrvSkill(c.nom,1);
+         return L(`Habláis una hora, sale con la razón a medias y el asunto muere ahí. +moral`,`You talk for an hour, he leaves half-right, and the matter dies there. +morale`,{pt:`Vocês falam uma hora, ele sai com metade da razão e o assunto morre ali. +moral`}); }],
+       [3,()=>L(`Habláis una hora. Ni se arregla ni se rompe: los dos decís lo que teníais que decir y el lunes cada uno vuelve a lo suyo. Sin cambios.`,`You talk for an hour. Nothing is fixed and nothing breaks: you both say what you had to say and on Monday you each go back to work. No change.`,{pt:`Vocês falam uma hora. Nem conserta nem quebra: os dois dizem o que tinham a dizer e na segunda cada um volta ao seu. Sem mudanças.`})],
+       [3,()=>(TPRE(-1.5),L(`Se arregla dentro, pero fuera quedó sin respuesta y hay quien lee que aquí manda él. −fama`,`It's settled inside, but outside it went unanswered and some read it as him being the one in charge here. −fame`,{pt:`Resolve-se por dentro, mas por fora ficou sem resposta e há quem leia que aqui quem manda é ele. −fama`}))]); }},
+   {l:()=>L("Contestarle en público","Answer him in public",{pt:"Responder em público"}),
+    r:()=>{ const c=S._llamas||{};
+      return roll(
+       [45,()=>(TPRE(2),L(`Dejas claro quién ordena las estrategias en esta casa. El paddock toma nota de que aquí hay un jefe. +fama`,`You make it clear who calls the strategies in this house. The paddock notes that there's a boss here. +fame`,{pt:`Você deixa claro quem ordena as estratégias nesta casa. O paddock anota que aqui há um chefe. +fama`}))],
+       [55,()=>{ tpDrvSkill(c.nom,-1);
+         const d=tpDrvs().find(x=>x&&x.name===c.nom);
+         if(d){ d.tpRencor=true; d.tpRencorPor={motivo:"silencio", year:yearNow(), team:S.tpTeam}; }
+         return L(`Le corriges delante de todos, y eso no se olvida. −moral, y te lo guarda`,`You correct him in front of everyone, and that isn't forgotten. −morale, and he holds it against you`,{pt:`Você o corrige diante de todos, e isso não se esquece. −moral, e ele guarda mágoa`}); }]); }},
+   {l:()=>L("Multarle y pasar página","Fine him and move on",{pt:"Multar e virar a página"}),
+    r:()=>{ const c=S._llamas||{}, tn=S.tpTeam;
+      if(S.cache[tn]!=null) S.cache[tn]=Math.min(96,S.cache[tn]+2);
+      tpDrvSkill(c.nom,-1);
+      return L(`La multa sale en la prensa, el vestuario entiende el mensaje y él lo entiende de otra manera. +caché, −moral`,`The fine makes the papers, the team understands the message and he understands it differently. +standing, −morale`,{pt:`A multa sai na imprensa, o vestiário entende o recado e ele entende de outro jeito. +cachê, −moral`}); }}]},
+
+ /* 🔧 «LA PARADA IMPOSIBLE» (entrada 125 del doc). Sin filtro. Es el dilema más sucio del modo: no se
+    trata de ganar o perder, sino de si autorizas algo que sabes que no deberías. Las dos ramas de
+    autorizarlo suman coche (petición de Carlos: la parada ES más rápida aunque salga mal) — lo que
+    cambia es cuánto, y lo que pasa el domingo que falla. */
+ {id:"tpParadaImposible",
+  cond:()=>S.cat==="TP" && !!S.tpTeam,
+  t:()=>L("La parada imposible","The impossible stop",{pt:"A parada impossível"}),
+  d:()=>L(`Tus mecánicos llevan un mes con el cronómetro y creen que pueden bajar dos décimas quitando de la pistola de ruedas un seguro que, dicen, no hace falta. Te lo cuentan en voz baja y sin mirarse entre ellos, porque saben perfectamente lo que están proponiendo. Y sospechas que no sois los únicos que lo han pensado.`,
+          `Your mechanics have spent a month with a stopwatch and think they can find two tenths by removing a safety catch from the wheel gun that, they say, isn't needed. They tell you quietly and without looking at each other, because they know exactly what they're proposing. And you suspect you aren't the only ones who have thought of it.`,
+          {pt:`Os seus mecânicos passaram um mês com o cronômetro e acham que podem tirar dois décimos removendo da pistola de rodas uma trava que, dizem, não faz falta. Contam baixinho e sem se olharem, porque sabem exatamente o que estão propondo. E você suspeita que não são os únicos que pensaram nisso.`}),
+  opts:[
+   {l:()=>L("Autorizarlo","Authorise it",{pt:"Autorizar"}),
+    r:()=>roll(
+     [6,()=>(TPCAR(1.5),L(`Dos décimas menos en cada parada, y en un año esas décimas son un podio. Nadie pregunta y todo el mundo lo sabe. +coche`,`Two tenths off every stop, and across a year those tenths are a podium. Nobody asks and everybody knows. +car`,{pt:`Dois décimos a menos em cada parada, e em um ano esses décimos são um pódio. Ninguém pergunta e todo mundo sabe. +carro`}))],
+     [4,()=>(TPCAR(.5),TPRE(-1.5),L(`Las paradas son más rápidas, sí. Pero una rueda mal puesta en la vuelta 40 deja el coche tirado a la salida del pit-lane, delante de todas las cámaras. Nadie dice nada, y todos saben por qué. +coche leve, −fama`,`The stops are quicker, yes. But a wheel not properly on at lap 40 leaves the car stranded at the pit exit, in front of every camera. Nobody says anything, and everybody knows why. slight +car, −fame`,{pt:`As paradas são mais rápidas, sim. Mas uma roda mal colocada na volta 40 deixa o carro parado na saída dos boxes, diante de todas as câmeras. Ninguém diz nada, e todos sabem por quê. +carro leve, −fama`}))])},
+   {l:()=>L("Ni hablar","Absolutely not",{pt:"Nem pensar"}),
+    r:()=>{ const tn=S.tpTeam;
+      if(S.cache[tn]!=null) S.cache[tn]=Math.min(96,S.cache[tn]+2);
+      return L(`Les dices que no, y les explicas por qué. Perdéis dos décimas y ganáis un grupo de mecánicos que no tiene que bajar la voz para hablar contigo. +caché`,`You tell them no, and you explain why. You lose two tenths and gain a crew that doesn't have to lower its voice to talk to you. +standing`,{pt:`Você diz não, e explica por quê. Perdem dois décimos e ganham um grupo de mecânicos que não precisa baixar a voz para falar com você. +cachê`}); }},
+   {l:()=>L("Preguntar a la FIA si es legal","Ask the FIA whether it's legal",{pt:"Perguntar à FIA se é legal"}),
+    r:()=>ch(.55)
+      ? (TPCAR(1),TPRE(1.5),L(`Contestan que sí, que no hay nada escrito. Lo montáis con papel de por medio… y de paso os enteráis de quién llevaba dos años haciéndolo sin preguntar. +coche, +fama`,`They answer yes, there's nothing written down. You fit it with paperwork behind you… and along the way you find out who has been doing it for two years without asking. +car, +fame`,{pt:`Respondem que sim, não há nada escrito. Vocês montam com papel de por meio… e de quebra descobrem quem fazia isso há dois anos sem perguntar. +carro, +fama`}))
+      : (function(){ const tn=S.tpTeam;
+          if(S.cache[tn]!=null) S.cache[tn]=Math.max(40,S.cache[tn]-2);
+          return L(`Contestan que no y lo prohíben para todos, con circular y fecha. Vosotros no lo montáis… y en el pit-lane saben perfectamente quién preguntó. −caché`,`They answer no and ban it for everyone, with a circular and a date. You don't fit it… and everyone in the pit lane knows exactly who asked. −standing`,{pt:`Respondem que não e proíbem para todos, com circular e data. Vocês não montam… e no pit-lane sabem perfeitamente quem perguntou. −cachê`}); })()}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
