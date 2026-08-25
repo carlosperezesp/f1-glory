@@ -4217,7 +4217,7 @@ function reserveCallup(){
 }
 function teammateOf(teamName){
   const slots=S.seats[teamName];
-  if(!slots) return {name:"S. Hayes 🎬", skill:rnd(82,88), titles:0, age:50, flag:"🇺🇸"}; // APXGP
+  if(!slots) return {name:"S. Hayes", skill:rnd(82,88), titles:0, age:50, flag:"🇺🇸"}; // APXGP
   const d=slots.find(x=>x!=="PLAYER");
   return d||{name:"—",skill:75,titles:0,age:25,flag:"🏁"};
 }
@@ -9011,7 +9011,11 @@ function nextOffers(){
       // de la película (aleatorio por partida): Sonny Hayes 🇺🇸 (Brad Pitt) o Joshua Pearce 🇬🇧; tú
       // ocupas el asiento del otro.
       if(!S.seats.APXGP){
-        const stars=[{name:"S. Hayes 🎬",flag:"🇺🇸",age:50}, {name:"J. Pearce 🎬",flag:"🇬🇧",age:23}];
+        /* 🎬 SIN la claqueta en el NOMBRE (lo cazó un jugador de Carlos, 25-ago): veinte años después
+           estos dos aparecen en la clasificación de una temporada normal y el emoji ahí no explica
+           nada, solo parece un adorno raro. El guiño se queda donde sí se entiende: en la oferta
+           («Una última oportunidad 🎬»), en la victoria con APXGP y en el veredicto final. */
+        const stars=[{name:"S. Hayes",flag:"🇺🇸",age:50}, {name:"J. Pearce",flag:"🇬🇧",age:23}];
         const m=irnd(0,1);
         const mate ={...stars[m],   skill:Math.round(rnd(84,89)), ceil:90, titles:0};
         const other={...stars[1-m], skill:Math.round(rnd(78,81)), ceil:88, titles:0};
