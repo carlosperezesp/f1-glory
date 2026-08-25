@@ -11548,6 +11548,26 @@ function simTP(row){
   const constrChamp=(row.top3c && row.top3c[0])===tn;
   /* 🏆 el remate de «Queremos ganar YA»: te plantaste ante el consejo, no quemaste el coche del año
      que viene… y ganaste igual (medido: pasa el 36% de las veces). Hay que celebrarlo. */
+  /* 🏗️ EL VEREDICTO DE «APURAR LA VENTANA» (tpReconstruccion). Como en «Queremos ganar YA», el texto
+     NO puede afirmar nada al elegir —eso sería pillarse los dedos, regla de oro de Carlos—: se marca
+     el año y aquí se mira el resultado REAL. Tres finales: ganasteis (la ventana era la puerta),
+     seguisteis arriba (otro año grande sin corona), o os caísteis del podio. */
+  if(S._apuraVentana===row.year){
+    S._apuraVentana=null;
+    if(constrChamp){ S.tpPrest=Math.min(99,S.tpPrest+5);
+      row.events.push(L("🏗️ Apurasteis la ventana sin tocar el concepto… y la ventana no estaba cerrada: era la puerta. CAMPEONES con el coche que vuestro jefe técnico quería tirar a la basura.",
+        "🏗️ You squeezed the window without touching the concept… and the window wasn't closing: it was a door. CHAMPIONS with the car your technical chief wanted to bin.",
+        {pt:"🏗️ Vocês espremeram a janela sem tocar no conceito… e a janela não estava fechando: era uma porta. CAMPEÕES com o carro que o seu chefe técnico queria jogar fora."}));
+    } else if(cPos<=3){ S.tpPrest=Math.min(99,S.tpPrest+2);
+      row.events.push(L(`🏗️ Otro año grande sin corona: ${cPos}º de constructores con el mismo concepto de siempre. Nadie os lo reprocha… todavía.`,
+        `🏗️ Another big year without a crown: P${cPos} in the constructors with the same old concept. Nobody holds it against you… yet.`,
+        {pt:`🏗️ Mais um ano grande sem coroa: ${cPos}º de construtores com o conceito de sempre. Ninguém reclama… ainda.`}));
+    } else { S.tpPrest=Math.max(5,S.tpPrest-3);
+      row.events.push(L(`🏗️ El de delante también evolucionaba. Apurasteis una ventana que se cerró con vosotros dentro: ${cPos}º, y el concepto sigue siendo el mismo.`,
+        `🏗️ The team ahead was evolving too. You squeezed a window that shut with you inside it: P${cPos}, and the concept is still the same one.`,
+        {pt:`🏗️ Quem estava à frente também evoluía. Vocês espremeram uma janela que fechou com vocês dentro: ${cPos}º, e o conceito continua o mesmo.`}));
+    }
+  }
   if(S._ganarYaFirme===row.year){
     if(constrChamp){ S.tpPrest=Math.min(99,S.tpPrest+4);
       row.events.push(L("🏆 Ganaste. Con el plan que querían tirar a la basura y con el coche del año que viene ya rodando en el túnel. Nadie en esa sala te va a pedir perdón, pero todos saben lo que pasó. +fama","🏆 You won. With the plan they wanted to bin and next year's car already turning in the tunnel. Nobody in that room will apologise, but everyone knows what happened. +fame",{pt:"🏆 Você venceu. Com o plano que queriam jogar fora e com o carro do ano que vem já rodando no túnel. Ninguém naquela sala vai pedir desculpa, mas todos sabem o que aconteceu. +fama"}));
@@ -13589,6 +13609,46 @@ const TP_DILEMAS=[
          L(`Os lo tomáis en serio: las tres carreras son las mejores del año y cada uno saca de donde no tenía. ${gana} se impone sobre ${pierde}. +coche, +fama`,`You all take it seriously: those three races are the best of the year and each of them finds something he didn't have. ${gana} comes out on top of ${pierde}. +car, +fame`,{pt:`Vocês levam a sério: as três corridas são as melhores do ano e cada um tira de onde não tinha. ${gana} se impõe sobre ${pierde}. +carro, +fama`}))],
        [45,()=>(TPCAR(-1.5),
          L(`Tres carreras compitiendo entre ellos en vez de contra los demás. ${gana} se impone a ${pierde}, pero el sitio que peleabais ya lo tiene otro. −coche`,`Three races racing each other instead of the rest. ${gana} beats ${pierde}, but the position you were fighting for already belongs to someone else. −car`,{pt:`Três corridas competindo entre eles em vez de contra os outros. ${gana} se impõe a ${pierde}, mas o lugar que disputavam já é de outro. −carro`}))]); }}]},
+
+ /* 🏗️ «LA REVOLUCIÓN» (entrada 2 del doc, marcada REVISADO por Carlos, con su nota: no para un equipo
+    hundido, sino para uno de 2º-3º que debe decidir si apura su ventana o la rompe).
+    ⚠️ NACIÓ COMO ESCENA DE RUMBO Y SE MOVIÓ (lo cazó Carlos, 25-ago): «si le doy a exprimir este
+    coche, ¿luego me dices que eche el freno?». Tenía razón — preguntaba por el rumbo dos veces en el
+    mismo invierno. Ahora es una conversación de MITAD DE TEMPORADA sobre el coche del AÑO QUE VIENE,
+    que es cuando se decide de verdad en la F1: ya no compite con la pantalla de rumbo, la precede.
+    El favorito se nombra por su COCHE, no por su resultado: en pretemporada nadie sabe quién ganará,
+    pero todo el mundo sabe quién tiene el mejor coche. */
+ {id:"tpReconstruccion",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const u=(S.seasons||[]).filter(r=>r.cat==="TP");
+    if(u.length<2) return false;
+    const dos=u.slice(-2);
+    if(!dos.every(r=>r.pos===2 || r.pos===3)) return false;   // dos años rozándolo, sin ganar
+    const mejor=[...F1_TEAMS].filter(t=>t.name!==S.tpTeam)
+      .sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70))[0];
+    if(!mejor) return false;
+    S._rec={rival:mejor.name, carrera:dilVar("recCarrera",()=>irnd(5,10))};
+    return true; },
+  t:()=>L("La revolución","The revolution",{pt:"A revolução"}),
+  d:()=>{ const c=S._rec||{};
+    const ORD=[L("Quinta","Fifth",{pt:"Quinta"}),L("Sexta","Sixth",{pt:"Sexta"}),L("Séptima","Seventh",{pt:"Sétima"}),
+               L("Octava","Eighth",{pt:"Oitava"}),L("Novena","Ninth",{pt:"Nona"}),L("Décima","Tenth",{pt:"Décima"})][Math.max(0,Math.min(5,(c.carrera||7)-5))];
+    return L(`${ORD} carrera del año y la sensación es que estáis lejos de ${c.rival}. Tu jefe técnico te para en el pasillo con las curvas del túnel y una idea que no cabe en este coche: «Si seguimos así podemos ser segundos varios años más. Pero podemos romper el concepto y empezar de cero para intentar ganar el año que viene. Yo necesito saberlo ahora, no en diciembre.»`,
+             `${ORD} race of the year and the feeling is that you're a long way from ${c.rival}. Your technical chief stops you in the corridor with the tunnel curves and an idea that doesn't fit in this car: «Carry on like this and we can be second for several more years. Or we break the concept and start from scratch to try to win next season. I need to know now, not in December.»`,
+             {pt:`${ORD} corrida do ano e a sensação é que vocês estão longe da ${c.rival}. O seu diretor técnico te para no corredor com as curvas do túnel e uma ideia que não cabe neste carro: «Se seguirmos assim podemos ser segundos por vários anos. Mas podemos romper o conceito e começar do zero para tentar ganhar no ano que vem. Preciso saber agora, não em dezembro.»`}); },
+  opts:[
+   /* A · romperlo: el año en curso se sacrifica de verdad, y el techo sube como en ningún otro sitio */
+   {l:()=>L("Romperlo: se gana con revoluciones","Break it: revolutions win championships",{pt:"Quebrar: ganha-se com revoluções"}),
+    r:()=>{ TPCAR(-2); TPTGT(5);
+      return L("El año de transición duele exactamente como te avisaron: os apartáis de la pelea que teníais medio ganada. Lo que sale del túnel en octubre, en cambio, no se parece a nada que hayáis tenido. −coche, +proyecto",
+               "The transition year hurts exactly as you were warned: you step away from a fight you were half winning. What comes out of the tunnel in October, on the other hand, is like nothing you've ever had. −car, +project",
+               {pt:"O ano de transição dói exatamente como avisaram: vocês se afastam da briga que tinham meio ganha. O que sai do túnel em outubro, por outro lado, não se parece com nada que já tiveram. −carro, +projeto"}); }},
+   /* B · apurar: NO afirma nada aquí. Marca el año y el veredicto llega en simTP con el resultado real */
+   {l:()=>L("Estamos cerca: apurar la ventana","We're close: squeeze the window",{pt:"Estamos perto: espremer a janela"}),
+    r:()=>{ TPCAR(1); S._apuraVentana=yearNow(); S.tpSinExprimir=0;
+      return L("Ni un euro al año que viene: todo lo que hay se monta en este coche, y que sea lo que tenga que ser. +coche",
+               "Not a euro for next year: everything you have goes on this car, and whatever happens, happens. +car",
+               {pt:"Nem um euro para o ano que vem: tudo o que há vai neste carro, e que seja o que tiver de ser. +carro"}); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
