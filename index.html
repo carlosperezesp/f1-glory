@@ -10478,7 +10478,7 @@ function tpSignTeam(t, how){
 function tpYearStart(){
   if(S.retired) return;
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
-  tpVenganzaCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
+  tpVenganzaCheck(); tpSabbaticalCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
   tpBolsaSeCansa();      // ⏳ y el que salió a buscar asiento y no lo encuentra, cruza fuera de la F1
   /* 🧑‍💼 SALIDAS PACTADAS EL AÑO PASADO (dilemas «vienen a por tu estrella» y «dos gallos»). El piloto
@@ -13649,6 +13649,49 @@ const TP_DILEMAS=[
       return L("Ni un euro al año que viene: todo lo que hay se monta en este coche, y que sea lo que tenga que ser. +coche",
                "Not a euro for next year: everything you have goes on this car, and whatever happens, happens. +car",
                {pt:"Nem um euro para o ano que vem: tudo o que há vai neste carro, e que seja o que tiver de ser. +carro"}); }}]},
+
+ /* 🧠 «EL CEREBRO NECESITA PARAR» (entrada 4 del doc, marcada REVISADO por Carlos). Es el HERMANO de
+    «Se va a Ferrari» con la decisión invertida: allí te roban al que diseña tu coche y aquí te lo
+    pide él mismo, y no para irse a un rival sino a su casa. Por eso los filtros son espejo: aquél
+    pide que exista alguien POR ENCIMA de ti (te roban desde arriba); este pide que hayas CONSTRUIDO
+    algo (proyecto alto de verdad) — no se agota quien no ha levantado nada.
+    El desenlace de darle el año es DIFERIDO, con la maquinaria de la venganza del ingeniero: vuelve
+    —o no— el invierno siguiente. */
+ {id:"tpSabbatical",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const tn=S.tpTeam;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<3) return false;   // le ha dado tiempo a quemarse
+    if((S.f1target[tn]||70) < 82) return false;                          // hay una fábrica de verdad detrás
+    if(S._sabbat) return false;                                          // ya está fuera
+    return true; },
+  t:()=>L("El cerebro necesita parar","The brain needs to stop",{pt:"O cérebro precisa parar"}),
+  d:()=>L(`El hombre que diseñó vuestro coche te pide un año sabático. No se va a un rival: se va a su casa, a no mirar un alerón durante doce meses. El consejo teme que un año fuera se convierta en dos y que alguien lo llame mientras tanto. Él solo dice que lleva once temporadas sin parar.`,
+        `The man who designed your car asks you for a sabbatical year. He isn't going to a rival: he's going home, to not look at a wing for twelve months. The board fears one year out becomes two, and that somebody calls him in the meantime. All he says is that he's gone eleven seasons without stopping.`,
+        {pt:`O homem que desenhou o carro de vocês pede um ano sabático. Não vai para um rival: vai para casa, para não olhar uma asa durante doze meses. O conselho teme que um ano fora vire dois e que alguém o chame nesse meio-tempo. Ele só diz que leva onze temporadas sem parar.`}),
+  opts:[
+   /* A · dárselo: este año pierdes su empuje, y el año que viene se resuelve la apuesta */
+   {l:()=>L("Dárselo, con la silla guardada","Give it to him, and keep his chair",{pt:"Dar, com a cadeira guardada"}),
+    r:()=>{ TPTGT(-2); S._sabbat={year:yearNow()+1, p:.65};
+      return L("Le firmas el año y le dices que la silla es suya cuando vuelva. Este año la fábrica tira sin él y se nota en el túnel: nadie discute las ideas de nadie. −proyecto este año, y el desenlace llega el que viene",
+               "You sign off the year and tell him the chair is his when he's back. This season the factory runs without him and the tunnel shows it: nobody argues with anybody's ideas. −project this year, and the outcome arrives next",
+               {pt:"Você assina o ano e diz que a cadeira é dele quando voltar. Este ano a fábrica anda sem ele e o túnel mostra: ninguém discute as ideias de ninguém. −projeto este ano, e o desfecho chega no próximo"}); }},
+   /* B · el apaño de medias tintas: el peor de los tres, a propósito */
+   {l:()=>L("Negociárselo a medias: seis meses","Split the difference: six months",{pt:"Negociar pela metade: seis meses"}),
+    r:()=>(TPTGT(-1.5),
+      L("Seis meses fuera y seis a distancia, conectado a las reuniones que odia. Ni descansa ni rinde: en diciembre la fábrica está igual que en enero y él, peor que en enero. −proyecto leve",
+        "Six months away and six at a distance, dialled into the meetings he hates. He neither rests nor delivers: in December the factory is where it was in January, and he is worse than he was. slight −project",
+        {pt:"Seis meses fora e seis à distância, conectado às reuniões que odeia. Nem descansa nem rende: em dezembro a fábrica está como em janeiro e ele, pior que em janeiro. −projeto leve"}))},
+   /* C · decir que no: la mitad de las veces se queda y cumple; la otra mitad empieza a escuchar */
+   {l:()=>L("Decirle que no: hay un Mundial en juego","Tell him no: there's a championship on","Dizer não: há um Mundial em jogo"),
+    r:()=>roll(
+     [55,()=>L("Lo entiende, o hace como que lo entiende. Cumple el año entero sin una queja y sin una idea nueva, que es su manera de decirte lo que piensa. Sin cambios.",
+               "He understands, or acts like he does. He works the whole year without a complaint and without a new idea, which is his way of telling you what he thinks. No change.",
+               {pt:"Ele entende, ou finge que entende. Cumpre o ano inteiro sem uma queixa e sem uma ideia nova, que é o jeito dele de dizer o que pensa. Sem mudanças."})],
+     [45,()=>{ TPTGT(-3);
+       const d=tpDrvs()[0];
+       return L("Se queda, pero algo se rompió esa tarde. A partir de marzo devuelve las llamadas que antes no devolvía, y en el paddock eso se sabe antes que en tu despacho. −proyecto",
+                "He stays, but something broke that afternoon. From March he starts returning calls he used to ignore, and in the paddock that gets known before it does in your office. −project",
+                {pt:"Ele fica, mas algo quebrou naquela tarde. A partir de março devolve as ligações que antes não devolvia, e no paddock isso se sabe antes que no seu escritório. −projeto"}); }])}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
@@ -13663,6 +13706,29 @@ function tpRivalSeLoLleva(nombre){
 function tpRivalPierdeElCerebro(nombre){
   if(!nombre || S.f1target[nombre]==null) return;
   S.f1target[nombre]=Math.max(61,Math.min(95,S.f1target[nombre]-rnd(3,6)));
+}
+/* 🧠 EL REGRESO DEL SABÁTICO. Se apunta en la agenda igual que la venganza del ingeniero y se cobra
+   —o no— al invierno siguiente. Si mientras estaba fuera alguien lo llamó, no vuelve: y eso es
+   exactamente el riesgo que aceptaste al dárselo. */
+function tpSabbaticalCheck(){
+  const v=S._sabbat; if(!v || yearNow()<v.year) return;
+  S._sabbat=null;
+  if(ch(v.p)){
+    TPTGT(rnd(6,9)); TPRE(1);
+    S.pendingEvents.push(L(`🧠 Vuelve el hombre que diseñó vuestro coche, y vuelve distinto: doce meses sin mirar un alerón le han dado tres ideas que aquí dentro no se le habrían ocurrido nunca. El túnel lleva desde enero confirmándoselas. +proyecto`,
+      `🧠 The man who designed your car comes back, and he comes back different: twelve months without looking at a wing have given him three ideas he'd never have had in here. The tunnel has been confirming them since January. +project`,
+      {pt:`🧠 Volta o homem que desenhou o carro de vocês, e volta diferente: doze meses sem olhar uma asa lhe deram três ideias que aqui dentro nunca teria tido. O túnel confirma desde janeiro. +projeto`}));
+  } else {
+    TPTGT(-rnd(2,4)); TPRE(-1.5);
+    const riv=[...F1_TEAMS].filter(t=>t.name!==S.tpTeam)
+      .sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70))[0];
+    if(riv) tpRivalSeLoLleva(riv.name);
+    /* 🪑 la silla no se queda vacía sola: hay que reorganizar la fábrica (lo cazó Carlos, 25-ago).
+       Y esa reorganización es parte del castigo, no un adorno del texto. */
+    S.pendingEvents.push(L(`🧠 A mitad de su año sabático suena un teléfono que no es el tuyo. Firma con ${riv?riv.name:"un rival"} descansado, con ideas nuevas y sin la fatiga que tú le concediste curar. Te toca reorganizar el equipo para cubrir su puesto, y no hay nadie dentro que llene esa silla. −proyecto, −fama`,
+      `🧠 Halfway through his sabbatical a phone rings, and it isn't yours. He signs with ${riv?riv.name:"a rival"} rested, full of new ideas, and without the fatigue you granted him the year to cure. Now you have to reorganise the department to cover his post, and nobody inside fills that chair. −project, −fame`,
+      {pt:`🧠 No meio do ano sabático toca um telefone que não é o seu. Assina com a ${riv?riv.name:"um rival"} descansado, com ideias novas e sem o cansaço que você lhe concedeu curar. Agora toca reorganizar a equipe para cobrir o posto dele, e não há ninguém dentro que preencha aquela cadeira. −projeto, −fama`}));
+  }
 }
 function tpVenganzaCheck(){
   const v=S._tpVenganza; if(!v || yearNow()<v.year) return;
