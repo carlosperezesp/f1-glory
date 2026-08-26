@@ -14570,6 +14570,99 @@ const TP_DILEMAS=[
     programado, sale solo, y es exactamente lo que quería Carlos.
     📅 La vuelta no es un número al azar: tu piloto ACABA de parar y sale último, así que solo le vale
     un coche de seguridad AHORA. Sale al 20-30% de la carrera, que es donde paró Alonso en Singapur. */
+ /* 🌧️ «LOS DOS PIDEN LO CONTRARIO» — el domingo nº4 y último de la familia de la lluvia
+    (diseño del 22-ago). Los otros tres son: `tpEstratega` (te aconseja el jefe de estrategia),
+    `tpCalor` (decides tú solo) y `tpPedirBandera` (decide dirección de carrera). Aquí no decides
+    CUÁNDO: decides A QUIÉN CREES. Los dos pilotos aprietan el botón a la vez y piden lo contrario.
+    📏 EL UMBRAL DE «NIVEL PARECIDO» ESTÁ MEDIDO, no elegido a ojo (lección del hueco de edad de
+    «El cuerpo técnico»). Sobre 1.812 parejas de compañeros se miró cuántas veces el de más nivel
+    acaba el año por delante del otro: hueco 0-2 → 53% · 3-4 → 62% · 5-6 → 69% · 7-9 → 77% ·
+    10+ → 86%. O sea: por debajo de 4 puntos, acertar quién tenía razón es casi una moneda y el
+    dilema se sostiene; de 5 en adelante el jugador tendría toda la razón al pensar «pues haz caso al
+    bueno y cállate». Umbral ≤ 4, que sale en el 41% de los inviernos (142 medidos).
+    🎲 QUIÉN ACIERTA: 55% el de más nivel, 45% el otro — exactamente el 53-62% medido arriba.
+    No es un 50/50 pelado (premia levemente conocer a tus pilotos) ni un «gana el bueno» (sería un
+    dilema de mentira). El jugador no puede leer el número, pero la sensación es la correcta.
+    ⚖️ POR QUÉ C NO ES GRATIS: la primera versión cobraba la C con «el segundo espera una vuelta en
+    el pit lane», y eso solo vale si el que acierta es el que PARA —si acierta el que quería quedarse
+    fuera, no espera nada y el peaje desaparece—. Mismo bicho que el baremo inalcanzable de la bandera
+    roja. Ahora el peaje es el muro partido en dos: nadie tiene al equipo entero para él, así que el
+    que acierta acierta a medias y no sube al podio. A cambio nadie te señala.
+    🚫 SIN `tpRencor`, a propósito y por el mismo motivo que «Abrir el box»: los cuatro rencores
+    del juego son traiciones (no venderle, la orden de equipo, no dar la cara, sentarlo) y cuestan
+    −35 puntos de renovación para siempre. Equivocarte de piloto un domingo de agua no está en esa
+    liga. Se paga con moral —un punto de nivel—, que duele, se nota y se recupera. */
+ {id:"tpDosPeticiones",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<1) return false;
+    const sl=S.seats[S.tpTeam]||[];
+    const a=sl[0], b=sl[1];
+    if(!a||!b||a==="PLAYER"||b==="PLAYER"||!a.name||!b.name) return false;
+    if(Math.abs((a.skill||0)-(b.skill||0))>4) return false;   // ↑ el umbral medido
+    const gp=tpGpLluvia(); if(!gp) return false;
+    /* el que pide la jugada agresiva sale a cara o cruz: si fuera siempre el nº1, el dilema
+       se leería en dos partidas y ya no habría que pensar */
+    const agr = ch(.5) ? a : b, con = (agr===a) ? b : a;
+    const mejor = ((a.skill||0)>=(b.skill||0)) ? a : b;
+    const acierta = ch(.55) ? mejor : ((mejor===a)?b:a);      // ↑ 55/45, el 53-62% medido
+    S._dp={ gp:gp.n, v:irnd(Math.round(gp.laps*.25), Math.round(gp.laps*.6)),
+            seca: ch(.5),
+            agrN:surname(agr.name), agr:agr.name,
+            conN:surname(con.name), con:con.name,
+            aciertaN:surname(acierta.name), acierta:acierta.name,
+            fallaN:surname(acierta===agr?con.name:agr.name), falla:(acierta===agr?con.name:agr.name),
+            aciertaEsAgr:(acierta===agr) };
+    return true; },
+  t:()=>L("Los dos piden lo contrario","Both are asking for the opposite",{pt:"Os dois pedem o contr\u00e1rio"}),
+  d:()=>{ const c=S._dp||{};
+    const escena = c.seca
+      ? L(`La pista se est\u00e1 secando y la trazada ya tiene una l\u00ednea gris en medio del agua.`,
+          `The track is drying and the racing line already has a grey stripe down the middle of the water.`,
+          {pt:`A pista est\u00e1 secando e o tra\u00e7ado j\u00e1 tem uma linha cinza no meio da \u00e1gua.`})
+      : L(`Han empezado a caer gotas gordas y el radar dice que en dos vueltas esto es una piscina.`,
+          `Fat drops have started to fall and the radar says that in two laps this will be a swimming pool.`,
+          {pt:`Come\u00e7aram a cair gotas grossas e o radar diz que em duas voltas isto vira uma piscina.`});
+    const pideAgr = c.seca
+      ? L(`\u00abLisos. Lisos YA, que esto se seca\u00bb`,`\u00abSlicks. Slicks NOW, it's drying\u00bb`,{pt:`\u00abLisos. Lisos J\u00c1, isto est\u00e1 secando\u00bb`})
+      : L(`\u00abAgua, agua, me meto ahora\u00bb`,`\u00abWets, wets, I'm coming in now\u00bb`,{pt:`\u00ab\u00c1gua, \u00e1gua, entro agora\u00bb`});
+    const pideCon = c.seca
+      ? L(`\u00abNi se te ocurra, el sector 2 sigue siendo un r\u00edo\u00bb`,`\u00abDon't you dare, sector 2 is still a river\u00bb`,{pt:`\u00abNem pensar, o setor 2 ainda \u00e9 um rio\u00bb`})
+      : L(`\u00abQuietos, esto escampa en una vuelta\u00bb`,`\u00abStay out, this clears in a lap\u00bb`,{pt:`\u00abFiquem, isto passa em uma volta\u00bb`});
+    return L(`${c.gp}, vuelta ${c.v}. ${escena} Los dos aprietan el bot\u00f3n de la radio a la vez, y piden lo contrario: ${c.agrN} dice ${pideAgr}; ${c.conN} dice ${pideCon}.\n\nTu jefe de estrategia tapa el micr\u00f3fono: \u00abPodemos partirla, pero entonces el muro va a estar haciendo dos carreras a la vez y ninguna de las dos le va a salir fina a nadie\u00bb.\n\nAqu\u00ed no decides cu\u00e1ndo. Decides a qui\u00e9n crees.`,
+             `${c.gp}, lap ${c.v}. ${escena} They both hit the radio button at the same time, asking for opposite things: ${c.agrN} says ${pideAgr}; ${c.conN} says ${pideCon}.\n\nYour strategy chief covers the microphone: \u00abWe can split it, but then the wall is running two races at once and neither of them comes out clean\u00bb.\n\nThis isn't about when. It's about who you believe.`,
+             {pt:`${c.gp}, volta ${c.v}. ${escena} Os dois apertam o bot\u00e3o do r\u00e1dio ao mesmo tempo, e pedem o contr\u00e1rio: ${c.agrN} diz ${pideAgr}; ${c.conN} diz ${pideCon}.\n\nO seu chefe de estrat\u00e9gia tapa o microfone: \u00abD\u00e1 para dividir, mas a\u00ed o muro vai estar fazendo duas corridas ao mesmo tempo e nenhuma das duas sai limpa\u00bb.\n\nAqui voc\u00ea n\u00e3o decide quando. Decide em quem acredita.`}); },
+  opts:[
+   /* A y B son la misma apuesta con distinto nombre: crees a uno y los DOS coches van a su idea */
+   {l:()=>{ const c=S._dp||{}; return L(`Creer a ${c.agrN}`,`Believe ${c.agrN}`,{pt:`Acreditar em ${c.agrN}`}); },
+    r:()=>{ const c=S._dp||{};
+      if(c.aciertaEsAgr){ S.tpDilPod=(S.tpDilPod||0)+1; TPRE(2);
+        return L(`Ten\u00eda raz\u00f3n. Los dos coches entran juntos y salen a una pista que les da la raz\u00f3n vuelta a vuelta: mientras el resto de la parrilla se pelea con la goma equivocada, los tuyos ruedan solos. ${c.agrN} sube al podio y el garaje se abraza como si hubierais ganado el mundial. +podio, +cach\u00e9`,
+                 `He was right. Both cars come in together and rejoin a track that proves them right lap after lap: while the rest of the grid wrestles with the wrong tyre, yours are running free. ${c.agrN} takes a podium and the garage hugs like you'd won the title. +podium, +standing`,
+                 {pt:`Ele tinha raz\u00e3o. Os dois carros entram juntos e voltam para uma pista que lhes d\u00e1 raz\u00e3o volta ap\u00f3s volta: enquanto o resto do grid briga com o pneu errado, os seus rodam sozinhos. ${c.agrN} sobe ao p\u00f3dio e a garagem se abra\u00e7a como se tivessem ganho o mundial. +p\u00f3dio, +presti\u00edgio`}); }
+      tpDrvSkill(c.con,-1); TPRE(-2);
+      return L(`Se equivocaba. Los dos coches entran y la pista hace exactamente lo que dec\u00eda ${c.conN}: la carrera se les va por el desag\u00fce a la vez, sin uno que salve los muebles. Nadie grita, que es peor. ${c.conN} se quita el casco en el garaje, mira la pantalla y no mira a nadie m\u00e1s en toda la tarde. \u2212cach\u00e9, ${c.conN} tocado`,
+               `He was wrong. Both cars pit and the track does exactly what ${c.conN} said it would: the race drains away from both of them at once, with nobody left to salvage it. Nobody shouts, which is worse. ${c.conN} takes off his helmet in the garage, stares at the screen and doesn't look at anyone else all afternoon. \u2212standing, ${c.conN} hurt`,
+               {pt:`Ele estava errado. Os dois carros entram e a pista faz exatamente o que ${c.conN} dizia: a corrida escorre pelo ralo para os dois ao mesmo tempo, sem ningu\u00e9m para salvar nada. Ningu\u00e9m grita, o que \u00e9 pior. ${c.conN} tira o capacete na garagem, olha para a tela e n\u00e3o olha para mais ningu\u00e9m a tarde inteira. \u2212presti\u00edgio, ${c.conN} abalado`}); }},
+
+   {l:()=>{ const c=S._dp||{}; return L(`Creer a ${c.conN}`,`Believe ${c.conN}`,{pt:`Acreditar em ${c.conN}`}); },
+    r:()=>{ const c=S._dp||{};
+      if(!c.aciertaEsAgr){ S.tpDilPod=(S.tpDilPod||0)+1; TPRE(2);
+        return L(`Ten\u00eda raz\u00f3n. Los dos aguantan fuera mientras medio pit lane se vac\u00eda, y dos vueltas despu\u00e9s la pista les regala lo que los dem\u00e1s acaban de tirar. ${c.conN} sube al podio y el garaje se abraza como si hubierais ganado el mundial. +podio, +cach\u00e9`,
+                 `He was right. Both stay out while half the pit lane empties, and two laps later the track hands them what everyone else has just thrown away. ${c.conN} takes a podium and the garage hugs like you'd won the title. +podium, +standing`,
+                 {pt:`Ele tinha raz\u00e3o. Os dois ficam na pista enquanto meio pit lane se esvazia, e duas voltas depois a pista lhes d\u00e1 o que os outros acabaram de jogar fora. ${c.conN} sobe ao p\u00f3dio e a garagem se abra\u00e7a como se tivessem ganho o mundial. +p\u00f3dio, +presti\u00edgio`}); }
+      tpDrvSkill(c.agr,-1); TPRE(-2);
+      return L(`Se equivocaba. Los dos siguen fuera y la pista hace exactamente lo que dec\u00eda ${c.agrN}: la carrera se les va por el desag\u00fce a la vez, sin uno que salve los muebles. Nadie grita, que es peor. ${c.agrN} se quita el casco en el garaje, mira la pantalla y no mira a nadie m\u00e1s en toda la tarde. \u2212cach\u00e9, ${c.agrN} tocado`,
+               `He was wrong. Both stay out and the track does exactly what ${c.agrN} said it would: the race drains away from both of them at once, with nobody left to salvage it. Nobody shouts, which is worse. ${c.agrN} takes off his helmet in the garage, stares at the screen and doesn't look at anyone else all afternoon. \u2212standing, ${c.agrN} hurt`,
+               {pt:`Ele estava errado. Os dois seguem na pista e ela faz exatamente o que ${c.agrN} dizia: a corrida escorre pelo ralo para os dois ao mesmo tempo, sem ningu\u00e9m para salvar nada. Ningu\u00e9m grita, o que \u00e9 pior. ${c.agrN} tira o capacete na garagem, olha para a tela e n\u00e3o olha para mais ningu\u00e9m a tarde inteira. \u2212presti\u00edgio, ${c.agrN} abalado`}); }},
+
+   /* C · partir la estrategia: uno acierta SIEMPRE y otro falla SIEMPRE, pero el que acierta
+      ha esperado una vuelta en el pit lane, así que no hay podio. Nadie te señala: +1 de caché */
+   {l:()=>L("Que cada uno monte lo que ha pedido","Let each fit what he asked for",{pt:"Que cada um monte o que pediu"}),
+    r:()=>{ const c=S._dp||{}; TPRE(1);
+      return L(`Partes la estrategia y sales del muro sin haberte mojado. ${c.aciertaN} acierta, pero acierta a medias: con el muro partido en dos nadie le hizo la carrera fina y se queda a las puertas de lo que ese acierto val\u00eda. ${c.fallaN} se equivoca y lo sabe, y como fue idea suya no tiene a qui\u00e9n mirar mal. El domingo se pierde, pero el lunes nadie te se\u00f1ala a ti: t\u00fa hiciste lo que ped\u00edan. +cach\u00e9`,
+               `You split the strategy and walk away from the wall without getting wet. ${c.aciertaN} is right, but only half right: with the wall split in two nobody ran him a clean race and he ends up just short of what that call was worth. ${c.fallaN} is wrong and knows it, and since it was his own idea he has nobody to glare at. The Sunday is lost, but on Monday nobody points at you: you did what they asked. +standing`,
+               {pt:`Voc\u00ea divide a estrat\u00e9gia e sai do muro sem se molhar. ${c.aciertaN} acerta, mas acerta pela metade: com o muro dividido em dois ningu\u00e9m fez a corrida fina dele e ele fica \u00e0s portas do que aquele acerto valia. ${c.fallaN} erra e sabe disso, e como foi ideia dele n\u00e3o tem para quem olhar torto. O domingo se perde, mas na segunda ningu\u00e9m aponta para voc\u00ea: voc\u00ea fez o que pediram. +presti\u00edgio`}); }}
+  ]},
  {id:"tpCrashgate",
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
     if(S._crash) return false;                                   // una vez por partida
