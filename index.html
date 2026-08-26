@@ -7010,8 +7010,17 @@ function renderDilemma(dl, repintar){
   const tmTag = (!dl.noTag && S.team && S.team.name && S.cat!=="ADV") ? " · "+teamDisp(S.team) : "";
   setDecision("⚡ "+ttl+tmTag, desc);
   $("decRecap").style.display="none";
-  const box=$("offerList"); box.innerHTML="";
-  dl.opts.forEach((opt,i)=>{
+  const box=$("offerList");
+  /* 🔀 DILEMAS CON RAMAS (petición de Carlos, 25-ago-2026, para el laberinto de «El sobre»). Hasta hoy
+     el camino era rígido: eliges → sale el desenlace → Continuar → arranca la temporada. Ahora una
+     opción puede devolver, en vez de un texto, OTRA PREGUNTA — `{q, opts}` — y esa pregunta sustituye
+     a la anterior con sus propios botones. Se puede anidar tantas veces como haga falta.
+     No cuenta como dilema nuevo: no toca `usedDilemmas` ni `dilemmaCount`, porque sigue siendo LA
+     MISMA decisión. Que es justo la gracia que buscaba Carlos: que el juego te pregunte dos veces si
+     de verdad estás seguro de hacer trampas, antes de dejarte. */
+  const pintaOpciones=(opts)=>{
+  box.innerHTML="";
+  opts.forEach((opt,i)=>{
     const b=document.createElement("button"); b.className="offer dilemma";
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${String.fromCharCode(65+i)}</span>
       <span class="info"><span class="name">${typeof opt.l==="function"?opt.l():opt.l}</span></span>`;
@@ -7019,6 +7028,11 @@ function renderDilemma(dl, repintar){
       S._curDilemma=null;              // ya decidido: deja de repintarse al cambiar de idioma
       const _fmAntes=!!S.forceMove;
       const txt=opt.r();
+      if(txt && typeof txt==="object" && Array.isArray(txt.opts)){
+        setDecision("⚡ "+ttl, typeof txt.q==="function"?txt.q():txt.q);
+        pintaOpciones(txt.opts);
+        return;
+      }
       // si ESTA decisión te deja sin asiento, su desenlace es el motivo que verá la pantalla de ofertas
       if(!_fmAntes && S.forceMove) S.forceReasonTxt=[txt,txt];
       S.pendingEvents.push("⚡ "+ttl+": "+txt);
@@ -7042,6 +7056,8 @@ function renderDilemma(dl, repintar){
     };
     box.appendChild(b);
   });
+  };
+  pintaOpciones(dl.opts);
 }
 
 /* ---------- simulación de temporada ---------- */
@@ -7972,8 +7988,19 @@ function bgF1Season(row){
   (champ.d.champYears=champ.d.champYears||[]).push(row.year);
   // 👑 el título le cuenta: un campeón modesto sale del año hecho otro (confianza, estatus, millaje)
   if((champ.d.skill||0)<80) champ.d.skill=Math.min(83,(champ.d.skill||72)+irnd(2,4));
+  /* 🚫 DESCALIFICADO DE CONSTRUCTORES (petición de Carlos, 25-ago-2026: el laberinto de la FIA).
+     Es la regla real de McLaren 2007: el EQUIPO se queda sin puntos de constructores y sus PILOTOS
+     conservan todos los suyos. Por eso se filtra aquí y solo aquí: la tabla de pilotos se construye
+     de estas mismas filas y no se toca, así que ellos siguen donde estaban.
+     Lo bonito es que el resto sale gratis: el veredicto del consejo hace `S.rankC[equipo] || último`,
+     así que un equipo sin puesto cuenta como ÚLTIMO y el consejo se enfada solo; y la parrilla ordena
+     a los que no tienen puesto al final.
+     ⚠️ Esto vive en la simulación de temporada, que COMPARTEN los dos modos. El interruptor solo lo
+     puede encender un dilema del modo jefe, así que el clásico no lo ve jamás — pero por si acaso, la
+     comprobación exige que el equipo sea el tuyo Y que el año coincida. */
+  const _dq = (S.tpFiaDQ && S.tpFiaDQ.year===row.year) ? S.tpFiaDQ.team : null;
   const teamScores={};
-  rows.forEach(r=>{teamScores[r.team]=(teamScores[r.team]||0)+r.score;});
+  rows.forEach(r=>{ if(r.team===_dq) return; teamScores[r.team]=(teamScores[r.team]||0)+r.score;});
   const constrRank=Object.entries(teamScores).sort((a,b)=>b[1]-a[1]);
   // 🌍 desde las categorías junior también se ve el top-3 de la F1 CON ESCUDOS (petición de Carlos):
   // en vez del evento de texto plano, la fila guarda top3d/top3c y la línea de tiempo pinta la tarjeta
@@ -11624,7 +11651,11 @@ function simTP(row){
   bgF1Season(row);
   const races=racesIn(row.year);
   const nT=Object.keys(S.rankC).length||F1_TEAMS.length;
-  const cPos=S.rankC[tn]||nT;
+  /* 🚫 ¿te ha echado la FIA del campeonato de constructores ESTE año? Entonces no es que quedes
+     último: es que no estás. Por eso nT+1, un escalón por debajo del último equipo que sí existe —
+     si no, quedabas EMPATADO con el colista, que no es lo mismo ni de lejos. */
+  const _dqYo = !!(S.tpFiaDQ && S.tpFiaDQ.team===tn && S.tpFiaDQ.year===row.year);
+  const cPos = _dqYo ? nT+1 : (S.rankC[tn]||nT);
   const myDrv=(S.seats[tn]||[]).filter(d=>d&&d!=="PLAYER");
   // números narrativos de tus dos pilotos, derivados de su puesto REAL en el mundial de ese año
   let tWins=0,tPods=0,champDrv=null; const parts=[];
@@ -11692,7 +11723,12 @@ function simTP(row){
      año cuenta como cumplido aunque quedes 2º-3º de constructores: pudo haber una lesión del otro
      piloto, un mal fin de temporada… y aun así tienes al campeón en tu coche. Un consejo de verdad
      no te echa por eso. */
-  const rescataTitulo = !!champDrv;
+  /* ⚠️ …y un título de pilotos NO rescata un año en el que te han descalificado (lo destapó la
+     medición del 25-ago: salía «descalificado por copiar» y el consejo lo leía como TEMPORADA
+     CUMPLIDA porque tu piloto había ganado el mundial). Es literalmente el caso McLaren 2007: Hamilton
+     y Alonso conservaron cada punto, y al equipo lo dejaron con cero y una multa de récord. El título
+     es del piloto; el castigo es del equipo. */
+  const rescataTitulo = !!champDrv && !_dqYo;
   const met=cPos<=G.target || rescataTitulo;
   /* 🎤 LO QUE PROMETISTE EN PRETEMPORADA SE COBRA AQUÍ (`tpMejorDelResto`, opción B). Dijiste en alto
      que este año dabais un salto grande. Si lo das, el paddock te lo apunta. Si no, te quedas sin el
@@ -11859,6 +11895,18 @@ function tpWinter(){
     S.tpOwner=null; S.tpContract=null; S.tpFired=true; S.tpFiredBy=tn;
     S.tpTeam=null; S.team=null;
     tpFiredScreen(); return;
+  }
+  /* 🚷 DOS DESCALIFICACIONES Y LA FIA TE RETIRA LA LICENCIA (idea de Carlos: «si te descalifican dos
+     veces, se acaba la partida porque te prohíben seguir en F1»). Rarísimo a propósito —hoy solo se
+     puede llegar por «El sobre», y ahí la descalificación es el 4% de una rama—, y por eso divertido.
+     Se enciende solo cuando haya más dilemas de hacer trampas: el crashgate es el siguiente. */
+  if((S.tpFiaDQCount||0)>=2 && !S._tpBan){
+    S._tpBan=true;
+    S.pendingEvents.push(L(
+      `🚷 Segunda descalificación. La FIA no se molesta en abrir otro expediente: te retira la superlicencia y con ella cualquier puesto en un equipo de Fórmula 1. Se acabó.`,
+      `🚷 A second disqualification. The FIA doesn't bother opening another investigation: it withdraws your superlicence, and with it any role at a Formula 1 team. That's the end.`,
+      {pt:`🚷 Segunda desclassificação. A FIA nem se dá ao trabalho de abrir outro processo: cassa a sua superlicença e, com ela, qualquer cargo numa equipe de Fórmula 1. Acabou.`}));
+    endCareer(); return;
   }
   if(S.tpFired){ tpFiredScreen(); return; }
   // 🧑‍✈️ al DUEÑO no le firma contrato nadie: sin este guard, el invierno siguiente a comprar el
@@ -13994,6 +14042,88 @@ const TP_DILEMAS=[
     r:()=>roll(
      [65,()=>(TPTGT(2),TPRE(-1),L("En el garaje se nota desde el lunes: nadie mide lo que dice y las reuniones vuelven a durar lo que tienen que durar. Fuera, el escaparate se lo queda otro. +proyecto, −fama","You can feel it in the garage from Monday: nobody weighs their words and the meetings go back to lasting what they should. Outside, somebody else takes the shop window. +project, −fame",{pt:"Na garagem se nota desde segunda: ninguém mede o que diz e as reuniões voltam a durar o que devem. Lá fora, a vitrine fica com outro. +projeto, −fama"}))],
      [35,()=>(TPRE(-2.5),L("Tu patrocinador se lo toma bastante peor de lo que esperabas: resulta que no era un capricho suyo, era la mitad de lo que venía a comprar aquí. −fama","Your sponsor takes it considerably worse than you expected: it turns out it wasn't a whim, it was half of what he came here to buy. −fame",{pt:"O seu patrocinador leva bem pior do que você esperava: acontece que não era um capricho, era metade do que ele vinha comprar aqui. −fama"}))])}]},
+
+ /* 📁 «EL SOBRE» (idea de Carlos, 25-ago-2026). El espionaje industrial, que en la F1 de verdad pasó:
+    Ferrari → McLaren en 2007. Universal: sale en cualquier puesto de la parrilla, porque siempre hay
+    un equipo cuyo coche te interesaría ver — el que te saca un segundo si vas último, o el que te
+    persigue si vas primero. Se elige el de rendimiento MÁS PARECIDO al tuyo, que es el que de verdad
+    te cambia el año. Dos pieles: hasta 2005 es una carpeta de papel; después, una carpeta compartida.
+    🌀 EL LABERINTO (diseño de Carlos): la gracia es que el juego te pregunte DOS VECES si estás seguro
+    de hacer trampas antes de dejarte. Mirar la carpeta no es todavía el pecado — el 60% de las veces
+    dentro hay cosas menores que absorbéis sin que se note. Es el 40% restante, cuando lo que hay es
+    bueno Y es inconfundiblemente suyo, cuando aparece la segunda pregunta. Y solo si dices que sí a
+    esa se abre el abanico de la FIA, donde la descalificación es el 10%: raro, como pidió Carlos, pero
+    de verdad. Elegir «Mirarlo» acaba en descalificación el 4% de las veces.
+    🎲 EL +COCHE SE SORTEA UNA SOLA VEZ (`dilVar`) porque tus ingenieros te dicen el número ANTES de
+    que decidas: si te prometen +2, te llevas +2. Prometer una cosa y pagar otra sería hacer trampas
+    nosotros. */
+ {id:"tpElSobre",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<2) return false;
+    const mio=S.f1perf[S.tpTeam]; if(mio==null) return false;
+    const otros=F1_TEAMS.filter(t=>t.name!==S.tpTeam && S.f1perf[t.name]!=null);
+    if(!otros.length) return false;
+    const cerca=otros.slice().sort((a,b)=>Math.abs((S.f1perf[a.name])-mio)-Math.abs((S.f1perf[b.name])-mio))[0];
+    S._sobre={ riv:cerca.name, arriba:(S.f1perf[cerca.name]||0)>mio,
+               val:dilVar("sobreVal",()=>irnd(1,2)) };
+    return true; },
+  t:()=>L("El sobre","The folder",{pt:"A pasta"}),
+  d:()=>{ const c=S._sobre||{}, y=yearNow();
+    const que = y<2005
+      ? L("una carpeta de planos","a folder of drawings",{pt:"uma pasta de plantas"})
+      : L("un enlace a una carpeta compartida","a link to a shared drive",{pt:"um link para uma pasta compartilhada"});
+    /* ⚠️ el «de/del». La primera versión metía «el coche que…» dentro de la variable y salía
+       «la documentación técnica DE EL coche», que es la misma pega que ya cazó Carlos en su día con
+       «una opción real de el 6º puesto». El artículo se queda FUERA de la variable: aquí solo viaja
+       la cola de la frase, y cada idioma pone su preposición ya contraída. */
+    const donde = c.arriba
+      ? L("tenéis delante","is ahead of you",{pt:"está à sua frente"})
+      : L("os persigue","is chasing you",{pt:"persegue vocês"});
+    return L(`Acabas de fichar a un ingeniero de ${c.riv}. En su primera semana te deja ${que} encima de la mesa: la documentación técnica completa del coche que ahora mismo ${donde}. No se la has pedido, y él te mira esperando que le des las gracias.`,
+             `You've just signed an engineer from ${c.riv}. In his first week he leaves ${que} on your desk: the full technical documentation of the car that ${donde} right now. You never asked for it, and he's looking at you waiting to be thanked.`,
+             {pt:`Você acabou de contratar um engenheiro da ${c.riv}. Na primeira semana ele deixa ${que} em cima da sua mesa: a documentação técnica completa do carro que agora mesmo ${donde}. Você não pediu, e ele te olha esperando um obrigado.`}); },
+  opts:[
+   /* ═══ A · MIRARLO. El 60% muere aquí; el 40% abre el laberinto ═══ */
+   {l:()=>L("Mirar lo que hay dentro y usarlo","Look inside and use it",{pt:"Ver o que há dentro e usar"}),
+    r:()=>{ const c=S._sobre||{}, v=c.val||2;
+      return roll(
+       [60,()=>(TPCAR(v),L(`Dentro hay cosas menores: un par de soluciones de detalle que vuestros ingenieros llevaban meses rondando. Entran en el coche sin que nadie pueda decir de dónde salieron. +${v} de coche`,`Inside there are minor things: a couple of detail solutions your engineers had been circling for months. They go into the car and nobody could say where they came from. +${v} car`,{pt:`Dentro há coisas menores: um par de soluções de detalhe que os seus engenheiros já rondavam há meses. Entram no carro sem que ninguém possa dizer de onde saíram. +${v} de carro`}))],
+       /* ── la segunda pregunta: lo que hay es bueno Y es inconfundiblemente suyo ── */
+       [40,()=>({
+         q:L(`Dentro no hay detalles: está la idea entera con la que ${c.riv} os saca lo que os saca. Tus ingenieros calculan que valdría +${v} de coche… y avisan de lo otro: es tan suya que cualquiera que lo mire de cerca sabría de dónde ha salido. Usar esto os daría ventaja, pero os pueden pillar. ¿Quieres usarlo?`,
+                `Inside there are no details: there's the whole idea that ${c.riv} uses to take out of you what they take out of you. Your engineers reckon it's worth +${v} car… and they warn you about the rest: it's so unmistakably theirs that anyone looking closely would know where it came from. Using this would give you an advantage, but you could be caught. Do you want to use it?`,
+                {pt:`Dentro não há detalhes: há a ideia inteira com que a ${c.riv} tira de vocês o que tira. Os seus engenheiros calculam que valeria +${v} de carro… e avisam do resto: é tão inconfundivelmente deles que qualquer um que olhe de perto saberia de onde saiu. Usar isto daria vantagem, mas podem pegar vocês. Quer usar?`}),
+         opts:[
+          {l:()=>L("No, mejor no","No, better not",{pt:"Não, melhor não"}),
+           r:()=>(TPTGT(-1),L("Lo devuelves a la carpeta y la carpeta al cajón. Pero ya lo has visto, y eso no se des-ve: habéis quemado semanas persiguiendo algo que al final no vais a usar, y los que se habían ilusionado saben que te echaste atrás. −1 de proyecto","You put it back in the folder and the folder in the drawer. But you've seen it, and that can't be unseen: you've burned weeks chasing something you won't use, and the people who got excited know you got cold feet. −1 project",{pt:"Você devolve à pasta e a pasta à gaveta. Mas já viu, e isso não se desvê: queimaram semanas atrás de algo que no fim não vão usar, e os que se empolgaram sabem que você recuou. −1 de projeto"}))},
+          {l:()=>L("Sí, nos arriesgamos a la sanción de la FIA","Yes, we'll risk the FIA's sanction",{pt:"Sim, arriscamos a punição da FIA"}),
+           r:()=>{ const cc=S._sobre||{}, vv=cc.val||2;
+             return roll(
+              /* nadie se entera */
+              [40,()=>(TPCAR(vv),L(`Lo montáis. Funciona exactamente como decía el papel, y nadie pregunta nunca de dónde salió. Hay cosas que solo saben seis personas y esas seis cobran de ti. +${vv} de coche`,`You build it. It works exactly as the paper said, and nobody ever asks where it came from. There are things only six people know, and those six are on your payroll. +${vv} car`,{pt:`Vocês montam. Funciona exatamente como dizia o papel, e ninguém nunca pergunta de onde saiu. Há coisas que só seis pessoas sabem, e essas seis recebem de você. +${vv} de carro`}))],
+              /* descalificación: la de McLaren 2007 */
+              [10,()=>{ TPRE(-3); TPTGT(-3);
+                S.tpFiaDQ={team:S.tpTeam, year:yearNow()};
+                S.tpFiaDQCount=(S.tpFiaDQCount||0)+1;
+                return L(`Se destapa. La FIA os excluye del campeonato de constructores: este año vuestro equipo no existe en esa tabla, aunque vuestros pilotos conserven cada punto que han sumado. Y en la fábrica se van los que no querían estar al tanto de esto. −3 de fama y −3 de proyecto`,`It comes out. The FIA excludes you from the constructors' championship: this year your team doesn't exist in that table, even though your drivers keep every point they scored. And in the factory, the people who didn't want to be in on this leave. −3 fame and −3 project`,{pt:`Estoura. A FIA exclui vocês do campeonato de construtores: este ano a sua equipe não existe naquela tabela, ainda que os seus pilotos conservem cada ponto somado. E na fábrica vão embora os que não queriam saber disso. −3 de fama e −3 de projeto`}); }],
+              /* sanción de puestos */
+              [25,()=>{ TPRE(-2); TPTGT(-2);
+                const p=dilVar("sobrePuestos",()=>[5,10,15][irnd(0,2)]);
+                return L(`Se destapa. La FIA os cae con ${p} puestos de sanción en parrilla para los dos coches, en la carrera que peor os viene. Y en la fábrica se van los que no querían estar al tanto de esto. −2 de fama y −2 de proyecto`,`It comes out. The FIA hits you with a ${p}-place grid penalty for both cars, at the worst possible race. And in the factory, the people who didn't want to be in on this leave. −2 fame and −2 project`,{pt:`Estoura. A FIA aplica ${p} posições de punição no grid para os dois carros, na corrida que menos convém. E na fábrica vão embora os que não queriam saber disso. −2 de fama e −2 de projeto`}); }],
+              /* sanción leve: os dejan quedároslo */
+              [25,()=>(TPCAR(1),TPRE(-1),L("Se destapa, y la FIA resuelve que lo vuestro es una coincidencia razonable: hay una llamada de atención, sale en la prensa una semana, y podéis seguir usándolo. Es el mejor día malo posible. +1 de coche, −1 de fama","It comes out, and the FIA rules that yours is a reasonable coincidence: there's a warning, it's in the press for a week, and you get to keep using it. It's the best bad day available. +1 car, −1 fame",{pt:"Estoura, e a FIA decide que o de vocês é uma coincidência razoável: há uma advertência, sai na imprensa uma semana, e podem continuar usando. É o melhor dia ruim possível. +1 de carro, −1 de fama"}))]); }}
+         ]})]); }},
+   /* ═══ B ═══ */
+   {l:()=>L("Devolver la carpeta a los dueños","Return the folder to its owners",{pt:"Devolver a pasta aos donos"}),
+    r:()=>{ const c=S._sobre||{};
+      return roll(
+       [6,()=>(TPRE(2),L(`Llamas tú mismo al jefe de ${c.riv} y se la devuelves sin abrir del todo. No se le olvida: en este pit-lane la gente se debe favores durante décadas, y acabas de colocar uno muy grande. +2 de fama`,`You call ${c.riv}'s boss yourself and hand it back barely opened. He doesn't forget: in this pit lane people owe each other favours for decades, and you've just placed a very big one. +2 fame`,{pt:`Você mesmo liga para o chefe da ${c.riv} e devolve sem abrir de todo. Ele não esquece: neste pit lane as pessoas devem favores por décadas, e você acabou de colocar um bem grande. +2 de fama`}))],
+       [4,()=>(TPRE(-1),L(`Se la devuelves y no te creen: dan por hecho que la habéis copiado entera y que llamas para cubriros las espaldas. Te has quedado sin la ventaja Y sin el favor. −1 de fama`,`You hand it back and they don't believe you: they assume you copied the lot and that you're calling to cover yourselves. You've ended up without the advantage AND without the favour. −1 fame`,{pt:`Você devolve e não acreditam: dão por certo que copiaram tudo e que você liga para se cobrir. Ficou sem a vantagem E sem o favor. −1 de fama`}))]); }},
+   /* ═══ C ═══ */
+   {l:()=>L("Destruirla y no decírselo a nadie","Destroy it and tell nobody",{pt:"Destruí-la e não contar a ninguém"}),
+    r:()=>roll(
+     [7,()=>(TPTGT(2),L("Fuera no lo sabrá nunca nadie. Dentro sí: la historia corre por la fábrica en dos días, y hay gente que se queda en este equipo por eso y no por lo que le pagas. +2 de proyecto","Outside, nobody will ever know. Inside they will: the story goes round the factory in two days, and there are people who stay at this team because of it and not because of what you pay them. +2 project",{pt:"Fora ninguém saberá jamais. Dentro sim: a história corre pela fábrica em dois dias, e há gente que fica nesta equipe por isso e não pelo que você paga. +2 de projeto"}))],
+     [3,()=>(TPTGT(-1),L("Tu fichaje lo lee como un desprecio: venía a impresionarte y le has dicho que lo que traía no vale nada. A partir de ahí trabaja, pero solo trabaja. −1 de proyecto","Your new signing reads it as contempt: he came to impress you and you've told him what he brought is worthless. From then on he works, but he only works. −1 project",{pt:"A sua contratação lê como desprezo: veio impressionar e você disse que o que trouxe não vale nada. A partir daí ele trabalha, mas só trabalha. −1 de projeto"}))])}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
@@ -14120,7 +14250,9 @@ function renderTPGrid(){
       const nuevo=(S._seatsPrev && S._seatsPrev[d.name]!==t.name)?" 🆕":"";
       return `<span class="drv" style="background:var(--panel2,rgba(127,127,127,.12));border:1px solid transparent;border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)}${nuevo} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
     }).join(" ");
-    const pos=ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"";
+    /* un equipo descalificado no tiene puesto: se dice con un guion, no con un hueco en blanco */
+    const _fueraC = S.tpFiaDQ && S.tpFiaDQ.team===t.name && S.tpFiaDQ.year===yearNow();
+    const pos = _fueraC ? "— · " : (ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"");
     html+=`<div class="pt-row${mine?" mio":""}" style="flex-wrap:wrap;gap:6px;--tc:${t.color}">
       ${badge(t,"dot")}<b>${t.name}</b><span style="color:var(--muted);font-size:12px">${pos}${mine?`<span style="color:${t.color}">${tpStars(t.name)}</span>`:tpStars(t.name)}</span>
       <div style="width:100%;display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px">${dr}</div></div>`;
