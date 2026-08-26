@@ -12506,7 +12506,21 @@ function tpEtiquetaNumeroUno(i){
     : L(" · el más lento"," · the slower one",{pt:" · o mais lento"});
   return L(`Nº1 para ${surname(d.name)}${marca}`,`No.1 to ${surname(d.name)}${marca}`,{pt:`Nº1 para ${surname(d.name)}${marca}`});
 }
-function tpDrvSkill(name,n){ const d=tpDrvs().find(x=>x.name===name); if(d){ d.skill=Math.max(68,Math.min(d.ceil||97,(d.skill||75)+n)); } }
+/* 📈 CUANDO YA NO CABE MÁS NIVEL, SUBE EL TECHO (decisión de Carlos, 26-ago-2026).
+   Antes, mejorar a un piloto que YA estaba en su máximo no hacía absolutamente nada, y sin avisar:
+   el texto prometía «+nivel de Fulano» y el número no se movía. Un fallo de honestidad, no de balance.
+   ⚠️ Y subir solo el nivel tampoco serviría: `npcSeason` lo recorta a `Math.min(d.ceil, …)` CADA
+   invierno, así que cualquier punto por encima del techo se borraría al cambiar de año.
+   Por eso lo que no cabe se convierte en TECHO. No le damos un nivel que no tiene: le subimos el nivel
+   al que PUEDE llegar, y crece hacia él por su cuenta. Es lo que hace un buen preparador.
+   Solo hacia arriba: una mala semana baja la moral, nunca el talento. Y tope duro en 97, que es el
+   mismo que usa `mkRookie` al repartir techos. */
+function tpDrvSkill(name,n){
+  const d=tpDrvs().find(x=>x.name===name); if(!d) return;
+  const techo=d.ceil||97, nuevo=(d.skill||75)+n;
+  if(n>0 && nuevo>techo) d.ceil=Math.min(97, nuevo);
+  d.skill=Math.max(68, Math.min(d.ceil||97, nuevo));
+}
 /* 🎯 ¿QUIÉN VIENE DE VERDAD A POR TU ESTRELLA? Igual que con el favor del veterano, la amenaza tiene
    que ser CIERTA: un equipo que exista, con MEJOR coche que el tuyo, y con un piloto claramente peor
    que tu estrella — o sea, alguien que de verdad ganaría con el cambio. Si no hay nadie así, el
