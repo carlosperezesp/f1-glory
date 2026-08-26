@@ -14307,6 +14307,88 @@ const TP_DILEMAS=[
     r:()=>roll(
      [7,()=>(TPTGT(2),L("Fuera no lo sabrá nunca nadie. Dentro sí: la historia corre por la fábrica en dos días, y hay gente que se queda en este equipo por eso y no por lo que le pagas. +2 de proyecto","Outside, nobody will ever know. Inside they will: the story goes round the factory in two days, and there are people who stay at this team because of it and not because of what you pay them. +2 project",{pt:"Fora ninguém saberá jamais. Dentro sim: a história corre pela fábrica em dois dias, e há gente que fica nesta equipe por isso e não pelo que você paga. +2 de projeto"}))],
      [3,()=>(TPTGT(-1),L("Tu fichaje lo lee como un desprecio: venía a impresionarte y le has dicho que lo que traía no vale nada. A partir de ahí trabaja, pero solo trabaja. −1 de proyecto","Your new signing reads it as contempt: he came to impress you and you've told him what he brought is worthless. From then on he works, but he only works. −1 project",{pt:"A sua contratação lê como desprezo: veio impressionar e você disse que o que trouxe não vale nada. A partir daí ele trabalha, mas só trabalha. −1 de projeto"}))])}]},
+
+ /* 🩺 «EL CUERPO TÉCNICO» (idea de Carlos, 25-ago-2026). Un solo dilema que ROTA entre tres
+    especialistas —preparador físico, psicólogo deportivo, nutricionista— sorteados una vez por
+    partida. Y el tono cambia con la época, que es lo que le da gracia: un psicólogo en 1994 es una
+    excentricidad de la que se ríe medio paddock; en 2026 lo raro es no tenerlo.
+    El conflicto NO es el dinero, es la gente: tu piloto joven quiere empezar mañana y el mayor lleva
+    toda su carrera haciéndolo a su manera.
+    📏 EL FILTRO DE EDAD ES MEDIDO, no elegido a ojo (pega de Carlos: «si uno tiene 33 y el otro 35 no
+    es igual»). La mediana del hueco entre tus dos pilotos es de 4 años y el 34% de los inviernos se
+    llevan 0-2, así que sin filtro esto saldría con parejas sin ningún contraste. Con 7 años de hueco
+    y el mayor en 31 o más —o sea, el joven con 24 como mucho— sale el 25% de los inviernos.
+    📈 ES EL PRIMER DILEMA QUE ESTRENA `tpDrvSkill` REESCRITA: ese +1 antes se evaporaba en cualquier
+    piloto que estuviera en su techo, que suelen ser justo los mejores. Ahora les sube el techo. */
+ {id:"tpCuerpoTecnico",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<1) return false;
+    const a=tpDrvs().filter(d=>d && d.name && d.age);
+    if(a.length<2) return false;
+    const ord=a.slice().sort((x,y)=>x.age-y.age);
+    const jov=ord[0], may=ord[ord.length-1];
+    if(may.age-jov.age < 7 || may.age < 31) return false;
+    /* el filtro de edad se queda —es lo que garantiza el contraste— pero la edad NO viaja al texto
+       (petición de Carlos): uno quiere y el otro no, y el jugador no tiene por qué saber por qué.
+       Así nos ahorramos describir como veterano a alguien de 31. */
+    S._ct={ jov:jov.name, jovN:surname(jov.name),
+            may:may.name, mayN:surname(may.name),
+            esp:dilVar("ctEsp",()=>irnd(0,2)) };
+    return true; },
+  t:()=>L("El cuerpo técnico","The support staff",{pt:"A equipe técnica"}),
+  d:()=>{ const c=S._ct||{}, y=yearNow(), viejo=y<2000;
+    const quien=[
+      L("un preparador físico","a fitness coach",{pt:"um preparador físico"}),
+      L("un psicólogo deportivo","a sports psychologist",{pt:"um psicólogo esportivo"}),
+      L("un nutricionista","a nutritionist",{pt:"um nutricionista"})][c.esp||0];
+    const epoca=[
+      viejo ? L("Aquí todavía hay quien piensa que para conducir rápido basta con conducir rápido.","Around here there are still people who think that to drive fast you just drive fast.",{pt:"Aqui ainda tem quem ache que para andar rápido basta andar rápido."})
+            : L("A estas alturas no lo tiene solo quien no quiere.","By now the only teams without one are the ones that don't want one.",{pt:"A esta altura, só não tem quem não quer."}),
+      viejo ? L("En este paddock, decir que necesitas uno todavía se lee como una debilidad.","In this paddock, saying you need one still reads as weakness.",{pt:"Neste paddock, dizer que precisa de um ainda soa a fraqueza."})
+            : L("Hace diez años esto habría sido noticia. Hoy lo lleva media parrilla.","Ten years ago this would have been news. Today half the grid has one.",{pt:"Dez anos atrás isso seria notícia. Hoje metade do grid tem."}),
+      viejo ? L("Cuesta explicarlo en un paddock donde todavía se fuma en el garaje.","It's a hard sell in a paddock where people still smoke in the garage.",{pt:"É difícil de explicar num paddock onde ainda se fuma na garagem."})
+            : L("Es de las cosas baratas que separan a los equipos serios del resto.","It's one of those cheap things that separate the serious teams from the rest.",{pt:"É uma daquelas coisas baratas que separam as equipes sérias do resto."})][c.esp||0];
+    return L(`Llega ${quien} con un plan para tus dos pilotos. ${epoca} ${c.jovN} quiere empezar mañana. ${c.mayN} te dice que él ya sabe lo que necesita.`,
+             `${quien.charAt(0).toUpperCase()+quien.slice(1)} turns up with a plan for both your drivers. ${epoca} ${c.jovN} wants to start tomorrow. ${c.mayN} tells you he already knows what he needs.`,
+             {pt:`Chega ${quien} com um plano para os seus dois pilotos. ${epoca} ${c.jovN} quer começar amanhã. ${c.mayN} diz que já sabe do que precisa.`}); },
+  opts:[
+   /* A · los dos. El mayor es el dado */
+   {l:()=>L("Que pasen los dos por el programa","Both of them go through the programme",{pt:"Que os dois passem pelo programa"}),
+    r:()=>{ const c=S._ct||{};
+      return roll(
+       [55,()=>{ tpDrvSkill(c.jov,1); tpDrvSkill(c.may,1);
+         return L(`Funciona en los dos, y en el que menos te lo esperabas más: ${c.mayN} tarda un mes en admitir que hacía años que no se encontraba así. +1 de nivel de ${c.jovN} y +1 de ${c.mayN}`,
+                  `It works on both, and most on the one you least expected: it takes ${c.mayN} a month to admit he hasn't felt like this in years. +1 level for ${c.jovN} and +1 for ${c.mayN}`,
+                  {pt:`Funciona nos dois, e mais em quem você menos esperava: ${c.mayN} leva um mês para admitir que não se sentia assim havia anos. +1 de nível de ${c.jovN} e +1 de ${c.mayN}`}); }],
+       [30,()=>{ tpDrvSkill(c.jov,1);
+         return L(`${c.jovN} se lo toma en serio desde el primer día y se nota. ${c.mayN} cumple el expediente, va porque le has dicho que vaya, y de ahí no sale nada. +1 de nivel de ${c.jovN}`,
+                  `${c.jovN} takes it seriously from day one and it shows. ${c.mayN} goes through the motions because you told him to, and nothing comes of it. +1 level for ${c.jovN}`,
+                  {pt:`${c.jovN} leva a sério desde o primeiro dia e se nota. ${c.mayN} cumpre tabela, vai porque você mandou, e dali não sai nada. +1 de nível de ${c.jovN}`}); }],
+       [15,()=>{ tpDrvSkill(c.jov,1); tpDrvSkill(c.may,-1);
+         return L(`${c.jovN} mejora. Pero ${c.mayN} lo ha leído como lo que para él es: que le mandas a alguien a enseñarle su oficio. No lo dice, y se nota igual. +1 de nivel de ${c.jovN}, −1 de moral de ${c.mayN}`,
+                  `${c.jovN} improves. But ${c.mayN} has read it as what it is to him: that you're sending someone to teach him his own trade. He doesn't say it, and you can tell anyway. +1 level for ${c.jovN}, −1 morale for ${c.mayN}`,
+                  {pt:`${c.jovN} melhora. Mas ${c.mayN} leu como aquilo que para ele é: que você manda alguém ensinar-lhe o ofício. Não diz nada, e se percebe do mesmo jeito. +1 de nível de ${c.jovN}, −1 de moral de ${c.mayN}`}); }]); }},
+   /* B · solo el que quiere. La opción paciente: renuncias a la mitad hoy por todo mañana */
+   {l:()=>{ const c=S._ct||{}; return L(`Solo ${c.jovN}, que es el que quiere`,`Only ${c.jovN}, who actually wants it`,{pt:`Só ${c.jovN}, que é quem quer`}); },
+    r:()=>{ const c=S._ct||{};
+      return roll(
+       [6,()=>{ tpDrvSkill(c.jov,1);
+         return L(`${c.jovN} entra en el programa y mejora. ${c.mayN} sigue a lo suyo y nadie le dice nada, que era justo lo que pedía. +1 de nivel de ${c.jovN}`,
+                  `${c.jovN} joins the programme and improves. ${c.mayN} carries on his way and nobody says a word, which is exactly what he asked for. +1 level for ${c.jovN}`,
+                  {pt:`${c.jovN} entra no programa e melhora. ${c.mayN} segue no dele e ninguém diz nada, que era justamente o que ele pedia. +1 de nível de ${c.jovN}`}); }],
+       [4,()=>{ tpDrvSkill(c.jov,1); tpDrvSkill(c.may,1);
+         return L(`${c.jovN} mejora. Y tres meses después es ${c.mayN} quien se acerca al despacho: ha visto los números del otro lado del garaje y quiere los suyos. Nadie se lo ha pedido, y por eso funciona. +1 de nivel de ${c.jovN} y +1 de ${c.mayN}`,
+                  `${c.jovN} improves. And three months later it's ${c.mayN} who comes to the office: he's seen the numbers from the other side of the garage and he wants his own. Nobody asked him, and that's why it works. +1 level for ${c.jovN} and +1 for ${c.mayN}`,
+                  {pt:`${c.jovN} melhora. E três meses depois é ${c.mayN} quem aparece na sala: viu os números do outro lado da garagem e quer os dele. Ninguém pediu, e é por isso que funciona. +1 de nível de ${c.jovN} e +1 de ${c.mayN}`}); }]); }},
+   /* C · el dinero al coche */
+   {l:()=>L("Ese dinero, al coche","Put that money in the car",{pt:"Esse dinheiro, no carro"}),
+    r:()=>{ const c=S._ct||{};
+      return roll(
+       [7,()=>(TPCAR(1),L("Le dices que no y ese presupuesto se convierte en un par de piezas que no ibas a poder pagar este año. Los pilotos ni se enteran. +1 de coche","You turn him down and that budget becomes a couple of parts you weren't going to be able to afford this year. The drivers never find out. +1 car",{pt:"Você diz não e aquele orçamento vira um par de peças que você não ia poder pagar este ano. Os pilotos nem ficam sabendo. +1 de carro"}))],
+       [3,()=>{ TPCAR(1); tpDrvSkill(c.jov,-1);
+         return L(`Las piezas llegan. Pero ${c.jovN} se entera de que había un plan sobre la mesa y de que lo cancelaste tú, y a partir de ahí cada vez que pregunta algo lo pregunta de otra manera. +1 de coche, −1 de moral de ${c.jovN}`,
+                  `The parts arrive. But ${c.jovN} finds out there was a plan on the table and that you were the one who killed it, and from then on every time he asks something he asks it differently. +1 car, −1 morale for ${c.jovN}`,
+                  {pt:`As peças chegam. Mas ${c.jovN} descobre que havia um plano na mesa e que foi você quem cancelou, e a partir daí cada vez que pergunta algo pergunta de outro jeito. +1 de carro, −1 de moral de ${c.jovN}`}); }]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
