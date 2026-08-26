@@ -14571,12 +14571,21 @@ const TP_DILEMAS=[
     const ord=a.slice().sort((x,y)=>rk(x.name)-rk(y.name));
     const bueno=ord[0], otro=ord[1];                             // por quién merece la pena, y quién paga
     if(bueno.name===otro.name) return false;
+    /* 🏆 SI IBAS A GANAR ESA CARRERA, ES QUE TIENES COCHE (pega de Carlos: «si planeabas ganar, es que
+       eres al menos top 3 o 4 o 5 si me apuras»). Sin esto el enunciado decía que se te había ido «la
+       carrera que teníais ganada» con el peor coche de la parrilla. */
+    const ordC=[...F1_TEAMS].sort((x,y)=>(S.f1perf[y.name]||0)-(S.f1perf[x.name]||0)).map(t=>t.name);
+    if(ordC.indexOf(S.tpTeam) >= 5) return false;
     /* solo donde salirse SIGNIFICA coche de seguridad: sin muro no hay plan que valga */
     const cs=gpList(yearNow()).filter(x=>GP_MUROS.indexOf(x.n)>=0);
     if(!cs.length) return false;
     const c=cs[dilVar("cgGp",()=>irnd(0,cs.length-1))];
     const v=dilVar("cgV",()=>irnd(Math.round(c.laps*.20), Math.round(c.laps*.30)));
-    S._cg={ gp:c.n, v:v, bn:surname(bueno.name), bnom:bueno.name,
+    /* 🏁 LA CURVA SALE DEL CIRCUITO, no de un número inventado (pega de Carlos). Cada trazado guarda
+       sus curvas en `turns`, y se elige de la mitad final para arriba: una curva ciega con muro no
+       suele ser la primera, que es donde todo el mundo va mirando. */
+    const cu=dilVar("cgCurva",()=>irnd(Math.max(2,Math.ceil((c.turns||14)*.4)), (c.turns||14)));
+    S._cg={ gp:c.n, v:v, curva:cu, bn:surname(bueno.name), bnom:bueno.name,
             on:surname(otro.name), onom:otro.name };
     return true; },
   t:()=>L("La orden que no se dice","The order nobody says out loud",{pt:"A ordem que não se diz"}),
@@ -14595,9 +14604,9 @@ const TP_DILEMAS=[
    {l:()=>L("«Dilo en voz alta»","«Say it out loud»",{pt:"«Diga em voz alta»"}),
     r:()=>{ const c=S._cg||{};
       return {
-       q:L(`Se lo hace decir. Él mira a los lados, baja la voz y lo dice con todas las letras: que ${c.on} se salga en la curva 17, que es ciega y tiene muro, y que el coche de seguridad hará el resto. Ahora ya está dicho y ya no se puede des-decir.`,
-           `You make him say it. He looks around, lowers his voice and says it in plain words: that ${c.on} goes off at turn 17, which is blind and has a wall, and the safety car will do the rest. Now it's been said and it can't be unsaid.`,
-           {pt:`Você o faz dizer. Ele olha para os lados, baixa a voz e diz com todas as letras: que ${c.on} saia na curva 17, que é cega e tem muro, e o safety car faz o resto. Agora já foi dito e não dá para desdizer.`}),
+       q:L(`Él mira a los lados, baja la voz y lo dice con todas las letras: que ${c.on} se salga en la curva ${c.curva}, que es ciega y tiene muro, y que el coche de seguridad hará el resto, para beneficio de ${c.bn}. Ahora ya está dicho y ya no se puede des-decir.`,
+           `He looks around, lowers his voice and says it in plain words: that ${c.on} goes off at turn ${c.curva}, which is blind and has a wall, and the safety car will do the rest, for ${c.bn}'s benefit. Now it's been said and it can't be unsaid.`,
+           {pt:`Ele olha para os lados, baixa a voz e diz com todas as letras: que ${c.on} saia na curva ${c.curva}, que é cega e tem muro, e o safety car faz o resto, em benefício de ${c.bn}. Agora já foi dito e não dá para desdizer.`}),
        opts:[
         {l:()=>L("«Olvídalo. Y no me lo vuelvas a proponer»","«Forget it. And never propose this to me again»",{pt:"«Esqueça. E não me proponha isso de novo»"}),
          r:()=>(TPTGT(-1),L(`Se lo dices sin levantar la voz y él vuelve a su sitio. Pero ya está dicho: ese hombre trabaja para ti sabiendo que le dejaste exponerse, y tú trabajas con él sabiendo lo que es capaz de proponer. En las reuniones se nota. −proyecto`,`You say it without raising your voice and he goes back to his place. But it's been said: that man works for you knowing you let him expose himself, and you work with him knowing what he's capable of proposing. You can feel it in the meetings. −project`,{pt:`Você diz sem levantar a voz e ele volta ao lugar. Mas já foi dito: aquele homem trabalha para você sabendo que o deixou se expor, e você trabalha com ele sabendo do que é capaz de propor. Nas reuniões se nota. −projeto`}))},
@@ -14605,11 +14614,11 @@ const TP_DILEMAS=[
          r:()=>{ const c=S._cg||{}; S.tpDilWin=(S.tpDilWin||0)+1; TPRE(2);
            /* 🕰️ el rastro. `habra` decide si algún día hay juicio estando él callado (decisión de
               Carlos: «puede salir o no aunque el otro no cante»). Si canta, se fuerza a true. */
-           S._crash={ y:yearNow(), n:c.onom, nN:c.on, bn:c.bn,
+           S._crash={ y:yearNow(), n:c.onom, nN:c.on, bn:c.bn, gp:c.gp, curva:c.curva,
                       juicio:yearNow()+irnd(1,2), habra:ch(.75), callado:true, pagado:false, juzgado:false };
-           return L(`Vuelta ${(c.v||20)+2}, curva 17. ${c.on} se sale sin tocar a nadie y el coche de seguridad entra antes de que la nube de polvo se pose. ${c.bn} gana la carrera y en el podio no cabe más gente.\n\nNadie ha visto nada. Todavía. +1 victoria, +fama`,
-                    `Lap ${(c.v||20)+2}, turn 17. ${c.on} goes off without touching anybody and the safety car is out before the dust settles. ${c.bn} wins the race and there's no room left on that podium.\n\nNobody has seen anything. Yet. +1 win, +fame`,
-                    {pt:`Volta ${(c.v||20)+2}, curva 17. ${c.on} sai sem tocar em ninguém e o safety car entra antes de a poeira baixar. ${c.bn} vence a corrida e no pódio não cabe mais ninguém.\n\nNinguém viu nada. Ainda. +1 vitória, +fama`}); }}
+           return L(`Vuelta ${(c.v||20)+2}, curva ${c.curva}. ${c.on} se sale sin tocar a nadie y el coche de seguridad entra antes de que la nube de polvo se pose. ${c.bn} gana la carrera y tu equipo celebra en el podio.\n\nNadie ha visto nada. Todavía. +1 victoria, +fama`,
+                    `Lap ${(c.v||20)+2}, turn ${c.curva}. ${c.on} goes off without touching anybody and the safety car is out before the dust settles. ${c.bn} wins the race and your team celebrates on the podium.\n\nNobody has seen anything. Yet. +1 win, +fame`,
+                    {pt:`Volta ${(c.v||20)+2}, curva ${c.curva}. ${c.on} sai sem tocar em ninguém e o safety car entra antes de a poeira baixar. ${c.bn} vence a corrida e a sua equipe comemora no pódio.\n\nNinguém viu nada. Ainda. +1 vitória, +fama`}); }}
        ]}; }}]},
  /* ⚖️ «EL JUICIO» — el desenlace del crashgate, uno a tres inviernos después (idea de Carlos, 26-ago:
     «podría incluso llegar 1 o 2 años tarde»). Solo existe si diste la orden. Si el que se estrelló
@@ -14630,9 +14639,12 @@ const TP_DILEMAS=[
     const como = k.callado
       ? L(`Un ingeniero que se fue del equipo ha hablado con un periodista, y el periodista tenía los tiempos de vuelta guardados.`,`An engineer who left the team has talked to a journalist, and the journalist had kept the lap times.`,{pt:`Um engenheiro que saiu da equipe falou com um jornalista, e o jornalista tinha guardado os tempos de volta.`})
       : L(`${k.nN} lo ha contado todo, con fechas y con nombres. El suyo el primero.`,`${k.nN} has told the whole story, with dates and with names. His own first.`,{pt:`${k.nN} contou tudo, com datas e com nomes. O dele primeiro.`});
-    return L(`${años} ${años===1?"año":"años"} después. ${como} La FIA te cita en París: hay una vista y tú estás en ella.\n\nTu abogado te lo pone sencillo: si te declaras culpable, hay acuerdo y hay castigo, pero sigues en esto. Si te declaras inocente y te creen, no ha pasado nada. Si te declaras inocente y no te creen, no vuelves a pisar un paddock.`,
-             `${años} ${años===1?"year":"years"} later. ${como} The FIA summons you to Paris: there's a hearing and you're in it.\n\nYour lawyer makes it simple: plead guilty and there's a deal and a punishment, but you stay in this. Plead not guilty and be believed, and nothing happened. Plead not guilty and not be believed, and you never set foot in a paddock again.`,
-             {pt:`${años} ${años===1?"ano":"anos"} depois. ${como} A FIA te convoca a Paris: há uma audiência e você está nela.\n\nO seu advogado põe simples: se você se declarar culpado, há acordo e há castigo, mas continua nisto. Se se declarar inocente e acreditarem, não aconteceu nada. Se se declarar inocente e não acreditarem, não pisa mais num paddock.`}); },
+    const elChoque=L(`el choque de ${k.nN} en ${k.gp||"aquel circuito"} en ${k.y}`,
+                     `${k.nN}'s crash at ${k.gp||"that track"} in ${k.y}`,
+                     {pt:`o acidente de ${k.nN} em ${k.gp||"aquele circuito"} em ${k.y}`});
+    return L(`${años} ${años===1?"año":"años"} después. ${como} La FIA reabre ${elChoque} y te cita en París: hay una vista y tú estás en ella.\n\nTu abogado te lo pone sencillo: si te declaras culpable, hay acuerdo y hay castigo, pero sigues en esto. Si te declaras inocente y te creen, no ha pasado nada. Si te declaras inocente y no te creen, no vuelves a pisar un paddock.`,
+             `${años} ${años===1?"year":"years"} later. ${como} The FIA reopens ${elChoque} and summons you to Paris: there's a hearing and you're in it.\n\nYour lawyer makes it simple: plead guilty and there's a deal and a punishment, but you stay in this. Plead not guilty and be believed, and nothing happened. Plead not guilty and not be believed, and you never set foot in a paddock again.`,
+             {pt:`${años} ${años===1?"ano":"anos"} depois. ${como} A FIA reabre ${elChoque} e te convoca a Paris: há uma audiência e você está nela.\n\nO seu advogado põe simples: se você se declarar culpado, há acordo e há castigo, mas continua nisto. Se se declarar inocente e acreditarem, não aconteceu nada. Se se declarar inocente e não acreditarem, não pisa mais num paddock.`}); },
   opts:[
    {l:()=>L("Declararte culpable","Plead guilty",{pt:"Declarar-se culpado"}),
     r:()=>{ const k=S._crash||{}; k.juzgado=true;
@@ -14657,6 +14669,124 @@ const TP_DILEMAS=[
          return L(`Cuatro horas negándolo, y en la última media hora aparece un correo interno de aquel fin de semana que tú no sabías que existía. La sala se queda muy callada.`,
                   `Four hours of denying it, and in the last half hour an internal email from that weekend surfaces that you didn't know existed. The room goes very quiet.`,
                   {pt:`Quatro horas negando, e na última meia hora aparece um e-mail interno daquele fim de semana que você não sabia que existia. A sala fica muito calada.`}); }]); }}]},
+
+ /* 🤐 «EL FAVOR» — la tercera pieza del crashgate (idea de Carlos, 26-ago). El que se estrelló por ti
+    viene a pedirte algo. No amenaza: pide. Y los dos sabéis por qué se lo vas a dar.
+    📏 SOLO CHANTAJEA QUIEN ESTÁ JODIDO, que es la nota de Carlos y la que hace todo el diseño: «si se
+    estrellara un crack, seguramente su camino siga siendo exitoso y no necesite que le hagan favores».
+    Los umbrales salen de medir dónde acaba de verdad ese piloto tras el crashgate (n=203): sin asiento
+    86 · de nº2 en tu equipo 37 · en un equipo peor 34 · de nº1 en tu equipo 34 · en uno mejor 12.
+    Los tres primeros son motivo; los dos últimos no —a ese le va bien—. Y su perfil medido: nivel
+    mediano 83 (p75 87) y edad mediana 28 (p75 33), de ahí el «por debajo de 88» y el «33 o menos».
+    ⚖️ NEGARSE NO CUESTA NADA HOY, y esa es la trampa: hace que el juicio sea SEGURO y que llegues con
+    testigo en contra, o sea el 26% de salvarte en vez del 52%. */
+ {id:"tpElFavor",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const k=S._crash;
+    if(!k || !k.callado || k.pagado || k.juzgado) return false;
+    /* ⏳ LA VENTANA DEPENDE DE LO QUE PIDA (idea de Carlos): el número uno y la renovación se piden al
+       invierno siguiente, cuando todavía duele. Pero el que se ha quedado sin volante necesita tiempo
+       para pudrirse: dos o tres años sin que nadie le devuelva las llamadas. El motivo se calcula más
+       abajo, así que la ventana se comprueba después de saberlo. */
+    if(yearNow() <= k.y) return false;                       // nunca el mismo año
+    /* ¿dónde está ahora, y tiene motivo para pedir algo? */
+    let equipo=null, d=null;
+    Object.entries(S.seats||{}).forEach(([tn,sl])=>(sl||[]).forEach(x=>{
+      if(x && x!=="PLAYER" && x.name===k.n){ equipo=tn; d=x; } }));
+    if(!d) d=(S.dpool||[]).find(x=>x && x.name===k.n) || null;
+    if(!d) return false;
+    if((d.skill||0) >= 88) return false;                     // a un crack no le hacen falta favores
+    if((d.age||0) > 33) return false;                        // ni a un veterano que ya se va
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+    const rk=n=>(S.rankD&&S.rankD[n])||99;
+    let motivo=null, compa=null;
+    if(!equipo) motivo="asiento";                            // se quedó sin volante
+    else if(equipo===S.tpTeam){
+      compa=(S.seats[equipo]||[]).find(x=>x&&x!=="PLAYER"&&x.name!==k.n) || null;
+      if(compa && rk(k.n)>rk(compa.name)) motivo="numerouno";
+    } else if(ord.indexOf(equipo) > ord.indexOf(S.tpTeam)) motivo="traeme";
+    if(!motivo) return false;                                // le va bien: no pide nada
+    /* pedir el número uno se pide al invierno siguiente, cuando todavía escuece. Pero PEDIR QUE LE
+       FICHES —tanto si se ha quedado sin volante como si está en un equipo peor— necesita que pase
+       tiempo: dos años como mínimo, para que le dé tiempo a pudrirse y a que se le acaben las puertas. */
+    if(motivo!=="numerouno" && yearNow() < k.y+2) return false;
+    /* ⚠️ `_fv` y no `_fav`: ese nombre ya lo usa `favorVeterano`, del modo clásico. Hoy no chocarían
+       —nunca corren en la misma partida— pero el 26-ago ya me comí una colisión de variables con la
+       bandera roja y no pienso volver a fiarme de que dos cosas «no coincidan nunca». */
+    S._fv={ n:k.nN, nom:k.n, motivo:motivo, equipo:equipo,
+             compa:compa?compa.name:null, compaN:compa?surname(compa.name):null };
+    return true; },
+  t:()=>L("El favor","The favour",{pt:"O favor"}),
+  d:()=>{ const c=S._fv||{}, k=S._crash||{};
+    const pide = c.motivo==="asiento"
+      ? L(`Lleva un año sin volante y nadie le devuelve las llamadas. Quiere que le fiches tú.`,`He's been a year without a drive and nobody returns his calls. He wants you to sign him.`,{pt:`Está há um ano sem volante e ninguém devolve as ligações dele. Quer que você o contrate.`})
+      : c.motivo==="numerouno"
+      ? L(`Lleva toda la temporada por detrás de ${c.compaN}. Quiere el número uno del equipo.`,`He's been behind ${c.compaN} all season. He wants the team's number one.`,{pt:`Passou a temporada inteira atrás de ${c.compaN}. Quer o número um da equipe.`})
+      : L(`Está en ${c.equipo}, con un coche peor que el tuyo, y no va a salir de ahí solo. Quiere que te lo lleves.`,`He's at ${c.equipo}, with a worse car than yours, and he isn't getting out of there on his own. He wants you to take him.`,{pt:`Está na ${c.equipo}, com um carro pior que o seu, e não vai sair dali sozinho. Quer que você o leve.`});
+    return L(`${c.n} te espera fuera del motorhome y no lleva agente. ${pide}\n\nNo amenaza. No menciona ${k.y||"aquel año"} ni una sola vez, y precisamente por eso queda tan claro. Lo dice como quien pide un favor entre conocidos, y se queda mirándote un segundo de más.`,
+             `${c.n} is waiting outside the motorhome and he hasn't brought his agent. ${pide}\n\nHe doesn't threaten. He doesn't mention ${k.y||"that year"} even once, and that's exactly why it's so clear. He says it the way you ask a favour of someone you know, and he holds your eye a second too long.`,
+             {pt:`${c.n} espera você fora do motorhome e não trouxe empresário. ${pide}\n\nNão ameaça. Não menciona ${k.y||"aquele ano"} nem uma vez, e é justamente por isso que fica tão claro. Diz como quem pede um favor entre conhecidos, e segura o seu olhar um segundo a mais.`}); },
+  opts:[
+   /* A · pagar. El silencio se compra, la inocencia no */
+   {l:()=>L("Dárselo","Give him what he wants",{pt:"Dar o que ele quer"}),
+    r:()=>{ const c=S._fv||{}; if(S._crash) S._crash.pagado=true;
+      /* 😤 AL QUE DESPLAZAS LE COGE RENCOR, Y CON TODA LA RAZÓN (pega de Carlos): desde su silla le
+         estás quitando el sitio sin ningún motivo deportivo, porque no puede saber el verdadero.
+         Reutiliza el motivo «apartado», que ya existe con sus titulares de prensa escritos. */
+      if(c.motivo==="numerouno"){
+        if(c.compa){ tpDrvSkill(c.compa,-1);
+          const d=tpDrvs().find(x=>x && x.name===c.compa);
+          if(d){ d.tpRencor=true; d.tpRencorPor={motivo:"apartado", year:yearNow(), team:S.tpTeam}; } }
+        return L(`Se lo das. ${c.compaN} se entera por el muro, como se entera todo el mundo de las cosas importantes: le han quitado el número uno y nadie le ha explicado por qué, porque el porqué no se puede explicar. No vuelve a mirarte igual. −moral de ${c.compaN}, y te lo guarda`,
+                 `You give it to him. ${c.compaN} finds out from the pit wall, the way everyone finds out about the important things: they've taken his number one away and nobody has explained why, because the why can't be explained. He never looks at you the same way again. −${c.compaN}'s morale, and he holds it against you`,
+                 {pt:`Você dá. ${c.compaN} fica sabendo pelo muro, como todo mundo fica sabendo das coisas importantes: tiraram o número um dele e ninguém explicou por quê, porque o porquê não se pode explicar. Não volta a olhar para você igual. −moral de ${c.compaN}, e ele guarda mágoa`}); }
+      /* 🪑 FICHARLE ES SENTARLE, y sentar a uno es levantar a otro (pega de Carlos). Se copia el patrón
+         que ya usa `tpVeterano`: al desplazado NO se lo traga la tierra —va a la bolsa de agentes
+         libres, de donde otro equipo lo pesca— y se marca para que contigo no vuelva a firmar jamás.
+         Y coge rencor con toda la razón: desde su silla le has quitado el sitio sin ningún motivo
+         deportivo, porque el verdadero no se lo puedes contar. Motivo «apartado», que ya existe. */
+      TPTGT(-2);
+      const sl=S.seats[S.tpTeam]||[];
+      let iFuera=-1, peor=null;
+      sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && x.name && (!peor || (x.skill||0)<(peor.skill||0))){ peor=x; iFuera=i; } });
+      let nFuera=null;
+      if(peor && iFuera>=0){
+        nFuera=surname(peor.name);
+        peor.tpRencor=true; peor.tpRencorPor={motivo:"apartado", year:yearNow(), team:S.tpTeam};
+        peor._noVuelve=S.tpTeam;
+        S.freeAgents=S.freeAgents||[]; S.freeAgents.push(peor);
+        let nuevo=null;
+        Object.entries(S.seats||{}).forEach(([tn,ss])=>(ss||[]).forEach((x,j)=>{
+          if(x && x!=="PLAYER" && x.name===c.nom){ nuevo=x; if(S.seats[tn]) S.seats[tn][j]=mkRookie(isRBJr(tn), tn); } }));
+        if(!nuevo) nuevo=(S.dpool||[]).find(x=>x && x.name===c.nom) || null;
+        if(nuevo){ nuevo.yrs=0; nuevo.tpc=2; sl[iFuera]=nuevo; }
+      }
+      return L(`Se lo das. ${nFuera?nFuera+" se queda sin asiento para hacerle sitio y se entera por la prensa, como se entera todo el mundo. No hay ninguna razón deportiva que darle, porque la de verdad no se puede contar.":"Ocupa un asiento que tenías pensado para otra cosa."} Es lo que cuesta que ${c.n} siga hablando del tiempo. −proyecto${nFuera?", y "+nFuera+" te lo guarda":""}`,
+               `You give it to him. ${nFuera?nFuera+" loses his seat to make room and finds out from the press, the way everybody finds out. There's no sporting reason to give him, because the real one can't be told.":"He takes a seat you had earmarked for something else."} That's what it costs to keep ${c.n} talking about the weather. −project${nFuera?", and "+nFuera+" holds it against you":""}`,
+               {pt:`Você dá. ${nFuera?nFuera+" fica sem lugar para abrir espaço e descobre pela imprensa, como todo mundo descobre. Não há razão esportiva para dar a ele, porque a de verdade não se pode contar.":"Ele ocupa um lugar que você tinha pensado para outra coisa."} É o que custa que ${c.n} continue falando do tempo. −projeto${nFuera?", e "+nFuera+" guarda mágoa":""}`}); }},
+   /* B · negarse. Gratis hoy, carísimo después */
+   {l:()=>L("Negarte","Turn him down",{pt:"Recusar"}),
+    r:()=>{ const c=S._fv||{}; if(S._crash){ S._crash.callado=false; S._crash.habra=true;
+        S._crash.juicio=Math.min(S._crash.juicio, yearNow()+1); }
+      return L(`Le dices que no, y se lo dices bien: sin levantar la voz y sin darle la razón en nada. Él asiente, dice «claro, lo entiendo», y se va sin discutir.\n\nY esa es la parte que te va a quitar el sueño: que no discutiera.`,
+               `You tell him no, and you tell him properly: without raising your voice and without conceding a thing. He nods, says «of course, I understand», and leaves without arguing.\n\nAnd that's the part that's going to keep you awake: that he didn't argue.`,
+               {pt:`Você diz não, e diz bem: sem levantar a voz e sem dar razão em nada. Ele concorda, diz «claro, entendo», e vai embora sem discutir.\n\nE essa é a parte que vai tirar o seu sono: que ele não tenha discutido.`}); }},
+   /* C · devolverle la amenaza. Un dado en vez de un precio */
+   {l:()=>L("Recordarle que él conducía","Remind him that he was the one driving",{pt:"Lembrá-lo de que quem dirigia era ele"}),
+    r:()=>{ const c=S._fv||{};
+      /* 🎭 25/75 y no 55/45 (pega de Carlos: «los pilotos son arrogantes»). Devolverle la amenaza es
+         la peor de las tres salidas tres de cada cuatro veces: el tipo se estrelló a propósito por ti
+         y no se va a asustar porque le recuerdes que conducía él. */
+      return roll(
+       [25,()=>{ if(S._crash) S._crash.pagado=true;
+         return L(`Se lo dices sin subir la voz: que en aquella curva el volante lo llevaba él, y que si alguien va a contar algo tendrá que empezar contando eso. Se le queda una cara rara y se va sin pedirte nada. No vuelve a acercarse. Y no te ha costado un euro.`,
+                  `You say it without raising your voice: that in that corner he was the one holding the wheel, and that if anyone's going to tell a story they'll have to start by telling that part. His face changes and he leaves without asking you for anything. He never comes near you again. And it hasn't cost you a penny.`,
+                  {pt:`Você diz sem levantar a voz: que naquela curva quem segurava o volante era ele, e que se alguém for contar algo terá que começar contando isso. A cara dele muda e ele vai embora sem pedir nada. Não volta a se aproximar. E não te custou um euro.`}); }],
+       [75,()=>{ if(S._crash){ S._crash.callado=false; S._crash.habra=true;
+           S._crash.juicio=Math.min(S._crash.juicio, yearNow()+1); }
+         return L(`Se lo dices, y en vez de encogerse se yergue. «Ya. Yo conducía. Y tú lo pediste.» No hay más conversación: da media vuelta y se va andando deprisa, que es como anda la gente que acaba de decidir algo.`,
+                  `You say it, and instead of shrinking he straightens up. «Right. I was driving. And you asked for it.» There's no more conversation: he turns around and walks off fast, which is how people walk when they've just decided something.`,
+                  {pt:`Você diz, e em vez de se encolher ele se endireita. «Pois é. Eu dirigia. E você pediu.» Não há mais conversa: dá meia-volta e sai andando rápido, que é como anda quem acabou de decidir alguma coisa.`}); }]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
