@@ -14713,21 +14713,25 @@ const TP_DILEMAS=[
       /* 👑 «QUIERE EL NÚMERO UNO» EXIGE QUE NO LO TENGA YA. La primera versión miraba su puesto en el
          MUNDIAL, y eso no es lo mismo que su asiento: puedes ir con el mejor coche del garaje y estar
          por detrás igualmente. Salían siete casos pidiendo lo que ya tenían. El nº1 de este juego es
-         el ASIENTO 0 —corre con un coche 0,75 mejor—, así que solo lo pide quien está en el 1. */
+         el ASIENTO 0 —corre con un coche 0,75 mejor—, así que solo lo pide quien está en el 1.
+         📄 Y si lo que se le acaba es el CONTRATO, eso pesa más que el asiento: primero quiere seguir
+         siendo piloto tuyo, y ya discutiréis de garajes el año que viene. */
       const sl2=S.seats[equipo]||[];
       const iEl=sl2.findIndex(x=>x&&x!=="PLAYER"&&x.name===k.n);
       compa=sl2.find(x=>x&&x!=="PLAYER"&&x.name!==k.n) || null;
-      if(compa && iEl>0) motivo="numerouno";
+      if((d.tpc||0)<=0) motivo="renovar";
+      else if(compa && iEl>0) motivo="numerouno";
     } else if(ord.indexOf(equipo) > ord.indexOf(S.tpTeam)) motivo="traeme";
     if(!motivo) return false;                                // le va bien: no pide nada
-    /* 🪑 SOLO PIDE LO QUE LE PUEDES DAR (pega de Carlos: «¿puede ocupar un asiento a pesar de estar
-       ocupados? ¿qué pasa con el otro?»). Si lo que quiere es que le fiches, tiene que HABER sitio:
-       alguien de tu equipo terminando contrato. Si no lo hay, no viene este invierno — vendrá otro.
-       El número uno no necesita hueco: es un cambio de asiento entre los dos que ya tienes. */
-    if(motivo!=="numerouno"){
-      const libres=(S.seats[S.tpTeam]||[]).some(x=>x && x!=="PLAYER" && x.name && (x.tpc||0)<=0);
-      if(!libres) return false;
-    }
+    /* 🪑 y tiene que haber un garaje donde sentarle. Entre un despido y el fichaje siguiente, la lista
+       de asientos de tu equipo puede estar vacía un instante: ahí no hay favor que dar. Medido: tres
+       casos de 320 en que el fichado no llegaba a entrar en ningún sitio. */
+    if(motivo!=="renovar" && !(S.seats[S.tpTeam]||[]).some(x=>x && x!=="PLAYER" && x.name)) return false;
+    /* 🪑 NO DEPENDE DE QUE HAYA HUECO (Carlos, 26-ago: «estaría bien poder reventar el contrato del
+       nº2, o incluso del nº1, para contratar al chantajista»). Un jefe de F1 puede finiquitar a quien
+       le dé la gana: lo que no puede es hacerlo gratis. Así que el sitio SIEMPRE se encuentra, y si el
+       que sale tenía contrato en vigor, el precio sube. Lo que sí hizo falta fue blindar la pantalla
+       de mercado, que reventaba si te quedabas sin asientos abiertos. */
     /* pedir el número uno se pide al invierno siguiente, cuando todavía escuece. Pero PEDIR QUE LE
        FICHES —tanto si se ha quedado sin volante como si está en un equipo peor— necesita que pase
        tiempo: dos años como mínimo, para que le dé tiempo a pudrirse y a que se le acaben las puertas. */
@@ -14740,7 +14744,9 @@ const TP_DILEMAS=[
     return true; },
   t:()=>L("El favor","The favour",{pt:"O favor"}),
   d:()=>{ const c=S._fv||{}, k=S._crash||{};
-    const pide = c.motivo==="asiento"
+    const pide = c.motivo==="renovar"
+      ? L(`Se le acaba el contrato contigo y sabe que no ibas a renovárselo. Quiere seguir siendo piloto tuyo.`,`His contract with you is up and he knows you weren't going to renew it. He wants to stay your driver.`,{pt:`O contrato dele com você está acabando e ele sabe que você não ia renovar. Quer continuar sendo seu piloto.`})
+      : c.motivo==="asiento"
       ? L(`Lleva un año sin volante y nadie le devuelve las llamadas. Quiere que le fiches tú.`,`He's been a year without a drive and nobody returns his calls. He wants you to sign him.`,{pt:`Está há um ano sem volante e ninguém devolve as ligações dele. Quer que você o contrate.`})
       : c.motivo==="numerouno"
       ? L(`Lleva toda la temporada por detrás de ${c.compaN}. Quiere el número uno del equipo.`,`He's been behind ${c.compaN} all season. He wants the team's number one.`,{pt:`Passou a temporada inteira atrás de ${c.compaN}. Quer o número um da equipe.`})
@@ -14776,16 +14782,29 @@ const TP_DILEMAS=[
          libres, de donde otro equipo lo pesca— y se marca para que contigo no vuelva a firmar jamás.
          Y coge rencor con toda la razón: desde su silla le has quitado el sitio sin ningún motivo
          deportivo, porque el verdadero no se lo puedes contar. Motivo «apartado», que ya existe. */
-      TPTGT(-2);
-      /* ⚠️ SOLO SE OCUPA UN ASIENTO QUE YA IBA A QUEDARSE LIBRE (contrato terminando, `tpc<=0`).
-         La primera versión desplazaba al peor de los dos fuera como fuera, y eso hacía dos cosas mal:
-         echaba a un piloto CON CONTRATO EN VIGOR, y le robaba al mercado de invierno el único asiento
-         que iba a ofrecer, con lo que la pantalla de fichajes reventaba al pulsar («ab[0].i» sobre una
-         lista vacía). Se cazó con grupo de control: 200 partidas sin tocar el crashgate, cero errores.
-         Si nadie termina contrato, no hay a quién desplazar: le pagas igual, pero sin sentar a nadie. */
+      /* 📄 RENOVARLE es lo más barato de los cuatro: sigue donde está, con su mismo asiento, y lo que
+         te cuesta es cargar un año más con alguien de quien te querías deshacer. */
+      if(c.motivo==="renovar"){
+        TPTGT(-1);
+        const d=tpDrvs().find(x=>x && x.name===c.nom); if(d){ d.tpc=2; d.yrs=0; }
+        return L(`Le renuevas. Dos años más, sin discutir cifras, y en la fábrica nadie entiende por qué has atado a alguien de quien hablabas en pasado el mes pasado. −proyecto`,
+                 `You renew him. Two more years, no haggling, and nobody in the factory understands why you've tied down someone you were talking about in the past tense last month. −project`,
+                 {pt:`Você renova. Mais dois anos, sem discutir cifras, e na fábrica ninguém entende por que você amarrou alguém de quem falava no passado no mês passado. −projeto`}); }
+      /* 🪑 FICHARLE SIEMPRE ENCUENTRA SITIO, y el precio depende de si hay que romper algo. Se prefiere
+         a quien termina contrato —eso no cuesta nada extra— y si nadie termina, se finiquita al peor de
+         los dos: eso son TRES de proyecto en vez de dos, y un punto de fama, porque un finiquito se
+         paga y se comenta. Antes esto exigía que hubiera hueco y el dilema no salía; Carlos pidió que
+         se pudiera reventar un contrato, «o incluso el del nº1». */
+      /* 👇 SALE EL Nº2, NO EL PEOR (matiz de Carlos): en un garaje manda la jerarquía, no la tabla.
+         El asiento 1 es el número dos —corre con el coche 0,75 peor— y es a quien se levanta. Que
+         además sea el más flojo es lo normal, pero no siempre, y el que decide aquí es el orden. */
       const sl=S.seats[S.tpTeam]||[];
-      let iFuera=-1, peor=null;
-      sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && x.name && (x.tpc||0)<=0 && (!peor || (x.skill||0)<(peor.skill||0))){ peor=x; iFuera=i; } });
+      const iN2 = sl.length>1 && sl[1] && sl[1]!=="PLAYER" && sl[1].name ? 1
+                : sl.findIndex(x=>x && x!=="PLAYER" && x.name);
+      let iFuera=iN2, peor=(iN2>=0?sl[iN2]:null);
+      const acaba = !!(peor && (peor.tpc||0)<=0);              // ¿salía gratis o hay que finiquitarlo?
+      TPTGT(acaba ? -2 : -3);
+      if(!acaba) TPRE(-1);
       let nFuera=null;
       if(peor && iFuera>=0){
         nFuera=surname(peor.name);
@@ -14798,9 +14817,12 @@ const TP_DILEMAS=[
         if(!nuevo) nuevo=(S.dpool||[]).find(x=>x && x.name===c.nom) || null;
         if(nuevo){ nuevo.yrs=0; nuevo.tpc=2; sl[iFuera]=nuevo; }
       }
-      return L(`Se lo das. ${nFuera||"El que terminaba contrato"} ya no se renueva y se entera por la prensa, como se entera todo el mundo. No hay ninguna razón deportiva que darle, porque la de verdad no se puede contar, y ${c.n} se sienta en su coche. Es lo que cuesta que siga hablando del tiempo. −proyecto${nFuera?", y "+nFuera+" te lo guarda":""}`,
-               `You give it to him. ${nFuera||"The one whose contract was up"} doesn't get renewed and finds out from the press, the way everybody finds out. There's no sporting reason to give him, because the real one can't be told, and ${c.n} sits in his car. That's what it costs to keep him talking about the weather. −project${nFuera?", and "+nFuera+" holds it against you":""}`,
-               {pt:`Você dá. ${nFuera||"Aquele que terminava contrato"} não é renovado e descobre pela imprensa, como todo mundo descobre. Não há razão esportiva para dar a ele, porque a de verdade não se pode contar, e ${c.n} senta no carro dele. É o que custa que continue falando do tempo. −projeto${nFuera?", e "+nFuera+" guarda mágoa":""}`}); }},
+      const comoSale = acaba
+        ? L(`${nFuera} terminaba contrato y ya no se le renueva`,`${nFuera} was out of contract and doesn't get renewed`,{pt:`${nFuera} terminava contrato e não é renovado`})
+        : L(`a ${nFuera} le quedaba un año y se lo finiquitas: eso se paga, y se comenta`,`${nFuera} had a year left and you buy him out: that costs money, and it gets talked about`,{pt:`${nFuera} tinha um ano pela frente e você rescinde: isso se paga, e se comenta`});
+      return L(`Se lo das. ${nFuera?comoSale:"Le haces sitio"} y se entera por la prensa, como se entera todo el mundo. No hay ninguna razón deportiva que darle, porque la de verdad no se puede contar, y ${c.n} se sienta en su coche. Es lo que cuesta que siga hablando del tiempo. −proyecto${acaba?"":" fuerte, −fama"}${nFuera?", y "+nFuera+" te lo guarda":""}`,
+               `You give it to him. ${nFuera?comoSale:"You make room for him"} and he finds out from the press, the way everybody finds out. There's no sporting reason to give him, because the real one can't be told, and ${c.n} sits in his car. That's what it costs to keep him talking about the weather. −project${acaba?"":" heavily, −fame"}${nFuera?", and "+nFuera+" holds it against you":""}`,
+               {pt:`Você dá. ${nFuera?comoSale:"Você abre espaço para ele"} e ele descobre pela imprensa, como todo mundo descobre. Não há razão esportiva para dar a ele, porque a de verdade não se pode contar, e ${c.n} senta no carro dele. É o que custa que continue falando do tempo. −projeto${acaba?"":" forte, −fama"}${nFuera?", e "+nFuera+" guarda mágoa":""}`}); }},
    /* B · negarse. Gratis hoy, carísimo después */
    {l:()=>L("Negarte","Turn him down",{pt:"Recusar"}),
     r:()=>{ const c=S._fv||{}; if(S._crash){ S._crash.callado=false; S._crash.habra=true;
