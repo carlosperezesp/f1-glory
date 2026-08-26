@@ -2233,6 +2233,53 @@ const PALM_HEREDA = {"Renault":"Alpine"};   // …y al revés, si algún día Al
 
 /* el palmarés de un equipo va en dos cajones separados: `h` lo histórico (recortado al año de la era,
    muere con el nombre) y `j` lo jugado. gigInfo los suma; rebrandTeam solo tira del primero. */
+/* 👋 EL BOLSILLO DE LEYENDAS, SEMBRADO AL EMPEZAR LA PARTIDA (idea de Carlos, 26-ago).
+   El problema medido: `retiredPool` arranca VACÍO y solo se llena con quien se retira DENTRO de tu
+   partida. Sobre 50 partidas, el 72% terminaban sin un solo nombre dentro, y el comeback que ya
+   estaba escrito —«el camino Schumacher'10 / Kimi'12»— ocurría en el 4% de las partidas. Años 1º
+   y 2º: 0%. Contenido montado y prácticamente muerto.
+   📏 LOS SEIS DATOS de cada uno: nombre, bandera, nivel AL RETIRARSE, edad, títulos y año.
+   ⚖️ LOS NIVELES VAN BAJOS A PROPÓSITO (pega de Carlos: «veo que son unas bestias y se supone que
+   están oxidados»). Aquí se guarda lo que valían el día que lo dejaron; el óxido se descuenta encima
+   al usarlos, con la MISMA fórmula que ya usaba el comeback: −2 −(años fuera).
+   ⚰️ NADIE QUE MURIERA CORRIENDO está en estas listas: ni Senna, ni de Angelis, ni Pironi, ni
+   Bianchi. El juego ya tenía `NO_TAUNT` para eso y esto va en la misma línea. Michael Schumacher
+   aparece en la era 2010 y NO en la 2020, y sale solo: `NO_TAUNT` lo bloquea desde 2014.
+   ⏳ La ventana de uso son 2-4 años fuera (decisión de Carlos: «la edad es irrelevante para 3-5
+   carreras»), así que cada lista da munición en las primeras temporadas y luego toma el relevo el
+   bolsillo orgánico. El bombazo nostálgico va al principio, que es donde debe ir. */
+const LEYENDAS_RETIRADAS = {
+ 1990:[["N. Lauda","🇦🇹",90,36,3,1985],["K. Rosberg","🇫🇮",86,38,1,1986],
+       ["A. Jones","🇦🇺",86,40,1,1986],["J. Scheckter","🇿🇦",86,30,1,1980],
+       ["C. Reutemann","🇦🇷",86,40,0,1982],["J. Watson","🇬🇧",84,39,0,1985],
+       ["P. Tambay","🇫🇷",84,37,0,1986],["E. Cheever","🇺🇸",84,31,0,1989]],
+ 2000:[["A. Prost","🇫🇷",91,38,4,1993],["N. Piquet","🇧🇷",89,39,3,1991],
+       ["N. Mansell","🇬🇧",88,41,1,1995],["D. Hill","🇬🇧",86,39,1,1999],
+       ["G. Berger","🇦🇹",86,38,0,1997],["R. Patrese","🇮🇹",85,39,0,1993],
+       ["M. Alboreto","🇮🇹",84,38,0,1994],["M. Brundle","🇬🇧",84,37,0,1996]],
+ 2010:[["M. Schumacher","🇩🇪",92,37,7,2006],["M. H\u00e4kkinen","🇫🇮",89,33,2,2001],
+       ["J. P. Montoya","🇨🇴",87,31,0,2006],["D. Coulthard","🇬🇧",86,37,0,2008],
+       ["J. Villeneuve","🇨🇦",85,35,1,2006],["E. Irvine","🇬🇧",84,37,0,2002],
+       ["R. Schumacher","🇩🇪",84,32,0,2007],["G. Fisichella","🇮🇹",84,36,0,2009]],
+ 2020:[["F. Alonso","🇪🇸",90,37,2,2018],["N. Rosberg","🇩🇪",87,31,1,2016],
+       ["J. Button","🇬🇧",86,37,1,2017],["M. Webber","🇦🇺",86,37,0,2013],
+       ["F. Massa","🇧🇷",85,36,0,2017],["R. Barrichello","🇧🇷",85,39,0,2011],
+       ["N. H\u00fclkenberg","🇩🇪",85,32,0,2019],["H. Kovalainen","🇫🇮",83,32,0,2013]],
+ 2026:[["S. Vettel","🇩🇪",88,35,4,2022],["K. R\u00e4ikk\u00f6nen","🇫🇮",86,42,1,2021],
+       ["D. Ricciardo","🇦🇺",86,35,0,2024],["R. Kubica","🇵🇱",84,36,0,2021],
+       ["K. Magnussen","🇩🇰",84,32,0,2024],["R. Grosjean","🇫🇷",83,34,0,2020],
+       /* 🎬 Sonny Hayes, de la película, con la excepción de edad declarada: el juego ya lo sienta
+          con 50 años cuando aparece APXGP, y ser un fósil es literalmente su personaje. Si APXGP
+          entra de verdad en la partida, `apxSeedLimpia()` lo saca del bolsillo para que no esté en
+          dos sitios a la vez (aviso de Carlos). */
+       ["S. Hayes","🇺🇸",85,47,0,2024,true]]
+};
+function retiredSeed(baseYear){
+  (LEYENDAS_RETIRADAS[baseYear]||[]).forEach(function(L6){
+    S.retiredPool.push({name:L6[0], flag:L6[1], skill:L6[2], age:L6[3], titles:L6[4],
+                        retiredYear:L6[5], sembrado:true, excepcion:!!L6[6]});
+  });
+}
 function palmSeed(baseYear){
   S.palm={};
   F1_TEAMS.forEach(t=>palmSeedTeam(t.name, baseYear));
@@ -3644,6 +3691,7 @@ function startCareer(){
   // y volver de una retro a 2026 restaura la parrilla actual sin arrastres.
   F1_TEAMS.length=0; ERA.teams.forEach(t=>F1_TEAMS.push({...t, cat:"F1"}));
   palmSeed(ERA.baseYear);   // 🏆 palmarés real recortado al año de la era
+  retiredSeed(ERA.baseYear); // 👋 y el bolsillo de leyendas ya retiradas en esa época
   // escalera junior de la era (2010: Fórmula Renault/F3/GP3/GP2; 2020/2026: las actuales)
   const JR = ERA.jr || JR_2026;
   [["F4",F4_TEAMS],["F3",F3_TEAMS],["FR",FRECA_TEAMS],["F2",F2_TEAMS]].forEach(([k,pool])=>{ pool.length=0; JR[k].forEach(t=>pool.push({...t})); });
@@ -4061,9 +4109,16 @@ function npcSeason(row){
             `👋 ${surname(d.name)} cuelga el casco a los ${d.age}: se retira ${d.titles>1?"con "+d.titles+" Mundiales":(y1?"el campeón del mundo de "+y1:"campeón del mundo")}.`,
             `👋 ${surname(d.name)} hangs up his helmet at ${d.age}: ${d.titles>1?"he retires with "+d.titles+" world titles":(y1?"the "+y1+" world champion retires":"he retires as world champion")}.`,{pt:`👋 ${surname(d.name)} pendura o capacete aos ${d.age}: aposenta-se ${d.titles>1?"com "+d.titles+" Mundiais":(y1?"o campeão mundial de "+y1:"campeão mundial")}.`}));
         }
-        // 🔙 los retirados NOTABLES (título o nivel 86+, colgando el casco antes de los 38) van al
-        // bolsillo de posibles comebacks — el camino Schumacher'10 / Kimi'12
-        if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||99)<=38 && (d.age||0)>=27)
+        /* 🔙 los retirados NOTABLES (título o nivel 86+) van al bolsillo — el camino
+           Schumacher'10 / Kimi'12, y ahora también el sustituto del lesionado.
+           ⚠️ EL TOPE DE 38 AÑOS SE CAYÓ (26-ago, lo cazó Carlos preguntando «¿y si Alonso se retira
+           en 2026?»): Alonso se retiraría con 45 y el bolsillo lo rechazaba. Medido sobre 134 retiradas
+           notables, el tope tiraba el 46% —y justo el 46% con los nombres más gordos, porque quien
+           aguanta hasta los 40 en la F1 suele ser un fuera de serie: 21 de 40-41 años, 17 de 42-43 y
+           18 de 44+—. El comeback NO se descontrola porque lleva su propio guardián aparte
+           (`r.age+fuera>42`): un tipo que cuelga el casco a los 45 entra al bolsillo pero nunca
+           volverá a tiempo completo. Un bolsillo, dos filtros. */
+        if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||0)>=27)
           (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
         slots[i]=null;
       }
@@ -9562,6 +9617,9 @@ function nextOffers(){
         const mate ={...stars[m],   skill:Math.round(rnd(84,89)), ceil:90, titles:0};
         const other={...stars[1-m], skill:Math.round(rnd(78,81)), ceil:88, titles:0};
         S.dpool.push(mate, other); S.seats.APXGP=[mate, other];
+        /* 🎬 si Hayes se sienta de verdad, deja de estar retirado: fuera del bolsillo, o podría
+           salir como sustituto de un lesionado el mismo año que corre en APXGP (aviso de Carlos). */
+        S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!=="S. Hayes" && x.name!=="J. Pearce");
       }
       // APXGP ocupa una plaza: dejamos como mucho 2 ofertas de equipo (renovación + otra) para que con APXGP sean 3, no 4
       while(o.filter(x=>x.team).length>2){ let done=false; for(let i=o.length-1;i>=0;i--){ if(o[i].team && !/Renovaci|Renewal/.test(o[i].note||"")){ o.splice(i,1); done=true; break; } } if(!done) break; }
@@ -10823,6 +10881,16 @@ function tpSignTeam(t, how){
 /* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
 function tpYearStart(){
   if(S.retired) return;
+  /* 🚑 EL LESIONADO VUELVE ENTERO (decisión de Carlos). Durante SU temporada, el nivel del
+     titular bajó —o subió— lo que valía el sustituto en las carreras que se perdió; aquí se le
+     devuelve tal cual estaba. Se toca `skill` a pelo y no `tpDrvSkill` a propósito: aquello mueve
+     techos y esto es un préstamo, no una mejora ni un castigo. */
+  if(S._lesUndo){
+    const u=S._lesUndo;
+    Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{
+      if(d && d!=="PLAYER" && d.name===u.name) d.skill=u.skill; }));
+    S._lesUndo=null;
+  }
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   tpVenganzaCheck(); tpSabbaticalCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
@@ -11905,7 +11973,10 @@ function simTP(row){
     const w = r===1?irnd(6,11): r===2?irnd(3,7): r===3?irnd(1,4): r<=5?irnd(0,2): r<=8?(ch(.3)?1:0):0;
     const po = Math.min(races, w + (r<=2?irnd(7,10): r===3?irnd(5,8): r<=5?irnd(3,6): r<=8?irnd(1,3): r<=11?(ch(.4)?irnd(1,2):0):0));
     tWins+=w; tPods+=po;
-    parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º`);
+    /* 🚑 (petición de Carlos) la ambulancia va en EL QUE SE ROMPE, no en el que le sustituye:
+       la primera versión la ponía delante del sustituto y se leía justo al revés. */
+    const _les=(S.tpSustituto && S.tpSustituto.year===row.year) ? S.tpSustituto : null;
+    parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º${(_les && _les.tit===d.name)?" 🚑":""}`);
     (row.tpDrv=row.tpDrv||[]).push({n:surname(d.name), fl:d.flag||"🏁", pos:r});
     if(r===1) champDrv=d;
   });
@@ -11918,6 +11989,12 @@ function simTP(row){
   if(S.tpDilPod){ tPods+=S.tpDilPod; S.tpDilPod=0; }
   S.wins+=tWins; S.podiums+=tPods; S.gp+=races;
   row.wins=tWins; row.pods=tPods; row.pos=cPos; row.pts=null; row.constrPos=null;
+  /* 🔁 el sustituto NO es un tercer piloto: no tiene puesto de mundial ni suma en constructores
+     —si tuviera fila propia, el equipo sumaría TRES puntuaciones y tener un lesionado te haría GANAR
+     puntos de constructores (lo preguntó Carlos)—. Va como lo que fue: un nombre y unos GP. */
+  const _lesL=(S.tpSustituto && S.tpSustituto.year===row.year) ? S.tpSustituto : null;
+  if(_lesL) parts.push(`🔁 ${_lesL.subFlag} ${_lesL.subN} ${_lesL.n} GP`);
+  if(S.tpSustituto && S.tpSustituto.year===row.year) S.tpSustituto=null;
   row.tpLine=parts.join(" · ");
   const st=S.tpStints.at(-1); if(st) st.y1=row.year;
   const constrChamp=(row.top3c && row.top3c[0])===tn;
@@ -12692,6 +12769,21 @@ function tpGallos(){
   const d=tpDrvs(); if(d.length<2 || !isElite(d[0]) || !isElite(d[1])) return null;
   const [a,b] = (d[0].skill||0)>=(d[1].skill||0) ? [d[0],d[1]] : [d[1],d[0]];
   return {a,b};
+}
+/* 🚑 EL PRÉSTAMO DE NIVEL DEL LESIONADO. El sustituto NO es un tercer piloto: conduce EL
+   ASIENTO del titular, así que lo único que cambia es cuánto rinde ese asiento ese año. La cuenta es
+   la parte de temporada que se pierde el titular:  (nivel del sustituto − nivel del titular) × N/total.
+   Con un probador seis puntos peor y cuatro carreras de 24, eso es −1 de nivel ≈ un puesto de mundial;
+   entre elegir a uno o al otro se van 2 puestos largos. Se devuelve entero en `tpYearStart`. */
+function tpLesPrestamo(nivelSub){
+  const c=S._les||{}; const sl=S.seats[S.tpTeam]||[];
+  const tit=sl.find(d=>d&&d!=="PLAYER"&&d.name===c.tit);
+  if(!tit) return 0;
+  S._lesUndo={name:tit.name, skill:tit.skill};
+  const delta=(nivelSub-(c.titSkill||tit.skill))*(c.n||4)/Math.max(1,(c.total||24));
+  tit.skill=Math.max(68, tit.skill+delta);
+  S.tpSustituto={year:yearNow(), tit:tit.name, subN:c.subN, subFlag:c.subFlag, n:c.n};
+  return delta;
 }
 const TP_DILEMAS=[
  {id:"tpOrdenes",
@@ -14592,6 +14684,140 @@ const TP_DILEMAS=[
     del juego son traiciones (no venderle, la orden de equipo, no dar la cara, sentarlo) y cuestan
     −35 puntos de renovación para siempre. Equivocarte de piloto un domingo de agua no está en esa
     liga. Se paga con moral —un punto de nivel—, que duele, se nota y se recupera. */
+ /* 🚑 «EL LESIONADO DE AGOSTO» — el primer dilema del jefe que pasa A MITAD DE TEMPORADA y no
+    en el invierno (el mapa del 22-ago destapó que el jefe apenas vive el domingo). Idea de Carlos.
+    🏆 EL RETO QUE PLANTEÓ ÉL: «yo tendría esa temporada 3 pilotos en la clasificación, ¿cómo lo
+    contabilizamos?». Respuesta: NO se contabiliza como un tercero. La fila de la trayectoria tiene
+    exactamente dos pastillas —diseño suyo— y, sobre todo, los constructores se suman por fila de
+    piloto: un tercero haría que el equipo sumara TRES puntuaciones y tener un lesionado te haría
+    GANAR puntos de constructores. Así que manda EL ASIENTO: conduzca quien conduzca, es una plaza y
+    una puntuación, y el sustituto sale en la línea como lo que fue —🔁 nombre y GP—.
+    ⭐ LAS ESTRELLAS SE VEN ANTES DE ELEGIR (petición de Carlos), y ahí está el dilema: del chaval ves
+    su nivel Y su techo (las huecas azules), o sea su futuro; del veterano ves lo que se le supone
+    hoy, sin techo, porque futuro ya no tiene.
+    🎲 EL ÓXIDO ES LOTERÍA Y NO SE VE. Las estrellas del veterano pintan lo que se puede saber
+    (nivel al retirarse −2 −años fuera, la fórmula que ya usaba el comeback). Lo que pasa de verdad
+    en pista se sortea: 35% sigue entero, 40% justo lo esperado, 25% está acabado. Si no fuera lotería
+    sería siempre mejor que el chaval y no habría nada que decidir.
+    ⏳ VENTANA DE 2 A 4 AÑOS FUERA, sin filtro de edad (Carlos: «la edad es irrelevante para 3-5
+    carreras»). Es exactamente Schumacher sustituyendo a Massa en 2009, con 40 años.
+    💔 SI NO LE LLAMAS, SE ENTERA. Se ofreció y elegiste al chaval: no vuelve a ponerse a tiro en
+    esta partida y pierde un punto en el bolsillo. No es `tpRencor` —no es un piloto tuyo al que hayas
+    traicionado— pero se paga.
+    🐮 EN RACING BULLS NO SALTA: el filial no ficha veteranos (aviso de Carlos), y sin la puerta B
+    esto no sería un dilema sino un aviso. */
+ {id:"tpLesionado",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<1) return false;
+    if(isRBJr(S.tpTeam)) return false;
+    const sl=S.seats[S.tpTeam]||[]; const tit=sl[0];
+    if(!tit || tit==="PLAYER" || !tit.name) return false;
+    const pr=S.tpReserva; if(!pr || !pr.name || pr.skill==null) return false;
+    const yr=yearNow();
+    const sentados=new Set();
+    Object.values(S.seats||{}).forEach(s2=>(s2||[]).forEach(d=>{ if(d&&d!=="PLAYER"&&d.name) sentados.add(d.name); }));
+    const cands=(S.retiredPool||[]).filter(v=>{
+      if(!v || !v.name || sentados.has(v.name)) return false;
+      if((S.tpDesaires||[]).indexOf(v.name)>=0) return false;      // ya le dijiste que no
+      if(NO_TAUNT[v.name]!=null && yr>=NO_TAUNT[v.name]) return false;
+      const fuera=yr-(v.retiredYear||0);
+      if(fuera<2 || fuera>4) return false;
+      /* 🎂 TOPE DE EDAD **AL USARLO**, no al entrar al bolsillo (pega de Carlos: «un tipo de 50
+         años sí que no pega, además evitamos liadas gordas»). Entrar entra todo el mundo —ahí está
+         el arreglo de Alonso—; lo que se filtra es quién puede subirse HOY. 47 no es un número a ojo:
+         medido sobre 151 inviernos con veterano, la edad mediana del elegido es 41 y el máximo 52;
+         el 19% son de 46 o más. Con tope 45 se conserva candidato el 82% de esos inviernos, con 47
+         el ~90%… y sobre todo, 47 es el único número que corta al de 50 y a la vez deja entrar a
+         Alonso, que retirándose en 2026 con 45 aparecería con 47. Con 45 lo perdíamos.
+         🎬 Hayes es la excepción declarada: el juego YA lo sienta con 50 años por diseño (es el
+         personaje de la película, y ser un fósil es literalmente su historia). */
+      if(!v.excepcion && ((v.age||0)+fuera) > 47) return false;
+      return true; });
+    if(!cands.length) return false;
+    /* 🎲 NO SIEMPRE EL MEJOR. Coger siempre al de más nivel hacía dos daños: el dilema salía
+       calcado —el mismo nombre partida tras partida— y nombres como Hayes no aparecían JAMÁS,
+       porque siempre había un Vettel o un Räikkönen por delante (medido: 0 de 226 inviernos).
+       Se sortea entre los tres mejores: sigue viniendo alguien de peso, pero no siempre el mismo,
+       y las estrellas ya te dicen a quién tienes delante. */
+    const _top=cands.slice().sort((a,b)=>(b.skill||0)-(a.skill||0)).slice(0,3);
+    const vet=_top[irnd(0,_top.length-1)];
+    const fuera=yr-(vet.retiredYear||0);
+    S._les={ tit:tit.name, titN:surname(tit.name), titSkill:tit.skill,
+             prNom:pr.name, prN:surname(pr.name), prSkill:pr.skill, prCeil:pr.ceil||pr.skill,
+             vet:vet.name, vetN:surname(vet.name), vetFlag:vet.flag||"🏁", vetTit:vet.titles||0,
+             visto:Math.max(74, Math.round((vet.skill||80)-2-fuera)),
+             fuera:fuera, n:irnd(3,5), total:racesIn(yr)||24,
+             causa:dilVar("causa",()=>irnd(0,2)), subN:null, subFlag:null };
+    return true; },
+  t:()=>L("El lesionado de agosto","August's casualty",{pt:"O lesionado de agosto"}),
+  d:()=>{ const c=S._les||{};
+    const causa = c.causa===0
+      ? L(`se rompe la mu\u00f1eca en un golpe tonto de la primera vuelta`,`breaks his wrist in a silly first-lap knock`,{pt:`quebra o pulso numa batida boba na primeira volta`})
+      : c.causa===1
+      ? L(`se rompe la clav\u00edcula entrenando en bici`,`breaks his collarbone out training on his bike`,{pt:`quebra a clav\u00edcula treinando de bicicleta`})
+      : L(`se destroza la mano en un accidente dom\u00e9stico que nadie quiere contar`,`wrecks his hand in a domestic accident nobody wants to talk about`,{pt:`destr\u00f3i a m\u00e3o num acidente dom\u00e9stico que ningu\u00e9m quer contar`});
+    return L(`Agosto. ${c.titN} ${causa}. Los m\u00e9dicos hablan de ${c.n} carreras como m\u00ednimo y el Mundial no espera a nadie.\n\nSobre tu mesa hay dos tel\u00e9fonos. El del chaval de la casa, que lleva meses puliendo el simulador esperando justo esto. Y el de un tipo que lo dej\u00f3 hace ${c.fuera} a\u00f1os, que ya ha dicho por ah\u00ed que se subir\u00eda \u00absi alguien lo pidiera bien\u00bb, y cuyo nombre por s\u00ed solo llena el pit lane de c\u00e1maras.`,
+             `August. ${c.titN} ${causa}. The doctors are saying ${c.n} races at the very least, and the championship waits for nobody.\n\nThere are two phones on your desk. The house kid's, who has spent months polishing the simulator waiting for exactly this. And a man who walked away ${c.fuera} years ago, who has already let it be known he'd climb in \u00abif somebody asked nicely\u00bb, and whose name alone fills the pit lane with cameras.`,
+             {pt:`Agosto. ${c.titN} ${causa}. Os m\u00e9dicos falam em ${c.n} corridas no m\u00ednimo e o Mundial n\u00e3o espera ningu\u00e9m.\n\nSobre a sua mesa h\u00e1 dois telefones. O do garoto da casa, que passou meses puindo o simulador esperando justamente isso. E o de um sujeito que largou tudo h\u00e1 ${c.fuera} anos, que j\u00e1 disse por a\u00ed que subiria \u00abse algu\u00e9m pedisse direito\u00bb, e cujo nome sozinho enche o pit lane de c\u00e2meras.`}); },
+  opts:[
+   /* A · el probador: peor hoy, pero se ve su TECHO en las estrellas huecas — y crece de verdad */
+   {l:()=>{ const c=S._les||{};
+      return `🧢 ${c.prN} <b>${tpEtiqueta({skill:c.prSkill, ceil:c.prCeil})}</b> · `
+        + L(`el probador de la casa`,`the house reserve`,{pt:`o reserva da casa`}); },
+    r:()=>{ const c=S._les||{};
+      c.subN=c.prN; c.subFlag=(S.tpReserva&&S.tpReserva.flag)||"🧢";
+      tpLesPrestamo(c.prSkill);
+      /* 💔 el veterano se ofreció y no le llamaste */
+      (S.tpDesaires=S.tpDesaires||[]).push(c.vet);
+      const v=(S.retiredPool||[]).find(x=>x&&x.name===c.vet); if(v) v.skill=Math.max(74,(v.skill||80)-1);
+      /* 🌟 EL EFECTO BEARMAN (arreglo del 26-ago, lo destapó la medición). La primera versión daba
+         +1 de nivel y ya, y con un probador de techo 81 eso no vale NADA: las estrellas cantaban
+         ★☆☆☆☆ contra ★★☆☆☆ y no había nada que decidir. Lo que hace buena esta puerta en la vida real
+         es que tres domingos en un coche de verdad destapen a alguien que su ficha no veía —Bearman
+         sustituyendo a Sainz en 2024—. Así que 3 de cada 10 veces el chaval SUBE EL TECHO, que es lo
+         único que de verdad vale en un probador, y encima se ve luego en sus estrellas. */
+      const pr=S.tpReserva;
+      let destapa=false;
+      if(pr){ pr.skill=Math.min(pr.ceil||97, (pr.skill||75)+1);
+        /* ⚖️ NO SE REGALA POTENCIAL PORQUE SÍ (duda de Carlos: «¿le otorgamos más potencial del que
+           tenía?»). Lo que sube no es su talento: es la ESTIMACIÓN de la casa, que estaba mal. Y para
+           que eso sea creíble tienen que darse las dos cosas: que sea un CHAVAL —a un probador de 27
+           que lleva años por ahí no lo descubre nadie— y que hubiera sitio para equivocarse, o sea
+           que no lo tuvieran ya fichado como futuro fuera de serie. Con techo 92+ nadie lo
+           subestimaba. La mediana de edad del probador es 24, así que el corte deja la puerta viva
+           en aproximadamente la mitad de los casos. */
+        const cabeError = (pr.age||99)<=24 && (pr.ceil||pr.skill||0)<92;
+        if(cabeError && ch(.5)){ destapa=true; pr.ceil=Math.min(97,(pr.ceil||pr.skill)+irnd(3,6)); TPRE(1); } }
+      if(destapa) return L(`El chaval se pone el mono en agosto y a la tercera carrera el garaje ha dejado de hablar de ${c.titN}. No es que aguante: es que hay dos vueltas, el s\u00e1bado, en las que hace algo que en su ficha no pon\u00eda. El jefe de pista te busca el domingo por la noche y te dice, sin adornos, que llev\u00e1is a\u00f1os subestimando a este chico. <b>+nivel y +techo para ${c.prN}, +cach\u00e9</b>\n\nY en alg\u00fan sal\u00f3n, ${c.vetN} se entera por el peri\u00f3dico de qui\u00e9n se ha sentado en tu coche. Nadie le hab\u00eda prometido nada. Tampoco hace falta.`,
+        `The kid pulls on the overalls in August, and by the third race the garage has stopped talking about ${c.titN}. It isn't that he survives: it's that there are two laps, on Saturday, where he does something his file said he couldn't. The track engineer finds you on Sunday night and tells you flatly that you have spent years underrating this boy. <b>+level and +ceiling for ${c.prN}, +standing</b>\n\nAnd in some living room, ${c.vetN} finds out from the paper who is sitting in your car. Nobody had promised him anything. He doesn't need them to.`,
+        {pt:`O garoto veste o macac\u00e3o em agosto e na terceira corrida a garagem parou de falar de ${c.titN}. N\u00e3o \u00e9 que ele aguente: \u00e9 que h\u00e1 duas voltas, no s\u00e1bado, em que ele faz algo que a ficha dele n\u00e3o dizia. O chefe de pista te procura no domingo \u00e0 noite e diz, sem rodeios, que voc\u00eas passaram anos subestimando esse menino. <b>+n\u00edvel e +teto para ${c.prN}, +presti\u00edgio</b>\n\nE em alguma sala, ${c.vetN} fica sabendo pelo jornal quem sentou no seu carro. Ningu\u00e9m tinha prometido nada a ele. Nem precisa.`});
+      return L(`El chaval se pone el mono en agosto y no se lo quita hasta que vuelve ${c.titN}. No hace milagros —no ten\u00eda que hacerlos—, pero termina esas ${c.n} carreras sabiendo cosas del coche que no se aprenden en un simulador. La temporada paga el peaje; \u00e9l sale ganando. <b>+nivel para ${c.prN}</b>\n\nY en alg\u00fan sal\u00f3n, ${c.vetN} se entera por el peri\u00f3dico de qui\u00e9n se ha sentado en tu coche. Nadie le hab\u00eda prometido nada. Tampoco hace falta.`,
+               `The kid pulls on the overalls in August and doesn't take them off until ${c.titN} is back. He works no miracles —he wasn't meant to— but he finishes those ${c.n} races knowing things about the car you can't learn in a simulator. The season pays the toll; he comes out ahead. <b>+level for ${c.prN}</b>\n\nAnd in some living room, ${c.vetN} finds out from the paper who is sitting in your car. Nobody had promised him anything. He doesn't need them to.`,
+               {pt:`O garoto veste o macac\u00e3o em agosto e n\u00e3o o tira at\u00e9 ${c.titN} voltar. N\u00e3o faz milagres —n\u00e3o precisava— mas termina essas ${c.n} corridas sabendo coisas do carro que n\u00e3o se aprendem num simulador. A temporada paga o ped\u00e1gio; ele sai ganhando. <b>+n\u00edvel para ${c.prN}</b>\n\nE em alguma sala, ${c.vetN} fica sabendo pelo jornal quem sentou no seu carro. Ningu\u00e9m tinha prometido nada a ele. Nem precisa.`}); }},
+
+   /* B · el veterano: lo que ves es lo que se le supone; lo que pasa, se sortea */
+   {l:()=>{ const c=S._les||{};
+      return `${c.vetFlag} ${c.vetN}${c.vetTit?` 👑×${c.vetTit}`:""} <b>${tpEtiqueta({skill:c.visto, ceil:c.visto})}</b> · `
+        + L(`${c.fuera} a\u00f1os sin correr`,`${c.fuera} years out of the car`,{pt:`${c.fuera} anos sem correr`}); },
+    r:()=>{ const c=S._les||{};
+      c.subN=c.vetN; c.subFlag=c.vetFlag;
+      TPRE(2);   // el taquillazo: el consejo pasa las carreras enseñando el palco
+      const v=(S.retiredPool||[]).find(x=>x&&x.name===c.vet);
+      if(v) v.usado=true;
+      return roll(
+       [35,()=>{ tpLesPrestamo(c.visto+3);
+         return L(`Los primeros libres son un desastre y en la tele se r\u00eden. El s\u00e1bado ya no se r\u00ede nadie. Se baja del coche despu\u00e9s de esas ${c.n} carreras, le devuelve el asiento a ${c.titN} sin una queja y se va por donde vino. Hay cosas que no se olvidan. <b>+cach\u00e9</b>`,
+                  `The first practice session is a mess and the TV crews laugh. By Saturday nobody is laughing. He climbs out after those ${c.n} races, hands the seat back to ${c.titN} without a word of complaint, and leaves the way he came. Some things you don't forget. <b>+standing</b>`,
+                  {pt:`O primeiro treino livre \u00e9 um desastre e na TV riem. No s\u00e1bado j\u00e1 ningu\u00e9m ri. Ele desce do carro depois dessas ${c.n} corridas, devolve o lugar a ${c.titN} sem uma queixa e vai embora por onde veio. H\u00e1 coisas que n\u00e3o se esquecem. <b>+presti\u00edgio</b>`}); }],
+       [40,()=>{ tpLesPrestamo(c.visto);
+         return L(`Hace exactamente lo que se esperaba de \u00e9l: no estorba, puntúa cuando el coche da para puntuar y no rompe nada. El consejo se pasa las ${c.n} carreras ense\u00f1ando el palco a gente importante, que era de lo que iba todo esto. <b>+cach\u00e9</b>`,
+                  `He does exactly what was expected of him: stays out of trouble, scores when the car is good enough to score, breaks nothing. The board spends those ${c.n} races walking important people through the hospitality suite, which is what this was really about. <b>+standing</b>`,
+                  {pt:`Faz exatamente o que se esperava dele: n\u00e3o atrapalha, pontua quando o carro d\u00e1 e n\u00e3o quebra nada. A diretoria passa essas ${c.n} corridas mostrando o camarote para gente importante, que era do que se tratava. <b>+presti\u00edgio</b>`}); }],
+       [25,()=>{ tpLesPrestamo(c.visto-10);
+         return L(`${c.fuera} a\u00f1os fuera son ${c.fuera} a\u00f1os fuera. El cuerpo aguanta; el ritmo, no. Se le va la goma donde antes no se le iba y en la radio empieza a pedir cosas que este coche no sabe hacer. Las ${c.n} carreras se hacen largas para todos, y el d\u00eda que vuelve ${c.titN} nadie dice nada en voz alta. <b>+cach\u00e9, temporada tocada</b>`,
+                  `${c.fuera} years out are ${c.fuera} years out. The body holds up; the pace doesn't. The tyres go away where they never used to, and on the radio he starts asking for things this car can't do. Those ${c.n} races feel long to everybody, and the day ${c.titN} comes back nobody says anything out loud. <b>+standing, season hurt</b>`,
+                  {pt:`${c.fuera} anos fora s\u00e3o ${c.fuera} anos fora. O corpo aguenta; o ritmo, n\u00e3o. O pneu acaba onde antes n\u00e3o acabava e no r\u00e1dio ele come\u00e7a a pedir coisas que este carro n\u00e3o sabe fazer. Essas ${c.n} corridas ficam longas para todos, e no dia em que ${c.titN} volta ningu\u00e9m diz nada em voz alta. <b>+presti\u00edgio, temporada afetada</b>`}); }]); }}
+  ]},
  {id:"tpDosPeticiones",
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
     if((S.seasons||[]).filter(r=>r.cat==="TP").length<1) return false;
