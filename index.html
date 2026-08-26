@@ -13924,6 +13924,76 @@ const TP_DILEMAS=[
      [45,()=>(TPTGT(4),L("Vuelve en una semana con un plan corto, caro y real: tres cosas, por orden, sin literatura. Se queda — y ahora el plan es suyo, no tuyo, que es exactamente lo que hacía falta. +proyecto","He comes back in a week with a plan that's short, expensive and real: three things, in order, no waffle. He stays — and now the plan is his, not yours, which is exactly what was needed. +project",{pt:"Volta em uma semana com um plano curto, caro e real: três coisas, em ordem, sem literatura. Ele fica — e agora o plano é dele, não seu, que era exatamente o que faltava. +projeto"}))],
      [35,()=>(TPTGT(-2),L("Vuelve y te dice que lo que falta son fichajes clave y un presupuesto que tú no le puedes dar. Se va. Y tiene razón, que es lo que peor sienta. −proyecto","He comes back and tells you what's missing is key signings and a budget you can't give him. He leaves. And he's right, which is the part that stings. −project",{pt:"Volta e diz que o que falta são contratações-chave e um orçamento que você não pode dar. Vai embora. E tem razão, que é o que dói mais. −projeto"}))],
      [20,()=>(TPRE(-1.5),TPTGT(-2),L("Lo lee como una esquiva — le has devuelto la pregunta para no contestarla — y no vuelve a sacar el tema. En marzo ya no está. −fama, −proyecto","He reads it as a dodge — you handed the question back so you wouldn't have to answer it — and never raises it again. By March he's gone. −fame, −project",{pt:"Ele lê como um desvio — você devolveu a pergunta para não respondê-la — e não toca mais no assunto. Em março já não está. −fama, −projeto"}))])}]},
+
+ /* 🎥 «ABRIR EL BOX» (idea de Carlos, 25-ago-2026). Evergreen de verdad: sale en cualquier puesto de la
+    parrilla y en cualquier época — lo único que cambia es QUIÉN llama a la puerta, porque en 1990 no
+    hay redes sociales. Tres pieles sobre la misma decisión: documentalistas hasta 2004, una serie web
+    entre 2005 y 2014, y la gente de redes de 2015 en adelante.
+    ⚖️ EL DADO SE INCLINA SEGÚN DÓNDE ESTÉS, que es lo que lo salva de ser plano: en el fondo no tienes
+    nada que perder y la gente adora al que va perdiendo, así que abrir la puerta sale bien 6 de cada
+    10 veces; arriba te miran con lupa y el mal día del líder es más noticia, así que es más fácil que
+    te pillen que que te salga bien. Es Ferrari diciéndole que no a Netflix mientras Haas abría de par
+    en par.
+    🧒 La tercera rama solo existe si TIENES un chaval: si tus dos pilotos son veteranos, «se convierte
+    en personaje» sería una frase falsa (pega de Carlos). `roll` normaliza por el total, así que al
+    quitarla las otras dos se reparten su peso solas y no hay que tocar ningún número.
+    🚫 SIN RENCOR, a propósito. La primera versión encendía `tpRencor` en la rama mala, y se midió lo
+    que eso cuesta: −35 puntos de probabilidad de renovación, para siempre, el más pesado de los cuatro
+    motivos que hay. Esos cuatro son traiciones (no venderle, la orden de equipo, no dar la cara,
+    sentarlo); que una cámara pille un mal fin de semana no está en esa liga, y encima habría sido el
+    enfado MÁS frecuente del juego por el motivo más flojo. Se paga con fama y con moral, que duele,
+    se nota y se recupera. */
+ {id:"tpAbrirElBox",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<1) return false;
+    const a=tpDrvs().filter(d=>d && d.name); if(!a.length) return false;
+    const ord=[...F1_TEAMS].sort((x,y)=>(S.f1perf[y.name]||70)-(S.f1perf[x.name]||70)).map(t=>t.name);
+    const p=ord.indexOf(S.tpTeam)+1, n=ord.length||11;
+    if(p<=0) return false;
+    const chaval=a.filter(d=>(d.age||99)<=24 && (d.ceil||d.skill||0)>=85)
+                  .sort((x,y)=>(y.ceil||0)-(x.ceil||0))[0];
+    const exp=a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0))[0];
+    S._box={ tercio: p<=Math.ceil(n/3)?"arriba":p<=Math.ceil(n*2/3)?"medio":"fondo",
+             chaval: chaval?chaval.name:null, chavalN: chaval?surname(chaval.name):null,
+             exp: exp.name, expN: surname(exp.name) };
+    return true; },
+  t:()=>L("Abrir el box","Opening the garage",{pt:"Abrir o box"}),
+  d:()=>{ const c=S._box||{}, y=yearNow();
+    const quien = y<2005
+      ? L("Un equipo de documentalistas quiere pasarse la temporada entera dentro del box.","A documentary crew wants to spend the whole season inside the garage.",{pt:"Uma equipe de documentaristas quer passar a temporada inteira dentro do box."})
+      : y<2015
+      ? L("Una cadena quiere montar una serie de «detrás de las cámaras» para su web, y quiere grabarla aquí.","A broadcaster wants to make a «behind the scenes» series for its website, and wants to film it here.",{pt:"Uma emissora quer montar uma série de «bastidores» para o seu site, e quer gravá-la aqui."})
+      : L("La gente de redes quiere acceso de verdad: a los pilotos y al backstage.","The social media people want real access: to the drivers and to the backstage.",{pt:"O pessoal de redes quer acesso de verdade: aos pilotos e ao backstage."});
+    return L(`${quien} Y lo quieren todo: el muro, las reuniones con los pilotos, los minutos de después de una carrera mala. Tu patrocinador principal ya ha dicho que le encanta la idea. ${c.expN||"Tu piloto"} y el resto del garaje, no.`,
+             `${quien} And they want all of it: the pit wall, the driver briefings, the minutes after a bad race. Your title sponsor has already said he loves the idea. ${c.expN||"Your driver"} and the rest of the garage do not.`,
+             {pt:`${quien} E querem tudo: o muro, as reuniões com os pilotos, os minutos depois de uma corrida ruim. O seu patrocinador principal já disse que adora a ideia. ${c.expN||"O seu piloto"} e o resto da garagem, não.`}); },
+  opts:[
+   /* A · la puerta abierta de par en par. Los pesos cambian con el tercio de parrilla */
+   {l:()=>L("Acceso total, sin condiciones","Full access, no conditions",{pt:"Acesso total, sem condições"}),
+    r:()=>{ const c=S._box||{};
+      const w = c.tercio==="arriba" ? [35,45] : c.tercio==="medio" ? [50,30] : [60,20];
+      const bien=()=>(TPRE(3),L("Funciona. La gente conoce a tus pilotos, el equipo cae bien y de repente hay marcas llamando a una puerta a la que no llamaba nadie. +fama","It works. People get to know your drivers, the team becomes likeable, and suddenly there are brands knocking on a door nobody used to knock on. +fame",{pt:"Funciona. As pessoas conhecem os seus pilotos, a equipe cai bem e de repente há marcas batendo numa porta em que ninguém batia. +fama"}));
+      /* ⚠️ −3 Y NO −2,5: `TPRE` redondea al entero (`Math.round`), así que desde cualquier número
+         entero −2,5 y −2 dan EXACTAMENTE lo mismo. Medido el 25-ago. Mismo aviso que ya había para
+         −0,5, que directamente no hace nada. Si quieres que un efecto duela tres, escribe tres. */
+      const pillan=()=>{ const n=c.expN||"tu piloto"; TPRE(-3); if(c.exp) tpDrvSkill(c.exp,-1);
+        return dilVar("boxPilla",()=>irnd(0,1))===0
+          ? L(`Graban lo que no debían: la radio de ${n} en la vuelta 40, entera, con todo lo que dice de su propio equipo. Se emite sin cortar. −fama, y ${n} tarda semanas en levantar cabeza`,`They film what they shouldn't: ${n}'s radio on lap 40, the whole thing, everything he says about his own team. It airs uncut. −fame, and ${n} takes weeks to lift his head`,{pt:`Gravam o que não deviam: o rádio de ${n} na volta 40, inteiro, com tudo o que ele diz da própria equipe. Vai ao ar sem cortes. −fama, e ${n} leva semanas para levantar a cabeça`})
+          : L(`Graban lo que no debían: a ti, en el muro, perdiendo los papeles delante de ${n} después de la bandera. Ese trozo lo ve más gente que la carrera. −fama, y ${n} tarda semanas en levantar cabeza`,`They film what they shouldn't: you, on the pit wall, losing it in front of ${n} after the flag. That clip gets more views than the race did. −fame, and ${n} takes weeks to lift his head`,{pt:`Gravam o que não deviam: você, no muro, perdendo a cabeça na frente de ${n} depois da bandeira. Esse trecho é visto por mais gente que a corrida. −fama, e ${n} leva semanas para levantar a cabeça`}); };
+      const outs=[[w[0],bien],[w[1],pillan]];
+      if(c.chaval) outs.push([20,()=>{ const n=c.chavalN; TPRE(2); tpDrvSkill(c.chaval,-1);
+        return L(`Funciona demasiado bien: ${n} se convierte en personaje. Le paran por la calle, tiene agente nuevo y en las reuniones ya no mira igual. +fama, y él ya no está del todo aquí`,`It works too well: ${n} becomes a character. People stop him in the street, he has a new agent, and in meetings he doesn't look at you the same way. +fame, and he isn't entirely here any more`,{pt:`Funciona bem demais: ${n} vira personagem. Param ele na rua, tem agente novo e nas reuniões já não olha igual. +fama, e ele já não está totalmente aqui`}); }]);
+      return roll(...outs); }},
+   /* B · el premio de consolación. Existe, pero es pequeño a propósito */
+   {l:()=>L("Que graben, pero yo apruebo lo que sale","Let them film, but I approve what goes out",{pt:"Que gravem, mas eu aprovo o que sai"}),
+    r:()=>roll(
+     [6,()=>(TPRE(.8),L("Sale un producto correcto y sin filo: los pilotos sonríen, nadie se despeina y lo ve poca gente. Suma algo, no mucho. +fama leve","What comes out is competent and toothless: the drivers smile, nobody's hair gets messed up and hardly anyone watches. It adds something, not much. slight +fame",{pt:"Sai um produto correto e sem corte: os pilotos sorriem, ninguém se despenteia e pouca gente vê. Soma algo, não muito. +fama leve"}))],
+     [4,()=>(TPRE(-.8),L("Alguien del equipo de grabación cuenta por ahí que aprobabas plano por plano, y esa acaba siendo la única historia que sale de todo esto. −fama leve","Someone from the crew tells people you approved it shot by shot, and that ends up being the only story to come out of the whole thing. slight −fame",{pt:"Alguém da equipe de gravação conta por aí que você aprovava plano a plano, e essa acaba sendo a única história que sai de tudo isso. −fama leve"}))])},
+   /* C · la única que te paga en PROYECTO en vez de en fama: por eso sigue viva arriba */
+   {l:()=>L("Ni una cámara","Not one camera",{pt:"Nem uma câmera"}),
+    r:()=>roll(
+     [65,()=>(TPTGT(2),TPRE(-1),L("En el garaje se nota desde el lunes: nadie mide lo que dice y las reuniones vuelven a durar lo que tienen que durar. Fuera, el escaparate se lo queda otro. +proyecto, −fama","You can feel it in the garage from Monday: nobody weighs their words and the meetings go back to lasting what they should. Outside, somebody else takes the shop window. +project, −fame",{pt:"Na garagem se nota desde segunda: ninguém mede o que diz e as reuniões voltam a durar o que devem. Lá fora, a vitrine fica com outro. +projeto, −fama"}))],
+     [35,()=>(TPRE(-2.5),L("Tu patrocinador se lo toma bastante peor de lo que esperabas: resulta que no era un capricho suyo, era la mitad de lo que venía a comprar aquí. −fama","Your sponsor takes it considerably worse than you expected: it turns out it wasn't a whim, it was half of what he came here to buy. −fame",{pt:"O seu patrocinador leva bem pior do que você esperava: acontece que não era um capricho, era metade do que ele vinha comprar aqui. −fama"}))])}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
