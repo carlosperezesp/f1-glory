@@ -9509,7 +9509,9 @@ function renderRankTabs(scope){
   const sub=$("rankEras"); if(!sub) return;
   if(scope.indexOf("e:")===0){
     sub.style.display="";
-    const eras=[["2026",L("Clásico","Classic",{pt:"Clássico"})],["2000","2000"],["2010","2010"],["2020","2020"]];
+    /* ⚠️ al abrir una época nueva, además de esta línea hay que añadirla a ERAS_OK en submit.js,
+       leaderboard.js Y me.js. Son cuatro sitios y en 1990 se olvidaron los tres del servidor. */
+    const eras=[["2026",L("Clásico","Classic",{pt:"Clássico"})],["1990","1990"],["2000","2000"],["2010","2010"],["2020","2020"]];
     sub.innerHTML=eras.map(([k,lab])=>`<button data-s="e:${k}" class="${scope==="e:"+k?"on":""}">${lab}</button>`).join("");
     [...sub.querySelectorAll("button")].forEach(b=>b.onclick=()=>loadRanking(b.dataset.s));
   } else sub.style.display="none";

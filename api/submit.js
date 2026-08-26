@@ -133,7 +133,9 @@ module.exports = async (req, res) => {
 
     // 🕰️ ÉPOCA y 📅 RETO en los que se jugó la carrera. Se miden en el servidor contra listas blancas:
     // nada que llegue del cliente entra como clave de Redis sin filtrar.
-    const ERAS_OK = ["2000", "2010", "2020", "2026"];
+    /* 🕰️ ⚠️ MISMA LISTA EN CUATRO SITIOS (leaderboard.js, me.js y las sub-pestañas de index.html).
+       Si falta una época aquí, esa carrera NO entra en su tabla — le pasó a 1990 durante cinco días. */
+    const ERAS_OK = ["1990", "2000", "2010", "2020", "2026"];
     const era = ERAS_OK.indexOf(String(body.era || "")) >= 0 ? String(body.era) : null;
     const ch = /^[a-z0-9]{3,16}$/.test(String(body.ch || "")) ? String(body.ch) : null;
 

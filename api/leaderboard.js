@@ -30,7 +30,13 @@ function isoWeekKey(d) {
   return dt.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
 }
 
-const ERAS_OK = ["2000", "2010", "2020", "2026"];
+/* 🕰️ LAS ÉPOCAS QUE ACEPTA EL RANKING. ⚠️ ESTA LISTA ESTÁ EN CUATRO SITIOS: submit.js,
+   leaderboard.js, me.js y el array de sub-pestañas de index.html. Al abrir una época nueva hay
+   que tocar LOS CUATRO. El 26-ago-2026 se descubrió que 1990 llevaba cinco días abierta al
+   público —con su etiqueta «¡nuevo!»— y no estaba en ninguno: las carreras de los 90 no entraban
+   en su tabla, y al terminar, el ranking se abría en `e:1990`, el servidor respondía «scope
+   inválido» y el jugador leía «Aún no hay puntuaciones» justo después de acabar su carrera. */
+const ERAS_OK = ["1990", "2000", "2010", "2020", "2026"];
 function scopeKey(scope) {
   if (scope === "g") return "lb:global";
   if (scope === "w") return "lb:w:" + isoWeekKey(new Date());
