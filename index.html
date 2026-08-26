@@ -2540,7 +2540,11 @@ function gpList(yr){
     [L("Portimão","Portimao",{pt:"Portimão"}),2029,66,15,10],
     ["Hockenheim",2031,67,17,7],["Paul Ricard",2031,53,15,6],[L("Hanói","Hanoi",{pt:"Hanói"}),2031,55,23,4],
     ["Kyalami",2032,60,16,3],["Yeongam",2033,55,18,10],[L("Buenos Aires","Buenos Aires",{pt:"Buenos Aires"}),2033,72,15,11],
-    ["Buddh",2034,60,16,10],[L("Santiago","Santiago",{pt:"Santiago"}),2034,58,18,11]]
+    ["Buddh",2034,60,16,10],[L("Santiago","Santiago",{pt:"Santiago"}),2034,58,18,11],
+    /* 🏙️ dos urbanos americanos que llevan décadas rumoreándose y nunca llegan. Aquí llegan: son de
+       los que hacen falta para que el crashgate siga siendo posible en las eras largas, porque un
+       plan así necesita muros y no escapatorias de asfalto. */
+    [L("Nueva York","New York",{pt:"Nova York"}),2032,58,19,6],["Chicago",2035,55,18,7]]
     .filter(c=>(!c[1]||yr>=c[1]) && (!c[5]||yr<=c[5]))
     .map(c=>({n:c[0], laps:c[2], turns:c[3],
       mes: c[0]==="Melbourne"  ? (yr<=1995?11:3)
@@ -2567,7 +2571,7 @@ const GP_CASA={
   "Alemania":["Hockenheim"], "Brasil":["Interlagos"], "Japón":["Suzuka"],
   "Australia":["Melbourne"], "Austria":["Red Bull Ring"], "Bélgica":["Spa"],
   "Hungría":["Hungaroring"], "Canadá":["Montreal"], "Países Bajos":["Zandvoort"],
-  "Estados Unidos":["Austin","Miami","Las Vegas"], "Francia":["Paul Ricard"],
+  "Estados Unidos":["Austin","Miami","Las Vegas","Nueva York","Chicago"], "Francia":["Paul Ricard"],
   "Portugal":["Portimão"], "Corea del Sur":["Yeongam"], "India":["Buddh"],
   "Vietnam":["Hanói"], "Sudáfrica":["Kyalami"], "Argentina":["Buenos Aires"],
   "Chile":["Santiago"], "China":["Shanghái"], "México":["México"], "Singapur":["Singapur"]
@@ -2599,7 +2603,8 @@ const GP_LLUVIA=["Spa","Silverstone","Interlagos","Suzuka","Hungaroring","Montre
    no hay sitio para «salirse sin tocar a nadie», y Albert Park tiene escapatoria en las rápidas.
    ⏳ EFECTO SECUNDARIO BUENO: antes de 2008 solo queda Montreal, así que el crashgate es casi imposible
    en las eras viejas. Que es exactamente lo que pasó en la realidad. */
-const GP_MUROS=["Montreal","Singapur","Bakú","Yeda","Las Vegas","Miami","Hanói","Santiago"];
+const GP_MUROS=["Montreal","Singapur","Bakú","Yeda","Las Vegas","Miami","Hanói","Santiago",
+                "Madrid","Nueva York","Chicago"];
 function tpGpMuros(){ const cs=gpList(yearNow()).filter(c=>GP_MUROS.indexOf(c.n)>=0);
   return cs.length?cs[irnd(0,cs.length-1)]:null; }
 function tpGpLluvia(){ const cs=gpList(yearNow()).filter(c=>GP_LLUVIA.indexOf(c.n)>=0);
