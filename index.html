@@ -10790,7 +10790,12 @@ function tpSignTeam(t, how){
   S.tpTeam=S.team.name;
   S.tpOwner=TP_OWNERS[irnd(0,2)];
   S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
-  S._crash=null;   // ⚫ lo que hiciste en otra partida no te persigue a esta
+  /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
+     equipo, no solo al empezar de cero, así que limpiarlo aquí borraba el rastro al cambiar de muro —
+     y el rastro te sigue a TI, no al equipo: la orden la diste tú. (Ojo al contraste con «El sobre»,
+     donde el expediente sí se queda con el equipo.) Tampoco hace falta limpiarlo en ningún otro sitio:
+     `startCareer` construye un `S` nuevo entero, así que en una partida nueva ya nace sin rastro.
+     Se cazó midiendo: dos chantajes y nueve juicios repetidos en la misma carrera. */
   // contratos escalonados al llegar (1 y 2 años): así toca UNA decisión de asiento casi cada invierno
   const sl=S.seats[S.tpTeam]||[]; const flip=ch(.5);
   sl.forEach((d,i)=>{ if(d&&d!=="PLAYER") d.tpc=((i===0)===flip)?1:2; });
@@ -11060,6 +11065,9 @@ function tpMercado(){
          Con más de un hueco abierto, la renovación pasa por la misma pantalla de colocación. */
       const ab=tpAbiertos();
       if(c.kind==="renew"){ if(ab.length>1) tpElegirAsiento(c, ab); else tpSignDriver(c.i, c); return; }
+      /* 🛡️ sin ningún asiento abierto no hay dónde sentarlo: se vuelve al mercado en vez de reventar.
+         `ab[0].i` sobre una lista vacía tiraba la pantalla entera (cazado el 26-ago). */
+      if(!ab.length){ tpMercado(); return; }
       if(ab.length<=1){ tpSignDriver(ab[0].i, c); return; }
       tpElegirAsiento(c, ab);
     };
@@ -14746,9 +14754,15 @@ const TP_DILEMAS=[
          Y coge rencor con toda la razón: desde su silla le has quitado el sitio sin ningún motivo
          deportivo, porque el verdadero no se lo puedes contar. Motivo «apartado», que ya existe. */
       TPTGT(-2);
+      /* ⚠️ SOLO SE OCUPA UN ASIENTO QUE YA IBA A QUEDARSE LIBRE (contrato terminando, `tpc<=0`).
+         La primera versión desplazaba al peor de los dos fuera como fuera, y eso hacía dos cosas mal:
+         echaba a un piloto CON CONTRATO EN VIGOR, y le robaba al mercado de invierno el único asiento
+         que iba a ofrecer, con lo que la pantalla de fichajes reventaba al pulsar («ab[0].i» sobre una
+         lista vacía). Se cazó con grupo de control: 200 partidas sin tocar el crashgate, cero errores.
+         Si nadie termina contrato, no hay a quién desplazar: le pagas igual, pero sin sentar a nadie. */
       const sl=S.seats[S.tpTeam]||[];
       let iFuera=-1, peor=null;
-      sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && x.name && (!peor || (x.skill||0)<(peor.skill||0))){ peor=x; iFuera=i; } });
+      sl.forEach((x,i)=>{ if(x && x!=="PLAYER" && x.name && (x.tpc||0)<=0 && (!peor || (x.skill||0)<(peor.skill||0))){ peor=x; iFuera=i; } });
       let nFuera=null;
       if(peor && iFuera>=0){
         nFuera=surname(peor.name);
@@ -14761,9 +14775,9 @@ const TP_DILEMAS=[
         if(!nuevo) nuevo=(S.dpool||[]).find(x=>x && x.name===c.nom) || null;
         if(nuevo){ nuevo.yrs=0; nuevo.tpc=2; sl[iFuera]=nuevo; }
       }
-      return L(`Se lo das. ${nFuera?nFuera+" se queda sin asiento para hacerle sitio y se entera por la prensa, como se entera todo el mundo. No hay ninguna razón deportiva que darle, porque la de verdad no se puede contar.":"Ocupa un asiento que tenías pensado para otra cosa."} Es lo que cuesta que ${c.n} siga hablando del tiempo. −proyecto${nFuera?", y "+nFuera+" te lo guarda":""}`,
-               `You give it to him. ${nFuera?nFuera+" loses his seat to make room and finds out from the press, the way everybody finds out. There's no sporting reason to give him, because the real one can't be told.":"He takes a seat you had earmarked for something else."} That's what it costs to keep ${c.n} talking about the weather. −project${nFuera?", and "+nFuera+" holds it against you":""}`,
-               {pt:`Você dá. ${nFuera?nFuera+" fica sem lugar para abrir espaço e descobre pela imprensa, como todo mundo descobre. Não há razão esportiva para dar a ele, porque a de verdade não se pode contar.":"Ele ocupa um lugar que você tinha pensado para outra coisa."} É o que custa que ${c.n} continue falando do tempo. −projeto${nFuera?", e "+nFuera+" guarda mágoa":""}`}); }},
+      return L(`Se lo das. ${nFuera?nFuera+" terminaba contrato y ya no se le renueva, y se entera por la prensa como se entera todo el mundo. No hay ninguna razón deportiva que darle, porque la de verdad no se puede contar.":"Le prometes el sitio, y el sitio se saca de donde sea: presupuesto que era para otra cosa y una conversación incómoda con la gente de la fábrica."} Es lo que cuesta que ${c.n} siga hablando del tiempo. −proyecto${nFuera?", y "+nFuera+" te lo guarda":""}`,
+               `You give it to him. ${nFuera?nFuera+" was out of contract and doesn't get renewed, and finds out from the press the way everybody finds out. There's no sporting reason to give him, because the real one can't be told.":"You promise him the seat, and the seat comes from wherever: budget that was for something else and an uncomfortable conversation with the people who run the factory."} That's what it costs to keep ${c.n} talking about the weather. −project${nFuera?", and "+nFuera+" holds it against you":""}`,
+               {pt:`Você dá. ${nFuera?nFuera+" terminava contrato e não é renovado, e descobre pela imprensa como todo mundo descobre. Não há razão esportiva para dar a ele, porque a de verdade não se pode contar.":"Você promete o lugar, e o lugar sai de onde for: orçamento que era para outra coisa e uma conversa incômoda com o pessoal da fábrica."} É o que custa que ${c.n} continue falando do tempo. −projeto${nFuera?", e "+nFuera+" guarda mágoa":""}`}); }},
    /* B · negarse. Gratis hoy, carísimo después */
    {l:()=>L("Negarte","Turn him down",{pt:"Recusar"}),
     r:()=>{ const c=S._fv||{}; if(S._crash){ S._crash.callado=false; S._crash.habra=true;
