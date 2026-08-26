@@ -11607,7 +11607,7 @@ function tpGoalFor(){
      sabe nada de ti) y se mira cuánto te pasaste del listón de media. Si te pasas de largo, te suben
      la vara; si te quedas corto sin llegar a que te echen, te dan aire. Un solo puesto por año, así
      que no se dispara: en cuanto el listón te aprieta, la media baja y vuelve a su sitio. */
-  const _hist=(S.seasons||[]).filter(r=>r.cat==="TP" && r.tpTeam===S.tpTeam && r.tpPos>0).slice(-3);
+  const _hist=(S.seasons||[]).filter(r=>r.cat==="TP" && r.tpTeam===S.tpTeam && r.tpPos>0 && !r.tpDQ).slice(-3);
   if(_hist.length>=2){
     const _m=_hist.reduce((a,r)=>a+(r.tpTarget-r.tpPos),0)/_hist.length;
     if(_m>=1.5) target--;            // llevas años pasándote: ahora esperan más de ti
@@ -11749,6 +11749,11 @@ function simTP(row){
   /* 🧠 los NÚMEROS del año, no solo el veredicto: el consejo los relee al fijar el listón siguiente.
      `tpGoalTxt` ya guardaba esto, pero como frase escrita, y de una frase no se saca una media. */
   row.tpTeam=tn; row.tpPos=cPos; row.tpTarget=G.target;
+  /* 🚫 …y si ese año os expulsaron, queda MARCADO. El puesto que guarda la fila (nT+1) es un castigo,
+     no un resultado deportivo: no acabaste el último compitiendo, es que no estabas. Sin esta marca,
+     el consejo con memoria leía «acabó 12º» y concluía que lo habías pasado mal, así que te BAJABA el
+     listón al año siguiente — medido: el 13% de las veces te premiaba por haber hecho trampas. */
+  if(_dqYo) row.tpDQ=true;
   row.tpGoalTxt = G.target===1
     ? L("título de constructores","constructors' title",{pt:"título de construtores"})
     : L(`${G.target}º de constructores o mejor`,`P${G.target} constructors or better`,{pt:`${G.target}º de construtores ou melhor`});
