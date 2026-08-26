@@ -7053,6 +7053,31 @@ function rencorTitular(q, yo){
     L(`«El cheque que ${yo} rompió en ${y} sigue encima de la mesa: ${n} no lo ha olvidado y en el garaje se nota»`,`«The cheque ${yo} tore up in ${y} is still on the table: ${n} hasn't forgotten, and the garage can tell»`,{pt:`«O cheque que ${yo} rasgou em ${y} continua na mesa: ${n} não esqueceu, e na garagem se nota»`})
   ][i];
 }
+/* ⚠️ OJO AL NOMBRE: ya existe un `tpBanderaRoja` que es OTRO dilema —una bandera roja que YA ha
+   ocurrido y decides qué gomas montar en el parón—. Este es el del cuaderno: la que TÚ puedes pedir.
+   Se llamó igual por descuido el 26-ago y el id duplicado hizo que `S._br` se pisara entre los dos, y
+   todo salía `undefined`. De ahí `tpPedirBandera` y `S._pb`.
+   🔎 COMPROBACIÓN QUE HAY QUE HACER SIEMPRE tras añadir un dilema:
+      grep -o '{id:"[a-zA-Z]*"' index.html | sort | uniq -d
+   Si devuelve algo, hay un id repetido.
+   🌧️ EL DESENLACE DE CORRER BAJO EL AGUA. Compartido por la opción B («callarte y correr») y por la
+   rama «sigo» de la C («preguntárselo a él»), para que la misma apuesta tenga exactamente las mismas
+   probabilidades venga de quien venga la decisión. `suya` solo cambia de quién es el mérito o la culpa.
+   ⚫ SIN MUERTES de momento (decisión de Carlos, 26-ago): sale vivo siempre. En la era 1990 el texto es
+   más oscuro y el golpe a su moral mayor —era una época en que esto acababa peor— pero no se muere
+   nadie. El día que se activen, la rama del 20% es donde entrarían. */
+function tpPbCorrer(suya){
+  const c=S._pb||{}, noventa=yearNow()<2000;
+  return roll(
+   [80,()=>{ S.tpDilWin=(S.tpDilWin||0)+1; TPRE(3);
+     return suya
+       ? L(`Aguanta las once vueltas que quedan y gana. Nadie va a saber nunca lo cerca que estuvo, y él tampoco lo va a contar. +1 victoria, +fama`,`He holds on for the eleven laps left and wins. Nobody will ever know how close it came, and he isn't going to tell them either. +1 win, +fame`,{pt:`Ele aguenta as onze voltas que faltam e vence. Ninguém vai saber o quão perto esteve, e ele também não vai contar. +1 vitória, +fama`})
+       : L(`No dices nada. Aguanta, gana, y a la salida hay tres micrófonos esperándote para preguntarte por qué no pediste parar. Contestas que porque íbamos ganando. +1 victoria, +fama`,`You say nothing. He holds on, he wins, and on the way out there are three microphones waiting to ask why you didn't call for a stop. You answer: because we were winning. +1 win, +fame`,{pt:`Você não diz nada. Ele aguenta, vence, e na saída há três microfones esperando para perguntar por que você não pediu para parar. Você responde: porque estávamos ganhando. +1 vitória, +fama`}); }],
+   [20,()=>{ TPRE(-2); tpDrvSkill(c.nom, noventa?-2:-1);
+     return noventa
+       ? L(`Vuelta ${(c.vuelta||30)+4}. Aquaplaning en la recta, el coche cruzado y el muro. Sale por su propio pie porque en esta época eso no siempre pasa, y en el box nadie dice nada durante veinte minutos. Vuelve a correr, pero no vuelve el mismo. −fama, −moral de ${c.n}`,`Lap ${(c.vuelta||30)+4}. Aquaplaning on the straight, the car sideways, the wall. He walks away, which in this era doesn't always happen, and nobody in the garage says a word for twenty minutes. He races again, but he doesn't come back the same. −fame, −${c.n}'s morale`,{pt:`Volta ${(c.vuelta||30)+4}. Aquaplanagem na reta, o carro atravessado, o muro. Ele sai pelo próprio pé, o que nesta época nem sempre acontece, e no box ninguém diz nada por vinte minutos. Volta a correr, mas não volta o mesmo. −fama, −moral de ${c.n}`})
+       : L(`Vuelta ${(c.vuelta||30)+4}. Aquaplaning en la recta y el coche se va solo. Sale entero y enfadado, y la pregunta que le hacen en la tele no es cómo está, sino por qué seguíais corriendo. −fama, −moral de ${c.n}`,`Lap ${(c.vuelta||30)+4}. Aquaplaning on the straight and the car goes on its own. He gets out in one piece and furious, and the question they ask him on television isn't how he is, but why you were still racing. −fame, −${c.n}'s morale`,{pt:`Volta ${(c.vuelta||30)+4}. Aquaplanagem na reta e o carro vai sozinho. Sai inteiro e irritado, e a pergunta que fazem a ele na TV não é como está, mas por que ainda estavam correndo. −fama, −moral de ${c.n}`}); }]);
+}
 function dilVar(k, gen){ S._dilVars=S._dilVars||{}; if(S._dilVars[k]===undefined) S._dilVars[k]=gen(); return S._dilVars[k]; }
 /* 🦠 LAS OCHO MANERAS DE PASAR EL PARÓN DE 2020 (petición de Carlos, 24-ago). Antes eran siempre las
    mismas tres opciones, así que revivir 2020 era revivir la misma pantalla. Ahora salen TRES DE OCHO
@@ -14389,6 +14414,97 @@ const TP_DILEMAS=[
          return L(`Las piezas llegan. Pero ${c.jovN} se entera de que había un plan sobre la mesa y de que lo cancelaste tú, y a partir de ahí cada vez que pregunta algo lo pregunta de otra manera. +1 de coche, −1 de moral de ${c.jovN}`,
                   `The parts arrive. But ${c.jovN} finds out there was a plan on the table and that you were the one who killed it, and from then on every time he asks something he asks it differently. +1 car, −1 morale for ${c.jovN}`,
                   {pt:`As peças chegam. Mas ${c.jovN} descobre que havia um plano na mesa e que foi você quem cancelou, e a partir daí cada vez que pergunta algo pergunta de outro jeito. +1 de carro, −1 de moral de ${c.jovN}`}); }]); }}]},
+
+ /* 🌧️ «LA BANDERA ROJA» — el domingo nº3 de la familia de la lluvia (diseño del 22-ago, desbloqueado
+    el 26 cuando Carlos decidió lo de las muertes). Diluvia, tu piloto va líder y dirección de carrera
+    pregunta a los equipos si parar. Tu respuesta cuenta como un voto, y todo el mundo sabe quién vota.
+    🎭 DOS VERSIONES DEL MISMO ESCENARIO (pega de Carlos: «ir líder implica ser top 3 o top 4»). Con un
+    coche de los cuatro mejores, tu piloto va donde debería ir y lo que arriesgas es tirar lo que ya
+    tenías. Con un coche que no da para ganar, el agua ha borrado la diferencia y lo que arriesgas es
+    LA ÚNICA. Misma decisión, pesando al revés.
+    ⚖️ EL BAREMO DE PREGUNTARLE A ÉL, también de Carlos: «casi todo el mundo te va a decir que quiere
+    continuar si va líder». Así que la escala no es su carácter sino QUÉ TIENE EN JUEGO — su puesto en
+    el mundial y, sobre todo, su puesto respecto a su compañero. El líder del campeonato no tira un
+    título por una carrera; el que va por detrás de su compañero ve su oportunidad de dar la vuelta al
+    año. Cuatro situaciones, dos respuestas.
+    🏁 LA VICTORIA CUENTA DE VERDAD: usa `tpDilWin`, verificado de punta a punta el 26-ago —regalando 5
+    victorias, la temporada sale con +5,48 victorias y +6,52 podios. No es solo texto.
+    ⚫ SIN MUERTES, de momento (decisión de Carlos): la rama mala es un accidente grave del que sale
+    vivo. En la era 1990 el texto es más oscuro y el golpe a su moral mayor, pero no se muere nadie. */
+ {id:"tpPedirBandera",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<1) return false;
+    const a=tpDrvs().filter(d=>d && d.name); if(!a.length) return false;
+    const gp=tpGpLluvia(); if(!gp) return false;
+    const ord=[...F1_TEAMS].sort((x,y)=>(S.f1perf[y.name]||0)-(S.f1perf[x.name]||0)).map(t=>t.name);
+    const grande = ord.indexOf(S.tpTeam) < 4;          // ¿tu coche es de los cuatro mejores?
+    /* ⚠️ QUIÉN VA LÍDER NO ES SIEMPRE EL MEJOR. La primera versión elegía al mejor colocado del
+       mundial, y eso rompía el baremo entero: por construcción nunca podía ir por detrás de su
+       compañero, así que esa rama —la más interesante, la del que ve su oportunidad de dar la vuelta
+       al año— no salía JAMÁS. Medido: 0 de 535.
+       Y además es falso: bajo el agua el que se sale con la suya suele ser el otro. Dos de cada tres
+       veces va líder el mejor colocado, y una de cada tres el compañero. `dilVar` lo fija para que
+       cambiar de idioma no cambie de piloto a media frase. */
+    const rk=n=>(S.rankD&&S.rankD[n])||99;
+    const porPuesto=a.slice().sort((x,y)=>rk(x.name)-rk(y.name));
+    const base=(rk(porPuesto[0].name)<99) ? porPuesto : a.slice().sort((x,y)=>(y.skill||0)-(x.skill||0));
+    const yo = (base.length>1 && dilVar("pbQuien",()=>irnd(1,3))===3) ? base[1] : base[0];
+    const otro = a.find(d=>d.name!==yo.name) || null;
+    const miPos=rk(yo.name), suPos=otro?rk(otro.name):99;
+    /* el baremo: qué tiene en juego ESTE año */
+    const quiere = miPos===1 ? "para"          // líder del mundial: no lo tira por una carrera
+                 : miPos<=3  ? "para"          // peleándolo: duda, y acaba pidiendo que paren
+                 : (otro && miPos>suPos) ? "sigo"   // por detrás de su compañero: su oportunidad
+                 : "sigo";                     // en tierra de nadie: nada que perder
+    S._pb={ gp:gp.n, vuelta:irnd(Math.round(gp.laps*.35),Math.round(gp.laps*.7)),
+            n:surname(yo.name), nom:yo.name, grande:grande,
+            miPos:miPos, suPos:suPos, otroN:otro?surname(otro.name):null, quiere:quiere };
+    return true; },
+  t:()=>L("¿Paramos la carrera?","Do we stop the race?",{pt:"Paramos a corrida?"}),
+  d:()=>{ const c=S._pb||{};
+    const sitio = c.grande
+      ? L(`${c.n} va líder, que es más o menos donde debería ir con este coche. Lo que está en juego es no tirar lo que ya tenías.`,
+          `${c.n} is leading, which is roughly where he should be with this car. What's at stake is not throwing away what you already had.`,
+          {pt:`${c.n} está na frente, que é mais ou menos onde deveria estar com este carro. O que está em jogo é não jogar fora o que você já tinha.`})
+      : L(`El agua ha borrado la diferencia entre los coches y ${c.n} va líder por primera vez desde que estás aquí. Puede que no vuelva a pasar.`,
+          `The water has wiped out the difference between the cars and ${c.n} is leading for the first time since you arrived. It might not happen again.`,
+          {pt:`A água apagou a diferença entre os carros e ${c.n} está na frente pela primeira vez desde que você chegou. Pode não acontecer de novo.`});
+    return L(`Diluvia en ${c.gp}. Vuelta ${c.vuelta}, el agua ya no se va por ningún lado y por la radio no se oye a nadie tranquilo. ${sitio} Dirección de carrera pregunta a los equipos si hay que parar la carrera: tu respuesta cuenta como un voto, y aquí todo el mundo sabe quién vota qué.`,
+             `It's pouring at ${c.gp}. Lap ${c.vuelta}, the water has nowhere left to drain and nobody on the radio sounds calm. ${sitio} Race control is asking the teams whether the race should be stopped: your answer counts as a vote, and around here everyone knows who voted which way.`,
+             {pt:`Chove torrencialmente em ${c.gp}. Volta ${c.vuelta}, a água já não escoa para lado nenhum e no rádio ninguém soa tranquilo. ${sitio} A direção de prova pergunta às equipes se a corrida deve parar: a sua resposta conta como um voto, e aqui todo mundo sabe quem votou o quê.`}); },
+  opts:[
+   /* A · pedir la bandera roja: ganas por posición en pista, y la fama se parte */
+   {l:()=>L("Pedir que paren la carrera","Ask them to stop the race",{pt:"Pedir que parem a corrida"}),
+    r:()=>{ const c=S._pb||{}; S.tpDilWin=(S.tpDilWin||0)+1;
+      const gana = c.grande
+        ? L(`Se para y no se reanuda: victoria por posición en pista.`,`It's stopped and never restarts: a win on track position.`,{pt:`Param e não recomeça: vitória por posição na pista.`})
+        : L(`Se para y no se reanuda. ${c.n} gana una carrera de Fórmula 1 con vuestro coche, y en el garaje hay gente llorando.`,`It's stopped and never restarts. ${c.n} wins a Formula 1 race in your car, and there are people crying in the garage.`,{pt:`Param e não recomeça. ${c.n} vence uma corrida de Fórmula 1 com o carro de vocês, e na garagem há gente chorando.`});
+      return roll(
+       [1,()=>(TPRE(1),L(`${gana} Media parrilla dice que fuiste el único adulto en la sala. +1 victoria, +fama`,`${gana} Half the grid says you were the only adult in the room. +1 win, +fame`,{pt:`${gana} Metade do grid diz que você foi o único adulto na sala. +1 vitória, +fama`}))],
+       [1,()=>(TPRE(-1),L(`${gana} Y la otra media dice que pediste parar justo cuando ibas ganando. Esa frase te va a perseguir un tiempo. +1 victoria, −fama`,`${gana} And the other half says you asked to stop precisely when you were winning. That line is going to follow you around for a while. +1 win, −fame`,{pt:`${gana} E a outra metade diz que você pediu para parar justamente quando estava ganhando. Essa frase vai te perseguir um tempo. +1 vitória, −fama`}))]); }},
+   /* B · callarte y correr */
+   {l:()=>L("Callarte y correr","Say nothing and race on",{pt:"Ficar calado e correr"}),
+    r:()=>tpPbCorrer(false)},
+   /* C · preguntárselo a él: cambias quién manda */
+   {l:()=>{ const c=S._pb||{}; return L(`Preguntárselo a ${c.n}`,`Ask ${c.n}`,{pt:`Perguntar a ${c.n}`}); },
+    r:()=>{ const c=S._pb||{}; TPRE(-1); tpDrvSkill(c.nom,1);
+      const coste=L(`Le pasas la radio. En el muro alguien resopla: el jefe ha preguntado en vez de decidir, y eso también se apunta. −fama, +moral de ${c.n}`,
+                    `You hand him the radio. Someone on the pit wall sighs: the boss asked instead of deciding, and that gets noted too. −fame, +${c.n}'s morale`,
+                    {pt:`Você passa o rádio. No muro alguém bufa: o chefe perguntou em vez de decidir, e isso também fica anotado. −fama, +moral de ${c.n}`});
+      if(c.quiere==="para"){
+        S.tpDilWin=(S.tpDilWin||0)+1;
+        const porque = c.miPos===1
+          ? L(`«Voy líder del mundial. No lo voy a tirar por una carrera.»`,`«I'm leading the championship. I'm not throwing it away for one race.»`,{pt:`«Estou liderando o mundial. Não vou jogar fora por uma corrida.»`})
+          : L(`«Estoy peleando el campeonato. Hoy no.»`,`«I'm fighting for the title. Not today.»`,{pt:`«Estou brigando pelo campeonato. Hoje não.»`});
+        return L(`${porque} Pides la bandera roja y la carrera no se reanuda: la victoria es suya y la decisión también. +1 victoria. ${coste}`,
+                 `${porque} You ask for the red flag and the race never restarts: the win is his and so was the call. +1 win. ${coste}`,
+                 {pt:`${porque} Você pede a bandeira vermelha e a corrida não recomeça: a vitória é dele e a decisão também. +1 vitória. ${coste}`});
+      }
+      const porque = (c.otroN && c.miPos>c.suPos)
+        ? L(`«Voy por detrás de ${c.otroN} todo el año. Esta es mía.»`,`«I've been behind ${c.otroN} all year. This one's mine.»`,{pt:`«Estou atrás de ${c.otroN} o ano inteiro. Esta é minha.»`})
+        : L(`«¿Y qué voy a perder exactamente?»`,`«And what exactly am I going to lose?»`,{pt:`«E o que exatamente eu tenho a perder?»`});
+      return porque+" "+tpPbCorrer(true)+" "+coste;
+    }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
