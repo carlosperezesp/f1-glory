@@ -14710,10 +14710,24 @@ const TP_DILEMAS=[
     let motivo=null, compa=null;
     if(!equipo) motivo="asiento";                            // se quedó sin volante
     else if(equipo===S.tpTeam){
-      compa=(S.seats[equipo]||[]).find(x=>x&&x!=="PLAYER"&&x.name!==k.n) || null;
-      if(compa && rk(k.n)>rk(compa.name)) motivo="numerouno";
+      /* 👑 «QUIERE EL NÚMERO UNO» EXIGE QUE NO LO TENGA YA. La primera versión miraba su puesto en el
+         MUNDIAL, y eso no es lo mismo que su asiento: puedes ir con el mejor coche del garaje y estar
+         por detrás igualmente. Salían siete casos pidiendo lo que ya tenían. El nº1 de este juego es
+         el ASIENTO 0 —corre con un coche 0,75 mejor—, así que solo lo pide quien está en el 1. */
+      const sl2=S.seats[equipo]||[];
+      const iEl=sl2.findIndex(x=>x&&x!=="PLAYER"&&x.name===k.n);
+      compa=sl2.find(x=>x&&x!=="PLAYER"&&x.name!==k.n) || null;
+      if(compa && iEl>0) motivo="numerouno";
     } else if(ord.indexOf(equipo) > ord.indexOf(S.tpTeam)) motivo="traeme";
     if(!motivo) return false;                                // le va bien: no pide nada
+    /* 🪑 SOLO PIDE LO QUE LE PUEDES DAR (pega de Carlos: «¿puede ocupar un asiento a pesar de estar
+       ocupados? ¿qué pasa con el otro?»). Si lo que quiere es que le fiches, tiene que HABER sitio:
+       alguien de tu equipo terminando contrato. Si no lo hay, no viene este invierno — vendrá otro.
+       El número uno no necesita hueco: es un cambio de asiento entre los dos que ya tienes. */
+    if(motivo!=="numerouno"){
+      const libres=(S.seats[S.tpTeam]||[]).some(x=>x && x!=="PLAYER" && x.name && (x.tpc||0)<=0);
+      if(!libres) return false;
+    }
     /* pedir el número uno se pide al invierno siguiente, cuando todavía escuece. Pero PEDIR QUE LE
        FICHES —tanto si se ha quedado sin volante como si está en un equipo peor— necesita que pase
        tiempo: dos años como mínimo, para que le dé tiempo a pudrirse y a que se le acaben las puertas. */
@@ -14742,12 +14756,21 @@ const TP_DILEMAS=[
          estás quitando el sitio sin ningún motivo deportivo, porque no puede saber el verdadero.
          Reutiliza el motivo «apartado», que ya existe con sus titulares de prensa escritos. */
       if(c.motivo==="numerouno"){
+        /* 👑 EL Nº1 NO ES UN ADJETIVO: el asiento 1 del garaje corre con un coche 0,75 mejor y el 2 con
+           0,75 peor (regla de Carlos del 19-ago). Darle el número uno es MOVERLE de asiento, punto de
+           punto y medio de diferencia. La primera versión solo le bajaba la moral al otro y no movía
+           nada: exactamente el mismo fallo de honestidad que el del techo del OVR, prometer algo que
+           no se cumple. Aquí no hace falta que haya hueco: los dos ya están dentro, cambian de sitio. */
+        const sl=S.seats[S.tpTeam]||[];
+        const iEl=sl.findIndex(x=>x && x!=="PLAYER" && x.name===c.nom);
+        const iOtro=sl.findIndex(x=>x && x!=="PLAYER" && x.name===c.compa);
+        if(iEl>0 && iOtro>=0 && iEl!==iOtro){ const t=sl[iEl]; sl[iEl]=sl[iOtro]; sl[iOtro]=t; }
         if(c.compa){ tpDrvSkill(c.compa,-1);
           const d=tpDrvs().find(x=>x && x.name===c.compa);
           if(d){ d.tpRencor=true; d.tpRencorPor={motivo:"apartado", year:yearNow(), team:S.tpTeam}; } }
-        return L(`Se lo das. ${c.compaN} se entera por el muro, como se entera todo el mundo de las cosas importantes: le han quitado el número uno y nadie le ha explicado por qué, porque el porqué no se puede explicar. No vuelve a mirarte igual. −moral de ${c.compaN}, y te lo guarda`,
-                 `You give it to him. ${c.compaN} finds out from the pit wall, the way everyone finds out about the important things: they've taken his number one away and nobody has explained why, because the why can't be explained. He never looks at you the same way again. −${c.compaN}'s morale, and he holds it against you`,
-                 {pt:`Você dá. ${c.compaN} fica sabendo pelo muro, como todo mundo fica sabendo das coisas importantes: tiraram o número um dele e ninguém explicou por quê, porque o porquê não se pode explicar. Não volta a olhar para você igual. −moral de ${c.compaN}, e ele guarda mágoa`}); }
+        return L(`Se lo das. Cambian de sitio en el garaje y con el sitio cambia el coche: a partir de ahora las piezas nuevas se prueban en el de ${c.n}. ${c.compaN} se entera por el muro, como se entera todo el mundo de las cosas importantes, y nadie le explica por qué, porque el porqué no se puede explicar. No vuelve a mirarte igual. −moral de ${c.compaN}, y te lo guarda`,
+                 `You give it to him. They swap sides of the garage, and with the side goes the car: from now on the new parts get tried on ${c.n}'s. ${c.compaN} finds out from the pit wall, the way everyone finds out about the important things, and nobody explains why, because the why can't be explained. He never looks at you the same way again. −${c.compaN}'s morale, and he holds it against you`,
+                 {pt:`Você dá. Trocam de lado na garagem, e com o lado troca o carro: a partir de agora as peças novas se testam no de ${c.n}. ${c.compaN} fica sabendo pelo muro, como todo mundo fica sabendo das coisas importantes, e ninguém explica por quê, porque o porquê não se pode explicar. Não volta a olhar para você igual. −moral de ${c.compaN}, e ele guarda mágoa`}); }
       /* 🪑 FICHARLE ES SENTARLE, y sentar a uno es levantar a otro (pega de Carlos). Se copia el patrón
          que ya usa `tpVeterano`: al desplazado NO se lo traga la tierra —va a la bolsa de agentes
          libres, de donde otro equipo lo pesca— y se marca para que contigo no vuelva a firmar jamás.
@@ -14775,9 +14798,9 @@ const TP_DILEMAS=[
         if(!nuevo) nuevo=(S.dpool||[]).find(x=>x && x.name===c.nom) || null;
         if(nuevo){ nuevo.yrs=0; nuevo.tpc=2; sl[iFuera]=nuevo; }
       }
-      return L(`Se lo das. ${nFuera?nFuera+" terminaba contrato y ya no se le renueva, y se entera por la prensa como se entera todo el mundo. No hay ninguna razón deportiva que darle, porque la de verdad no se puede contar.":"Le prometes el sitio, y el sitio se saca de donde sea: presupuesto que era para otra cosa y una conversación incómoda con la gente de la fábrica."} Es lo que cuesta que ${c.n} siga hablando del tiempo. −proyecto${nFuera?", y "+nFuera+" te lo guarda":""}`,
-               `You give it to him. ${nFuera?nFuera+" was out of contract and doesn't get renewed, and finds out from the press the way everybody finds out. There's no sporting reason to give him, because the real one can't be told.":"You promise him the seat, and the seat comes from wherever: budget that was for something else and an uncomfortable conversation with the people who run the factory."} That's what it costs to keep ${c.n} talking about the weather. −project${nFuera?", and "+nFuera+" holds it against you":""}`,
-               {pt:`Você dá. ${nFuera?nFuera+" terminava contrato e não é renovado, e descobre pela imprensa como todo mundo descobre. Não há razão esportiva para dar a ele, porque a de verdade não se pode contar.":"Você promete o lugar, e o lugar sai de onde for: orçamento que era para outra coisa e uma conversa incômoda com o pessoal da fábrica."} É o que custa que ${c.n} continue falando do tempo. −projeto${nFuera?", e "+nFuera+" guarda mágoa":""}`}); }},
+      return L(`Se lo das. ${nFuera||"El que terminaba contrato"} ya no se renueva y se entera por la prensa, como se entera todo el mundo. No hay ninguna razón deportiva que darle, porque la de verdad no se puede contar, y ${c.n} se sienta en su coche. Es lo que cuesta que siga hablando del tiempo. −proyecto${nFuera?", y "+nFuera+" te lo guarda":""}`,
+               `You give it to him. ${nFuera||"The one whose contract was up"} doesn't get renewed and finds out from the press, the way everybody finds out. There's no sporting reason to give him, because the real one can't be told, and ${c.n} sits in his car. That's what it costs to keep him talking about the weather. −project${nFuera?", and "+nFuera+" holds it against you":""}`,
+               {pt:`Você dá. ${nFuera||"Aquele que terminava contrato"} não é renovado e descobre pela imprensa, como todo mundo descobre. Não há razão esportiva para dar a ele, porque a de verdade não se pode contar, e ${c.n} senta no carro dele. É o que custa que continue falando do tempo. −projeto${nFuera?", e "+nFuera+" guarda mágoa":""}`}); }},
    /* B · negarse. Gratis hoy, carísimo después */
    {l:()=>L("Negarte","Turn him down",{pt:"Recusar"}),
     r:()=>{ const c=S._fv||{}; if(S._crash){ S._crash.callado=false; S._crash.habra=true;
