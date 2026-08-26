@@ -1662,11 +1662,33 @@ const ENTRIES_2010 = [
  {range:[2014,2022], prob:.28, team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null},
  // 🇩🇪 Porsche: el eterno «casi»
  {range:[2016,2025], prob:.22, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null},
+/* 🇪🇸 CAMPOS RACING · EL TERCER INTENTO DE ADRIÁN CAMPOS (2021→2022). Tras Minardi como piloto y
+    tras perder su equipo de 2010 —que se vendió a Carabante y salió a pista como HRT—, iba a por un
+    proyecto con control de verdad, junto a Monaco Increase Management. Motor Renault muy rumoreado,
+    entrada retrasada por la pandemia a 2022… y Adrián murió el 27 de enero de 2021 con el proyecto
+    aún sin cerrar. Sin él, todo se deshizo.
+    Y la parrilla que sonaba era REAL y está verificada: Pascal Wehrlein, a quien la F1 se le estaba
+    cerrando y por eso miraba a la Fórmula E, y Álex Palou, entonces en Super Fórmula y a punto de
+    saltar a la IndyCar. Con el diario de hoy en la mano: un campeón de Fórmula E y un tetracampeón
+    de IndyCar en el mismo garaje. `driversBorn` los sienta con su EDAD REAL del año que entren.
+    ⚠️ NUNCA DOS CAMPOS EN LA MISMA PARTIDA (condición de Carlos). La era de 2010 ya tiene su propio
+    what-if —`maybeCampos()` rebautiza HRT como «Campos Meta»—, así que esta entrada trae `noSi` y se
+    cae sola si ya hay un Campos en la parrilla. Si aquel murió por el camino (HRT/Campos Meta tiene
+    su quiebra), esto pasa a ser justo lo que fue en la vida real: el tercer intento. */
+ {range:[2022,2023], prob:.30, team:{name:"Campos Racing", abbr:"CMP", color:"#E8452C", color2:"#F2B01E", perf:61, cat:"F1"},
+  drivers:null, noSi:"Campos", driversBorn:[["P. Wehrlein",1994,83,87,"🇩🇪"],["A. Palou",1997,83,87,"🇪🇸"]],
+  dieAfter:{w:[3,7], p:.40}},
  // 🇺🇸 proyecto GM: o Andretti o Cadillac, nunca los dos
  {range:[2022,2027], prob:.3,  team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[3,8], p:.35}},
  {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
 ];
 const ENTRIES_2020 = [
+ /* 🇪🇸 el mismo what-if de Campos, en la era de 2020: aquí llega cuando tú aún estás subiendo la
+    escalera, así que no lo vas a pilotar — pero la parrilla de tu mundo tiene un equipo español con
+    Palou y Wehrlein dentro, y eso se nota al llegar arriba. Detalle completo en ENTRIES_2010. */
+ {range:[2022,2023], prob:.30, team:{name:"Campos Racing", abbr:"CMP", color:"#E8452C", color2:"#F2B01E", perf:61, cat:"F1"},
+  drivers:null, noSi:"Campos", driversBorn:[["P. Wehrlein",1994,83,87,"🇩🇪"],["A. Palou",1997,83,87,"🇪🇸"]],
+  dieAfter:{w:[3,7], p:.40}},
  {range:[2024,2028], prob:.35, team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
  {range:[2025,2029], prob:.6,  team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
  // 🇩🇪 Porsche: el acuerdo con Red Bull que se rompió en 2022 — en algunas realidades se firma otro camino
@@ -1855,14 +1877,19 @@ const GRID1990 = {
   "Arrows":[["M. Alboreto",33,80,83,0,"🇮🇹"],["A. Caffi",26,76,80,0,"🇮🇹"]],
   "Larrousse":[["É. Bernard",30,76,80,0,"🇫🇷"],["A. Suzuki",27,76,80,0,"🇯🇵"]],
   "Ligier":[["N. Larini",25,77,82,0,"🇮🇹"],["P. Alliot",36,74,77,0,"🇫🇷"]],
-  "Minardi":[["P. Martini",29,78,82,0,"🇮🇹"],["G. Morbidelli",22,74,80,0,"🇮🇹"]],
+  "Minardi":[["P. Martini",29,78,82,0,"🇮🇹"],["P. Barilla",26,69,72,0,"🇮🇹"]],
   "Scuderia Italia":[["A. de Cesaris",31,76,80,0,"🇮🇹"],["E. Pirro",28,76,80,0,"🇮🇹"]],
-  "Osella":[["O. Grouillard",30,72,76,0,"🇫🇷"],["P. Barilla",26,69,72,0,"🇮🇹"]],
+  /* 🚗 UN SOLO COCHE (verificado, temporada 1990): Osella, Coloni y Life presentaban UN coche — la
+     parrilla real eran 35 inscritos, no 38. De paso, dos recolocaciones históricas: Barilla corría en
+     MINARDI (Morbidelli fue su sustituto de final de año: pasa al bote de novatos con su año real) y
+     Johansson estuvo en Onyx dos carreras, no en Coloni — sale de la parrilla. El motor aguanta
+     equipos de un coche: sin compañero no hay duelo interno, y las mecánicas de pareja se saltan solas. */
+  "Osella":[["O. Grouillard",30,72,76,0,"🇫🇷"]],
   "Onyx":[["JJ. Lehto",24,78,84,0,"🇫🇮"],["G. Foitek",24,70,74,0,"🇨🇭"]],
   "AGS":[["Y. Dalmas",33,70,73,0,"🇫🇷"],["G. Tarquini",28,75,79,0,"🇮🇹"]],
-  "Coloni":[["B. Gachot",27,76,80,0,"🇧🇪"],["S. Johansson",34,74,77,0,"🇸🇪"]],
+  "Coloni":[["B. Gachot",27,76,80,0,"🇧🇪"]],
   "EuroBrun":[["R. Moreno",31,76,80,0,"🇧🇷"],["C. Langes",29,64,67,0,"🇮🇹"]],
-  "Life":[["B. Giacomelli",37,64,66,0,"🇮🇹"],["G. Brabham",29,64,67,0,"🇦🇺"]],
+  "Life":[["B. Giacomelli",37,64,66,0,"🇮🇹"]],
 };
 /* 🧬 LINAJE DE LOS 90 — de la carnicería de 1990-92 hasta enlazar con la parrilla de hoy.
    Casi todas las compras son de FUERA (una tabacalera compra Tyrrell, Renault compra Benetton, Prost
@@ -1870,24 +1897,28 @@ const GRID1990 = {
    Minardi→Toro Rosso, que exige Red Bull en pista. Y `from` obliga a que cada rebautizo venga del
    anterior, para que nadie salte un escalón. */
 const LINEAGE_1990 = [
- {key:"Life",     steps:[{die:true, w:[1990,1991], p:.97}]},
- {key:"EuroBrun", steps:[{die:true, w:[1990,1991], p:.95}]},
- {key:"Onyx",     steps:[{die:true, w:[1990,1992], p:.92}]},
- {key:"AGS",      steps:[{die:true, w:[1991,1993], p:.9}]},
- {key:"Coloni",   steps:[{die:true, w:[1991,1993], p:.88}]},
+ {key:"Life",     steps:[{die:true, w:[1990,1991], p:.99}]},
+ {key:"EuroBrun", steps:[{die:true, w:[1990,1991], p:.98}]},
+ {key:"Onyx",     steps:[{die:true, w:[1990,1992], p:.96}]},
+ {key:"AGS",      steps:[{die:true, w:[1991,1993], p:.96}]},
+ {key:"Coloni",   steps:[{die:true, w:[1991,1993], p:.95}]},
  {key:"Osella",   steps:[{to:{name:"Fondmetal",abbr:"FON",color:"#2A3A6B",color2:"#c0c0c8"}, w:[1991,1992], p:.8},
-                         {die:true, w:[1992,1994], p:.9}]},
- {key:"Brabham",  steps:[{die:true, w:[1992,1994], p:.85}]},
+                         {die:true, w:[1992,1994], p:.95}]},
+ {key:"Brabham",  steps:[{die:true, w:[1992,1994], p:.94}]},
  {key:"Leyton House", steps:[{to:{name:"March",abbr:"MAR",color:"#8AA0B0",color2:"#33414d"}, w:[1992,1993], p:.7},
-                         {die:true, w:[1992,1995], p:.85}]},
- {key:"Scuderia Italia", steps:[{die:true, w:[1993,1995], p:.85}]},
- {key:"Larrousse", steps:[{die:true, w:[1994,1996], p:.85}]},
- {key:"Lotus",    steps:[{die:true, w:[1994,1997], p:.8}]},
+                         {die:true, w:[1992,1995], p:.94}]},
+ {key:"Scuderia Italia", steps:[{die:true, w:[1993,1995], p:.94}]},
+ {key:"Larrousse", steps:[{die:true, w:[1994,1996], p:.94}]},
+ {key:"Lotus",    steps:[{die:true, w:[1994,1997], p:.9}]},
  {key:"Arrows",   steps:[{to:{name:"Footwork",abbr:"FTW",color:"#B23A2E",color2:"#f5f5f5"}, w:[1991,1992], p:.75},
                          {to:{name:"Arrows",abbr:"ARR",color:"#FF6600",color2:"#111111"}, w:[1996,1998], p:.8, from:"Footwork"},
                          {die:true, w:[2002,2005], p:.8}]},
  {key:"Ligier",   steps:[{to:{name:"Prost GP",abbr:"PRO",color:"#0A1A3F",color2:"#F5F5F5"}, w:[1996,1998], p:.75},
-                         {die:true, w:[2001,2004], p:.8, from:"Prost GP"}]},
+                         /* ⚰️ SIN `from`: era el ÚNICO linaje cuya muerte exigía el rebautizo previo, y como
+                            Ligier→Prost solo ocurre el 75% de las veces, 1 de cada 4 Ligier se volvía
+                            INMORTAL (medido: el linaje vivo en 2010 el 50% de las partidas; la realidad,
+                            0% — Prost quebró en 2001). Muera con el nombre que muera. */
+                         {die:true, w:[2001,2004], p:.8}]},
  {key:"Tyrrell",  steps:[{to:{name:"BAR",abbr:"BAR",color:"#C9BFA6",color2:"#D0021B"}, w:[1998,2000], p:.8},
                          {to:{name:"Honda",abbr:"HON",color:"#F5F5F5",color2:"#D0021B"}, w:[2005,2008], p:.7, from:"BAR"},
                          {to:{name:"Brawn",abbr:"BGP",color:"#C6E600",color2:"#111111"}, w:[2008,2011], p:.5, from:"Honda"},
@@ -1984,7 +2015,7 @@ const ROOKIE_1990 = [
      📌 Siguen sin fecha, y por tanto debutan con 18-21 (identificados pero sin dato verificado):
        Naspetti, Couto, Coronel, Kox, Minassian, Müller, Goossens. */
   ["A. Montermini","🇮🇹",null,1964,85],["V. Sospiri","🇮🇹",null,1966,87],["E. Naspetti","🇮🇹",null,1968],
-  ["L. Badoer","🇮🇹",1992,1971,86],["M. Apicella","🇮🇹",null,1965],["A. Zanardi","🇮🇹",null,1966,92],["G. Lavaggi","🇮🇹",1993,1958],
+  ["G. Morbidelli","🇮🇹",1990,1968,84],["L. Badoer","🇮🇹",1992,1971,86],["M. Apicella","🇮🇹",null,1965],["A. Zanardi","🇮🇹",null,1966,92],["G. Lavaggi","🇮🇹",1993,1958],
   ["A. Couto","🇵🇹",1995,1976],["A. García","🇪🇸",1999,1980],
   ["T. Kristensen","🇩🇰",1993,1967,90],["A. Wallace","🇬🇧",null,1961],
   ["C. Albers","🇳🇱",1998,1979],["T. Coronel","🇳🇱",1994,1972],["P. Kox","🇳🇱",1982,1964],
@@ -2147,6 +2178,7 @@ const ERAS = {
     cats:{F4:["Fórmula Ford","Formula Ford","Fórmula Ford"],F3:["F3 Británica","British F3","F3 Britânica"],FR:["F3 Continental","Continental F3","F3 Continental"],F2:"F3000"},
     jr:{F4:FFORD_1990,F3:F3BR_1990,FR:F3EU_1990,F2:F3000_1990}, kart:KART_1990,
     deadly:true, deathWindow:[1993,1995],   // ⚫ los años en los que puede pasar (uno por partida)
+    maxGrid:20,   // 🚪 en esta década la parrilla real llegó a 19-20 equipos: el tope moderno de 13 no vale aquí
     crossovers:CROSSOVERS_1990,
     lineage:LINEAGE_1990, arrivals:ARRIVALS_1990,
     // en 1990 no hay filial de Red Bull: la clave apunta al nombre FUTURO y solo cuenta si Red Bull llega
@@ -2407,7 +2439,7 @@ const TEAM_LOGOS = {
   "Jordan":"Jordan.png","Jaguar":"Jaguar.png","Minardi":"Minardi.png","Benetton":"Benetton.png",
   "BAR":"BAR.png","Arrows":"Arrows.png","Prost GP":"Prost.png","BMW Sauber":"BMW.png","BMW":"BMW.png",
   "Honda":"Honda.png","Brawn":"Brawn.png","Midland":"midland.png","Super Aguri":"superaguri.png",
-  "Maserati":"maserati.png"
+  "Maserati":"maserati.png","Campos Racing":"camposracing21.png"
 };
 // 🕰️ ESCUDOS DE ÉPOCA: un mismo equipo con distinto logo según el año (McLaren fue cromado hasta que
 // se volvió papaya; el Williams clásico dio paso al actual). [desdeAño, fichero] — el último que cumple manda.
@@ -2624,20 +2656,27 @@ const CHALLENGES = {
         texto — Argentina no gana un Mundial desde Fangio y no pone un piloto en la parrilla desde
         Mazzacane en 2001. */
   pechito: {
-    /* 📌 AÑO FIJO 2011, no la ventana 2011-2014 del equipo: en un reto con ranking todos los
-       jugadores tienen que partir de las MISMAS condiciones. 2011 es además el primer año en el que
-       USF1 podía existir después del desastre, y el que deja la edad real que le tocaba: 28. */
-    id:"pechito", era:"2010", year:2011, team:"USF1", role:"2", secret:true,
-    forceExp:{name:"USF1", year:2011},   // 🇺🇸 el equipo no se sortea: en este reto entra sí o sí
+    /* 📌 AÑO FIJO 2010, no la ventana 2011-2014 del equipo: en un reto con ranking todos los
+       jugadores parten de las MISMAS condiciones. Y 2010 es SU año (Carlos, 23-ago): la plaza que
+       USF1 tenía concedida y el año para el que López estaba fichado de verdad. La historia
+       alternativa no es «alguien rescató el proyecto al año siguiente», es «el proyecto sí llegó a
+       tiempo». Pechito arranca con 27, los que tenía cuando aquello iba a pasar. */
+    id:"pechito", era:"2010", year:2010, team:"USF1", role:"2", secret:true,
+    /* 🚫 SIN «¿Retirarte en la cima?» (Carlos, 23-ago). No es que salga más aquí —medido: 25% en el
+       reto frente al 23% de una partida normal—, es que en un reto CON RANKING empujarte a cerrar
+       justo después de tu único título es lo contrario de lo que el jugador quiere. Y el juego ya te
+       deja retirarte cuando te dé la gana. */
+    sinCima:true,
+    forceExp:{name:"USF1", year:2010},   // 🇺🇸 el equipo no se sortea: en este reto entra sí o sí
     drop:["J.M. López"],   // ⚠️ está en la cantera Y dentro del propio USF1 (driversBorn)
     who:{ born:1983, ovr:82, ceil:88, flag:"🇦🇷", country:"Argentina", style:"agresivo", num:"37" },
     t:["Pechito","Pechito","Pechito"],   // el apodo funciona igual en los tres idiomas
-    sub:["El equipo que no llegó a existir · 2011 · 28 años",
-         "The team that never made it to the grid · 2011 · aged 28",
-         "A equipe que nunca chegou a existir · 2011 · 28 anos"],
-    d:["Enero de 2010: te presentan como piloto de USF1, el primer equipo americano en treinta años, y el Gobierno argentino pone 2 de los 8 millones. En marzo el equipo se deshace sin haber montado un coche y te quedas sin volante, sin dinero y sin F1. Aquí USF1 aguanta y en 2011 te sube a un coche que nace de cero, en el fondo de la parrilla, con 28 años. Argentina no ve un piloto suyo en la F1 desde Mazzacane y no gana un Mundial desde Fangio. ¿Lo traes tú?",
-       "January 2010: you are unveiled as a USF1 driver, the first American team in thirty years, and the Argentine government puts up 2 of the 8 million. By March the team has collapsed without ever building a car and you are left with no seat, no money and no F1. Here USF1 holds on, and in 2011 it puts you in a car built from nothing, at the back of the grid, aged 28. Argentina hasn't had a driver in F1 since Mazzacane and hasn't won a title since Fangio. Are you the one who brings it home?",
-       "Janeiro de 2010: você é apresentado como piloto da USF1, a primeira equipe americana em trinta anos, e o governo argentino põe 2 dos 8 milhões. Em março a equipe se desfaz sem ter montado um carro e você fica sem vaga, sem dinheiro e sem F1. Aqui a USF1 aguenta e em 2011 coloca você num carro que nasce do zero, no fundo do grid, aos 28 anos. A Argentina não vê um piloto seu na F1 desde Mazzacane e não ganha um Mundial desde Fangio. É você quem traz?"],
+    sub:["El equipo que no llegó a existir · 2010 · 27 años",
+         "The team that never made it to the grid · 2010 · aged 27",
+         "A equipe que nunca chegou a existir · 2010 · 27 anos"],
+    d:["Enero de 2010: te presentan como piloto de USF1, el primer equipo americano en treinta años, y el Gobierno argentino pone 2 de los 8 millones. En la realidad, en marzo el equipo se deshizo sin haber montado un coche y te quedaste sin volante, sin dinero y sin F1. Aquí no: USF1 llega a tiempo a Bahréin y te sube a un coche que nace de cero, en el fondo de la parrilla, con 27 años. Argentina no ve un piloto suyo en la F1 desde Mazzacane y no gana un Mundial desde Fangio. ¿Lo traes tú?",
+       "January 2010: you are unveiled as a USF1 driver, the first American team in thirty years, and the Argentine government puts up 2 of the 8 million. In reality, by March the team had collapsed without ever building a car and you were left with no seat, no money and no F1. Not here: USF1 makes it to Bahrain and puts you in a car built from nothing, at the back of the grid, aged 27. Argentina hasn't had a driver in F1 since Mazzacane and hasn't won a title since Fangio. Are you the one who brings it home?",
+       "Janeiro de 2010: você é apresentado como piloto da USF1, a primeira equipe americana em trinta anos, e o governo argentino põe 2 dos 8 milhões. Na realidade, em março a equipe se desfez sem ter montado um carro e você ficou sem vaga, sem dinheiro e sem F1. Aqui não: a USF1 chega a tempo ao Bahrein e coloca você num carro que nasce do zero, no fundo do grid, aos 27 anos. A Argentina não vê um piloto seu na F1 desde Mazzacane e não ganha um Mundial desde Fangio. É você quem traz?"],
     persona:"PECHITO",
     at:"2026-08-24T10:00:00Z",
   },
@@ -3072,7 +3111,14 @@ function startChallengeFlow(id){
    No toca nada si el año pedido es el año base. */
 function advanceEraTo(year){
   const desde = S.baseYear||year;
-  if(year<=desde){ S.baseYear=year; return; }
+  if(year<=desde){
+    S.baseYear=year;
+    /* 🇺🇸 …pero las entradas del PROPIO año base sí hay que procesarlas. Un reto que arranca en el
+       primer año de su era (Pechito en 2010) necesita que su equipo forzado esté en la parrilla
+       ANTES de sentarse: sin esto, USF1 no existía y el reto se quedaba sin asiento. */
+    if(S.chForceExp){ try{ processEntries({events:[], year:year}); }catch(e){} }
+    return;
+  }
   // los procesos anuales leen el año de yearNow(); movemos baseYear paso a paso para simularlo.
   // Los sucesos del pasado NO se narran (van a una fila que se tira): ya han ocurrido.
   const guardaEdad=S.age, guardaIni=S.startAge;
@@ -3561,7 +3607,7 @@ function startCareer(){
     dilPod:0,              // 🥉 podios ganados en un dilema, a sumar al cerrar la temporada
     tpDilWin:0, tpDilPod:0, // 🏁 …y sus gemelos del modo JEFE: los suma simTP, no simF1
     role:null, roleTeam:null, roleMate:null,
-    advSeries:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
+    advSeries:null, advMarca:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
     regReg:ERA.baseYear+20+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
     regYear:null, regBet:null, regBetGrade:null, regBetRefused:null, regPrepared:null, commitTeam:null, commitYears:0,
@@ -4385,6 +4431,7 @@ function promoteFromReserve(){
   const t=F1_TEAMS.find(x=>x.name===(S.team&&S.team.name));
   if(!t) return false;
   S.team=t; S.cat="F1";
+  S.advMarca=null;   // 🏷️ la afiliación era de la aventura: al volver a la F1 se queda allí
   occupySeat(t.name);
   S.roleTeam=t.name; S.roleMate=teammateOf(t.name).name; S.role=roleFor(t.name);
   S.missRaces=irnd(6,12); // te subiste con la temporada empezada
@@ -4557,7 +4604,26 @@ function pedigreeLabel(){
    campeones vigentes; si los dos lo fueran, se cae al más flojo, como antes.
    ⚠️ Lo usan mateIfJoin y occupySeat: TIENEN que decidir igual, o la oferta promete un compañero y te
    sienta con otro (algo que ya costó una tanda de medición). */
+/* 🚗² EL SEGUNDO COCHE (Carlos, 19-ago: «puede ser que en un caso rarísimo aumenten a 2 pilotos o
+   incluso que sobrevivan»). Osella, Coloni y Life arrancan 1990 con UN coche, como en la realidad.
+   Sobrevivir ya era posible (sus quiebras del linaje fallan un 3-12% de las veces); esto añade la otra
+   mitad: si el equipo sigue vivo y su coche ha dejado de ser el último clavo (perf ≥ 62), cada
+   invierno tiene un 15% de encontrar el dinero para el segundo coche. Sale un novato, se narra, y a
+   partir de ahí es un equipo normal. */
+function segundoCoche(row){
+  F1_TEAMS.forEach(t=>{
+    const sl=S.seats[t.name];
+    if(!Array.isArray(sl) || sl.length!==1) return;
+    if((S.f1perf[t.name]??60) < 62 || !ch(.15)) return;
+    const d=mkRookie(false, t.name);
+    sl.push(d);
+    row.events.push(L(`🚗² ${t.name} encuentra por fin presupuesto para un segundo coche: lo estrena ${d.name}.`,
+      `🚗² ${t.name} finally finds the budget for a second car: ${d.name} gets the seat.`,
+      {pt:`🚗² A ${t.name} finalmente acha orçamento para um segundo carro: ${d.name} fica com a vaga.`}));
+  });
+}
 function displaceIdx(sl){
+  if(!sl || sl.length<2) return 0;   // 🚗 equipo de UN coche: el asiento es ese, no un segundo fantasma
   const camp = x => !!(x && x!=="PLAYER" && S.lastChampName && x.name===S.lastChampName);
   const a=sl[0], b=sl[1];
   if(camp(a) && !camp(b)) return 1;
@@ -4800,6 +4866,33 @@ const SERIES={
   formulae: {from:2014, name:"Fórmula E", nameEn:"Formula E", namePt:"Fórmula E", em:"⚡", col:"#0a2a4a", perf:79, varza:7, marquee:"título de Fórmula E", marqueeEn:"Formula E title", marqueePt:"título da Fórmula E", triple:null, decay:1.0, sub:"Monoplazas eléctricos en circuitos urbanos: energía y estrategia.", subEn:"Electric single-seaters on street circuits: energy and strategy.", subPt:"Monopostos elétricos em circuitos de rua: energia e estratégia."},
   brasil:   {eras:[[0,"Stock Car Brasil"],[2022,"Stock Car Pro Series"]],
              name:"Stock Car Brasil", em:"🇧🇷", col:"#009c3b", perf:78, varza:7, marquee:"Corrida do Milhão", triple:null, decay:1.2, sub:"Turismos brasileños, muy reñidos. La joya: la Corrida do Milhão.", subEn:"Brazilian touring cars, fiercely fought. The jewel: the Corrida do Milhão.", subPt:"Turismos brasileiros, muito disputados. A joia: a Corrida do Milhão."},
+  /* 🇦🇷 TURISMO CARRETERA — la categoría más antigua del mundo en actividad (desde 1937), y la casa
+     espiritual del público argentino del juego. Sin `from`: existe en TODAS las eras. La identidad
+     aquí no es el equipo sino LA MARCA: Ford contra Chevrolet desde antes de la guerra, con Dodge y
+     Torino de terceros en discordia — las «cuatro marcas eternas», todas vigentes hoy. Toyota se sumó
+     en 2022 con el Camry (verificado: debut en Viedma 2022, primera victoria en el Desafío de las
+     Estrellas 2023). La joya es el TÍTULO, como en el DTM: el TC no tiene una carrera-catedral única,
+     tiene una guerra de marcas de ochenta años. */
+  tc:       {name:"Turismo Carretera", em:"🇦🇷", col:"#6CACE4", perf:77, varza:8,
+             marcas:[[0,9999,"Ford"],[0,9999,"Chevrolet"],[0,9999,"Dodge"],[0,9999,"Torino"],[2022,9999,"Toyota"]],
+             marquee:"el título de TC", marqueeEn:"the TC title", marqueePt:"o título do TC", triple:null, decay:1.3,
+             sub:"La categoría más antigua del mundo: Ford contra Chevrolet desde 1937.",
+             subEn:"The world's oldest active category: Ford versus Chevrolet since 1937.",
+             subPt:"A categoria mais antiga do mundo em atividade: Ford contra Chevrolet desde 1937."},
+  /* 🌲 WRC — el Mundial de Rallies existe como campeonato de pilotos desde 1979, así que vive en todas
+     las eras del juego. Es LA disciplina más ajena a un piloto de circuitos (Räikkönen apenas puntuó;
+     Kubica ganó el WRC2, no el WRC), de ahí el `perf` más alto del catálogo y el `decay` duro: la
+     finura de la F1 se oxida rápido entre árboles. Las afiliaciones son los equipos OFICIALES de cada
+     época, con sus ventanas reales: el Grupo A de Lancia y Toyota, la era japonesa de Subaru y
+     Mitsubishi, los años de Peugeot y Citroën, el paréntesis de Volkswagen y el presente de Toyota,
+     Hyundai y el Ford de M-Sport. La joya: Montecarlo, que existe desde 1911. */
+  wrc:      {name:"WRC (Rallies)", nameEn:"WRC (Rallying)", namePt:"WRC (Rali)", em:"🌲", col:"#1e3a5f", perf:84, varza:9,
+             marcas:[[0,1992,"Lancia"],[0,1999,"Toyota"],[2017,9999,"Toyota"],[0,2008,"Subaru"],[0,2005,"Mitsubishi"],
+                     [1993,9999,"Ford"],[1999,2005,"Peugeot"],[2001,2016,"Citroën"],[2012,2016,"Volkswagen"],[2014,9999,"Hyundai"]],
+             marquee:"el Rally de Montecarlo", marqueeEn:"the Monte Carlo Rally", marqueePt:"o Rali de Monte Carlo", triple:null, decay:1.5,
+             sub:"Tierra, asfalto y nieve: otro planeta. La joya: Montecarlo.",
+             subEn:"Gravel, tarmac and snow: another planet. The jewel: Monte Carlo.",
+             subPt:"Terra, asfalto e neve: outro planeta. A joia: Monte Carlo."},
   // «Super Fórmula» solo desde 2013: antes era la Formula Nippon
   // 🇯🇵 F3000 japonesa hasta 1995, Formula Nippon desde 1996 y Super Fórmula desde 2013
   superformula:{eras:[[0,"F3000 Japonesa","Japanese F3000","F3000 Japonesa"],[1996,"Formula Nippon"],[2013,"Super Fórmula","Super Formula","Super Fórmula"]],
@@ -4816,6 +4909,22 @@ function serName(k, year){ const s=SERIES[k]||{};
 // (corriste en la Formula Nippon de 2011 aunque te retires en 2035, cuando ya se llama Super Fórmula)
 function teamDisp(t, year){ return t && t.cat==="ADV" && t.series ? serName(t.series, year) : (t?t.name:""); }
 function serSub(k){ const s=SERIES[k]||{}; return L(s.sub, s.subEn||s.sub, {pt:s.subPt}); }
+/* 🏷️ LA AFILIACIÓN DE LA ÉPOCA: con quién corres dentro de la serie (la marca en el TC, el equipo
+   oficial en el WRC). Ventanas reales [desde, hasta, nombre]; se sortea al ENTRAR en la serie y
+   persiste mientras sigas — «Seguir en» no re-sortea porque no pasa por startAdventure.
+   💤 DORMIDA POR DECISIÓN DE CARLOS (20-ago-2026): las aventuras son GENÉRICAS —te vas a la NASCAR y
+   punto, sin equipos— y el TC y el WRC deben ser coherentes con eso. Las ventanas quedan verificadas
+   y guardadas para el día que se les meta equipos y más detalle, «cuando rehagamos el sistema de
+   puntuación quizá». Ese día: ADV_AFILIACIONES=true y todo despierta — la firma narrada, la marca en
+   la línea de cada temporada y la limpieza al volver a la F1 ya están cableadas detrás del flag. */
+const ADV_AFILIACIONES=false;
+function serMarca(k){
+  if(!ADV_AFILIACIONES) return null;
+  const s=SERIES[k]||{}; if(!s.marcas) return null;
+  const yr=yearNow();
+  const vivas=s.marcas.filter(m=>yr>=m[0] && yr<=m[1]);
+  return vivas.length ? vivas[irnd(0,vivas.length-1)][2] : null;
+}
 function serMarquee(k){ const s=SERIES[k]||{}; return L(s.marquee, s.marqueeEn||s.marquee, {pt:s.marqueePt}); }
 // Triple Corona: Mónaco + Indy 500 + Le Mans. Nombres de cada pata y estado.
 const CROWN_LEG={ monaco:["el GP de Mónaco","the Monaco GP"], indy:["las 500 Millas de Indianápolis","the Indy 500"], lemans:["las 24h de Le Mans","the Le Mans 24h"] };
@@ -4836,7 +4945,10 @@ const NAT_AFFINITY={
   "Alemania":{teams:["Mercedes","Audi"],series:["dtm"]},
   "Austria":{teams:["Red Bull"],series:[]},
   "Estados Unidos":{teams:["Haas","Cadillac"],series:["indy","nascar"]},
-  "Francia":{teams:["Alpine"],series:["lemans"]},
+  "Francia":{teams:["Alpine"],series:["lemans","wrc"]},      // Loeb y Ogier: nueve y ocho Mundiales
+  "España":{teams:[],series:["wrc"]},                          // Carlos Sainz padre, el Matador
+  "Argentina":{teams:[],series:["tc"]},                        // el TC es religión
+  "Finlandia":{teams:[],series:["wrc"]},                       // el país de los voladores
   "Japón":{teams:["Racing Bulls"],series:["superformula"]},
   "Australia":{teams:[],series:["supercars"]},
   "México":{teams:["Cadillac"],series:["nascar"]},
@@ -4911,7 +5023,12 @@ function renderOffers(offers, withRetire){
     let roleChip="";
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.",{pt:"PILOTO N.º"})}${o.role}</span>`;
     if(o.team.cat==="TEST") roleChip=`<span class="role rt">${L("PROBADOR","RESERVE",{pt:"PILOTO DE TESTES"})}</span>`;
-    const mate = o.team.cat==="F1"&&S.seats[o.team.name] ? ` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: `+mateIfJoin(o.team.name).name : "";
+    const _sl1=S.seats[o.team.name];
+    const mate = o.team.cat==="F1"&&_sl1
+      ? (Array.isArray(_sl1)&&_sl1.length<2 && !_sl1.some(x=>x==="PLAYER")
+          ? ` · ${L("Coche único: correrías solo","One-car team: you'd race alone",{pt:"Carro único: você correria sozinho"})}`
+          : ` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: `+mateIfJoin(o.team.name).name)
+      : "";
     let trendLine="", carLine="", profileLine="";
     if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">${L("TENDENCIA","TREND",{pt:"TENDÊNCIA"})}: ${ti.a} ${ti.t}</span>`; }
     if(o.team.cat==="F1"){
@@ -4945,6 +5062,7 @@ function renderOffers(offers, withRetire){
 /* ---------- firma y flujo de temporada ---------- */
 function signContract(o){
   S.regUnknown=false;
+  if(o&&o.team&&o.team.cat!=="ADV") S.advMarca=null;   // 🏷️ idem: la marca del TC/WRC no te sigue a la F1
   const prev=S.team, prevCat=S.cat;
   /* 🤝 DEUDA DE LEALTAD («necesitan tu asiento», rama en la que la directiva APUESTA POR TI y descarta
      el fichaje). Si al invierno siguiente te largas igual, no lo entienden — y con razón. */
@@ -5960,6 +6078,7 @@ const DILEMAS=[
  {id:"cimaRosberg",stage:"f1",
   cond:()=>{
     if(S.cat!=="F1" || (S.titles.f1||0)!==1 || ((S.seasons.at(-1)||{}).pos)!==1 || S.age<30) return false;
+    if(S.challenge && (CHALLENGES[S.challenge]||{}).sinCima) return false;   // 🚫 retos que no quieren la tentación
     if(S._cimaSorteo==null) S._cimaSorteo = ch(.35);
     return S._cimaSorteo;
   },
@@ -5994,17 +6113,17 @@ const DILEMAS=[
     return cabeza + L(` ${b.name} tiene el ${suyo}. Y su director se planta delante de ti con los planos del reglamento que entra dentro de dos años: llevan desde el primer día construyendo para ese coche y te juran que cuando llegue mandarán ellos. Nadie podrá comprobarlo hasta que se apaguen los semáforos, dos temporadas más tarde.`,
                       ` ${b.name} has the ${suyo}. And their boss sits down in front of you with the blueprints of the rulebook that lands in two years: they've been building for that car since day one, and they swear that when it arrives they'll be the ones in charge. Nobody can check it until the lights go out, two seasons later.`,{pt:` A ${b.name} tem o ${suyo}. E o diretor deles planta na sua frente os projetos do regulamento que entra daqui a dois anos: desde o primeiro dia estão construindo para aquele carro e juram que, quando ele chegar, quem vai mandar são eles. Ninguém poderá comprovar isso até que os semáforos se apaguem, duas temporadas depois.`}); },
   opts:[
-   {l:()=>L("Firmar con ellos al acabar la temporada 🎲","Sign with them at the end of this season 🎲",{pt:"Assinar com eles no fim da temporada 🎲"}),r:()=>{ const b=regBetTeam();
+   {l:()=>L("Te vas: firmas con ellos al acabar la temporada 🎲","You leave: you sign with them at the end of the season 🎲",{pt:"Você vai: assina com eles no fim da temporada 🎲"}),r:()=>{ const b=regBetTeam();
      if(!b) return L("La operación se cae en el último momento y te quedas donde estás.","The deal collapses at the last minute and you stay put.",{pt:"A negociação cai no último momento e você fica onde está."});
      S.regBet=b.name; S.commitTeam=b.name; S.commitYears=2; VAL(.93);
      // ⚠️ la firma es para la temporada SIGUIENTE: esta la terminas donde estás. Decirlo o el jugador
      // cree que se cambia de mono a mitad de año (lo cazó Carlos: gana el Mundial y luego "firmas por X").
      return L(`Firmas con ${b.name} AL ACABAR ESTA TEMPORADA: el año en curso lo terminas donde estás. Medio paddock te llama loco. Dos temporadas comprometido y sin puerta de salida: te bajarás de un coche que gana hoy para subirte a unos planos. −fama`,
               `You sign with ${b.name} AT THE END OF THIS SEASON: you'll see out the current year where you are. Half the paddock calls you mad. Two seasons committed, no way out: you'll step off a car that wins today onto a set of blueprints. −fame`,{pt:`Você assina com a ${b.name} NO FIM DESTA TEMPORADA: o ano em curso você termina onde está. Meio paddock te chama de louco. Duas temporadas comprometido e sem porta de saída: você vai descer de um carro que ganha hoje para subir em cima de uns projetos. −fama`}); }},
-   {l:()=>L("Quedarte y no tocar nada","Stay and change nothing",{pt:"Ficar e não mexer em nada"}),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
+   {l:()=>L("Quedarte y confiar en la estructura","Stay and trust the structure you have",{pt:"Ficar e confiar na estrutura"}),r:()=>{ const b=regBetTeam(); if(b) S.regBetRefused=b.name;
      return L(`Les das las gracias y te quedas. Tienes un coche que gana AHORA; lo demás son planos y palabras bonitas. Ya se verá dentro de dos años quién tenía razón.`,
               `You thank them and stay. You have a car that wins NOW; the rest is blueprints and pretty words. In two years we'll see who was right.`,{pt:`Você agradece e fica. Tem um carro que ganha AGORA; o resto são projetos e palavras bonitas. Daqui a dois anos se vê quem tinha razão.`}); }},
-   {l:()=>L("Quedarte, pero preparar YA el cambio 🛡️","Stay, but start preparing for the change NOW 🛡️",{pt:"Ficar, mas preparar JÁ a mudança 🛡️"}),r:()=>{ const t=S.team.name;
+   {l:()=>L("Quedarte y empujar al equipo a experimentar 🛡️","Stay and push the team to experiment 🛡️",{pt:"Ficar e empurrar a equipe a experimentar 🛡️"}),r:()=>{ const t=S.team.name;
      // también los estás rechazando: se apunta igual que en la opción de quedarse sin más, para que
      // dos años después recibas el desenlace (la puñalada o la bala esquivada). Antes se perdía.
      const b=regBetTeam(); if(b) S.regBetRefused=b.name;
@@ -6219,7 +6338,7 @@ const DILEMAS=[
   opts:[
    {l:()=>L("Aceptar el volante de fábrica","Take the factory drive",{pt:"Aceitar o volante de fábrica"}),r:()=>{ S.youngDetour=true;
      const txt=L("Te subes a un coche de resistencia con 18 años y aprendes cosas que en la escalera no se aprenden: gestionar, convivir con el coche, no romperlo. El escaparate es peor, pero el oficio es mejor.","You get into an endurance car at 18 and learn things the ladder never teaches: managing, living with the car, not breaking it. The shop window is worse, but the craft is better.",{pt:"Você sobe num carro de endurance aos 18 anos e aprende coisas que na escada não se aprendem: administrar, conviver com o carro, não quebrá-lo. A vitrine é pior, mas o ofício é melhor."});
-     try{ startAdventure("lemans", true); }catch(e){}   // 🐞 síncrono y SIN temporada propia
+     try{ startAdventure("lemans", true); }catch(e){}   // 🐞 síncrono y SIN temporada propia: el año en vuelo ya es la aventura
      return txt; }},
    {l:()=>L("Seguir la escalera","Stay on the ladder",{pt:"Seguir a escada"}),r:()=>L("Dices que no. La escalera es la escalera y tú vas a subirla como todo el mundo.","You say no. The ladder is the ladder and you're going to climb it like everyone else.",{pt:"Você diz não. A escada é a escada e você vai subi-la como todo mundo."})},
    {l:()=>L("Las dos cosas a la vez","Both at once",{pt:"As duas coisas ao mesmo tempo"}),r:()=>roll(
@@ -6834,8 +6953,12 @@ function pickDilemma(){
   if(S.cat==="F1" && !S.usedDilemmas.fichajeEnemigo && (S.age-S.lastDilemmaAge>=1) && enemySignable() && ch(.4)){
     return DILEMAS.find(d=>d.id==="fichajeEnemigo");
   }
-  // 🏁 primer Mundial con 30+ (camino Rosberg): la pregunta de la cima llega casi siempre, y ANTES que la del récord
-  if(S.cat==="F1" && !S.usedDilemmas.cimaRosberg && S.titles.f1===1 && S.age>=30 && S.seasons.at(-1)?.pos===1 && (S.age-S.lastDilemmaAge>=1) && ch(.75)){
+  /* 🏁 primer Mundial con 30+ (camino Rosberg): la pregunta de la cima llega casi siempre, y ANTES
+     que la del récord. ⚠️ ESTA VÍA SE SALTA LA `cond` DEL DILEMA —es una prioridad, no un sorteo—,
+     así que el veto de los retos hay que repetirlo aquí: poniéndolo solo en la cond, el dilema
+     seguía saliendo (medido: 13 de 40 partidas del reto Pechito). */
+  if(S.cat==="F1" && !S.usedDilemmas.cimaRosberg && !(S.challenge && (CHALLENGES[S.challenge]||{}).sinCima)
+     && S.titles.f1===1 && S.age>=30 && S.seasons.at(-1)?.pos===1 && (S.age-S.lastDilemmaAge>=1) && ch(.75)){
     return DILEMAS.find(d=>d.id==="cimaRosberg");
   }
   // «La pregunta del récord»: al ganar tu 1er mundial (~50%) o 2 seguidos; una vez por carrera
@@ -7373,6 +7496,7 @@ function simSeason(){
   npcSeason(row);
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
   rbCanteraInvernal(row); // 🐂 el filial promociona o suelta a los que dejan de ser promesa
+  segundoCoche(row);      // 🚗² un equipo de un coche que sobrevive y mejora puede montar el segundo
   beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
   maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
   alphaClash(row); // 🥊 dos gallos no caben en el mismo corral
@@ -7521,7 +7645,18 @@ function processEntries(row){
   const _drop = S.chDrop || [];
   (S.expansion||[]).forEach(e=>{
     if(e.added || yearNow()<e.year) return;
-    if(F1_TEAMS.length>=13){ e.added=true; return; } // parrilla llena: no entran más equipos
+    /* 🚫 «SIEMPRE Y CUANDO NO HAYA MÁS CAMPOS ANTES» (Carlos). Si ya hay en la parrilla un equipo cuyo
+       nombre contiene esta marca, esta entrada no ocurre: dos Campos a la vez no existirían nunca. */
+    if(e.noSi && F1_TEAMS.some(t=>t.name.indexOf(e.noSi)>=0)){ e.added=true; return; }
+    /* 🚪 EL TOPE ES DE ÉPOCA, no un 13 grabado a fuego (medición del 20-ago: con 18 coches en 1991,
+       el 13 dejaba a JORDAN fuera en el 100% de las partidas — y quemaba la entrada para siempre.
+       El equipo donde debutó Schumacher no existía). En los 90 caben 20; en las eras modernas, 13.
+       Y si la parrilla está llena, la entrada ESPERA hasta 3 años a que se abra hueco, no se quema. */
+    const _cap=(ERAS[SELECTED_ERA]&&ERAS[SELECTED_ERA].maxGrid)||13;
+    if(F1_TEAMS.length>=_cap){
+      if((e.defer=(e.defer||0)+1)<=3) return;
+      e.added=true; return;
+    }
     e.added=true;
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
     palmSeedTeam(e.team.name, S.baseYear);   // 🏆 si la marca tiene palmarés propio, llega con él puesto
@@ -7590,6 +7725,11 @@ function rebrandTeam(oldName, to, row){
   // el filial de Red Bull conserva su condición bajo el nuevo nombre (Toro Rosso→AlphaTauri→Racing Bulls)
   if(JUNIOR_OF[oldName]!=null){ JUNIOR_OF[nn]=JUNIOR_OF[oldName]; delete JUNIOR_OF[oldName]; }
   Object.keys(JUNIOR_OF).forEach(k=>{ if(JUNIOR_OF[k]===oldName) JUNIOR_OF[k]=nn; });
+  /* 🪞 ¿ES TU EQUIPO? Hay que preguntarlo ANTES de renombrar. Cuando S.team y la entrada de
+     F1_TEAMS son EL MISMO objeto, el Object.assign de abajo ya le había cambiado el nombre, así que
+     `S.team.name===oldName` daba false y el equipo dejaba de ser «tuyo» justo cuando más importaba:
+     la fila de la temporada se quedaba con el nombre viejo en la cabecera mientras el escudo de al
+     lado de TÚ ya usaba el nuevo (lo cazó Carlos con Sauber→Alfa y Force India→Aston Martin). */
   const mine = !!(S.team && S.team.name===oldName);
   Object.assign(t,{name:nn, abbr:to.abbr||t.abbr, color:to.color||t.color, color2:to.color2||t.color2});
   if(mine && S.team!==t){ S.team.name=nn; S.team.abbr=t.abbr; S.team.color=t.color; S.team.color2=t.color2; }
@@ -7653,8 +7793,24 @@ function processLineage(row){
          Mundial no se sostiene (lo cazo Carlos). Si va entre los tres mejores coches, la quiebra se
          aplaza: los patrocinadores aparecen cuando ganas. */
       if(st.die){
+        /* 🏆 el indulto por ir entre los tres mejores: UN año, y como mucho dos veces (Carlos, 21-ago:
+           «si haces un 3er puesto entiendo que te dé otra oportunidad, pero si vas quedando 3-9-2-10
+           no es realista». Antes era +2 años sin tope y una racha buena te hacía inmortal: Arrows
+           acumulaba aplazamientos de 10 años y sobrevivía el doble de lo diseñado). */
+        /* 👑 …pero GANAR lo cambia todo (Carlos, 21-ago: «¿y si Arrows gana dos títulos en esas
+           oportunidades y las agota, quiebra igual?»). Si el condenado acaba de proclamarse campeón
+           de constructores, la quiebra se aplaza UNA DÉCADA LARGA (10-15 años) y recupera sus
+           indultos — no se cancela para siempre: «Arrows puede ser campeón en 2001 y quebrar para
+           cuando llegue 2020, son muchos años» (Carlos). Medido con cancelación total: el 40% de las
+           partidas largas retenía un superviviente eterno; así, el ciclo de la F1 sigue girando. */
+        if((S.rankC||{})[chn.cur]===1){
+          st.year=yearNow()+irnd(10,15); st.salvado=0;
+          row.events.push(L(`💰 ${chn.cur} iba camino de la quiebra… y ha acabado campeón. Los patrocinadores hacen cola en la puerta: el futuro queda asegurado por años.`,
+            `💰 ${chn.cur} was headed for bankruptcy… and ended up champions. Sponsors are queuing at the door: the future is secured for years to come.`,
+            {pt:`💰 A ${chn.cur} ia rumo à falência… e acabou campeã. Os patrocinadores fazem fila na porta: o futuro está garantido por anos.`}));
+          return; }
         const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).map(t=>t.name);
-        if(ord.indexOf(chn.cur)<3){ st.year=yearNow()+2; return; }
+        if(ord.indexOf(chn.cur)<3 && (st.salvado=(st.salvado||0)+1)<=2){ st.year=yearNow()+1; return; }
       }
       if(st.die){
         // nunca muere con el JUGADOR dentro (titular o probador): agoniza un año, te avisa y te obliga a salir
@@ -7665,7 +7821,9 @@ function processLineage(row){
             row.events.push(L(`💸 ${chn.cur} está en quiebra: los sueldos no llegan y el barco se hunde. Busca asiento YA.`,`💸 ${chn.cur} is going under: wages are late and the ship is sinking. Find a seat NOW.`,{pt:`💸 A ${chn.cur} está falida: os salários não chegam e o barco afunda. Procure vaga JÁ.`})); }
           st.year=yearNow()+1; return; // reintenta al año siguiente, cuando ya hayas salido
         }
-        if(F1_TEAMS.length<=10){ st.done=true; return; } // parrilla mínima de 10: no se muere nadie más
+        // parrilla mínima de 10: la quiebra ESPERA a que entre alguien, no se cancela para siempre
+        // (medido 21-ago: la cancelación regalaba ~4 supervivencias extra por cada 50 partidas)
+        if(F1_TEAMS.length<=10){ st.year=yearNow()+1; return; }
         killTeam(chn.cur, row); st.done=true; return;
       }
       rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true; yaCambio=true;
@@ -8664,7 +8822,7 @@ function simAdventure(row){
     : champPos===1 ? L(`🥇 ¡Campeón de ${serName(key)}!`,`🥇 ${serName(key)} champion!`,{pt:`🥇 Campeão da ${serName(key)}!`})
     : champPos<=3 ? L(`${champPos}º del campeonato (podio)`,`P${champPos} in the championship (podium)`,{pt:`${champPos}º do campeonato (pódio)`})
     : L(`${champPos}º · ${serMarquee(key)}: te quedas sin premio`,`P${champPos} · ${serMarquee(key)}: no silverware`,{pt:`${champPos}º · ${serMarquee(key)}: você fica sem prêmio`});
-  row.events.push(`${sr.em} ${serName(key)} ${row.year}: ${res}`);
+  row.events.push(`${sr.em} ${serName(key)} ${row.year}${S.advMarca?" · "+S.advMarca:""}: ${res}`);
   // ganar Indy/Le Mans avanza (o completa) la Triple Corona → aviso coherente con Mónaco
   if(newCrownLeg){
     const prog=crownMsgAfterWin(key, "").trim();
@@ -8785,9 +8943,15 @@ function startAdventure(key, sinTemporada){
   S.advSeries=key; S.cat="ADV";
   S.team={name:SERIES[key].name, series:key, color:SERIES[key].col, color2:SERIES[key].col, abbr:SERIES[key].em, cat:"ADV"};
   S.role=null; S.roleTeam=null; S.roleMate=null;
-  /* 🐞 DOS TEMPORADAS EN UN CLIC (espejo del arreglo de main, 22-ago): el dilema del «camino raro»
-     salta con la temporada de F2 ya en vuelo; con `sinTemporada` solo se PREPARA la aventura y el
-     año en vuelo se corre ya como resistencia. */
+  S.advMarca=serMarca(key);   // 🏷️ tu afiliación en este mundo (Ford en el TC, Toyota en el WRC…)
+  if(S.advMarca) S.pendingEvents.push(L(`🏷️ Firmas con ${S.advMarca} para tu asalto a ${serName(key)}.`,
+    `🏷️ You sign with ${S.advMarca} for your ${serName(key)} campaign.`,
+    {pt:`🏷️ Você assina com a ${S.advMarca} para a sua campanha na ${serName(key)}.`}));
+  /* 🐞 DOS TEMPORADAS EN UN CLIC (reportado por un amigo de Carlos, 22-ago; reproducido: 1 caso en
+     781 clics). El dilema del «camino raro» salta ANTES de correr el año: su temporada de F2 ya está
+     en vuelo, y la aventura arrancaba OTRA encima — dos años de golpe. Con `sinTemporada`, el dilema
+     solo PREPARA la aventura (cat, equipo, marca) y el año en vuelo se corre ya como resistencia,
+     que es exactamente lo que dice el texto: «te subes a un coche de resistencia con 18 años». */
   if(!sinTemporada) startSeasonRun();
 }
 function advOffers(){
