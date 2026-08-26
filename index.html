@@ -2590,6 +2590,18 @@ function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
 /* 🌦️ circuitos por clima (Carlos: «no va a llover en Bahréin»). Los de calor se comparan por prefijo
    porque Singapur está localizado por idioma. Ambos filtran por era vía gpList. */
 const GP_LLUVIA=["Spa","Silverstone","Interlagos","Suzuka","Hungaroring","Montreal","Zandvoort","Imola","Melbourne"];
+/* 🧱 CIRCUITOS DONDE UN ACCIDENTE GARANTIZA EL COCHE DE SEGURIDAD (pega de Carlos, 26-ago: «Red Bull
+   Ring no es creíble, solo circuitos urbanos imagino»). Y tiene toda la razón: si te sales en un
+   trazado con escapatoria de asfalto, sale bandera amarilla, una grúa y ya. El coche de seguridad
+   solo lo garantizan los muros. Por eso Singapur 2008 fue en Singapur.
+   Los nombres son los PLANOS del calendario a propósito: los que pasan por L() cambian con el idioma
+   y no se pueden comparar por texto. Mónaco y Melbourne se quedan fuera aunque tengan muros: en Mónaco
+   no hay sitio para «salirse sin tocar a nadie», y Albert Park tiene escapatoria en las rápidas.
+   ⏳ EFECTO SECUNDARIO BUENO: antes de 2008 solo queda Montreal, así que el crashgate es casi imposible
+   en las eras viejas. Que es exactamente lo que pasó en la realidad. */
+const GP_MUROS=["Montreal","Singapur","Bakú","Yeda","Las Vegas","Miami","Hanói","Santiago"];
+function tpGpMuros(){ const cs=gpList(yearNow()).filter(c=>GP_MUROS.indexOf(c.n)>=0);
+  return cs.length?cs[irnd(0,cs.length-1)]:null; }
 function tpGpLluvia(){ const cs=gpList(yearNow()).filter(c=>GP_LLUVIA.indexOf(c.n)>=0);
   return cs.length?cs[irnd(0,cs.length-1)]:null; }
 /* ☀️ Madrid y México entran en la bolsa de calor: Barcelona se cae del calendario en 2026 y sin
@@ -7078,6 +7090,25 @@ function tpPbCorrer(suya){
        ? L(`Vuelta ${(c.vuelta||30)+4}. Aquaplaning en la recta, el coche cruzado y el muro. Sale por su propio pie porque en esta época eso no siempre pasa, y en el box nadie dice nada durante veinte minutos. Vuelve a correr, pero no vuelve el mismo. −fama, −moral de ${c.n}`,`Lap ${(c.vuelta||30)+4}. Aquaplaning on the straight, the car sideways, the wall. He walks away, which in this era doesn't always happen, and nobody in the garage says a word for twenty minutes. He races again, but he doesn't come back the same. −fame, −${c.n}'s morale`,{pt:`Volta ${(c.vuelta||30)+4}. Aquaplanagem na reta, o carro atravessado, o muro. Ele sai pelo próprio pé, o que nesta época nem sempre acontece, e no box ninguém diz nada por vinte minutos. Volta a correr, mas não volta o mesmo. −fama, −moral de ${c.n}`})
        : L(`Vuelta ${(c.vuelta||30)+4}. Aquaplaning en la recta y el coche se va solo. Sale entero y enfadado, y la pregunta que le hacen en la tele no es cómo está, sino por qué seguíais corriendo. −fama, −moral de ${c.n}`,`Lap ${(c.vuelta||30)+4}. Aquaplaning on the straight and the car goes on its own. He gets out in one piece and furious, and the question they ask him on television isn't how he is, but why you were still racing. −fame, −${c.n}'s morale`,{pt:`Volta ${(c.vuelta||30)+4}. Aquaplanagem na reta e o carro vai sozinho. Sai inteiro e irritado, e a pergunta que fazem a ele na TV não é como está, mas por que ainda estavam correndo. −fama, −moral de ${c.n}`}); }]);
 }
+/* ⚖️ ANULAR UNA TEMPORADA YA JUGADA. La usa el juicio del crashgate cuando te declaras culpable:
+   la FIA te retira los puntos de CONSTRUCTORES de aquel año (solo constructores — los pilotos
+   conservan los suyos, igual que en McLaren 2007 y en la descalificación de «El sobre»).
+   Vuelve atrás, marca la fila de esa temporada y le añade el evento, así que la trayectoria lo
+   enseña para siempre: un año que viviste como cumplido pasa a estar anulado años después.
+   Devuelve el año anulado, o null si esa temporada ya no está en la trayectoria. */
+function tpAnularTemporada(año){
+  const r=(S.seasons||[]).find(x=>x && x.cat==="TP" && x.year===año);
+  if(!r) return null;
+  r.tpDQ=true;
+  const nT=Object.keys(S.rankC||{}).length||F1_TEAMS.length;
+  r.tpPos=nT+1;
+  (r.events=r.events||[]).push(L(
+    `⚖️ ${año}: la FIA anula vuestro campeonato de constructores de esta temporada. Los pilotos conservan sus puntos.`,
+    `⚖️ ${año}: the FIA voids your constructors' championship for this season. The drivers keep their points.`,
+    {pt:`⚖️ ${año}: a FIA anula o campeonato de construtores desta temporada. Os pilotos conservam os pontos.`}));
+  try{ renderTimeline(); }catch(e){}
+  return año;
+}
 function dilVar(k, gen){ S._dilVars=S._dilVars||{}; if(S._dilVars[k]===undefined) S._dilVars[k]=gen(); return S._dilVars[k]; }
 /* 🦠 LAS OCHO MANERAS DE PASAR EL PARÓN DE 2020 (petición de Carlos, 24-ago). Antes eran siempre las
    mismas tres opciones, así que revivir 2020 era revivir la misma pantalla. Ahora salen TRES DE OCHO
@@ -9653,6 +9684,13 @@ function regResetOffers(){
 function tpVerdictLine(r){
   const objetivo=r.tpGoalTxt||"";
   const cumple=(r.constrPos===1?"1º":(r.constrPos||"?")+"º");
+  /* ⚖️ UNA TEMPORADA ANULADA AÑOS DESPUÉS. El juicio del crashgate puede retirarte los puntos de
+     constructores de un año que ya jugaste, así que esa fila de la trayectoria cambia de significado
+     mucho tiempo después de haberla vivido. Va antes del switch porque manda sobre el veredicto que
+     tuviera: da igual que aquel año cumplieras, si te lo han quitado. */
+  if(r.tpDQ) return L(`🎯 Objetivo: ${objetivo} → ⚖️ ANULADO: la FIA os retiró los puntos de constructores`,
+                      `🎯 Target: ${objetivo} → ⚖️ VOIDED: the FIA stripped your constructors' points`,
+                      {pt:`🎯 Meta: ${objetivo} → ⚖️ ANULADO: a FIA retirou os pontos de construtores`});
   switch(r.tpVerdict){
     case "titulo": return L(`🎯 Objetivo: ${objetivo} → 🏆 rescatado por el título de pilotos`,`🎯 Target: ${objetivo} → 🏆 saved by the drivers' title`,{pt:`🎯 Meta: ${objetivo} → 🏆 salvo pelo título de pilotos`});
     case "ok":     return L(`🎯 Objetivo: ${objetivo} → ✅ cumplido`,`🎯 Target: ${objetivo} → ✅ met`,{pt:`🎯 Meta: ${objetivo} → ✅ cumprida`});
@@ -10747,6 +10785,7 @@ function tpSignTeam(t, how){
   S.tpTeam=S.team.name;
   S.tpOwner=TP_OWNERS[irnd(0,2)];
   S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
+  S._crash=null;   // ⚫ lo que hiciste en otra partida no te persigue a esta
   // contratos escalonados al llegar (1 y 2 años): así toca UNA decisión de asiento casi cada invierno
   const sl=S.seats[S.tpTeam]||[]; const flip=ch(.5);
   sl.forEach((d,i)=>{ if(d&&d!=="PLAYER") d.tpc=((i===0)===flip)?1:2; });
@@ -14505,6 +14544,114 @@ const TP_DILEMAS=[
         : L(`«¿Y qué voy a perder exactamente?»`,`«And what exactly am I going to lose?»`,{pt:`«E o que exatamente eu tenho a perder?»`});
       return porque+" "+tpPbCorrer(true)+" "+coste;
     }}]},
+
+ /* 🔴 «LA ORDEN QUE NO SE DICE» — el crashgate desde el muro. Singapur 2008 visto desde la silla de
+    Briatore. En el modo CLÁSICO ya existe `crashgate`, pero desde el otro lado: allí eres el piloto y
+    te insinúan que tengas «un problema». Aquí eres tú quien lo insinúa. Es el espejo exacto.
+    ⚠️ ID DISTINTO A PROPÓSITO (`tpCrashgate` vs `crashgate`): el 26-ago ya me comí un id duplicado con
+    la bandera roja. Comprobar SIEMPRE con: grep -o '{id:"[a-zA-Z]*"' | sort | uniq -d
+    🕰️ NO SE RESUELVE HOY. Das la orden, ganas la carrera, y ahí queda un rastro (`S._crash`) que te
+    sigue a TI y no al equipo —la orden la diste tú, no la fábrica; ojo al contraste con «El sobre»,
+    donde el expediente se queda con el equipo—. Uno a tres inviernos después llega el juicio.
+    Y si diste la orden en tu penúltima temporada, te jubilas antes de que llegue: eso no está
+    programado, sale solo, y es exactamente lo que quería Carlos.
+    📅 La vuelta no es un número al azar: tu piloto ACABA de parar y sale último, así que solo le vale
+    un coche de seguridad AHORA. Sale al 20-30% de la carrera, que es donde paró Alonso en Singapur. */
+ {id:"tpCrashgate",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if(S._crash) return false;                                   // una vez por partida
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<2) return false;
+    const a=tpDrvs().filter(d=>d && d.name); if(a.length<2) return false;
+    const rk=n=>(S.rankD&&S.rankD[n])||99;
+    const ord=a.slice().sort((x,y)=>rk(x.name)-rk(y.name));
+    const bueno=ord[0], otro=ord[1];                             // por quién merece la pena, y quién paga
+    if(bueno.name===otro.name) return false;
+    /* solo donde salirse SIGNIFICA coche de seguridad: sin muro no hay plan que valga */
+    const cs=gpList(yearNow()).filter(x=>GP_MUROS.indexOf(x.n)>=0);
+    if(!cs.length) return false;
+    const c=cs[dilVar("cgGp",()=>irnd(0,cs.length-1))];
+    const v=dilVar("cgV",()=>irnd(Math.round(c.laps*.20), Math.round(c.laps*.30)));
+    S._cg={ gp:c.n, v:v, bn:surname(bueno.name), bnom:bueno.name,
+            on:surname(otro.name), onom:otro.name };
+    return true; },
+  t:()=>L("La orden que no se dice","The order nobody says out loud",{pt:"A ordem que não se diz"}),
+  d:()=>{ const c=S._cg||{};
+    return L(`${c.gp}, vuelta ${c.v}. ${c.bn} acaba de parar y ha salido el último: con este tráfico no remonta ni en cien vueltas, y la carrera que teníais ganada se acaba de ir por el desagüe. ${c.on} rueda unos segundos por detrás, sin jugarse absolutamente nada.\n\nTu jefe de estrategia se acerca al muro y se queda callado unos segundos. Luego dice, mirando la pantalla y no a ti: «Si ahora mismo saliera el coche de seguridad, ${c.bn} ganaría la carrera». Y no dice nada más.`,
+             `${c.gp}, lap ${c.v}. ${c.bn} has just pitted and come out last: in this traffic he won't get back in a hundred laps, and the race you had won has just gone down the drain. ${c.on} is running a few seconds behind, with absolutely nothing at stake.\n\nYour head of strategy comes over to the pit wall and says nothing for a few seconds. Then he says, looking at the screen and not at you: «If the safety car came out right now, ${c.bn} would win this race». And he says nothing more.`,
+             {pt:`${c.gp}, volta ${c.v}. ${c.bn} acabou de parar e saiu por último: com este tráfego não recupera nem em cem voltas, e a corrida que vocês tinham ganha acabou de ir pelo ralo. ${c.on} roda alguns segundos atrás, sem absolutamente nada em jogo.\n\nO seu chefe de estratégia se aproxima do muro e fica calado alguns segundos. Depois diz, olhando para a tela e não para você: «Se o safety car saísse agora mesmo, ${c.bn} ganharia esta corrida». E não diz mais nada.`}); },
+  opts:[
+   /* A · no entenderlo. Sin efecto mecánico A PROPÓSITO: el premio de esta opción es no tener rastro */
+   {l:()=>L("Hacer como que no le has entendido","Pretend you didn't understand him",{pt:"Fingir que não entendeu"}),
+    r:()=>{ const c=S._cg||{};
+      return L(`Le contestas algo sobre los neumáticos y él asiente demasiado rápido. La carrera se acaba como se tenía que acabar y ninguno de los dos vuelve a mencionarlo jamás. Ha durado once segundos y no ha pasado nada.`,
+               `You answer him something about tyres and he nods a fraction too quickly. The race ends the way it was always going to end and neither of you ever mentions it again. It lasted eleven seconds and nothing happened.`,
+               {pt:`Você responde alguma coisa sobre os pneus e ele concorda rápido demais. A corrida termina como tinha que terminar e nenhum dos dois volta a mencionar aquilo. Durou onze segundos e não aconteceu nada.`}); }},
+   /* B · obligarle a decirlo. La segunda pregunta */
+   {l:()=>L("«Dilo en voz alta»","«Say it out loud»",{pt:"«Diga em voz alta»"}),
+    r:()=>{ const c=S._cg||{};
+      return {
+       q:L(`Se lo hace decir. Él mira a los lados, baja la voz y lo dice con todas las letras: que ${c.on} se salga en la curva 17, que es ciega y tiene muro, y que el coche de seguridad hará el resto. Ahora ya está dicho y ya no se puede des-decir.`,
+           `You make him say it. He looks around, lowers his voice and says it in plain words: that ${c.on} goes off at turn 17, which is blind and has a wall, and the safety car will do the rest. Now it's been said and it can't be unsaid.`,
+           {pt:`Você o faz dizer. Ele olha para os lados, baixa a voz e diz com todas as letras: que ${c.on} saia na curva 17, que é cega e tem muro, e o safety car faz o resto. Agora já foi dito e não dá para desdizer.`}),
+       opts:[
+        {l:()=>L("«Olvídalo. Y no me lo vuelvas a proponer»","«Forget it. And never propose this to me again»",{pt:"«Esqueça. E não me proponha isso de novo»"}),
+         r:()=>(TPTGT(-1),L(`Se lo dices sin levantar la voz y él vuelve a su sitio. Pero ya está dicho: ese hombre trabaja para ti sabiendo que le dejaste exponerse, y tú trabajas con él sabiendo lo que es capaz de proponer. En las reuniones se nota. −proyecto`,`You say it without raising your voice and he goes back to his place. But it's been said: that man works for you knowing you let him expose himself, and you work with him knowing what he's capable of proposing. You can feel it in the meetings. −project`,{pt:`Você diz sem levantar a voz e ele volta ao lugar. Mas já foi dito: aquele homem trabalha para você sabendo que o deixou se expor, e você trabalha com ele sabendo do que é capaz de propor. Nas reuniões se nota. −projeto`}))},
+        {l:()=>L("«Hazlo»","«Do it»",{pt:"«Faça»"}),
+         r:()=>{ const c=S._cg||{}; S.tpDilWin=(S.tpDilWin||0)+1; TPRE(2);
+           /* 🕰️ el rastro. `habra` decide si algún día hay juicio estando él callado (decisión de
+              Carlos: «puede salir o no aunque el otro no cante»). Si canta, se fuerza a true. */
+           S._crash={ y:yearNow(), n:c.onom, nN:c.on, bn:c.bn,
+                      juicio:yearNow()+irnd(1,2), habra:ch(.75), callado:true, pagado:false, juzgado:false };
+           return L(`Vuelta ${(c.v||20)+2}, curva 17. ${c.on} se sale sin tocar a nadie y el coche de seguridad entra antes de que la nube de polvo se pose. ${c.bn} gana la carrera y en el podio no cabe más gente.\n\nNadie ha visto nada. Todavía. +1 victoria, +fama`,
+                    `Lap ${(c.v||20)+2}, turn 17. ${c.on} goes off without touching anybody and the safety car is out before the dust settles. ${c.bn} wins the race and there's no room left on that podium.\n\nNobody has seen anything. Yet. +1 win, +fame`,
+                    {pt:`Volta ${(c.v||20)+2}, curva 17. ${c.on} sai sem tocar em ninguém e o safety car entra antes de a poeira baixar. ${c.bn} vence a corrida e no pódio não cabe mais ninguém.\n\nNinguém viu nada. Ainda. +1 vitória, +fama`}); }}
+       ]}; }}]},
+ /* ⚖️ «EL JUICIO» — el desenlace del crashgate, uno a tres inviernos después (idea de Carlos, 26-ago:
+    «podría incluso llegar 1 o 2 años tarde»). Solo existe si diste la orden. Si el que se estrelló
+    cantó, el juicio es seguro y además te presentas con testigo en contra. Si siguió callado, puede
+    que no llegue nunca.
+    ⚖️ CULPABLE anula la temporada de ENTONCES, no la de ahora: la FIA te retira los puntos de
+    constructores de aquel año y la trayectoria lo enseña para siempre. Los pilotos conservan los
+    suyos. Y esa descalificación cuenta para el contador de las dos que te expulsan de la F1.
+    ⚖️ INOCENTE es una apuesta pura: si te creen, sales limpio del todo; si no, se acabó la partida. */
+ {id:"tpJuicio",
+  cond:()=>{ if(S.cat!=="TP") return false;
+    const k=S._crash; if(!k || k.juzgado) return false;
+    if(k.callado && !k.habra) return false;              // se lo llevó a la tumba
+    if(yearNow() < k.juicio) return false;
+    return true; },
+  t:()=>L("El juicio","The hearing",{pt:"O julgamento"}),
+  d:()=>{ const k=S._crash||{}, años=Math.max(1, yearNow()-(k.y||yearNow()));
+    const como = k.callado
+      ? L(`Un ingeniero que se fue del equipo ha hablado con un periodista, y el periodista tenía los tiempos de vuelta guardados.`,`An engineer who left the team has talked to a journalist, and the journalist had kept the lap times.`,{pt:`Um engenheiro que saiu da equipe falou com um jornalista, e o jornalista tinha guardado os tempos de volta.`})
+      : L(`${k.nN} lo ha contado todo, con fechas y con nombres. El suyo el primero.`,`${k.nN} has told the whole story, with dates and with names. His own first.`,{pt:`${k.nN} contou tudo, com datas e com nomes. O dele primeiro.`});
+    return L(`${años} ${años===1?"año":"años"} después. ${como} La FIA te cita en París: hay una vista y tú estás en ella.\n\nTu abogado te lo pone sencillo: si te declaras culpable, hay acuerdo y hay castigo, pero sigues en esto. Si te declaras inocente y te creen, no ha pasado nada. Si te declaras inocente y no te creen, no vuelves a pisar un paddock.`,
+             `${años} ${años===1?"year":"years"} later. ${como} The FIA summons you to Paris: there's a hearing and you're in it.\n\nYour lawyer makes it simple: plead guilty and there's a deal and a punishment, but you stay in this. Plead not guilty and be believed, and nothing happened. Plead not guilty and not be believed, and you never set foot in a paddock again.`,
+             {pt:`${años} ${años===1?"ano":"anos"} depois. ${como} A FIA te convoca a Paris: há uma audiência e você está nela.\n\nO seu advogado põe simples: se você se declarar culpado, há acordo e há castigo, mas continua nisto. Se se declarar inocente e acreditarem, não aconteceu nada. Se se declarar inocente e não acreditarem, não pisa mais num paddock.`}); },
+  opts:[
+   {l:()=>L("Declararte culpable","Plead guilty",{pt:"Declarar-se culpado"}),
+    r:()=>{ const k=S._crash||{}; k.juzgado=true;
+      TPRE(-4); TPTGT(-2);
+      S.tpFiaDQCount=(S.tpFiaDQCount||0)+1;
+      const anulado=tpAnularTemporada(k.y);
+      return L(`Lo admites en una sala pequeña y en veinte minutos. La FIA os retira el campeonato de constructores de ${k.y} —los pilotos conservan sus puntos— y tú sales de ahí con una suspensión en suspenso y el titular de tu vida. Sigues en la Fórmula 1, que es lo único que has venido a salvar. ${anulado?"La temporada de "+anulado+" queda anulada en tu trayectoria.":""} −fama, −proyecto`,
+               `You admit it in a small room and in twenty minutes. The FIA strips your ${k.y} constructors' championship —the drivers keep their points— and you walk out with a suspended ban and the headline of your life. You're still in Formula 1, which is the only thing you came here to save. ${anulado?"The "+anulado+" season is voided in your record.":""} −fame, −project`,
+               {pt:`Você admite numa sala pequena e em vinte minutos. A FIA retira o campeonato de construtores de ${k.y} —os pilotos conservam os pontos— e você sai de lá com uma suspensão condicional e a manchete da sua vida. Continua na Fórmula 1, que é a única coisa que veio salvar. ${anulado?"A temporada de "+anulado+" fica anulada na sua trajetória.":""} −fama, −projeto`}); }},
+   {l:()=>L("Declararte inocente","Plead not guilty",{pt:"Declarar-se inocente"}),
+    r:()=>{ const k=S._crash||{}; k.juzgado=true;
+      /* con testigo en contra la apuesta es mucho peor: 25% frente al 55% */
+      const creen = k.callado ? 55 : 25;
+      return roll(
+       [creen,()=>(TPRE(1),L(`Lo niegas todo durante cuatro horas y no hay una sola prueba que no sea la palabra de alguien. La FIA archiva el expediente. Sales de París y hay tres fotógrafos esperándote, y por primera vez en meses no te importa. +fama`,`You deny everything for four hours and there isn't a single piece of evidence that isn't somebody's word. The FIA files the case away. You leave Paris and there are three photographers waiting, and for the first time in months you don't care. +fame`,{pt:`Você nega tudo durante quatro horas e não há uma única prova que não seja a palavra de alguém. A FIA arquiva o processo. Você sai de Paris e há três fotógrafos esperando, e pela primeira vez em meses não se importa. +fama`}))],
+       [100-creen,()=>{ S._tpBan=true; S.tpFiaDQCount=(S.tpFiaDQCount||0)+9;
+         S.pendingEvents.push(L(
+           `🚷 La FIA no te cree. Te retira la superlicencia de por vida y con ella cualquier puesto en un equipo de Fórmula 1. Se acabó — y te lo hiciste tú solo, dos veces: la primera al dar la orden y la segunda al negarla.`,
+           `🚷 The FIA doesn't believe you. It withdraws your superlicence for life and with it any role at a Formula 1 team. It's over — and you did it to yourself twice: once by giving the order and once by denying it.`,
+           {pt:`🚷 A FIA não acredita em você. Cassa a sua superlicença para sempre e, com ela, qualquer cargo numa equipe de Fórmula 1. Acabou — e você fez isso sozinho, duas vezes: ao dar a ordem e ao negá-la.`}));
+         S.retired=true; setTimeout(()=>{ try{ endCareer(); }catch(e){} }, 900);
+         return L(`Cuatro horas negándolo, y en la última media hora aparece un correo interno de aquel fin de semana que tú no sabías que existía. La sala se queda muy callada.`,
+                  `Four hours of denying it, and in the last half hour an internal email from that weekend surfaces that you didn't know existed. The room goes very quiet.`,
+                  {pt:`Quatro horas negando, e na última meia hora aparece um e-mail interno daquele fim de semana que você não sabia que existia. A sala fica muito calada.`}); }]); }}]},
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
