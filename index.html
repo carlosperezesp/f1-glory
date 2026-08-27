@@ -316,6 +316,11 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .offer.retire:hover{border-color:var(--accent)}
 .offer.dilemma{border-color:#d9c46a;background:linear-gradient(135deg,#fffdf4,#fff)}
 .offer.dilemma:hover{border-color:#c9a227}
+/* 👁️ EL BOTÓN QUE NO DECIDE NADA VA EN AZUL (Carlos, 27-ago). «Ver parrilla y mercado» solo
+   ENSEÑA: mezclado en dorado con las opciones parecía una decisión más y encabezaba la lista. El
+   azul lo saca del grupo sin esconderlo, y además ya era el color de su chapa. */
+.offer.mirar{border-color:#9dbdf0;background:linear-gradient(135deg,#f3f7ff,#fff)}
+.offer.mirar:hover{border-color:#3671C6}
 
 /* timeline */
 .timeline{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
@@ -700,6 +705,7 @@ body.conBeta #topBtns{top:44px}
 [data-theme="dark"] .offer{background:linear-gradient(135deg,#232732,#1c1e27);border-color:#3a4152}
 [data-theme="dark"] .offer.retire{background:linear-gradient(135deg,#22242d,#1b1d25)}
 [data-theme="dark"] .offer.dilemma{background:linear-gradient(135deg,#2b2720,#211f1a);border-color:#7a6a2e}
+[data-theme="dark"] .offer.mirar{background:linear-gradient(135deg,#1d2432,#181d27);border-color:#33507e}
 [data-theme="dark"] .decision p.outcome{background:linear-gradient(135deg,#2e2a1c,#26241a);border-color:#5a4e2a;color:#f0e6c8}
 /* recap de temporada: fondo claro fijo → oscuro en modo noche (si no, texto claro sobre claro = ilegible) */
 [data-theme="dark"] #decRecap{background:linear-gradient(135deg,#242834,#1b1e27);border-color:#3a4152}
@@ -8306,6 +8312,31 @@ function bgF1Season(row){
       }
     });
   });
+  /* 🚑 EL SUSTITUTO DEL LESIONADO CORRE SUS CARRERAS (27-ago, pregunta de Carlos: «¿cómo contamos a
+     los probadores si disputan 3-4 GP?»). Con el motor viejo no había forma decente: se prestaba
+     nivel al titular según quién hubiera conducido, un apaño mío. Ahora que la temporada se corre
+     carrera a carrera, se hace lo que hace la F1: el titular se pierde N grandes premios y el
+     sustituto los corre con SU nivel. Los dos aparecen en la clasificación de pilotos —el sustituto
+     con su puntito, como Bearman en 2024: 7 puntos, 18º— y el equipo suma lo que sumen los dos, sin
+     regalar nada. Y el titular baja en el mundial porque NO PUNTUÓ esos domingos, que es la razón de
+     verdad, no un préstamo inventado. */
+  const _sus = (S.cat==="TP" && S.tpSustituto && S.tpSustituto.year===row.year && S.tpSustituto.sub && S.tpTeam)
+             ? S.tpSustituto : null;
+  if(_sus){
+    const _iT=rows.findIndex(r=>r.team===S.tpTeam && r.d && r.d.name===_sus.tit);
+    /* ⚠️ si el lesionado ya no está en el equipo cuando arranca el año —se fue, lo vendiste, se
+       retiró en el invierno— no hay a quién sustituir: se borra el apunte para que la trayectoria
+       no anuncie unos GP que nadie corrió (salía en 2 de cada 8 casos al verificarlo). */
+    if(_iT<0) S.tpSustituto=null;
+    if(_iT>=0){
+      rows[_iT].falta=_sus.n;                       // el titular se pierde las N primeras
+      const _w=drvW(), _pr=S.f1prof && S.f1prof[S.tpTeam];
+      const _coche=(S.f1perf[S.tpTeam]||75) + (_pr ? _pr.motor*PROF_K : 0) + .75;   // conduce el asiento 1
+      const _disp=3.4 + (_pr ? _pr.aero*0.9 : 0);
+      const _sc=(_sus.sub.skill||75)*_w + _coche*(1-_w) + gauss()*Math.max(1.2,_disp);
+      rows.push({d:_sus.sub, team:S.tpTeam, score:_sc, solo:_sus.n});
+    }
+  }
   /* 🏁 SE CORRE LA TEMPORADA, Y DE AHÍ SALEN LAS DOS TABLAS.
      Primero se hizo solo para constructores, dejando la tabla de pilotos ordenada por `score`.
      La verificación lo tumbó: **el líder de puntos NO era el campeón entre el 9% y el 19% de los
@@ -8325,8 +8356,11 @@ function bgF1Season(row){
   for(let _gp=0; _corre && _gp<_races; _gp++){
     const _orden=[];
     for(let i=0;i<rows.length;i++){
+      const _r=rows[i];
+      if(_r.solo!=null && _gp>=_r.solo) continue;             // 🚑 el sustituto: solo sus N carreras
+      if(_r.falta!=null && _gp<_r.falta) continue;            // 🚑 el lesionado: esas se las pierde
       if(ch(_dnf)) continue;                                  // abandono: ni acaba ni puntúa
-      _orden.push({r:rows[i], pace: rows[i].score + gauss()*RACE_SIGMA});
+      _orden.push({r:_r, pace: _r.score + gauss()*RACE_SIGMA});
     }
     _orden.sort((a,b)=>b.pace-a.pace);
     if(_orden.length) _winD[_orden[0].r.d.name]++;
@@ -10997,16 +11031,8 @@ function tpSignTeam(t, how){
 /* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
 function tpYearStart(){
   if(S.retired) return;
-  /* 🚑 EL LESIONADO VUELVE ENTERO (decisión de Carlos). Durante SU temporada, el nivel del
-     titular bajó —o subió— lo que valía el sustituto en las carreras que se perdió; aquí se le
-     devuelve tal cual estaba. Se toca `skill` a pelo y no `tpDrvSkill` a propósito: aquello mueve
-     techos y esto es un préstamo, no una mejora ni un castigo. */
-  if(S._lesUndo){
-    const u=S._lesUndo;
-    Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{
-      if(d && d!=="PLAYER" && d.name===u.name) d.skill=u.skill; }));
-    S._lesUndo=null;
-  }
+  /* 🚑 «el lesionado vuelve entero» ya no necesita código: nunca se le toca el nivel. Se pierde
+     N carreras, no puntúa en ellas, y al año siguiente corre las suyas como cualquiera. */
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   tpVenganzaCheck(); tpSabbaticalCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
@@ -11972,7 +11998,12 @@ function tpRepartoScreen(){
          : v===0 ? L("· presupuesto normal","· normal budget",{pt:"· orçamento normal"})
          : v===-1 ? L("▽ le quitas dinero","▽ money taken from here",{pt:"▽ você tira dinheiro daqui"})
          :          L("▽▽ pagas lo demás con esto","▽▽ this pays for the rest",{pt:"▽▽ isto paga o resto"}); };
-  const resumen=PROF_EJES.map(e=>`${EJE_NOMBRE[e]()} ${est(e).txt} ${incl(e)}`).join(" · ");
+  /* 📋 EL ENUNCIADO NO REPITE LAS ESTRELLAS (lo cazó Carlos, 27-ago): salían aquí arriba y otra
+     vez en cada una de las tres opciones, dos líneas más abajo. Aquí se queda solo la FORMA del
+     coche —dónde metes el dinero de más y de dónde lo quitas—, que es lo que esta pantalla decide. */
+  /* separador de RAYA y no de punto: el «·» ya es el marcador del presupuesto neutro, y al quitar
+     las estrellas quedaba «Motor · presupuesto normal · Fiabilidad», imposible de leer. */
+  const resumen=PROF_EJES.map(e=>`${EJE_NOMBRE[e]()} ${incl(e)}`).join(" — ");
   setDecision(L(`🔧 ¿Dónde ponemos el esfuerzo? · ${yearNow()}`,`🔧 Where do we put the effort? · ${yearNow()}`,{pt:`🔧 Onde colocamos o esforço? · ${yearNow()}`})+" · "+tn,
     L(`Tu coche hoy: ${resumen}. Empujar un frente significa recortar en otro — la fábrica no da para todo.`,
       `Your car today: ${resumen}. Pushing one front means cutting another — the factory can't do everything.`,
@@ -11986,8 +12017,16 @@ function tpRepartoScreen(){
     /* dos topes distintos, con su texto cada uno (los mezclaba y confundía, lo cazó Carlos):
        · 5★ = ya eres el MEJOR de la parrilla en ese eje → no hay más que rascar este año
        · ◆◆ = la fábrica ya vuelca ahí todo lo que puede (tope interno del reparto) */
+    /* ⭐ SER EL MEJOR DE LA PARRILLA NO ES UN TOPE (lo cazó Carlos jugando el 27-ago, con las tres
+       áreas a cinco estrellas: «si no hay nada que rascar la opción debería estar desactivada… pero en
+       F1 siempre se puede progresar»). Tenía razón y el fallo era mío: las estrellas son tu PUESTO EN
+       LA PARRILLA, no un nivel absoluto —`ejeEstrellas` mira el percentil— así que con el mejor coche
+       del año salen cinco en los tres ejes y yo desactivaba las tres opciones. Resultado: una pantalla
+       de decisión sin decisiones. El tope de verdad es el INTERNO (`pr[eje]>=2`), que sí existe.
+       Y la decisión sigue valiendo arriba del todo, porque la parrilla se mueve cada invierno: donde
+       pongas el peso es donde seguirás siendo el mejor cuando los demás aprieten. */
     const tope5 = e.n===5;
-    const tope = tope5 || pr[eje]>=2 || !otros.length;
+    const tope = pr[eje]>=2 || !otros.length;
     const baja = otros.sort((a,b)=>pr[b]-pr[a])[0]; // se recorta de donde hoy sobra
     const b=document.createElement("button"); b.className="offer dilemma"+(tope?" retire":"");
     const _ejeEmoji={motor:"⚙️", aero:"🌬️", fiab:"🛡️"}[eje]||"🔧";
@@ -11995,9 +12034,11 @@ function tpRepartoScreen(){
       <span class="info"><span class="name">${EJE_NOMBRE[eje]()} ${e.txt} <span style="font-weight:600;opacity:.75">${incl(eje)}</span></span>
       <span class="sub" style="display:block">${EJE_QUE_HACE[eje]()}</span>
       <span class="sub" style="display:block">${tope
-        ? (tope5
-          ? L("Ya es el mejor de la parrilla: nada que rascar este año","Already the best on the grid: nothing to gain this year",{pt:"Já é o melhor do grid: nada a ganhar este ano"})
-          : L("La fábrica ya vuelca aquí todo lo que puede","The factory already pours everything it can here",{pt:"A fábrica já coloca aqui tudo o que pode"}))
+        ? L("La fábrica ya vuelca aquí todo lo que puede","The factory already pours everything it can here",{pt:"A fábrica já coloca aqui tudo o que pode"})
+        : tope5
+        ? L(`Ya eres el mejor de la parrilla aquí: esto no te sube, te MANTIENE cuando los demás aprieten · se recorta de ${EJE_NOMBRE[baja]()}`,
+            `You're already the grid's best here: this doesn't lift you, it KEEPS you there when the others close in · cut from ${EJE_NOMBRE[baja]()}`,
+            {pt:`Você já é o melhor do grid aqui: isto não te sobe, te MANTÉM quando os outros apertarem · corta-se de ${EJE_NOMBRE[baja]()}`})
         : L(`Se recorta de ${EJE_NOMBRE[baja]()}`,`Cut from ${EJE_NOMBRE[baja]()}`,{pt:`Corta-se de ${EJE_NOMBRE[baja]()}`})}</span></span>`;
     b.onclick=()=>{
       if(!tope){ pr[eje]++; pr[baja]--;
@@ -12020,14 +12061,19 @@ function tpRepartoScreen(){
      hecho: acostumbrar a Alonso a los 40 no le añade nada. */
   const mios=tpDrvs();
   const margen=mios.filter(d=>(d.skill||0) < (d.ceil||97)-0.2);
-  const q=document.createElement("button"); q.className="offer";
-  q.innerHTML=`<span class="team-dot dot" style="background:#71717c">✋</span>
+  const q=document.createElement("button"); q.className="offer dilemma";
+  /* 🎨 el gris la dejaba fuera del grupo aunque es una opción más (Carlos, 27-ago): mismo dorado
+     que las tres de arriba, un tono más claro para que se distinga sin desentonar. */
+  q.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#e8c964,#b8902a)">✋</span>
     <span class="info"><span class="name">${L("Acostumbrar a tus pilotos a este coche","Let your drivers settle into this car",{pt:"Acostumar os seus pilotos a este carro"})}</span>
     <span class="sub" style="display:block">${L("Otro año con el mismo concepto: se lo aprenden de memoria y rinden más.","Another year with the same concept: they learn it inside out and get more from it.",{pt:"Mais um ano com o mesmo conceito: aprendem de cor e rendem mais."})}</span>
     <span class="sub" style="display:block">${margen.length
-      ? L(`Mejoran ${margen.map(d=>surname(d.name)).join(" y ")} · pero un piloto se puede ir, y el coche se queda`,
-          `${margen.map(d=>surname(d.name)).join(" and ")} improve · but a driver can leave, and the car stays`,
-          {pt:`Melhoram ${margen.map(d=>surname(d.name)).join(" e ")} · mas um piloto pode sair, e o carro fica`})
+      /* 🗣️ la coletilla «pero un piloto se puede ir, y el coche se queda» la quitó Carlos: es cierta
+         pero no viene a cuento aquí — nadie se va POR esto, y leído en frío parece una amenaza. Lo que
+         de verdad cuesta esta opción es el año que NO reformas el coche. */
+      ? L(`Mejoran ${margen.map(d=>surname(d.name)).join(" y ")} · a cambio, este año el coche no cambia de forma`,
+          `${margen.map(d=>surname(d.name)).join(" and ")} improve · in exchange, the car's shape stays as it is this year`,
+          {pt:`Melhoram ${margen.map(d=>surname(d.name)).join(" e ")} · em troca, este ano o carro não muda de forma`})
       : L("Los dos están ya en su techo: este año no ganarías nada por ahí","Both are already at their ceiling: you'd gain nothing there this year",{pt:"Os dois já estão no teto: por aí não ganharia nada este ano"})}</span></span>`;
   q.onclick=()=>{
     const suben=[];
@@ -12128,6 +12174,10 @@ function simTP(row){
        la primera versión la ponía delante del sustituto y se leía justo al revés. */
     const _les=(S.tpSustituto && S.tpSustituto.year===row.year) ? S.tpSustituto : null;
     parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º${(_les && _les.tit===d.name)?" 🚑":""}`);
+    /* 🔁 EL SUSTITUTO VA PEGADO A QUIEN SUSTITUYE (Carlos, 27-ago), no siempre al final. Si se
+       rompe el primero, su relevo va segundo y el compañero cierra; si se rompe el segundo, el
+       relevo cierra. Así la línea se lee sola: cada 🚑 tiene su 🔁 al lado. */
+    if(_les && _les.tit===d.name) parts.push(`🔁 ${_les.subFlag} ${_les.subN} ${_les.n} GP`);
     (row.tpDrv=row.tpDrv||[]).push({n:surname(d.name), fl:d.flag||"🏁", pos:r});
     if(r===1) champDrv=d;
   });
@@ -12140,11 +12190,12 @@ function simTP(row){
   if(S.tpDilPod){ tPods+=S.tpDilPod; S.tpDilPod=0; }
   S.wins+=tWins; S.podiums+=tPods; S.gp+=races;
   row.wins=tWins; row.pods=tPods; row.pos=cPos; row.pts=null; row.constrPos=null;
-  /* 🔁 el sustituto NO es un tercer piloto: no tiene puesto de mundial ni suma en constructores
-     —si tuviera fila propia, el equipo sumaría TRES puntuaciones y tener un lesionado te haría GANAR
-     puntos de constructores (lo preguntó Carlos)—. Va como lo que fue: un nombre y unos GP. */
-  const _lesL=(S.tpSustituto && S.tpSustituto.year===row.year) ? S.tpSustituto : null;
-  if(_lesL) parts.push(`🔁 ${_lesL.subFlag} ${_lesL.subN} ${_lesL.n} GP`);
+  /* 🔁 el sustituto ya se ha pintado arriba, junto al piloto al que relevó. Aquí solo se cierra
+     el apunte para que no se arrastre al año siguiente.
+     ⚠️ La nota vieja decía que «no tiene puesto de mundial ni suma en constructores»: eso dejó de
+     ser verdad el 27-ago, cuando la temporada pasó a correrse carrera a carrera. Ahora SÍ corre sus
+     GP, SÍ puntúa y SÍ aparece en la clasificación de pilotos, como Bearman en 2024. Lo que sigue
+     teniendo dos huecos y solo dos es la FILA de la trayectoria, y por eso él va en esta línea. */
   if(S.tpSustituto && S.tpSustituto.year===row.year) S.tpSustituto=null;
   row.tpLine=parts.join(" · ");
   const st=S.tpStints.at(-1); if(st) st.y1=row.year;
@@ -12927,14 +12978,18 @@ function tpGallos(){
    Con un probador seis puntos peor y cuatro carreras de 24, eso es −1 de nivel ≈ un puesto de mundial;
    entre elegir a uno o al otro se van 2 puestos largos. Se devuelve entero en `tpYearStart`. */
 function tpLesPrestamo(nivelSub){
+  /* 🚑 antes esto PRESTABA nivel al titular —(nivel del sustituto − el suyo) × N/total— porque el
+     motor resolvía el año de una tacada y no había dónde meter a un tercero. Desde que la temporada
+     se corre carrera a carrera eso sobra: se apunta quién sustituye y a cuántos GP, y `bgF1Season`
+     hace lo demás. Menos código y más verdad: el titular baja porque no puntuó, no porque yo le
+     baje un número. */
   const c=S._les||{}; const sl=S.seats[S.tpTeam]||[];
   const tit=sl.find(d=>d&&d!=="PLAYER"&&d.name===c.tit);
   if(!tit) return 0;
-  S._lesUndo={name:tit.name, skill:tit.skill};
-  const delta=(nivelSub-(c.titSkill||tit.skill))*(c.n||4)/Math.max(1,(c.total||24));
-  tit.skill=Math.max(68, tit.skill+delta);
-  S.tpSustituto={year:yearNow(), tit:tit.name, subN:c.subN, subFlag:c.subFlag, n:c.n};
-  return delta;
+  S.tpSustituto={year:yearNow(), tit:tit.name, n:c.n,
+                 subN:c.subN, subFlag:c.subFlag,
+                 sub:{name:c.subNom||c.subN, flag:c.subFlag, skill:nivelSub, sustituto:true}};
+  return 0;
 }
 const TP_DILEMAS=[
  {id:"tpOrdenes",
@@ -14863,6 +14918,13 @@ const TP_DILEMAS=[
     if(isRBJr(S.tpTeam)) return false;
     const sl=S.seats[S.tpTeam]||[]; const tit=sl[0];
     if(!tit || tit==="PLAYER" || !tit.name) return false;
+    /* 📜 INTENTÉ EXIGIR QUE SIGUIERA AQUÍ EL AÑO QUE VIENE y lo tumbó la medición: el dilema salta
+       en el invierno, antes de que cierre el mercado, y en ~1 de cada 10 sustituciones el lesionado
+       ya no está cuando arranca la temporada. Pedírselo con contrato vivo bajó el dilema del 38% al
+       14% de los inviernos; añadiendo a los recién renovados, al 17%… y los huérfanos SEGUÍAN en el
+       19%. O sea que no se van por fin de contrato sino por otras vías (traspasos, retiradas). El
+       filtro costaba más de la mitad del dilema y no compraba nada, así que fuera: el caso se tapa
+       donde toca, en `bgF1Season`, borrando el apunte para que no se anuncien GP que nadie corrió. */
     const pr=S.tpReserva; if(!pr || !pr.name || pr.skill==null) return false;
     const yr=yearNow();
     const sentados=new Set();
@@ -14921,7 +14983,7 @@ const TP_DILEMAS=[
       return `🧢 ${c.prN} <b>${tpEtiqueta({skill:c.prSkill, ceil:c.prCeil})}</b> · `
         + L(`el probador de la casa`,`the house reserve`,{pt:`o reserva da casa`}); },
     r:()=>{ const c=S._les||{};
-      c.subN=c.prN; c.subFlag=(S.tpReserva&&S.tpReserva.flag)||"🧢";
+      c.subN=c.prN; c.subNom=c.prNom; c.subFlag=(S.tpReserva&&S.tpReserva.flag)||"🧢";
       tpLesPrestamo(c.prSkill);
       /* 💔 el veterano se ofreció y no le llamaste */
       (S.tpDesaires=S.tpDesaires||[]).push(c.vet);
@@ -14956,7 +15018,7 @@ const TP_DILEMAS=[
       return `${c.vetFlag} ${c.vetN}${c.vetTit?` 👑×${c.vetTit}`:""} <b>${tpEtiqueta({skill:c.visto, ceil:c.visto})}</b> · `
         + L(`${c.fuera} a\u00f1os sin correr`,`${c.fuera} years out of the car`,{pt:`${c.fuera} anos sem correr`}); },
     r:()=>{ const c=S._les||{};
-      c.subN=c.vetN; c.subFlag=c.vetFlag;
+      c.subN=c.vetN; c.subNom=c.vet; c.subFlag=c.vetFlag;
       TPRE(2);   // el taquillazo: el consejo pasa las carreras enseñando el palco
       const v=(S.retiredPool||[]).find(x=>x&&x.name===c.vet);
       if(v) v.usado=true;
@@ -15420,7 +15482,7 @@ function pickTPDilemma(){
 /* ── 👥 PARRILLA COMPLETA + POOL DE RESERVAS (añadido de Carlos, 11-ago): la capa de información
    del mercado. VER a todos no contradice la terna: una cosa es ver y otra que todos te digan que sí. ── */
 function tpGridBtn(){
-  const b=document.createElement("button"); b.className="offer dilemma";
+  const b=document.createElement("button"); b.className="offer mirar";
   b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3671C6,#1C2A4F)">👥</span>
     <span class="info"><span class="name">${L("Ver parrilla y mercado","View grid & market",{pt:"Ver grid e mercado"})}</span>
     <span class="sub" style="display:block">${L("Los 20+ pilotos con su nivel, y quién espera fuera","All 20+ drivers with their level, and who waits outside",{pt:"Os 20+ pilotos com o nível, e quem espera fora"})}</span></span>`;
