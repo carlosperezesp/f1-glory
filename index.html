@@ -11275,10 +11275,10 @@ function tpMercado(){
       sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=`📜${(((c.d.age||30)<=24 && (c.d.ceil||0)>=88)?3:2)} · `+tpOddsTag(c.odds||.5);
     } else {
-      nm=L("🎓 Apostar por la cantera","🎓 Bet on the academy",{pt:"🎓 Apostar na base"})+(c.d?` · ${c.d.flag||"🏁"} ${c.d.name}`:"");
+      /* sin 🎓 en el nombre: el punto de color ya lo lleva y salía dos veces seguidas */
+      nm=L("Apostar por la cantera","Bet on the academy",{pt:"Apostar na base"})+(c.d?` · ${c.d.flag||"🏁"} ${c.d.name}`:"");
       sub1=(c.d?`${c.d.age} ${L("años","yo",{pt:"anos"})} · `:"")+L("nivel por confirmar, techo por descubrir","level unproven, ceiling unknown",{pt:"nível a confirmar, teto a descobrir"});
-      sub2=S.tpGem?("📜3 · "+L("⭐ tu academia apunta a un fenómeno","⭐ your academy points to a phenom",{pt:"⭐ a sua base aponta para um fenômeno"}))
-                  :("📜3 · "+L("debutante","rookie deal",{pt:"estreante"}));
+      sub2="📜3 · "+L("debutante","rookie deal",{pt:"estreante"});
       dotTxt="🎓";
     }
     b.innerHTML=`${dotHTML || `<span class="team-dot dot" style="${dotStyle}">${dotTxt}</span>`}
@@ -11386,7 +11386,8 @@ function tpMercadoPool(abiertos){
   const _clave=[yearNow(), (abiertos||[]).map(h=>h.i).join(""),
     (S.seats[S.tpTeam]||[]).map(d=>(d&&d!=="PLAYER"&&d.name)||"-").join("|"),
     S._tpNos||0, Object.keys(S._tpNo||{}).length,
-    (S.tpReserva&&S.tpReserva.name)||"-"].join("\u00b7");
+    (S.tpReserva&&S.tpReserva.name)||"-",
+      ].join("\u00b7");
   /* ⚠️ UN DICCIONARIO, NO UNA CASILLA. La primera versión guardaba una sola lista y al invertir el
      orden la pisaba, así que al volver atrás ya no estaba la anterior y se re-sorteaba igual: solo
      el 39% de los ciclos devolvía lo mismo. Con un mapa por clave, ir y volver es gratis. Se vacía
@@ -11445,6 +11446,12 @@ function tpMercadoPool(abiertos){
     const stretch=pool.find(c=>top.indexOf(c)<0 && (c.d.skill||0)>=88);
     if(stretch) top[top.length-1]=stretch;   // el estirón entra CAMBIANDO a uno, no sumando un 6º
   }
+  /* 🎓 LA TARJETA DE CANTERA, DE VUELTA. Vivía en `tpTerna` —la terna cerrada que el pool
+     sustituyó— y se quedó ahí cuando esa función dejó de llamarse: código muerto. Medido antes de
+     arreglarlo: **2.895 pantallas de mercado y CERO tarjetas de cantera**, y de 31 inversiones en la
+     joya de la academia, 23 (el 74%) se quedaban sin cobrar porque no había por dónde ficharla.
+     Si hay joya guardada, la tarjeta la nombra y ficha a ELLA. */
+  cands.push({kind:"rookie"});
   cands.push(...top, ...fuera);
   (S._tpPool=S._tpPool||{})[_clave]=cands;
   /* 🔭 EXPLORAR LA BOLSA (Carlos, 20-ago, segunda vuelta sobre la cantera: «así el juego no elige a
@@ -11802,11 +11809,7 @@ function tpSignDriver(i,c){
        JOVEN por definición: noCross=true salta los crossovers y limita el bote a ≤26. */
     if(c._force) S._forceRookie=c._force;   // la promesa elegida a dedo en la bolsa
     d=mkRookie(true, tn); d.tpc=3;
-    if(S.tpGem){ d.ceil=Math.max(d.ceil||0, irnd(93,96)); d.skill=Math.max(d.skill, 78); S.tpGem=false;
-      S.pendingEvents.push(L(`🎓 Debuta ${d.name}, la joya de tu academia. El paddock ya habla de él.`,
-        `🎓 ${d.name} debuts — your academy's crown jewel. The paddock is already talking.`,
-        {pt:`🎓 Estreia ${d.name}, a joia da sua base. O paddock já comenta.`}));
-    } else {
+    {
       S.pendingEvents.push(L(`🎓 Apuestas por la cantera: debuta ${d.name}. Los informes lo ven ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`,
         `🎓 You bet on the academy: ${d.name} debuts. The reports read him as ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`,
         {pt:`🎓 Você aposta na base: estreia ${d.name}. Os relatórios o veem ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`}));
@@ -13203,15 +13206,6 @@ const TP_DILEMAS=[
    {l:()=>L("«Aquí se corre por mérito»","«Here you earn your seat»",{pt:"«Aqui se corre por mérito»"}),r:()=>roll(
      [6,()=>(TPRE(1.5),L("La frase se hace camiseta entre la afición. El presupuesto sufre, tu autoridad no. +prestigio","The line ends up on fan T-shirts. The budget suffers, your authority doesn't. +prestige",{pt:"A frase vira camiseta na torcida. O orçamento sofre, a sua autoridade não. +prestígio"}))],
      [4,()=>(TPRE(1),TPCAR(-1),L("El patrocinador se lleva parte del dinero y el desarrollo se resiente… pero el vestuario te compraría entradas. +prestigio, −coche","The sponsor pulls part of the money and development suffers… but the garage would buy tickets to watch you. +prestige, −car",{pt:"O patrocinador leva parte do dinheiro e o desenvolvimento sofre… mas a garagem pagaria ingresso por você. +prestígio, −carro"}))])}]},
- {id:"tpAcademia",
-  t:()=>L("La joya de la academia","The academy jewel",{pt:"A joia da base"}),
-  d:()=>L("Tu academia tiene un chaval que gana todo lo que toca. Un rival ofrece una fortuna por su contrato; tus ingenieros piden paciencia e inversión.",
-          "Your academy has a kid who wins everything he touches. A rival offers a fortune for his contract; your engineers ask for patience and investment.",
-          {pt:"A sua base tem um garoto que ganha tudo o que toca. Uma rival oferece uma fortuna pelo contrato; os seus engenheiros pedem paciência e investimento."}),opts:[
-   {l:()=>L("Invertir en el chaval","Invest in the kid",{pt:"Investir no garoto"}),r:()=>{ S.tpGem=true;
-     return L("Le pagas simulador, ingeniero propio y calendario a medida: tu próxima apuesta de cantera será ÉL — y llega afilado.","You fund simulator time, a personal engineer and a tailored calendar: your next academy bet will be HIM — and he arrives sharp.",{pt:"Você paga simulador, engenheiro próprio e calendário sob medida: a sua próxima aposta da base será ELE — e chega afiado."}); }},
-   {l:()=>L("Vender su contrato","Sell his contract",{pt:"Vender o contrato"}),r:()=>(TPCAR(1.5),
-     L("El dinero entra directo en el túnel de viento. Si el chaval acaba ganando mundiales, que no sea contra ti. +coche","The money goes straight into the wind tunnel. If the kid ends up winning titles, pray it isn't against you. +car",{pt:"O dinheiro entra direto no túnel de vento. Se o garoto acabar ganhando mundiais, tomara que não seja contra você. +carro"}))}]},
  {id:"tpProtesta", cond:()=>S.age>=1 && F1_TEAMS.some(t=>t.name!==S.tpTeam&&(S.f1perf[t.name]||0)>(S.f1perf[S.tpTeam]||0)+3),
   t:()=>L("El coche ilegal","The illegal car",{pt:"O carro ilegal"}),
   d:()=>{ const riv=dilVar("tpProt",()=>{ const c=F1_TEAMS.filter(t=>t.name!==S.tpTeam&&(S.f1perf[t.name]||0)>(S.f1perf[S.tpTeam]||0)+3); return c.length?c[irnd(0,c.length-1)].name:null; });
