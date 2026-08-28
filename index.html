@@ -237,14 +237,6 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 /* ⚠️ el precio de sacrificar el año, en su propio renglón y su propio color */
 .aviso-consejo{color:#c98a1e;font-weight:700}
 .aviso-ok{color:#12923f;font-weight:700}
-/* 📱 la tarjeta del jefe en pantallas estrechas: los chips y el consejo no se pisan */
-@media (max-width:520px){
-  .card.tp .agev{max-width:44%}
-  .card.tp .agev .v{font-size:12.5px;white-space:normal;line-height:1.25}
-  .card.tp .agev .a{font-size:22px}
-  .card.tp .tag{font-size:11px;padding:2px 7px}
-  .card.tp .driver-meta .tags{gap:5px;row-gap:4px}
-}
 .agev .v{font-size:19px;font-weight:800;background:linear-gradient(92deg,#15151e,#55555f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .team-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 -2px 4px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.25);border:2px solid #fff}
 img.tlogo{object-fit:cover;background:transparent;padding:0;text-shadow:none;border:none;box-shadow:none;vertical-align:middle}
@@ -671,6 +663,14 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .hall .hrow.tpst .posline .pos{display:inline-block;width:auto;padding:2px 6px;font-size:10.5px;border-radius:6px;box-shadow:none}
 .hall .hrow.tpst .posline .pos.p1{box-shadow:0 1px 3px rgba(242,174,0,.45)}
 .hall .hrow.tpst .posline .pos.p2{box-shadow:inset 0 0 0 1.2px #aab2c0}
+/* 🏁 PARRILLA Y MERCADO: los puestos —el del equipo y el de cada piloto— en pastilla de color,
+   con el mismo código que la trayectoria (Carlos, 28-ago: «ese 13º debería estar en el chip de color
+   apropiado»). Y TODOS lo llevan: quien no tiene puesto lleva un guión, no un hueco — antes Piastri
+   y Antonelli salían sin nada y parecía una errata. */
+.pt-row .pos{display:inline-block;width:auto;padding:1px 6px;font-size:11px;border-radius:6px;box-shadow:none;vertical-align:middle}
+.pt-row .pos.p1{box-shadow:0 1px 3px rgba(242,174,0,.45)}
+.pt-row .pos.p2{box-shadow:inset 0 0 0 1.2px #aab2c0}
+.pt-row .pos.nada{background:var(--panel2,rgba(127,127,127,.14));color:var(--muted)}
 .hall .hrow .yrs{color:var(--muted);font-weight:600}
 /* 🔧 LOS DOS BOTONES DE ARRIBA VAN EN UNA BARRA FLEX, NO A DEDO. Antes cada uno era `fixed` con su
    propio `right` (12px y 70px), o sea que la separación dependía de que el botón de idioma midiera lo
@@ -683,17 +683,46 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 #betaBar b{color:#fff;letter-spacing:.06em}
 body.conBeta{padding-top:34px}
 body.conBeta #topBtns{top:44px}
-#topBtns{position:fixed;top:12px;right:12px;z-index:60;display:flex;align-items:center;gap:8px}
+/* 🔽 EN COLUMNA, NO EN FILA (Carlos, 28-ago). En horizontal los dos botones ocupaban ~150px de
+   ancho arriba a la derecha y se comían el bloque de «TEMPORADA / CONSEJO» de la tarjeta, que vive
+   justo debajo. En columna ocupan la mitad de ancho y ese hueco queda libre.
+   `column-reverse` y no `column` a propósito: en el HTML va primero el tema y luego el idioma, y
+   Carlos lo quiere al revés —el idioma arriba, el claro/oscuro debajo—. Así se consigue sin tocar
+   el marcado, que lo comparten las dos pantallas y los dos modos. */
+#topBtns{position:fixed;top:12px;right:12px;z-index:60;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:7px}
 #langToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;white-space:nowrap}
 #langToggle:hover{background:#fff}
 #themeToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;width:34px;height:34px;flex:0 0 34px;font-size:16px;line-height:1;box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}
 @media print{#topBtns{display:none}}
+/* 📱 LAS DOS TARJETAS en pantallas estrechas: los chips y la edad/fama no se pisan.
+   Esto nació sólo para la del jefe (`.card.tp`) y la de carrera clásica se quedó fuera, así que
+   en móvil el chip de estilo («🔥 Agresivo») se montaba encima de «Desconocido»: hasta 68 px de
+   solape a 320 px de tarjeta, y los chips saliéndose 80 px de su columna. Medido 28-ago con
+   Carlos mirándolo en su móvil. Al quitar el `.card.tp` las reglas valen para ambas y el solape
+   baja a 0 en todo el rango de 320 a 900. Para el jefe no cambia nada: ya las tenía.
+   Va aquí abajo del todo A PROPÓSITO: `.agev .v` suelta y el bloque de 640px aparecen más
+   adelante en la hoja y, con el mismo peso, ganaban por orden. Con `.card.tp` delante pesaba
+   más y no se notaba; al quitarlo hay que moverlo. */
+@media (max-width:520px){
+  .agev{max-width:44%}
+  /* el `.card.tp` repetido no es copia y pega perezoso: arriba hay un
+     `.card.tp .agev .v{font-size:15px}` que pesa más que el selector suelto y le ganaría al
+     jefe en móvil. Nombrando las dos, ambas tarjetas acaban igual. */
+  .agev .v, .card.tp .agev .v{font-size:12.5px;white-space:normal;line-height:1.25}
+  .agev .a{font-size:22px}
+  .tag{font-size:11px;padding:2px 7px}
+  .driver-meta .tags, .card.tp .driver-meta .tags{gap:5px;row-gap:4px}
+}
+
 /* en la maqueta apilada la tarjeta ocupa todo el ancho: al hacer scroll, los botones
-   fijos (idioma/tema) pasarían por encima de la edad/fama. Reservamos esa esquina. */
-@media(max-width:980px){ .agev{padding-right:84px} }
-@media(max-width:360px){ .agev{padding-right:78px} }
+   fijos (idioma/tema) pasarían por encima de la edad/fama. Reservamos esa esquina.
+   La reserva iba dimensionada para la barra en horizontal (~150 px de ancho); ahora que va
+   apilada mide 61 px + 12 de margen, así que sobraba hueco y ese hueco era el que estrujaba
+   la columna de los chips. Ajustada a la barra nueva. */
+@media(max-width:980px){ .agev{padding-right:76px} }
+@media(max-width:360px){ .agev{padding-right:72px} }
 
 /* ================= MODO OSCURO ================= */
 :root[data-theme="dark"]{
@@ -14244,13 +14273,15 @@ const TP_DILEMAS=[
              `Lap ${b.v} at ${b.gp} and there's a car in the wall. Red flag: the race stops and everyone gets fresh tyres without paying for them. ${b.n} was running second on a strategy that had worked perfectly, and it has just evaporated. There are twenty minutes of stoppage left and the pit wall is looking at you.`,
              {pt:`Volta ${b.v} em ${b.gp} e há um carro no muro. Bandeira vermelha: a corrida para e todo mundo pode montar pneus novos sem pagar pedágio. ${b.n} estava em segundo com uma estratégia que tinha saído redonda, e acaba de evaporar. Faltam vinte minutos de parada e no muro olham para você.`}); },
   opts:[
-   {l:()=>L("«Arriesgamos con blandos»","«We gamble on softs»",{pt:"«Arriscamos com macios»"}),
+   /* 🗣️ la orden dice primero POR QUÉ y luego QUÉ (retoque de Carlos, 28-ago): así se lee como
+      se habla en un muro —el motivo delante del neumático— y las dos opciones quedan simétricas. */
+   {l:()=>L("«Tenemos que arriesgar. Montamos blandos.»","«We have to gamble. We're fitting softs.»",{pt:"«Temos de arriscar. Montamos macios.»"}),
     r:()=>{ const b=S._br||{};
       return roll(
        [5,()=>{ S.tpDilPod=(S.tpDilPod||0)+1; TPRE(1.5);
          return L(`Sale como un misil, se come a dos coches en tres vueltas y el podio es vuestro. +fama, y ese podio va a la temporada`,`He launches, eats two cars in three laps and the podium is yours. +fame, and that podium goes into the season`,{pt:`Ele sai como um míssil, come dois carros em três voltas e o pódio é de vocês. +fama, e esse pódio vai para a temporada`}); }],
        [5,()=>(TPCAR(-1),L(`A ocho vueltas del final las gomas dicen basta y os pasan por dentro. Se veía venir desde la vuelta cincuenta, y aun así dolió. −coche`,`With eight laps to go the tyres give up and they come past on the inside. You could see it coming from lap fifty, and it still hurt. −car`,{pt:`A oito voltas do fim os pneus dizem basta e passam por dentro. Dava para ver desde a volta cinquenta, e ainda assim doeu. −carro`}))]); }},
-   {l:()=>L("«Aseguramos con medios»","«We play safe on mediums»",{pt:"«Asseguramos com médios»"}),
+   {l:()=>L("«No podemos arriesgar. Montamos medios.»","«We can't gamble. We're fitting mediums.»",{pt:"«Não podemos arriscar. Montamos médios.»"}),
     r:()=>{ const tn=S.tpTeam;
       if(S.cache[tn]!=null) S.cache[tn]=Math.min(96,S.cache[tn]+1);
       return L("Ni épica ni desastre: los puntos entran, que es lo que había que hacer. En el muro nadie se hace famoso, pero nadie se estrella. +caché leve","Neither glory nor disaster: the points come home, which is what had to happen. Nobody on a pit wall becomes famous, but nobody crashes either. slight +standing",{pt:"Nem épico nem desastre: os pontos entram, que era o que tinha de acontecer. No muro ninguém fica famoso, mas ninguém se estraga. +cachê leve"}); }},
@@ -15660,18 +15691,22 @@ function renderTPGrid(){
     const dr=(S.seats[t.name]||[]).map(d=>{
       if(!d) return `<span style="opacity:.6">🪑 ${L("asiento libre","open seat",{pt:"vaga livre"})}</span>`;
       if(d==="PLAYER") return "";
-      const rk=S.rankD&&S.rankD[d.name]?` · ${S.rankD[d.name]}º`:"";
+      /* el puesto en pastilla, y un guión cuando aún no tiene: así todas las tarjetas tienen la
+         misma forma y no parece que a unas les falte un dato */
+      const _p=S.rankD&&S.rankD[d.name];
+      const rk=` <span class="pos ${_p?posClass(_p):"nada"}">${_p?(_p===1?"🏆 1º":_p+"º"):"—"}</span>`;
       const con=(mine&&d.tpc!=null)?` · 📜${Math.max(0,d.tpc)}`:"";
       // 🆕 debuta con este equipo este año: no estaba aquí al cerrar la temporada pasada
       const nuevo=(S._seatsPrev && S._seatsPrev[d.name]!==t.name)?" 🆕":"";
       return `<span class="drv" style="background:var(--panel2,rgba(127,127,127,.12));border:1px solid transparent;border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)}${nuevo} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
-    }).join(" ");
+    }).join("");
     /* un equipo descalificado no tiene puesto: se dice con un guion, no con un hueco en blanco */
     const _fueraC = S.tpFiaDQ && S.tpFiaDQ.team===t.name && S.tpFiaDQ.year===yearNow();
-    const pos = _fueraC ? "— · " : (ranked&&S.rankC[t.name]?`${S.rankC[t.name]}º · `:"");
+    const _pc = _fueraC ? null : (ranked ? S.rankC[t.name] : null);
+    const pos = `<span class="pos ${_pc?posClass(_pc):"nada"}">${_pc?(_pc===1?"🏆 1º":_pc+"º"):"—"}</span> `;
     html+=`<div class="pt-row${mine?" mio":""}" style="flex-wrap:wrap;gap:6px;--tc:${t.color}">
       ${badge(t,"dot")}<b>${t.name}</b><span style="color:var(--muted);font-size:12px">${pos}${mine?`<span style="color:${t.color}">${tpStars(t.name)}</span>`:tpStars(t.name)}</span>
-      <div style="width:100%;display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px">${dr}</div></div>`;
+      <div style="width:100%;display:flex;flex-direction:column;gap:5px;font-size:12.5px">${dr}</div></div>`;
   });
   const resv=tpReservePool();
   if(resv.length){
