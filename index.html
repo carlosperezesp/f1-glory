@@ -7738,7 +7738,11 @@ function evolveF1(row){
     if(!tpManaged(t.name) && Math.random()<.17) S.f1target[t.name]=Math.max(61,Math.min(95, S.f1perf[t.name]+rnd(-17,17)));
     const cur=S.f1perf[t.name], tgt=S.f1target[t.name];
     // deriva (0.28) y poco ruido (±1) → la parrilla se reordena y ningún coche domina eternamente
-    S.f1perf[t.name]=Math.max(60,Math.min(96, cur+(tgt-cur)*.28+rnd(-1,1)));
+    /* 🌾 TU equipo no deriva hacia un objetivo: lo mueven las cosechas de tu hucha (más el ruido
+       del año). Si además derivara, cada siembra se cobraría dos veces. Los rivales, como siempre. */
+    S.f1perf[t.name]=tpManaged(t.name)
+      ? Math.max(60,Math.min(96, cur+rnd(-1,1)))
+      : Math.max(60,Math.min(96, cur+(tgt-cur)*.28+rnd(-1,1)));
     // el carácter del coche puede cambiar ~1-2 veces por partida, sobre todo tras tocar fondo
     const rebuilding = S.f1perf[t.name] < 69;
     /* 🔄 EL COCHE CAMBIA DE CARÁCTER. El mecanismo estaba bien: lo que faltaba era contarlo. Tras cinco
@@ -10743,7 +10747,7 @@ function initTPState(){
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
-  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null;   // lo que prometiste allí no viaja contigo
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */   // lo que prometiste allí no viaja contigo
   S.tpFired=false; S.tpFiredBy=null; S.tpTemptY=null;
   S.tpOverSum=0; S.tpBestPos=99; S.tpStints=[];
   S.deathsOn=false;
@@ -10989,6 +10993,11 @@ function tpTierLabel(tn){
   return L("🎯 Media tabla: puntos, podios y cabeza","🎯 Midfield: points, podiums and a cool head",{pt:"🎯 Meio do grid: pontos, pódios e cabeça"});
 }
 function tpSignTeam(t, how){
+  /* 🌾 LA HUCHA SE QUEDA EN LA FÁBRICA QUE LA SEMBRÓ. Estaba puesto en los dos sitios que YO veía
+     —el fichaje normal y el arranque— y la verificación encontró 20 casos en los que seguía viajando:
+     hay más caminos para cambiar de escudería (el rescate tras un despido, entre otros). Aquí, que es
+     el embudo por el que pasan TODOS, no se escapa ninguno. Ni te llevas la cosecha ni la deuda. */
+  if(S.tpTeam && S.tpTeam!==t.name) S.tpCosecha=[];
   // al dejar un equipo: sus contratos internos se limpian y ningún asiento se queda a null
   if(S.tpTeam && S.tpTeam!==t.name && S.seats[S.tpTeam]){
     const old=S.tpTeam, sl=S.seats[old];
@@ -10997,7 +11006,7 @@ function tpSignTeam(t, how){
   S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
   S.tpTeam=S.team.name;
   S.tpOwner=TP_OWNERS[irnd(0,2)];
-  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
      equipo, no solo al empezar de cero, así que limpiarlo aquí borraba el rastro al cambiar de muro —
      y el rastro te sigue a TI, no al equipo: la orden la diste tú. (Ojo al contraste con «El sobre»,
@@ -11033,6 +11042,7 @@ function tpYearStart(){
   if(S.retired) return;
   /* 🚑 «el lesionado vuelve entero» ya no necesita código: nunca se le toca el nivel. Se pierde
      N carreras, no puntúa en ellas, y al año siguiente corre las suyas como cualquiera. */
+  tpCosechar();          // 🌾 primero lo sembrado hace años: llega pase lo que pase
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   tpVenganzaCheck(); tpSabbaticalCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
@@ -11815,7 +11825,10 @@ function tpGanarYa(){
   mk("🤝",L("«Vale. Este año lo damos todo»","\"Fine. This year we give it everything\"",{pt:"«Está bem. Este ano damos tudo»"}),
     L("Tienen razón en una cosa: el título no se gana el año que viene.","They're right about one thing: the title isn't won next year.",{pt:"Eles têm razão numa coisa: o título não se ganha no ano que vem."}),
     ()=>{ S.tpSinExprimir=0;
-      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(2,3.5)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(5,8));
+      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(RB_EX_YA[0],RB_EX_YA[1]));
+      tpSembrar(1, -rnd(RB_EX_D1[0],RB_EX_D1[1]));      // 💸 la hucha al revés: el año que viene…
+      tpSembrar(2, -rnd(RB_EX_D2[0],RB_EX_D2[1]));      // …y sobre todo dentro de dos
+      tpFijarTendencia();
       S.pendingEvents.push(L("🤝 Cedes, y el consejo respira. La fábrica vuelca hasta el último recurso en el coche de este año — y se nota desde la primera carrera. Lo que venga después, ya se verá.","🤝 You give in, and the board breathes out. The factory pours every last resource into this year's car — you feel it from race one. Whatever comes after, comes after.",{pt:"🤝 Você cede, e o conselho respira. A fábrica despeja cada recurso no carro deste ano — e se nota desde a primeira corrida. O que vier depois, logo se vê."}));
       tpRepartoScreen(); });
   // B · plantarte: el dado arreglado — base 35, títulos y fama suman, el ultimátum resta
@@ -11887,6 +11900,59 @@ function tpBautizo(){
      ()=>rebautiza("Glory GP", GLORY[irnd(0,GLORY.length-1)]));
   scrollToDecision();
 }
+/* 🌾 LA HUCHA DE LA FÁBRICA (diseño de Carlos, 27-ago). Antes el rumbo movía un OBJETIVO y
+   `evolveF1` recorría el 28% de esa distancia al año. Problema medido: al volver a elegir cada
+   invierno, el objetivo se recalculaba DESDE EL NUEVO PERF —que acababa de bajar— así que la promesa
+   no llegaba nunca. Encadenar «proyecto a dos años» salía 0 / −0,1 / −0,9 / −1,7 / −3,6 / −5,2:
+   sembrabas y arrancabas la planta cada año antes de que creciera.
+   Ahora hay una COLA: lo que siembras tiene fecha y se recoge llegado el año, hagas lo que hagas
+   después. Y va en las dos direcciones, que es la idea de Carlos: el proyecto siembra en positivo y
+   exprimir siembra en NEGATIVO —«apostar por el coche de 2026 hace que en 2028 pagues peaje»—.
+   Una sola mecánica, tres formas de usarla, y encadenar cualquiera tiene sentido: te aseguras
+   cosecha todos los años… en el signo que hayas elegido.
+   🎲 La del proyecto es un sobre cerrado (el caso Aston Martin): bien, regular o mal. La decisión
+   no otorga el resultado. */
+/* 🎚️ LOS NÚMEROS, BARRIDOS CONTRA PARTIDAS DE MEDIA TABLA (coche ~73). Ojo con esto, que casi
+   me cuesta la calibración entera: el primer barrido lo hice con partidas que acababan SIEMPRE en
+   McLaren —el bot cogía la primera oferta, que es la mejor— y con el coche pegado al techo de 96 el
+   golpe de exprimir daba +0,6 en vez de +3. Todo salía plano y continuidad parecía la mejor opción
+   siempre. Se arregló el arnés para que elija equipos etiquetados «Media tabla» y ahí aparecieron
+   las diferencias de verdad.
+   Criterio: exprimir tiene que NOTARSE el año que lo usas y pagarse después; el proyecto tiene que
+   empatar con continuidad en promedio pero con varianza y con el bache del segundo año.
+     exprimir  → el año del golpe +6,5 contra +3,3 de continuidad (+3,2), y −0,5 al final
+     proyecto  → +0,4 sobre continuidad al final: empate con dados */
+let RB_EX_YA=[4.5,6.0], RB_EX_D1=[0.4,1.0], RB_EX_D2=[1.6,3.2];
+let RB_CO_YA=[0.5,1.5];
+let RB_PR_YA=[0.5,2.0], RB_PR_A1=[0.2,0.9];
+let RB_PR_BIEN=[4.0,7.0], RB_PR_REG=[0.5,2.0], RB_PR_MAL=[-4.0,-1.5];
+let RB_PR_PESOS=[35,35,30];   // bien / regular / el caso Aston Martin
+
+function tpSembrar(anos, valor){ (S.tpCosecha=S.tpCosecha||[]).push({y:yearNow()+anos, v:valor}); }
+/* la suma pendiente alimenta el chip de tendencia: la flecha pasa a ser un indicador honesto de tu
+   propia hucha en vez de un objetivo abstracto */
+function tpPendiente(){ return (S.tpCosecha||[]).reduce((a,c)=>a+c.v,0); }
+function tpFijarTendencia(){
+  if(S.cat!=="TP" || !S.tpTeam) return;
+  S.f1target[S.tpTeam]=Math.max(61,Math.min(95,(S.f1perf[S.tpTeam]||75)+tpPendiente()));
+}
+function tpCosechar(){
+  if(S.cat!=="TP" || !S.tpTeam) return;
+  const y=yearNow(), quedan=[]; let total=0;
+  (S.tpCosecha||[]).forEach(c=>{ if(c.y<=y) total+=c.v; else quedan.push(c); });
+  S.tpCosecha=quedan;
+  if(Math.abs(total)>=.05){
+    S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,(S.f1perf[S.tpTeam]||75)+total));
+    S.pendingEvents.push(total>0
+      ? L(`🌾 Llega lo que sembraste: el coche estrena por fin lo que la fábrica llevaba años cocinando.`,
+          `🌾 What you planted arrives: the car finally gets what the factory had been cooking for years.`,
+          {pt:`🌾 Chega o que você plantou: o carro estreia enfim o que a fábrica vinha cozinhando há anos.`})
+      : L(`💸 Se paga el peaje: aquel año volcasteis todo en el coche del momento, y la factura llega ahora.`,
+          `💸 The bill comes due: back then you threw everything at the car of the moment, and it lands now.`,
+          {pt:`💸 A conta chega: naquele ano vocês jogaram tudo no carro do momento, e ela cai agora.`}));
+  }
+  tpFijarTendencia();
+}
 function tpRumboScreen(){
   /* 🧢 EL BANQUILLO NO SE SALTA SU TURNO (lo cazó Carlos: «me quedé sin probador el mismo año que
      perdí al 1er piloto y solo me dio la opción de fichar al piloto»). `tpProbadorHueco` colgaba de
@@ -11951,20 +12017,31 @@ function tpRumboScreen(){
   mk("⚡",L("Exprimir el coche ESTE año","Squeeze the car THIS year",{pt:"Espremer o carro ESTE ano"}),
     L("Mejora rápida ya, pero hipotecas el año siguiente.<br>Para dar un golpe cuando estás cerca.","Fast gains now, but you mortgage next year.<br>To strike when you're close.",{pt:"Melhora rápida já, mas hipoteca o próximo ano.<br>Para dar o bote quando está perto."}),
     ()=>{ S.tpSinExprimir=0; S._ganarYaFirme=null;   // 📊 exprimiste: el contador vuelve a cero (y si te habías plantado, ya no cuenta)
-      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(2,3.5)); S.f1target[tn]=Math.max(61,(S.f1perf[tn]||75)-rnd(5,8));
+      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(RB_EX_YA[0],RB_EX_YA[1]));
+      tpSembrar(1, -rnd(RB_EX_D1[0],RB_EX_D1[1]));      // 💸 la hucha al revés: el año que viene…
+      tpSembrar(2, -rnd(RB_EX_D2[0],RB_EX_D2[1]));      // …y sobre todo dentro de dos
+      tpFijarTendencia();
       S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
   mk("⚖️",L("Mejoras SEGURAS y continuidad","SAFE gains and continuity",{pt:"Melhorias SEGURAS e continuidade"}),
     L("Subida pequeña pero segura, sin riesgo y sin hipotecar nada.<br>El término medio: ni golpe ni sacrificio.","A small but safe climb, no risk and nothing mortgaged.<br>The middle ground: no strike, no sacrifice.",{pt:"Subida pequena mas segura, sem risco e sem hipoteca.<br>O meio-termo: nem bote nem sacrifício."}),
     ()=>{ S.tpSinExprimir=(S.tpSinExprimir||0)+1;
-      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(.5,1.5)); S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+rnd(2,4));
+      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(RB_CO_YA[0],RB_CO_YA[1]));
+      tpFijarTendencia();                               // ni siembra ni debe: lo que ves es lo que hay
       S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
   mk("🏗️",L("Proyecto a DOS AÑOS","TWO-YEAR project",{pt:"Projeto de DOIS ANOS"}),
     L("Sacrificas este año por la promesa de un coche mucho mejor dentro de dos.<br>El salto más grande, y el más arriesgado.","You sacrifice this year for the promise of a much better car in two.<br>The biggest leap, and the riskiest.",{pt:"Sacrifica este ano pela promessa de um carro muito melhor em dois.<br>O maior salto, e o mais arriscado."})+(avisoProyecto||""),
     ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
       S.tpSinExprimir=(S.tpSinExprimir||0)+1;
       if(S._penProyecto) TPRE(-S._penProyecto);   // el precio de sacrificar el presente, avisado antes
-      S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(.5,2));   // el sacrificio del primer año, siempre
-      S.f1target[tn]=Math.min(95,(S.f1perf[tn]||75)+(ch(.75)?rnd(11,15):rnd(-2,4)));
+      S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(RB_PR_YA[0],RB_PR_YA[1]));   // el peaje de hoy
+      tpSembrar(1, rnd(RB_PR_A1[0],RB_PR_A1[1]));       // el año que viene, un pelillo por encima
+      /* 🎲 y a dos años el sobre cerrado. El tope de 95 ya no se lo come: esto es un INCREMENTO
+         sobre lo que tengas, no un objetivo lejano que el techo recortaba (antes, con el coche en
+         88+, prometía +13 y entregaba +4,5 de mediana). */
+      tpSembrar(2, roll([RB_PR_PESOS[0],()=>rnd(RB_PR_BIEN[0],RB_PR_BIEN[1])],
+                        [RB_PR_PESOS[1],()=>rnd(RB_PR_REG[0],RB_PR_REG[1])],
+                        [RB_PR_PESOS[2],()=>rnd(RB_PR_MAL[0],RB_PR_MAL[1])]));
+      tpFijarTendencia();
       S.pendingEvents.push(L("🏗️ Pones la fábrica a construir el coche de pasado mañana: el proyecto apunta alto.","🏗️ You set the factory on the car after next: the project aims high.",{pt:"🏗️ Você põe a fábrica no carro de depois de amanhã: o projeto mira alto."})); });
   // retirada voluntaria: siempre disponible, nunca escondida
   const r=document.createElement("button"); r.className="offer retire";
