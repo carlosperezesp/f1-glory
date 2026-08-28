@@ -11255,7 +11255,7 @@ function tpMercado(){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=`📜${(c.d.age>=34)?1:2} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
-      const _ro=tpRenovarOdds(c.d); if(_ro.motivo) sub2+=" · "+tpOddsTag(_ro.p);
+      const _ro=tpRenovarOdds(c.d); if(_ro.motivo) sub2+=" · "+tpOddsTag(_ro.p,"renov");
       dotTxt="🤝";
     } else if(c.kind==="probador"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;   // el 🧢 ya lo pone el punto de color: dos gorras eran una errata
@@ -11374,7 +11374,25 @@ function tpDirectivaCierra(){
 /* el POOL del mercado, ya sin asiento fijo: renovaciones (ancladas a su asiento), el probador, los
    fichables por probabilidad, los agentes libres y la cantera. La lógica es la de la terna de siempre;
    solo cambia que se calcula UNA vez por pantalla y excluye a TUS DOS ocupantes actuales. */
+/* 🧊 LAS OFERTAS SE CONGELAN (Carlos, 28-ago: «si vuelvo a invertir el orden debería ver las
+   ofertas anteriores, no recalcular»). Y no era una mejora pendiente: era un FALLO. Esta función usa
+   `ch()` e `irnd()`, así que se re-sorteaba EN CADA PINTADO — dos visitas seguidas a la misma
+   pantalla ya enseñaban gente distinta sin que el jugador hubiera hecho nada (medido: 703 de 1.132).
+   La clave lleva todo lo que SÍ debe recalcular: el año, qué asientos están abiertos, quién se sienta
+   hoy (firmar o renovar cambia el mercado), cuántos portazos llevas y quién es tu probador.
+   Invertir el orden cambia los asientos → clave nueva → ofertas del otro asiento; volver a invertir
+   devuelve la clave anterior → y con ella, las MISMAS ofertas. */
 function tpMercadoPool(abiertos){
+  const _clave=[yearNow(), (abiertos||[]).map(h=>h.i).join(""),
+    (S.seats[S.tpTeam]||[]).map(d=>(d&&d!=="PLAYER"&&d.name)||"-").join("|"),
+    S._tpNos||0, Object.keys(S._tpNo||{}).length,
+    (S.tpReserva&&S.tpReserva.name)||"-"].join("\u00b7");
+  /* ⚠️ UN DICCIONARIO, NO UNA CASILLA. La primera versión guardaba una sola lista y al invertir el
+     orden la pisaba, así que al volver atrás ya no estaba la anterior y se re-sorteaba igual: solo
+     el 39% de los ciclos devolvía lo mismo. Con un mapa por clave, ir y volver es gratis. Se vacía
+     al cambiar de año para que no crezca. */
+  if(S._tpPoolY!==yearNow()){ S._tpPoolY=yearNow(); S._tpPool={}; }
+  if(S._tpPool && S._tpPool[_clave]) return S._tpPool[_clave];
   const tn=S.tpTeam, sl=S.seats[tn];
   const noY=S._tpNo||{};
   const cands=[];
@@ -11383,6 +11401,9 @@ function tpMercadoPool(abiertos){
   abiertos.forEach(h=>{
     if(h.cur && !(soyFilial && (h.cur.age||0)>=RB_SALIDA-1)) cands.push({kind:"renew", d:h.cur, i:h.i});
   });
+  /* 🪑 el asiento al que vendría: si solo hay un hueco, ese; si hay dos, lo eliges TÚ después de
+     que acepte (`tpElegirAsiento`), así que se calcula con el mejor de los dos para no asustar de más. */
+  const _asiento=((abiertos||[]).length===1) ? abiertos[0].i : 0;
   const ocupantes=(sl||[]).filter(d=>d&&d!=="PLAYER").map(d=>d.name);
   if(S.tpReserva && ocupantes.indexOf(S.tpReserva.name)<0) cands.push({kind:"probador", d:S.tpReserva});
   const pool=[];
@@ -11394,7 +11415,7 @@ function tpMercadoPool(abiertos){
       if(ocupantes.indexOf(d.name)>=0) return;
       if(noY[d.name]===yearNow()) return;
       if(soyFilial && !esPromesa(d)) return;
-      pool.push({kind:"fichar", d, from:t, j, odds:tpOdds(d,t)});
+      pool.push({kind:"fichar", d, from:t, j, odds:tpOdds(d,t,_asiento)});
     });
   });
   pool.sort((a,b)=>(b.odds||0)-(a.odds||0) || (b.d.skill||0)-(a.d.skill||0));
@@ -11425,6 +11446,7 @@ function tpMercadoPool(abiertos){
     if(stretch) top[top.length-1]=stretch;   // el estirón entra CAMBIANDO a uno, no sumando un 6º
   }
   cands.push(...top, ...fuera);
+  (S._tpPool=S._tpPool||{})[_clave]=cands;
   /* 🔭 EXPLORAR LA BOLSA (Carlos, 20-ago, segunda vuelta sobre la cantera: «así el juego no elige a
      uno solo»). El botón abre el pool de reservas y cantera entero — libres, jóvenes con nivel a la
      vista y promesas a ciegas — y eliges TÚ. Sustituye al canterano fijo de ayer. */
@@ -11569,21 +11591,58 @@ function tpProbadorHueco(){
   box.appendChild(b2);
   scrollToDecision();
 }
-function tpOdds(d, from){
+/* 🪑 EL ASIENTO PESA (Carlos, 28-ago: «Bearman o Gasly quizá solo quieren ser mi nº1»). Antes
+   esto solo miraba el coche y el caché: Verstappen decía «vendría» igual para liderarte que para
+   escoltar a Albon, y eso no se sostiene. Ahora el hueco abierto entra en la cuenta:
+     · asiento 1 → empujón: ser el número uno de una casa atrae
+     · asiento 2 → cuesta, y MÁS cuanto mejor sea él que tu titular — nadie que te supere viene de
+       escudero. Un chaval de 23 o menos sí: entrar es lo único que le importa.
+   📌 Solo se distingue cuando hay UN hueco: con dos abiertos el asiento lo eliges TÚ después de
+   que acepte (`tpElegirAsiento`), así que ahí se calcula con el mejor de los dos. */
+function tpOdds(d, from, asiento){
   const tn=S.tpTeam, myPerf=S.f1perf[tn]??75, myCache=S.cache[tn]??60;
   if(!canLureStar(tn,d)) return .07;
   const dPerf=(S.f1perf[from]??70)-myPerf;
   const dCache=Math.max(0,(S.cache[from]??60)-myCache);
   let p=.86 - Math.max(0,dPerf)*.09 - dCache*.012;
   if(dPerf<-4) p+=.06;                   // vienes de un coche peor: subir siempre apetece
+  if(asiento===1){
+    const n1=(S.seats[tn]||[])[0];
+    const suNivel=(n1 && n1!=="PLAYER" && n1.skill) || 75;
+    p -= .06 + Math.max(0,(d.skill||75)-suNivel)*.035;
+    /* 👑 UN CAMPEÓN NO ES EL ESCUDERO DE NADIE (lo cazó Carlos, 28-ago: «si fuera campeón del
+       mundo, ahí la cosa cambia»). El bono de «chaval» estaba puesto solo por la edad, y Verstappen
+       a los 23 YA era campeón: se llevaba el +12 como si fuera un debutante.
+       Ojo, la mitad gorda ya estaba cubierta —`canLureStar` exige caché ≥72 al galáctico, y Racing
+       Bulls tiene 52—, pero `primeGalactico` pide nivel ≥90 o dos títulos con ≥87: un campeón de UN
+       título con 88 se colaba por el hueco. Ahora el bono pide chaval DE VERDAD (sin títulos y sin
+       ser ya de élite) y un campeón paga un extra por sentarse detrás de otro. */
+    if((d.age||30)<=23 && !(d.titles||0) && (d.skill||0)<87) p += .12;
+    /* 🥉 …pero el orgullo se apaga con el nivel (matiz de Carlos, 28-ago: «un veterano campeón con
+       poco OVR sí podría estar en un equipo pequeño»). Castigar a TODO campeón era demasiado burdo:
+       un campeón de 36 con nivel 80 sabe perfectamente que necesita un asiento, y coge el que haya.
+       El extra solo pesa mientras siga siendo alguien capaz de liderar. */
+    if((d.titles||0)>=1 && (d.skill||0)>=85) p -= .12;
+  } else p += .04;
   return Math.max(.05,Math.min(.95,p));
 }
-function tpOddsTag(p){
-  // 🎨 escala de color + UNA palabra (petición de Carlos: «mucho texto en el mercado»)
-  return p>=.7 ? `<span class="odds o4">📞 ${L("vendría","would come",{pt:"viria"})}</span>`
-       : p>=.4 ? `<span class="odds o3">📞 ${L("dudoso","doubtful",{pt:"duvidoso"})}</span>`
-       : p>=.15? `<span class="odds o2">📞 ${L("difícil","unlikely",{pt:"difícil"})}</span>`
-       :         `<span class="odds o1">📞 ${L("imposible","no chance",{pt:"impossível"})}</span>`;
+function tpOddsTag(p, modo){
+  /* 🎨 escala de color + UNA palabra (petición de Carlos: «mucho texto en el mercado»).
+     🤝 Y una RENOVACIÓN no se dice igual que un fichaje (lo cazó Carlos jugando el 28-ago): a
+     Sainz no le llamas para que «venga» — ya está aquí. Además la línea decía «renovaría en su
+     asiento 1 · 📞 vendría», o sea lo mismo dos veces y con el verbo equivocado. Mismo cálculo,
+     otro vocabulario: el teléfono se cambia por el apretón de manos. */
+  const renov = modo==="renov";
+  const w = renov
+    ? [L("se queda","stays",{pt:"fica"}), L("dudoso","doubtful",{pt:"duvidoso"}),
+       L("difícil","unlikely",{pt:"difícil"}), L("se va","walks",{pt:"vai embora"})]
+    : [L("vendría","would come",{pt:"viria"}), L("dudoso","doubtful",{pt:"duvidoso"}),
+       L("difícil","unlikely",{pt:"difícil"}), L("imposible","no chance",{pt:"impossível"})];
+  const ic = renov ? "🤝" : "📞";
+  return p>=.7 ? `<span class="odds o4">${ic} ${w[0]}</span>`
+       : p>=.4 ? `<span class="odds o3">${ic} ${w[1]}</span>`
+       : p>=.15? `<span class="odds o2">${ic} ${w[2]}</span>`
+       :         `<span class="odds o1">${ic} ${w[3]}</span>`;
 }
 function tpTerna(i){
   /* 🔓 DE TERNA CERRADA A POOL ELEGIBLE (playtest de Carlos: «ahora es limitante: renovar, un piloto
