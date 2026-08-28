@@ -423,7 +423,14 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .f1state .srow.extra{animation:none;opacity:.9}
 /* 🧑‍💼 EN EL MODO JEFE LA TABLA CUENTA OTRA COSA. Un jefe no tiene OVR ni victorias propias: lo que
    importa es dónde acabaron sus DOS pilotos y dónde acabó el equipo. Cinco columnas en vez de seis. */
-.tl-head.tp,.tl-row.tp{grid-template-columns:52px 1fr 58px 58px 74px}
+/* 🏁 TRES COLUMNAS, NO CINCO (Carlos, 28-ago: «no merece la pena tener tanto chip»). Los puestos
+   de tus dos pilotos ya salen —con su color— en la línea de debajo del equipo, así que a la derecha
+   se queda solo el de constructores, que es el que no está en ningún otro sitio. */
+.tl-head.tp,.tl-row.tp{grid-template-columns:52px 1fr 74px}
+/* las pastillas de piloto, ya dentro de la línea de texto: en fila, pequeñas y que envuelvan */
+.tl-row .cat .pos{display:inline-block;width:auto;padding:2px 7px;font-size:11px;border-radius:7px;box-shadow:none;vertical-align:middle}
+.tl-row .cat .pos.p1{box-shadow:0 1px 3px rgba(242,174,0,.45)}
+.tl-row .cat .pos.p2{box-shadow:inset 0 0 0 1.2px #aab2c0}
 .tl-row .num.tpdrv{font-size:12px;font-weight:800;white-space:nowrap}
 .tl-row .num.tpdrv.p1{color:#c98f00} .tl-row .num.tpdrv.top{color:#12923f} .tl-row .num.tpdrv.rest{color:var(--muted);font-weight:600}
 .tl-row.tp .ovrcell{display:none}
@@ -9918,9 +9925,9 @@ function renderTimeline(){
     const c=_h.children;
     if(c.length>=6){
       c[2].style.display = _tp ? "none" : "";
+      c[3].style.display = _tp ? "none" : "";     // 🏁 los pilotos ya no tienen columna propia:
+      c[4].style.display = _tp ? "none" : "";     //    van con su color en la línea del equipo
       if(_tp){
-        c[3].textContent = L("Piloto 1","Driver 1",{pt:"Piloto 1"});
-        c[4].textContent = L("Piloto 2","Driver 2",{pt:"Piloto 2"});
         c[5].textContent = L("Constr.","Constr.",{pt:"Constr."});
       } else {
         c[3].textContent = L("V","W",{pt:"V"});
@@ -9937,17 +9944,30 @@ function renderTimeline(){
     /* 🧑‍💼 en el modo jefe, las dos columnas centrales son TUS DOS PILOTOS con su puesto en el Mundial
        (petición de Carlos: «piloto 1, piloto 2 y constructores» en vez de V-POD-CAMP). El puesto ya se
        guarda en row.tpDrv al simular la temporada; aquí solo se pinta. */
-    const tpCel=(i)=>{ const d=(r.tpDrv||[])[i];
-      if(!d) return '<span class="num">—</span>';
-      // pastilla de color como la de constructores (petición de Carlos, capturas del 18-ago)
-      return `<span class="pos ${posClass(d.pos)}" title="${d.n}" style="font-size:12px;padding:4px 6px">${d.fl} ${d.pos===1?"🏆 1º":d.pos+"º"}</span>`; };
+    /* 🏁 LA LÍNEA DE TUS PILOTOS, CON SU COLOR. Antes era texto plano debajo del equipo y además
+       dos pastillas a la derecha: lo mismo dos veces. Ahora se arma aquí, desde `row.tpDrv`, que es
+       DATO —nombre, bandera y puesto—; el texto plano de `row.tpLine` se conserva como respaldo para
+       partidas antiguas que no lo tengan. El 🚑 y el 🔁 del lesionado salen de `row.tpSub`.
+       ⚠️ Esto se pinta por `innerHTML`; nada de meterlo donde haya un `textContent`. */
+    const tpLinea=()=>{
+      const ds=r.tpDrv||[];
+      if(!ds.length) return r.tpLine||"";
+      const sub=r.tpSub||null;
+      const chip=(d)=>`<span class="pos ${posClass(d.pos)}">${d.fl} ${d.n} ${d.pos===1?"🏆 1º":d.pos+"º"}</span>`;
+      const out=[];
+      ds.forEach(d=>{
+        out.push(chip(d)+(sub && sub.titN===d.n ? " 🚑" : ""));
+        if(sub && sub.titN===d.n) out.push(`🔁 ${sub.fl} ${sub.n} ${sub.gp} GP`);
+      });
+      return out.join(" · ");
+    };
     const raced=r.cat==="TEST"&&r.subRaces;
       /* 🧑‍💼 en el modo jefe, poner «Team Principal» en CADA fila es ruido: ya se sabe a qué juegas
        (aviso de Carlos). La fila queda «Aston Martin · 2029» y se lee mucho mejor. */
     const catLbl=r.cat==="TP"?"":r.cat==="TEST"?L("Probador F1","F1 Reserve",{pt:"Testes F1"}):r.cat==="ADV"?(serName(r.advResult&&r.advResult.series, r.year)||L("Aventura","Adventure",{pt:"Aventura"})):catName(r.cat);
     const constr=r.constrPos?`🏭 ${L("Constructores","Constructors",{pt:"Construtores"})}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best",{pt:"melhor"})} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
-    const ptsTxt=r.cat==="TP"?(r.tpLine||"")   // 🧑‍💼 debajo del equipo van TUS DOS PILOTOS con su puesto en el mundial
+    const ptsTxt=r.cat==="TP"?tpLinea()   // 🧑‍💼 debajo del equipo, tus dos pilotos con su puesto y su color
       :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} pts`:L(yearNow()>=2005?"FP1 + simulador":"Test privados",yearNow()>=2005?"FP1 + simulator":"Private testing",{pt:yearNow()>=2005?"TL1 + simulador":"Testes privados"})):r.cat==="ADV"?"":`${r.pts} pts`;
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
     // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
@@ -9974,8 +9994,8 @@ function renderTimeline(){
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
             : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
       ${esTP ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
-      ${esTP ? tpCel(0) : `<span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>`}
-      ${esTP ? tpCel(1) : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
+      ${esTP ? "" : `<span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>`}
+      ${esTP ? "" : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
       <span class="pos ${posCls}">${posLab}</span>
       ${top3}
       ${r.cat==="TP"&&r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
@@ -10814,7 +10834,9 @@ const RESURRECCIONES={
 };
 const TP_OWNERS=[
   {k:"win",
-   lab:()=>L("🏆 Dueño ganador","🏆 Winner owner",{pt:"🏆 Dono vencedor"}),
+   /* ⚠️ solo cambia el RÓTULO: la clave `k:"win"` la miran una docena de sitios (el listón del
+      consejo, los dilemas, la voz de la junta) y renombrarla los rompería todos. */
+   lab:()=>L("🏆 Dueño ambicioso","🏆 Ambitious owner",{pt:"🏆 Dono ambicioso"}),
    intro:()=>L("El dueño viene de ganarlo todo y no ha comprado esto para pasearse: exige más que nadie.",
                "The owner has won everything and didn't buy this to cruise: he demands more than anyone.",
                {pt:"O dono vem de ganhar tudo e não comprou isto para passear: exige mais do que ninguém."})},
@@ -10824,10 +10846,13 @@ const TP_OWNERS=[
      mira la puerta de salida. De ahí sale, el día que se le dé efecto mecánico, que castigue las
      apuestas a largo plazo — una hoja de cálculo no entiende sacrificar un año por el siguiente. */
   {k:"cut",
-   lab:()=>L("💼 Dueño financiero","💼 Financier owner",{pt:"💼 Dono financeiro"}),
-   intro:()=>L("Al mando hay un financiero que compró el equipo como inversión: ficha barato, gasta lo justo y no descarta vender si sale número.",
-               "In charge is a financier who bought the team as an investment: signs cheap, spends the minimum, and won't rule out selling if the numbers add up.",
-               {pt:"No comando há um financista que comprou a equipe como investimento: contrata barato, gasta o mínimo e não descarta vender se a conta fechar."})},
+   lab:()=>L("💼 Dueño exigente","💼 Demanding owner",{pt:"💼 Dono exigente"}),
+   /* 🗣️ el RÓTULO pasó a «exigente» (Carlos, 28-ago) y el personaje tenía que seguirlo: antes
+      hablaba de «un financiero» y de «un fondo», jerga que no se oye en un paddock. Es el mismo tipo
+      —cero paciencia, resultados YA— contado como se cuenta en la F1. */
+   intro:()=>L("Al mando hay alguien que no regala nada: quiere resultados este año, ficha barato y no descarta vender si sale número.",
+               "The man in charge gives nothing away: he wants results this year, signs cheap, and won't rule out selling if the numbers add up.",
+               {pt:"No comando há alguém que não dá nada de graça: quer resultados este ano, contrata barato e não descarta vender se a conta fechar."})},
   {k:"young",
    lab:()=>L("🌱 Dueño paciente","🌱 Patient owner",{pt:"🌱 Dono paciente"}),
    intro:()=>L("La junta es joven y cree en los proyectos largos: te darán aire… mientras vean una dirección.",
@@ -11941,15 +11966,12 @@ function tpCosechar(){
   const y=yearNow(), quedan=[]; let total=0;
   (S.tpCosecha||[]).forEach(c=>{ if(c.y<=y) total+=c.v; else quedan.push(c); });
   S.tpCosecha=quedan;
+  /* 🤫 LA HUCHA NO SE ANUNCIA (Carlos, 28-ago: «el jugador ya lo sabe y en la F1 no se habla
+     así»). Tenía razón por partida doble: el jugador eligió el rumbo hace dos años y sabe lo que
+     firmó, y además nadie en un paddock dice «se paga el peaje» — se dice que el coche no va. El
+     efecto se ve donde tiene que verse: en el puesto del año. */
   if(Math.abs(total)>=.05){
     S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,(S.f1perf[S.tpTeam]||75)+total));
-    S.pendingEvents.push(total>0
-      ? L(`🌾 Llega lo que sembraste: el coche estrena por fin lo que la fábrica llevaba años cocinando.`,
-          `🌾 What you planted arrives: the car finally gets what the factory had been cooking for years.`,
-          {pt:`🌾 Chega o que você plantou: o carro estreia enfim o que a fábrica vinha cozinhando há anos.`})
-      : L(`💸 Se paga el peaje: aquel año volcasteis todo en el coche del momento, y la factura llega ahora.`,
-          `💸 The bill comes due: back then you threw everything at the car of the moment, and it lands now.`,
-          {pt:`💸 A conta chega: naquele ano vocês jogaram tudo no carro do momento, e ela cai agora.`}));
   }
   tpFijarTendencia();
 }
@@ -11994,7 +12016,7 @@ function tpRumboScreen(){
   const _fin=S.tpOwner&&S.tpOwner.k==="cut";
   let penProyecto=0, avisoProyecto="";
   if(_arriba){ penProyecto+=1.5; avisoProyecto+="<br><span class=\"aviso-consejo\">⚠️ "+L("Tienes un coche ganador: si aun así sacrificas el año, el consejo se enfada y pierdes prestigio","You have a winning car: sacrifice the year anyway and the board sours — you lose prestige",{pt:"Você tem um carro vencedor: se ainda assim sacrificar o ano, o conselho se irrita e você perde prestígio"})+"</span>"; }
-  if(_fin){ penProyecto+=1; avisoProyecto+="<br><span class=\"aviso-consejo\">💼 "+L("Tu dueño es un fondo: no pone dinero a dos años vista, y elegir esto también te cuesta prestigio","Your owner is a fund: it won't spend two years out — choosing this costs prestige too",{pt:"O seu dono é um fundo: não investe a dois anos, e escolher isto também custa prestígio"})+"</span>"; }
+  if(_fin){ penProyecto+=1; avisoProyecto+="<br><span class=\"aviso-consejo\">💼 "+L("Tu dueño no espera dos años: elegir esto también te cuesta prestigio","Your owner won't wait two years: choosing this costs prestige too",{pt:"O seu dono não espera dois anos: escolher isto também custa prestígio"})+"</span>"; }
   if(_abajo && !avisoProyecto) avisoProyecto="<br><span class=\"aviso-ok\">✅ "+L("Con este coche, el consejo te deja construir en paz","With this car, the board lets you build in peace",{pt:"Com este carro, o conselho te deixa construir em paz"})+"</span>";
   S._penProyecto=penProyecto;
   const mk=(dot,nm,sub,fn)=>{
@@ -12206,7 +12228,7 @@ function tpGoalFor(){
   const voz = !S.tpOwner? "" : S.tpOwner.k==="win"
     ? L("«He ganado en todo lo que he tocado. Aquí no va a ser distinto.»","«I've won at everything I've touched. This will be no different.»",{pt:"«Ganhei em tudo em que toquei. Aqui não vai ser diferente.»"})
     : S.tpOwner.k==="cut"
-    ? L("«Esto es una inversión, no una afición. Que los números salgan y nos llevaremos bien.»","«This is an investment, not a hobby. Make the numbers work and we'll get along.»",{pt:"«Isto é um investimento, não um hobby. Que as contas fechem e vamos nos entender.»"})
+    ? L("«Esto no es una afición. Quiero resultados, y los quiero pronto.»","«This isn't a hobby. I want results, and I want them soon.»",{pt:"«Isto é um investimento, não um hobby. Que as contas fechem e vamos nos entender.»"})
     : L("«Cree en el proyecto. Nosotros creemos en ti… de momento.»","«Believe in the project. We believe in you… for now.»",{pt:"«Acredite no projeto. Nós acreditamos em você… por enquanto.»"});
   return {target, exp:p, year:yearNow(),
     txt:L(`El consejo fija el listón de ${yearNow()}: ${meta}. ${voz}`,`The board sets the ${yearNow()} bar: ${meta}. ${voz}`,{pt:`O conselho fixa a meta de ${yearNow()}: ${meta}. ${voz}`}),
@@ -12254,7 +12276,12 @@ function simTP(row){
     /* 🔁 EL SUSTITUTO VA PEGADO A QUIEN SUSTITUYE (Carlos, 27-ago), no siempre al final. Si se
        rompe el primero, su relevo va segundo y el compañero cierra; si se rompe el segundo, el
        relevo cierra. Así la línea se lee sola: cada 🚑 tiene su 🔁 al lado. */
-    if(_les && _les.tit===d.name) parts.push(`🔁 ${_les.subFlag} ${_les.subN} ${_les.n} GP`);
+    if(_les && _les.tit===d.name){
+      parts.push(`🔁 ${_les.subFlag} ${_les.subN} ${_les.n} GP`);
+      /* 📦 y el DATO, que es lo que pinta la trayectoria. El texto de arriba se conserva como
+         respaldo para partidas viejas; lo que se dibuja con color sale de aquí. */
+      row.tpSub={titN:surname(d.name), n:_les.subN, fl:_les.subFlag, gp:_les.n};
+    }
     (row.tpDrv=row.tpDrv||[]).push({n:surname(d.name), fl:d.flag||"🏁", pos:r});
     if(r===1) champDrv=d;
   });
