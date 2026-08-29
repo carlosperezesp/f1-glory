@@ -1352,7 +1352,7 @@ const F1_TEAMS = [
   {name:"Ferrari", abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:88},
   {name:"Red Bull", abbr:"RBR", color:"#3671C6", color2:"#E30118", perf:87},
   {name:"Mercedes", abbr:"MER", color:"#00A19B", color2:"#0f0f14", perf:86},
-  {name:"Aston Martin", abbr:"AMR", color:"#229971", color2:"#CEDC00", perf:79},
+  {name:"Aston Martin", abbr:"AMR", color:"#229971", color2:"#CEDC00", perf:72},  // 📉 2026 real: el proyecto no arranca (Carlos, 29-ago: «están fatal») — antes 79
   {name:"Racing Bulls", abbr:"RB", color:"#6692FF", color2:"#1C2A4F", perf:70},
   {name:"Williams", abbr:"WIL", color:"#1868DB", color2:"#00A3E0", perf:73},
   {name:"Alpine", abbr:"ALP", color:"#0093CC", color2:"#FD4BC7", perf:70},
@@ -3731,7 +3731,7 @@ function startCareer(){
     role:null, roleTeam:null, roleMate:null,
     advSeries:null, advMarca:null, advYears:0, adventures:[], advWins:{}, advTitles:0, appetite:0, youngDetour:false, monacoWins:0,
     tripleCrown:{monaco:false, indy:false, lemans:false}, dakarDone:false,
-    regReg:ERA.baseYear+20+irnd(0,6), regDone:false, regReveal:null, regUnknown:false, demoteReserve:false,
+    regReg:ERA.baseYear+irnd(8,14), regDone:false,   /* 1ª revolución técnica. Antes baseYear+20..26 y una sola por partida: en el modo jefe (tope de 20 temporadas) caía al final o no caía, y en el clásico la mayoría de carreras se acababan sin verla. Ahora entra a mitad y vuelve cada 10-14. */  regReveal:null, regUnknown:false, demoteReserve:false,
     regYear:null, regBet:null, regBetGrade:null, regBetRefused:null, regPrepared:null, commitTeam:null, commitYears:0,
     esperaQuiebra:false,   // 🕰️ la apuesta de Button: una sola vez por partida
     roleLock:null,         // 🔒 galones quitados por disciplina: {team, until} — sin ascenso automático
@@ -3793,6 +3793,26 @@ function startCareer(){
     });
   });
   maybeCampos();   // 🇪🇸 ¿y si Adrián Campos no hubiera tenido que vender? (tras sembrar los asientos)
+  /* 📅 2025 EXISTIÓ (Carlos, 29-ago: «estamos en 2026 y Norris fue campeón en 2025» — la parrilla
+     salía con guiones porque el año pasado no constaba). Solo en la era 2026 y sin reto: se siembra
+     la tabla FINAL de 2025 —pilotos y constructores— para que la primera pantalla enseñe posiciones
+     de verdad y la inercia del ranking arranque desde lo real, no desde el vacío. Va DESPUÉS de sembrar los asientos (el primer intento corría antes y casaba 0 nombres). Se casa por
+     APELLIDO contra la parrilla sembrada, así que un nombre que no esté (rookies de 2026) se queda
+     sin posición: correcto, no corrieron 2025. ⚠️ TABLA A REVISAR POR CARLOS. */
+  if(ERA.id==="2026" && !CHALLENGE){
+    /* 📄 tabla FINAL real de 2025 (Wikipedia, PDF de Carlos, 29-ago) — pilotos 1º→21º */
+    const _R25=["Norris","Verstappen","Piastri","Russell","Leclerc","Hamilton","Antonelli","Albon",
+                "Sainz","Alonso","Hulkenberg","Hadjar","Bearman","Lawson","Ocon","Stroll",
+                "Tsunoda","Gasly","Bortoleto","Colapinto","Doohan"];
+    S.rankD={};
+    const _todos=[]; Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") _todos.push(d); }));
+    (S.dpool||[]).forEach(d=>{ if(d&&!_todos.includes(d)) _todos.push(d); });
+    const _ult=n=>String(n).trim().split(/\s+/).pop().toLowerCase().replace(/ü/g,"u");   // «M. Verstappen» → «verstappen»
+    _R25.forEach((ap,i)=>{ const d=_todos.find(x=>x.name && _ult(x.name)===_ult(ap));
+      if(d && S.rankD[d.name]==null) S.rankD[d.name]=i+1; });
+    S.rankC={"McLaren":1,"Mercedes":2,"Red Bull":3,"Ferrari":4,"Williams":5,"Racing Bulls":6,
+             "Aston Martin":7,"Haas":8,"Audi":9,"Alpine":10};   // 📄 constructores 2025 reales (Sauber→Audi en 2026)
+  }
   // 💛💙 «GENERACIÓN DORADA» (raro, ~15%): los pilotos de TU nacionalidad reciben un empujón de por vida →
   // de vez en cuando ves a un compatriota (Sainz, Colapinto, Bortoleto…) pelear e incluso GANAR mundiales.
   // Raro a propósito: que sea un notición, no la norma. Aplica también a novatos/crossover de tu país (mkRookie).
@@ -4135,7 +4155,7 @@ function npcSeason(row){
   Object.entries(S.seats).forEach(([teamName,slots])=>{
     const isRB = isRBJr(teamName); // el filial de RB no ficha veteranos → su relevo nunca es un crossover
     slots.forEach((d,i)=>{
-      if(d==="PLAYER") return;
+      if(!d || d==="PLAYER") return;   // ⚠️ el null también aquí: un asiento puede quedar vacío un invierno (mismo filtro que bgF1Season)
       // 🇪🇸 cameo de Alonso: alargó su carrera para tu debut → al terminar esa, su última temporada, se retira
       if(d.alonsoCameo){ slots[i]=mkRookie(isRB, teamName); return; }
       // 🐲 la Bestia no envejece, no baja de nivel y no se retira: es el muro fijo de todo el reto
@@ -4167,6 +4187,11 @@ function npcSeason(row){
             `👋 ${surname(d.name)} cuelga el casco a los ${d.age}: se retira ${d.titles>1?"con "+d.titles+" Mundiales":(y1?"el campeón del mundo de "+y1:"campeón del mundo")}.`,
             `👋 ${surname(d.name)} hangs up his helmet at ${d.age}: ${d.titles>1?"he retires with "+d.titles+" world titles":(y1?"the "+y1+" world champion retires":"he retires as world champion")}.`,{pt:`👋 ${surname(d.name)} pendura o capacete aos ${d.age}: aposenta-se ${d.titles>1?"com "+d.titles+" Mundiais":(y1?"o campeão mundial de "+y1:"campeão mundial")}.`}));
         }
+        /* 👋 …Y LOS DEMÁS CONOCIDOS TAMPOCO SE VAN EN SILENCIO (Carlos, 28-ago: «se retiró Bottas
+           y no me enteré»). Los campeones ya tenían su línea; un titular veterano o de buen nivel se
+           iba sin una palabra. Se juntan en UNA línea al final del invierno para no llenar el resumen. */
+        else if(row && ((d.skill||0)>=82 || (d.age||0)>=35))
+          (row._adioses=row._adioses||[]).push(`${surname(d.name)} (${d.age})`);
         /* 🔙 los retirados NOTABLES (título o nivel 86+) van al bolsillo — el camino
            Schumacher'10 / Kimi'12, y ahora también el sustituto del lesionado.
            ⚠️ EL TOPE DE 38 AÑOS SE CAYÓ (26-ago, lo cazó Carlos preguntando «¿y si Alonso se retira
@@ -4182,6 +4207,12 @@ function npcSeason(row){
       }
     });
   });
+  if(row && row._adioses && row._adioses.length){
+    const _a=row._adioses; delete row._adioses;
+    row.events.push(_a.length===1
+      ? L(`👋 ${_a[0]} cuelga el casco y deja la parrilla.`,`👋 ${_a[0]} hangs up his helmet and leaves the grid.`,{pt:`👋 ${_a[0]} pendura o capacete e deixa o grid.`})
+      : L(`👋 Cuelgan el casco: ${_a.join(" · ")}.`,`👋 Hanging up their helmets: ${_a.join(" · ")}.`,{pt:`👋 Penduram o capacete: ${_a.join(" · ")}.`}));
+  }
   // 1º el mercado por huecos y fichajes (cubre las retiradas y las no-renovaciones): a partir de aquí
   //    la parrilla vuelve a estar llena, que es lo que da por hecho el bloque de abajo
   npcMercadoOrdinario();
@@ -4207,6 +4238,22 @@ function npcSeason(row){
       best.yrs=0; weak.yrs=0;
     }
   }
+  /* 👑 EL GARAJE SE ORDENA SOLO — y se ordena EL ÚLTIMO (Carlos, 28-ago: «no tiene sentido que
+     Antonelli campeón del mundo llegue como segundo de Bearman»). El asiento 1 corre con el mejor
+     coche del garaje, y los NPC sembraban o heredaban jerarquías absurdas. Va al final del invierno
+     a propósito: el primer intento corría antes del cazatalentos de arriba, que re-desordenaba lo
+     ordenado (medido: 15 garajes invertidos en 180 inviernos). Dos reglas: el claramente mejor
+     (+2 de nivel) asciende; y el CAMPEÓN DEL MUNDO asciende siempre — un campeón vigente no corre
+     de escudero de nadie (36 casos medidos con la regla condicionada). TU equipo no se toca: ahí
+     la jerarquía la pones tú. */
+  Object.entries(S.seats).forEach(([t2,s2])=>{
+    if(tpManaged(t2) || !Array.isArray(s2)) return;
+    const [a2,b2]=s2;
+    if(!a2||!b2||a2==="PLAYER"||b2==="PLAYER") return;
+    if((b2.skill||0) >= (a2.skill||0)+2 || (S.rankD && S.rankD[b2.name]===1)){
+      s2[0]=b2; s2[1]=a2;
+    }
+  });
 }
 /* 🔄 MERCADO DE PILOTOS DE LOS NPC — por HUECOS Y FICHAJES, no por intercambios.
    Antes SOLO fichaban los 4 mejores equipos y con un 20% → menos de un traspaso por temporada en toda
@@ -4257,6 +4304,9 @@ function mktMark(...xs){ S._mkt=S._mkt||[]; xs.forEach(x=>{ const n=mktName(x); 
    veterano ni fichar nada que no sea promesa). Y al PILOTO-jugador del clásico no le echa: sus reglas
    de siempre (rbOk) ya le cierran el filial cuando deja de ser promesa. */
 const RB_SALIDA=29;   // y la ENTRADA está en 27 en todas las guardas del mercado: solo promesas (≤26)
+let RB_ASCENSO=21;  // desde esta edad el filial mira CADA invierno si te ha superado
+let RB_MARGEN=2;    // cuánto hay que superar al peor de la casa madre para que te suban
+let RB_MINIMO=80;   // suelo absoluto. Era 84 y desde un coche topado a 83 no se alcanzaba
 function rbCanteraInvernal(row){
   Object.keys(S.seats).forEach(tn=>{
     if(!isRBJr(tn) || tpManaged(tn)) return;
@@ -4267,11 +4317,23 @@ function rbCanteraInvernal(row){
          alguno envejecer hasta los 35 si el mercado lo marcaba año tras año). Y un CAMPEÓN no puede
          seguir en el filial tenga la edad que tenga: o asciende o sale. */
       if(!d || d==="PLAYER" || d.beast) return;
-      if((d.age||0)<RB_SALIDA && !(d.titles||0)) return;
+      /* 🐂 SE MIRA CADA INVIERNO, NO SOLO AL CUMPLIR 29. Antes la única puerta era la edad de salida:
+         nadie se evaluaba hasta los 29 y para entonces ya no daba el nivel, porque el coche del filial
+         te topa el desarrollo. Medido: 0,30 ascensos contra 2,60 salidas por partida de 20 temporadas
+         —1 a 8,7—, las dos cosas a los 29 años y saliendo con nivel 81 contra un listón de 84 que no
+         se alcanzaba nunca. Un filial que solo expulsa no es una cantera.
+         Red Bull en la vida real sube a los 18-24: Vettel 21, Verstappen 18, Gasly 22, Albon 23,
+         Tsunoda 23, Hadjar 21. Ahora desde RB_ASCENSO se mira todos los años, y el listón es
+         COMPARATIVO —ser mejor que el peor de la casa madre— con un mínimo bajo, porque el absoluto
+         era inalcanzable desde un coche topado a 83. */
+      const _campeon=(d.titles||0)>0, _veterano=(d.age||0)>=RB_SALIDA;
+      if((d.age||0)<RB_ASCENSO && !_campeon) return;      // aún es pronto: sigue formándose
       const ms=S.seats[madre];
       let wi=-1, ws=999;
       if(Array.isArray(ms) && !tpManaged(madre)) ms.forEach((x,j)=>{ if(x&&x!=="PLAYER"&&!x.beast&&(x.skill||0)<ws){ws=x.skill||0;wi=j;} });
-      if(wi>=0 && (d.skill||0)>=ws+2 && (d.skill||0)>=84){
+      const _asciende = wi>=0 && (d.skill||0)>=ws+RB_MARGEN && (d.skill||0)>=RB_MINIMO;
+      if(!_asciende && !_veterano && !_campeon) return;   // ni sube ni le toca salir: otro año en el filial
+      if(_asciende){
         const fuera=ms[wi]; ms[wi]=d; sl[i]=mkRookie(true, tn);
         if(fuera && fuera!=="PLAYER"){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(fuera); }
         mktMark(d, fuera, tn, madre);
@@ -4681,6 +4743,19 @@ function reserveCallup(){
   if(promoteFromReserve()) return L("🏎️ El equipo te sienta en el coche el resto del año: ¡pasas a piloto de F1!","🏎️ The team puts you in the car for the rest of the year: you're an F1 driver!",{pt:"🏎️ A equipe te coloca no carro pelo resto do ano: você vira piloto de F1!"});
   S.testProved=2; VAL(1.1);
   return L("El equipo alucina contigo: tienes un asiento titular a la vista.","The team is blown away: a race seat is in sight.",{pt:"A equipe está impressionada com você: tem uma vaga de titular à vista."});
+}
+/* 🎓 SUBIR NIVEL SIN MENTIR (28-ago). El mismo fallo de honestidad que se arregló en el jefe
+   (`tpDrvSkill`, 26-ago) vivía en CINCO dilemas del clásico: prometían «+nivel de X» y, si el piloto
+   ya estaba en su techo, `Math.min(ceil, skill+n)` se comía la mejora sin avisar. Mismo criterio que
+   allí: lo que no cabe por debajo del techo se convierte en TECHO (tope duro 97) — un buen maestro no
+   te da un nivel que no tienes, sube el nivel al que puedes llegar. Solo hacia arriba: las bajadas no
+   tocan el techo. Importa porque `npcSeason` recorta a `ceil` cada invierno: subir solo skill se
+   borraría al año siguiente. */
+function subeSkill(d,n){
+  if(!d || d.skill==null || !n) return;
+  const techo=d.ceil||97, nuevo=d.skill+n;
+  if(n>0 && nuevo>techo) d.ceil=Math.min(97,nuevo);
+  d.skill=Math.max(68, Math.min(d.ceil||97, nuevo));
 }
 function teammateOf(teamName){
   const slots=S.seats[teamName];
@@ -5708,7 +5783,7 @@ const DILEMAS=[
  {id:"pupilo",stage:"f1",cond:()=>{ if(S.age<31||!S.team||!S.seats[S.team.name]) return false; const m=teammateOf(S.team.name); return m&&m.age!=null&&m.age<24; },
   t:()=>L("El pupilo veloz","The fast pupil",{pt:"O pupilo veloz"}),
   d:()=>{ const m=teammateOf(S.team.name); return L(`${surname(m.name)}, tu joven compañero, te pide que le enseñes tus trucos. Es rapidísimo… y ayudarle podría crear a tu propio verdugo.`,`${surname(m.name)}, your young teammate, asks you to teach him your tricks. He's lightning fast… and helping him could create your own executioner.`,{pt:`${surname(m.name)}, o seu jovem companheiro, pede que você ensine os seus truques. Ele é rapidíssimo… e ajudá-lo pode criar o seu próprio carrasco.`}); },opts:[
-   {l:()=>L("Enseñarle todo lo que sabes","Teach him everything you know",{pt:"Ensinar tudo o que você sabe"}),r:()=>{ const m=teammateOf(S.team.name); if(m&&m.skill) m.skill=Math.min(m.ceil||95,m.skill+2); VAL(1.1);
+   {l:()=>L("Enseñarle todo lo que sabes","Teach him everything you know",{pt:"Ensinar tudo o que você sabe"}),r:()=>{ const m=teammateOf(S.team.name); if(m&&m.skill) subeSkill(m,2); VAL(1.1);
      return L(`El paddock admira tu generosidad (+fama)… pero ${surname(m.name)} da un salto y aprieta por tu asiento.`,`The paddock admires your generosity (+fame)… but ${surname(m.name)} makes a leap and pushes for your seat.`,{pt:`O paddock admira a sua generosidade (+fama)… mas ${surname(m.name)} dá um salto e aperta pela sua vaga.`}); }},
    {l:()=>L("Guardarte los trucos","Keep your tricks to yourself",{pt:"Guardar os truques para você"}),r:()=>{VAL(.95);return L("Mantienes tu ventaja, pero en el garaje te ven distante y calculador.","You keep your edge, but in the garage they see you as distant and calculating.",{pt:"Você mantém a sua vantagem, mas na garagem te veem distante e calculista."});}}]},
  {id:"contrato",stage:"f1",cond:()=>{ if(!S.team||!F1_TEAMS.some(t=>t.name===S.team.name)||S.ovr<85) return false; const b=bestPoachTeam(); return b && (S.f1perf[b]-S.f1perf[S.team.name])>=6; },
@@ -5970,7 +6045,7 @@ const DILEMAS=[
    {l:()=>L("Enseñarle quién manda aquí","Show him who runs this place",{pt:"Mostrar quem manda aqui"}),r:()=>{ const t=S.team.name, k=S._jefe.k;
      /* 🤝 cuando el texto dice que el equipo se vuelca en el otro coche, el otro coche MEJORA: se le
         sube el nivel a tu compañero de verdad, con tope en su techo. Si no hay compañero, no pasa nada. */
-     const subeMate=(n)=>{ const m=teammateOf(t); if(m && m.name && m.name!=="—") m.skill=Math.min(m.ceil||97,(m.skill||75)+n); return m&&m.name?surname(m.name):null; };
+     const subeMate=(n)=>{ const m=teammateOf(t); if(m && m.name && m.name!=="—") subeSkill(m,n); return m&&m.name?surname(m.name):null; };
      if(k==="win"){ return ch(.55)
        ? (S.f1target[t]=Math.min(94,(S.f1target[t]||75)+rnd(6,10)), VAL(1.08),
           L("Viene de ganar y respeta a quien no agacha la cabeza. Sales del despacho siendo el eje del proyecto: el coche apunta hacia arriba. 📈 +fama","He comes from winning and respects anyone who won't bow. You leave that office as the axis of the project: the car trends upward. 📈 +fame",{pt:"Ele vem de ganhar e respeita quem não abaixa a cabeça. Você sai do escritório como eixo do projeto: o carro aponta para cima. 📈 +fama"}))
@@ -6384,7 +6459,7 @@ const DILEMAS=[
       if(c) S._incRival=c.name;
       // ⚖️ un elogio tuyo puede darle alas… o echarle encima un peso que no pidió (matiz de Carlos)
       return roll(
-        [55,()=>{ if(c){ c.skill=Math.min(c.ceil||97,(c.skill||75)+2); respectBuild(); }
+        [55,()=>{ if(c){ subeSkill(c,2); respectBuild(); }
           return L(`Dices que hacía años que no veías a alguien frenar así. El titular le da la vuelta al paddock y ${n} corre el resto del año con dos palmos más de altura. No lo va a olvidar.`,
                    `You say you hadn't seen anyone brake like that in years. The headline goes around the paddock and ${n} races the rest of the year two feet taller. He won't forget it.`,{pt:`Você diz que fazia anos que não via alguém frear daquele jeito. A manchete dá a volta no paddock e ${n} corre o resto do ano dois palmos mais alto. Ele não vai esquecer.`}); }],
         [25,()=>{ if(c) respectBuild(); VAL(1.06);
@@ -6397,7 +6472,7 @@ const DILEMAS=[
     r:()=>{ const c=chavalPorNombre(S._chaval); const n=c?surname(c.name):L("el chaval","the kid",{pt:"o moleque"});
       return roll(
         [55,()=>L("Ni le subes ni le hundes. En el paddock se lee como lo que es: un veterano que ya ha visto pasar a muchos.","You neither lift him nor sink him. The paddock reads it for what it is: a veteran who's seen plenty come and go.",{pt:"Você não o levanta nem o afunda. No paddock lê-se como o que é: um veterano que já viu muitos passarem."})],
-        [45,()=>{ if(c) c.skill=Math.min(c.ceil||97,(c.skill||75)+1);
+        [45,()=>{ if(c) subeSkill(c,1);
           return L(`«Tres años y hablamos». ${n} recorta el titular y se lo queda. A veces no hay mejor combustible que alguien dudando de ti.`,
                    `«Three years and we'll talk». ${n} cuts the headline out and keeps it. Sometimes there's no better fuel than someone doubting you.`,{pt:`«Três anos e a gente conversa». ${n} recorta a manchete e guarda. Às vezes não há combustível melhor do que alguém duvidando de você.`}); }]); }},
    {l:()=>L("Bajarle los humos: «le queda mucho»","Cut him down: «he's got a long way to go»",{pt:"Baixar a bola dele: «ainda falta muito»"}),
@@ -6408,7 +6483,7 @@ const DILEMAS=[
         [40,()=>{ c.skill=Math.max(60,(c.skill||75)-2); feudBurn();
           return L(`El titular le sienta como un tiro y se le nota en pista: se agarra al volante en vez de pilotar. Pero eso no se perdona — a partir de hoy, ${n} y tú tenéis cuentas.`,
                    `The headline hits him hard and it shows on track: he grips the wheel instead of driving. But that's not forgiven — from today, ${n} and you have unfinished business.`,{pt:`A manchete cai como um tiro e dá para ver na pista: ele agarra o volante em vez de pilotar. Mas isso não se perdoa — de hoje em diante, você e ${n} têm contas a acertar.`}); }],
-        [40,()=>{ c.skill=Math.min(c.ceil||97,(c.skill||75)+2); feudBurn();
+        [40,()=>{ subeSkill(c,2); feudBurn();
           // ⚖️ el desprecio también enciende: le has dado exactamente lo que necesitaba
           return L(`Le has dado justo lo que le faltaba. ${n} se pega tu frase en el casco y a partir de ahí vuela — y encima ahora tenéis cuentas pendientes.`,
                    `You gave him exactly what he needed. ${n} tapes your words inside his helmet and flies from there — and now you have unfinished business too.`,{pt:`Você deu exatamente o que faltava a ele. ${n} cola a sua frase no capacete e a partir daí voa — e ainda por cima agora vocês têm contas a acertar.`}); }],
@@ -7766,12 +7841,33 @@ function tpCapFilial(){
     if((S.f1target[t.name]??0)>((S.f1target[madre]??96))) S.f1target[t.name]=S.f1target[madre];
   });
 }
+let TP_MARCA = [0.4,1.1];  // lo que la marca mete en la fábrica cada invierno
+let TP_DUENO_MIN = 3;    // años mínimos con el mismo dueño antes de que pueda vender
+let TP_DUENO_P = .16;    // probabilidad anual de relevo a partir de ahí (~1 cada 6-7 años)
+let REG_MEZCLA = .40;    // cuánto tira el objetivo hacia la media de la parrilla (0 = como antes)
+let REG_CADA = [10,14];  // cada cuántos años vuelve la revolución técnica
+let REG_MEMORIA = .50;   /* cuánto pesa la grandeza (caché) en el sorteo del reseteo. Medido a 20
+                            temporadas: con 0 la parrilla queda INVERTIDA (Haas 46% en el top 4,
+                            McLaren 35%); con 0,3 queda plana; con 0,5 hay jerarquía sin candado
+                            —Ferrari 47%, McLaren 45%, Haas 28%—; con 0,7 se acerca otra vez al
+                            bloqueo de siempre. */
+let REG_POZO = 4;        // de entre cuántos malos sale el cochazo tipo Brawn
 function evolveF1(row){
+  const _v=F1_TEAMS.map(t=>S.f1perf[t.name]).filter(x=>x!=null);
+  const mediaParrilla = _v.length ? _v.reduce((a,b)=>a+b,0)/_v.length : 75;
   F1_TEAMS.forEach(t=>{
     // los proyectos cambian de rumbo pocas veces → eras que duran varios años.
     // (evolveF1) el nuevo objetivo se fija respecto al nivel actual, creando arcos sostenidos.
     // 🧑‍💼 en TP el rumbo de TU equipo lo marcas tú cada invierno: el dado no te lo puede pisar
-    if(!tpManaged(t.name) && Math.random()<.17) S.f1target[t.name]=Math.max(61,Math.min(95, S.f1perf[t.name]+rnd(-17,17)));
+    /* ⚖️ EL OBJETIVO TIRA UN POCO HACIA EL PELOTÓN. Antes se sorteaba alrededor del nivel PROPIO, así
+       que nada devolvía nunca a un grande a la media ni sacaba a un pequeño del pozo: medido, a 20
+       temporadas seguían arriba 2,75 de los cuatro grandes y solo mandaban 2,65 equipos distintos en
+       toda la partida (8 de 11 no lideraban jamás). En la F1 real, comparando el top 4 de constructores
+       con 20 años de diferencia, sobreviven 1 o 2. REG_MEZCLA es perilla: subirlo revuelve más. */
+    if(!tpManaged(t.name) && Math.random()<.17){
+      const ancla = S.f1perf[t.name]*(1-REG_MEZCLA) + mediaParrilla*REG_MEZCLA;
+      S.f1target[t.name]=Math.max(61,Math.min(95, ancla+rnd(-17,17)));
+    }
     const cur=S.f1perf[t.name], tgt=S.f1target[t.name];
     // deriva (0.28) y poco ruido (±1) → la parrilla se reordena y ningún coche domina eternamente
     /* 🌾 TU equipo no deriva hacia un objetivo: lo mueven las cosechas de tu hucha (más el ruido
@@ -8308,6 +8404,13 @@ let INERCIA_RANK=0.45;
    se iban al 4,0%; el dato real es 2,3% (213 transiciones que midió Carlos). Barrido a σ=2,0 sobre
    ~2.900 transiciones: 0,20 → 4,0% · 0,32 → 2,9% · **0,45 → 2,2%**. Se queda en 0,45. */   // cuánto pesa el puesto del año pasado en el score (calibrado abajo)
 function bgF1Season(row){
+  /* 🚫 LA GUARDA DEFINITIVA DEL FILIAL. «Racing Bulls jamás debe ser mejor que Red Bull» (Carlos) es
+     una regla dura, y taparla escritura a escritura es frágil: hay ~30 sitios que tocan `f1perf`
+     —dilemas, escenarios de reto, escuderías que entran nuevas, y varios que BAJAN a la casa madre,
+     que rompen la regla sin tocar al filial siquiera—. Cualquiera futuro volvería a abrir el agujero.
+     Aquí no se escapa ninguno: es la puerta por la que pasa toda temporada antes de correrse, y la
+     carrera se simula con `f1perf`. Cuesta un recorrido de 11 equipos al año. */
+  tpCapFilial();
   const rows=[];
   F1_TEAMS.forEach(t=>{
     (S.seats[t.name]||[]).forEach((d,si)=>{
@@ -9609,7 +9712,7 @@ function nextOffers(){
       const ct=F1_TEAMS.find(t=>t.name===S.commitTeam);
       if(ct){
         // la revolución ocurre igual aunque no elijas: el reglamento no espera a nadie
-        if(!S.regDone && yearNow()>=S.regReg) regReset();
+        if(yearNow()>=S.regReg) regReset();
         S.commitYears--; if(S.commitYears<=0) S.commitTeam=null;
         setDecision(L("🤝 Tu compromiso","🤝 Your commitment",{pt:"🤝 O seu compromisso"}),
           L(`Diste tu palabra a ${ct.name} y el contrato sigue vivo: este año no hay mercado para ti.`,
@@ -9621,7 +9724,7 @@ function nextOffers(){
       S.commitTeam=null; S.commitYears=0; // el equipo ya no existe: quedas libre
     }
     // 🏁 revolución técnica (efecto Brawn): una vez por partida, a partir de ~2046
-    if(!S.regDone && yearNow()>=S.regReg){ regResetOffers(); return; }
+    if(yearNow()>=S.regReg){ regResetOffers(); return; }
     // el mercado solo se enfría con la edad SI ya no rindes: si acabas de ganar, hacer top-6 o
     // sigues con buen OVR, los equipos te quieren (no te jubilan por demostrar que eres bueno)
     const lastS = S.seasons.at(-1)||{};
@@ -9847,9 +9950,16 @@ function regReset(){
   S.regDone=true; S.regUnknown=true; S.regYear=yearNow();
   const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]); // peor→mejor (antes del reset)
   // rbOk: RB no ficha veteranos NI consagrados · isJrTeam: un filial nunca puede ser el cochazo
-  const badTeams=order.filter(t=>rbOk(t) && !isJrTeam(t.name)).slice(0,4);
-  // resetear la parrilla: nuevo pecking order aleatorio
-  F1_TEAMS.forEach(t=>{ const v=Math.round(rnd(66,86)); S.f1perf[t.name]=v; S.f1target[t.name]=v; });
+  const badTeams=order.filter(t=>rbOk(t) && !isJrTeam(t.name)).slice(0,REG_POZO);
+  /* 🏛️ EL RESETEO CONSERVA ALGO DE MEMORIA. Sorteando a los 11 a ciegas entre 66 y 86, una revolución
+     que ahora se repite cada 10-14 años borraba la identidad de la parrilla: medido, a 20 temporadas
+     Haas y Cadillac salían en el top 4 el 45% y McLaren el 32% — no descongelada, INVERTIDA. El caché
+     (la «grandeza», que ya decae despacio) inclina el sorteo sin decidirlo: Ferrari sale algo mejor
+     parada que Haas, pero el dado sigue mandando. REG_MEMORIA=0 vuelve al sorteo ciego. */
+  F1_TEAMS.forEach(t=>{
+    const grandeza=(S.cache[t.name] ?? 70);
+    const v=Math.round(Math.max(62,Math.min(90, rnd(66,86) + (grandeza-70)*REG_MEMORIA)));
+    S.f1perf[t.name]=v; S.f1target[t.name]=v; });
   // reglamento nuevo = conceptos de coche nuevos: TAMBIÉN se rebaraja el CARÁCTER de cada coche.
   // Sin esto, un cambio radical de reglas no podría dejar de encajar con tu pilotaje (el caso Vettel'14).
   F1_TEAMS.forEach(t=>{ S.f1char[t.name]=CHARS[irnd(0,2)]; });
@@ -9889,6 +9999,15 @@ function regReset(){
   const rumorTrue=ch(.45);
   const otherBad=badTeams.filter(t=>t.name!==brawn.name);
   const rumor=(rumorTrue||!otherBad.length)?brawn:otherBad[irnd(0,otherBad.length-1)];
+  /* 🚫 EL FILIAL, TAMBIÉN AQUÍ. El reseteo sortea a los 11 por separado, así que podía dejar a Racing
+     Bulls por encima de Red Bull —regla de Carlos: eso no puede pasar nunca—. Medido antes de esto:
+     entre 0,6 y 1,4 temporadas por partida con el filial por delante de la casa madre. evolveF1 lo
+     corregía, pero un año más tarde: para entonces ya se había visto. */
+  tpCapFilial();
+  /* 🔁 Y SE VUELVE A PROGRAMAR. Antes era una sola por partida (`regDone` la cerraba para siempre).
+     `regDone` se queda como estaba —«ya ha habido al menos una», que es lo que miran los dilemas— y
+     el calendario pasa a `regReg`. */
+  S.regReg = yearNow() + irnd(REG_CADA[0], REG_CADA[1]);
   S.regReveal={brawn:brawn.name, rumor:rumor.name, rumorTrue, year:yearNow(),
                bet:S.regBet||null, grade:S.regBetGrade||null, refused:S.regBetRefused||null};
   return {brawn, rumor, rumorTrue};
@@ -10887,6 +11006,23 @@ const TP_OWNERS=[
    intro:()=>L("La junta es joven y cree en los proyectos largos: te darán aire… mientras vean una dirección.",
                "The board is young and believes in long projects: they'll give you air… as long as they see a direction.",
                {pt:"A direção é jovem e acredita em projetos longos: vão te dar ar… enquanto virem um rumo."})},
+  /* 🏭 EL FABRICANTE (Carlos, 28-ago). Los tres de antes ocupaban tres casillas —apretar, castigar el
+     largo plazo, dar aire— y ninguno PONÍA DINERO. Este sí: una marca compra el equipo y la fábrica
+     nota el presupuesto cada invierno. A cambio, una marca no puede verse perdiendo: cuanto mejor es
+     tu coche, más te aprieta el listón. Te pagan el mejor coche y te exigen usarlo. */
+  {k:"brand",
+   lab:()=>L("🏭 Dueño fabricante","🏭 Manufacturer owner",{pt:"🏭 Dono fabricante"}),
+   intro:()=>L("Detrás hay una marca, no un señor: entran con la chequera abierta y una sola condición, que aquí no se viene a hacer bulto.",
+               "There's a brand behind it, not a man: they come in with the chequebook open and one condition — you don't come here to make up the numbers.",
+               {pt:"Atrás há uma marca, não um senhor: entram com o talão aberto e uma só condição, aqui não se vem para fazer número."})},
+  /* 📣 EL SHOWMAN (Carlos, 28-ago). El único al que no le importa el PUESTO. Su listón no es un
+     número de la clasificación: es un rival concreto al que hay que acabar por delante. Cambia la
+     naturaleza del año — puedes ser 7º y haber cumplido, o 3º y haber fracasado. */
+  {k:"show",
+   lab:()=>L("📣 Dueño showman","📣 Showman owner",{pt:"📣 Dono showman"}),
+   intro:()=>L("No le interesa el puesto, le interesa el ruido: no le traigas un quinto puesto, tráele un titular.",
+               "He doesn't care about the position, he cares about the noise: don't bring him fifth place, bring him a headline.",
+               {pt:"Não lhe interessa a posição, lhe interessa o barulho: não lhe traga um quinto lugar, traga uma manchete."})},
 ];
 function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
 
@@ -10917,8 +11053,16 @@ function tpRefreshCard(){
   $("ageV").textContent=(S.age+1);
   const lbls=document.querySelectorAll("#driverCard .agev .lbl");
   if(lbls[0]) lbls[0].textContent=L("TEMPORADA","SEASON",{pt:"TEMPORADA"});
-  if(lbls[1]) lbls[1].textContent=L("CONSEJO","BOARD",{pt:"CONSELHO"});
-  const mood = S.tpMissStreak>=1 ? [L("🚨 Ultimátum","🚨 Ultimatum",{pt:"🚨 Ultimato"}),"#d43f3f"]
+  /* 🧑‍✈️ SIENDO EL DUEÑO no hay consejo que dé ultimátums (Carlos, 28-ago, jugando con Glory GP):
+     el rótulo pasa a CUENTAS y el humor habla de dinero — que es la presión real del dueño:
+     un año malo son números rojos, dos son los acreedores llamando a la puerta. */
+  const _soyDueno = S.tpOwner && S.tpOwner.k==="self";
+  if(lbls[1]) lbls[1].textContent=_soyDueno ? L("CUENTAS","BOOKS",{pt:"CONTAS"}) : L("CONSEJO","BOARD",{pt:"CONSELHO"});
+  const mood = _soyDueno
+    ? ((S.tpDeuda||0)>=1 ? [L("🏦 Acreedores","🏦 Creditors",{pt:"🏦 Credores"}),"#a12626"]
+      : S.tpMissStreak>=1 ? [L("💸 Números rojos","💸 In the red",{pt:"💸 No vermelho"}),"#d43f3f"]
+      : [L("📗 En orden","📗 In order",{pt:"📗 Em ordem"}),"#12923f"])
+    : S.tpMissStreak>=1 ? [L("🚨 Ultimátum","🚨 Ultimatum",{pt:"🚨 Ultimato"}),"#d43f3f"]
     : S.tpLastMet===false ? [L("😮‍💨 Con aire","😮‍💨 Breathing",{pt:"😮‍💨 Com ar"}),"#c98a1e"]
     : [L("😊 Contento","😊 Happy",{pt:"😊 Contente"}),"#12923f"];
   /* 🎯 EL OBJETIVO, SIEMPRE VISIBLE Y CON SITIO PROPIO (Carlos, 20-ago: «sigue haciendo falta ponerlo
@@ -10930,8 +11074,9 @@ function tpRefreshCard(){
   if(!_tg){ _tg=document.createElement("span"); _tg.className="tag"; _tg.id="tagGoal";
     const _tags=document.querySelector("#driverCard .tags"); if(_tags) _tags.appendChild(_tg); }
   if(_tg){
-    if(S.tpGoal && S.tpGoal.target!=null){
-      const _obj=(S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º");
+    if(S.tpGoal && (S.tpGoal.rival || S.tpGoal.target!=null)){
+      const _obj = S.tpGoal.rival ? ("▸ "+S.tpGoal.rival)
+        : (S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º");
       _tg.style.display="";
       _tg.textContent="🎯 "+_obj+(S.tpGoal.year!==yearNow()?" ('"+String(S.tpGoal.year).slice(-2)+")":"");
     } else _tg.style.display="none";
@@ -11032,7 +11177,12 @@ function tpStarsN(v, esTecho){
 function tpEtiqueta(d){
   /* ⭐ UNA sola fila (petición de Carlos: «4 estrellas → 5 estrellas es demasiado largo»). Las llenas
      doradas son su nivel HOY; las huecas azules, hasta dónde puede llegar; el resto, apagado. */
-  const c=tpStarsN(d.skill||0,false), p=Math.max(c, tpStarsN(d.ceil||0,true));
+  /* 👴 SIN POTENCIAL PARA VETERANOS (Carlos, 29-ago: «¿Alonso con 1 estrella de potencial a los
+     44 años?»). La estrella azul dice «hasta dónde puede llegar», y a partir de cierta edad ya no
+     vas a llegar a ningún sitio nuevo: se enseña solo hasta los 27. El techo sigue existiendo por
+     dentro (npcSeason lo usa igual); es solo que la etiqueta deja de prometer futuro a quien no lo tiene. */
+  const c=tpStarsN(d.skill||0,false);
+  const p=(d.age||99)<=27 ? Math.max(c, tpStarsN(d.ceil||0,true)) : c;
   return `<span class="st-c">${"★".repeat(c)}</span>`
        + (p>c?`<span class="st-p">${"☆".repeat(p-c)}</span>`:"")
        + (p<5?`<span class="st-e">${"☆".repeat(5-p)}</span>`:"");
@@ -11059,7 +11209,7 @@ function tpSignTeam(t, how){
   }
   S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
   S.tpTeam=S.team.name;
-  S.tpOwner=TP_OWNERS[irnd(0,2)];
+  S.tpOwner=TP_OWNERS[irnd(0,TP_OWNERS.length-1)]; S.tpOwnerY=0;   // 🏢 años con este dueño, para el relevo
   S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
      equipo, no solo al empezar de cero, así que limpiarlo aquí borraba el rastro al cambiar de muro —
@@ -11094,6 +11244,92 @@ function tpSignTeam(t, how){
 /* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
 function tpYearStart(){
   if(S.retired) return;
+  /* 🏁 LA REVOLUCIÓN TÉCNICA, TAMBIÉN EN EL MURO. El disparador vivía en `nextOffers()`, que arranca
+     con `if(S.cat==="TP"){ tpWinter(); return; }` — o sea que en el modo jefe NO SALTABA NUNCA. Y era
+     lo único que rebarajaba la parrilla de verdad. */
+  if(yearNow()>=S.regReg){
+    const antes=Math.round(S.f1perf[S.tpTeam]||75);
+    regReset();
+    S.regUnknown=false;   // el ❓ de las estrellas lo limpia nextOffers(), por donde el jefe no pasa
+    const ahora=Math.round(S.f1perf[S.tpTeam]||75), d=ahora-antes;
+    /* 🧻 BORRÓN Y CUENTA NUEVA SI EL RESETEO TE HUNDE (Carlos, 29-ago: «me dan ultimátum pero me
+       piden ser 11º… no tiene sentido que estén tan enfadados y encima me dejen construir»). Si el
+       reglamento te destroza el coche, el enfado del año pasado pertenece a OTRA era: un consejo con
+       dos dedos de frente no te ejecuta por el coche viejo mientras te pide reconstruir el nuevo. */
+    if(d<=-6 && (S.tpMissStreak||0)>0){ S.tpMissStreak=0;
+      tpAviso(L("🧻 El consejo asume el golpe del reglamento: borrón y cuenta nueva.",
+                "🧻 The board absorbs the regulation blow: clean slate.",
+                {pt:"🧻 O conselho assume o golpe do regulamento: borrão e conta nova."})); }
+    S.pendingEvents.push(
+      d>=6  ? L(`🏁 Reglamento nuevo y vuestra interpretación es LA buena: el coche que sale de la fábrica es otra cosa. Nivel ${antes} → ${ahora}.`,
+                `🏁 New regulations and your reading of them is THE right one: the car leaving the factory is a different animal. Level ${antes} → ${ahora}.`,
+                {pt:`🏁 Regulamento novo e a sua interpretação é A certa: o carro que sai da fábrica é outra coisa. Nível ${antes} → ${ahora}.`})
+    : d<=-6 ? L(`🏁 Reglamento nuevo y os habéis equivocado de concepto. Lo que os hacía rápidos ya no vale: hay que rehacerlo. Nivel ${antes} → ${ahora}.`,
+                `🏁 New regulations and you picked the wrong concept. What made you fast no longer applies: it has to be rebuilt. Level ${antes} → ${ahora}.`,
+                {pt:`🏁 Regulamento novo e vocês erraram o conceito. O que os fazia rápidos já não vale: é preciso refazer. Nível ${antes} → ${ahora}.`})
+    :         L(`🏁 Reglamento nuevo: la parrilla se rebaraja entera y a vosotros os pilla en un término medio. Nivel ${antes} → ${ahora}.`,
+                `🏁 New regulations: the whole grid is reshuffled and you land somewhere in the middle. Level ${antes} → ${ahora}.`,
+                {pt:`🏁 Regulamento novo: o grid inteiro se rebaralha e vocês ficam num meio-termo. Nível ${antes} → ${ahora}.`}));
+    tpAviso(S.pendingEvents[S.pendingEvents.length-1]);   // 📢 y se ve YA, en el propio invierno
+  }
+  /* 🎯 EL LISTÓN, VISIBLE DESDE EL PRIMER DÍA (Carlos, 28-ago: «no veo la exigencia del consejo,
+     debería estar en todo momento»). El chip de la tarjeta solo se rellenaba en `tpAnnounce`, o sea
+     tras asientos y rumbo: toda la primera mitad del invierno se decidía sin ver qué te iban a exigir.
+     Se calcula aquí un listón provisional (mismo cálculo); `tpAnnounce` lo recalcula por si un dilema
+     cambia al dueño por el camino, y ahí el chip se refresca solo. */
+  S.tpGoal=tpGoalFor();
+  try{ refreshCard(); }catch(e){}
+  /* 🎬 APXGP TAMBIÉN EN EL MURO («molaría» — Carlos). En el clásico el equipo de la película es un
+     cameo con oferta para TI como piloto; aquí entra en la parrilla como escudería de verdad, con
+     Hayes y Pearce en sus coches — y como es un equipo más, el día de mañana puede despedir a su
+     jefe y llamarte A TI, salir en la bolsa de fichajes o pelearte un mundial. Misma guarda de año
+     que el clásico (la película es de 2025: en las eras retro no puede salir antes) y mismo desalojo
+     del bolsillo de retirados, que Hayes no puede estar en dos sitios a la vez. */
+  /* ⚖️ el 8% anual y no más: con .30 lo veía el 100% de las partidas de 18 inviernos (medido) y un
+     bombazo que sale siempre no es un bombazo. Con .08, ~la mitad de las carreras lo ve una vez. */
+  if(!S.apxShown && yearNow()>=2025 && S.age>=2 && ch(.08)
+     && !F1_TEAMS.some(t=>t.name==="APXGP")
+     && F1_TEAMS.length < ((ERAS[SELECTED_ERA]&&ERAS[SELECTED_ERA].maxGrid)||13)){
+    S.apxShown=true;
+    F1_TEAMS.push(APXGP);
+    const _pf=rnd(70,76);
+    S.f1perf.APXGP=_pf; S.f1target.APXGP=_pf+rnd(-2,7); S.f1char.APXGP=CHARS[irnd(0,2)];
+    S.cache.APXGP=Math.min(55,_pf);   // sin pedigrí: el caché se lo ganará en pista
+    (S.llegadaExp=S.llegadaExp||{})[ "APXGP" ]=yearNow();
+    const _hayes={name:"S. Hayes", flag:"🇺🇸", age:50, skill:Math.round(rnd(82,86)), ceil:88, titles:0};
+    const _pearce={name:"J. Pearce", flag:"🇬🇧", age:23, skill:Math.round(rnd(78,82)), ceil:90, titles:0};
+    S.dpool.push(_hayes,_pearce); S.seats.APXGP=[_hayes,_pearce];
+    S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!=="S. Hayes" && x.name!=="J. Pearce");
+    S.pendingEvents.push(L(
+      "🎬 Bombazo en el paddock: APXGP entra en la parrilla, con un veterano de 50 años al volante.",
+      "🎬 Paddock bombshell: APXGP joins the grid, with a 50-year-old veteran at the wheel.",
+      {pt:"🎬 Bomba no paddock: a APXGP entra no grid, com um veterano de 50 anos ao volante."}));
+  }
+  /* 🏢 LOS DUEÑOS TAMBIÉN CAMBIAN. Hasta ahora el dueño solo se movía por dos dilemas concretos, así
+     que podías echarte veinte temporadas con el mismo señor (queja de Carlos). En la F1 los equipos
+     cambian de manos constantemente: Force India → Racing Point → Aston Martin, Renault → Alpine,
+     Sauber → Audi, Minardi → Toro Rosso, Brawn → Mercedes. Ahora, pasados unos años, tu dueño puede
+     vender: llega otro perfil, con otro listón y otra voz. No se aplica si el dueño eres TÚ —a uno
+     mismo no se le vende el equipo— ni el primer año, para que dé tiempo a conocerle. */
+  /* 🏭 EL DINERO DE LA MARCA. Su rasgo no es una frase: la fábrica nota el presupuesto TODOS los
+     inviernos. Pequeño y constante —lo bastante para que en una etapa larga se note, no tanto como
+     para regalarte el campeonato—. `tpSubirCoche` respeta el techo y el tope del filial. */
+  if(S.tpTeam && S.tpOwner && S.tpOwner.k==="brand") tpSubirCoche(S.tpTeam, rnd(TP_MARCA[0],TP_MARCA[1]));
+  if(S.tpTeam && S.tpOwner && S.tpOwner.k!=="self"){
+    S.tpOwnerY=(S.tpOwnerY||0)+1;
+    if(S.tpOwnerY>=TP_DUENO_MIN && ch(TP_DUENO_P)){
+      const otros=TP_OWNERS.filter(o=>o.k!==S.tpOwner.k);
+      const nuevoD=otros[irnd(0,otros.length-1)];
+      S.tpOwner=nuevoD; S.tpOwnerY=0;
+      tpAviso(L(`🏢 Cambio de manos: el dueño vende. ${nuevoD.intro()}`,
+                `🏢 Change of hands: the owner sells. ${nuevoD.intro()}`,
+                {pt:`🏢 Mudança de mãos: o dono vende. ${nuevoD.intro()}`}));
+      S.pendingEvents.push(L(
+        `🏢 Cambio de manos en ${S.tpTeam}: el dueño vende y arriba se sienta gente nueva. ${nuevoD.intro()}`,
+        `🏢 ${S.tpTeam} changes hands: the owner sells and new people sit upstairs. ${nuevoD.intro()}`,
+        {pt:`🏢 ${S.tpTeam} muda de mãos: o dono vende e lá em cima senta gente nova. ${nuevoD.intro()}`}));
+    }
+  }
   /* 🚑 «el lesionado vuelve entero» ya no necesita código: nunca se le toca el nivel. Se pierde
      N carreras, no puntúa en ellas, y al año siguiente corre las suyas como cualquiera. */
   tpCosechar();          // 🌾 primero lo sembrado hace años: llega pase lo que pase
@@ -11119,12 +11355,18 @@ function tpYearStart(){
         if(fuera && fuera!=="PLAYER"){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(fuera); }
         rs[w]=d;
         S._tpNo=S._tpNo||{}; S._tpNo[d.name]=yearNow();   // no se te ofrece a quien acabas de soltar
+        tpAviso(L(`✍️ ${surname(d.name)} deja el equipo y ficha por ${v.to}, como se pactó el año pasado.`,
+                  `✍️ ${surname(d.name)} leaves the team and signs for ${v.to}, as agreed last year.`,
+                  {pt:`✍️ ${surname(d.name)} deixa a equipe e assina pela ${v.to}, como combinado no ano passado.`}));
         S.pendingEvents.push(L(`✍️ ${surname(d.name)} deja ${S.tpTeam} y ficha por ${v.to}, como se pactó.`,
                                `✍️ ${surname(d.name)} leaves ${S.tpTeam} and signs for ${v.to}, as agreed.`,
                                {pt:`✍️ ${surname(d.name)} deixa a ${S.tpTeam} e assina pela ${v.to}, como combinado.`}));
       } else {
         S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d);
         S._tpNo=S._tpNo||{}; S._tpNo[d.name]=yearNow();   // ídem: pidió salir, no se le llama ese invierno
+        tpAviso(L(`✍️ ${surname(d.name)} sale del equipo, como pidió el año pasado. De momento, sin volante.`,
+                  `✍️ ${surname(d.name)} leaves the team, as he asked last year. No seat for now.`,
+                  {pt:`✍️ ${surname(d.name)} sai da equipe, como pediu no ano passado. Por ora, sem volante.`}));
         S.pendingEvents.push(L(`✍️ ${surname(d.name)} sale de ${S.tpTeam} y se queda sin equipo, de momento.`,
                                `✍️ ${surname(d.name)} leaves ${S.tpTeam} and is without a seat, for now.`,
                                {pt:`✍️ ${surname(d.name)} sai da ${S.tpTeam} e fica sem equipe, por ora.`}));
@@ -11132,7 +11374,6 @@ function tpYearStart(){
     });
     S.tpSaleQ=[];
   }
-  S._tpTries={};   // 🎯 los intentos de fichaje se cuentan por invierno
   /* 🏁 EL VETERANO CON PRISA VINO POR UN AÑO, Y UN AÑO ES UN AÑO. Sin esto, al expirar su contrato
      `tpTerna` lo ofrecía como renovación un invierno tras otro y la promesa se quedaba en nada (lo
      cazó Carlos probándolo: «si se ofrece por un año… no tiene sentido que aparezca después en las
@@ -11254,6 +11495,7 @@ function tpMercado(){
       : L("Un hueco por cubrir. El mercado es tuyo: cada nombre lleva su probabilidad de decirte que sí.",
           "One seat to fill. The market is yours: every name carries his odds of saying yes.",
           {pt:"Uma vaga para cobrir. O mercado é seu: cada nome traz a probabilidade de dizer sim."})); }catch(e){}
+  try{ const _da=$("decSub"); const _av=tpAvisoHTML(); if(_da&&_av) _da.innerHTML=_av+_da.innerHTML; }catch(e){}
   if(S._tpNoTxt){ try{ const _d=$("decSub")||document.querySelector("#decision .sub"); if(_d) _d.innerHTML=S._tpNoTxt+"<br>"+_d.innerHTML; }catch(e){} S._tpNoTxt=null; }
   /* ✍️ …y la FIRMA también se ve (playtest de Carlos: «no se ve cuando un piloto acepta una oferta;
      directamente pasa a la siguiente pantalla»). Entre dos huecos, la confirmación abre la pantalla;
@@ -11342,7 +11584,15 @@ function tpMercado(){
       /* 🛡️ sin ningún asiento abierto no hay dónde sentarlo: se vuelve al mercado en vez de reventar.
          `ab[0].i` sobre una lista vacía tiraba la pantalla entera (cazado el 26-ago). */
       if(!ab.length){ tpMercado(); return; }
-      if(ab.length<=1){ tpSignDriver(ab[0].i, c); return; }
+      /* 🪑 CON UN SOLO HUECO TAMBIÉN SE ELIGE (Carlos, 28-ago, mercado de Cadillac: «¿no está lo de
+         seleccionar asiento?»). El fichaje iba de oficio al único hueco: con el otro asiento ocupado
+         por contrato vivo no había forma de sentar al nuevo de escudero y subir al de casa al Nº1.
+         Ahora se ofrecen los dos asientos; el de casa no sale del equipo, PASA al hueco. */
+      if(ab.length<=1){
+        const _otro=1-ab[0].i, _od=(S.seats[S.tpTeam]||[])[_otro];
+        if(_od && _od!=="PLAYER"){ tpElegirAsiento(c, [ab[0], {i:_otro, cur:_od, mueve:true, hueco:ab[0].i}]); return; }
+        tpSignDriver(ab[0].i, c); return;
+      }
       tpElegirAsiento(c, ab);
     };
     box.appendChild(b);
@@ -11368,6 +11618,17 @@ function tpElegirAsiento(c, ab){
     const esElMismo = h.cur && c.d && h.cur.name===c.d.name;   // renovándole en su propio asiento
     const quien = esElMismo
       ? L("su asiento de siempre","his usual seat",{pt:"o assento de sempre"})
+      : h.mueve ? L(`hoy lo ocupa ${surname(h.cur.name)} — pasaría al asiento ${h.hueco+1}, no sale del equipo`,
+                    `currently ${surname(h.cur.name)} — he'd move to seat ${h.hueco+1}, he stays with the team`,
+                    {pt:`hoje é de ${surname(h.cur.name)} — passaria ao assento ${h.hueco+1}, não sai da equipe`})
+      : (h.cur && ab.some(x=>x!==h && !x.cur && !x.mueve))
+      /* 🪑 CON OTRO HUECO LIBRE, EL VENCIDO NO SALE: PASA (Carlos, 29-ago: «¿por qué no puedo fichar
+         a Costoya y tratar de renovar a Leclerc como el nº2?»). Antes sentar al nuevo en el asiento
+         del vencido lo expulsaba aunque hubiera sitio de sobra. Ahora se corre al hueco libre con su
+         contrato vencido intacto, y el mercado te sigue ofreciendo renovarlo — en su asiento nuevo. */
+      ? L(`hoy lo ocupa ${surname(h.cur.name)} con el contrato vencido — pasaría al otro asiento, aún renovable`,
+          `currently ${surname(h.cur.name)}, contract expired — he'd move to the other seat, still renewable`,
+          {pt:`hoje é de ${surname(h.cur.name)}, contrato vencido — passaria ao outro assento, ainda renovável`})
       : h.cur ? L(`hoy lo ocupa ${surname(h.cur.name)} con el contrato vencido — saldría del equipo`,
                             `currently ${surname(h.cur.name)}, contract expired — he would leave the team`,
                             {pt:`hoje é de ${surname(h.cur.name)}, contrato vencido — ele sairia da equipe`})
@@ -11375,7 +11636,20 @@ function tpElegirAsiento(c, ab){
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${h.i===0?"👑":"🛡️"}</span>
       <span class="info"><span class="name">${rol}</span>
       <span class="sub" style="display:block">${quien}</span></span>`;
-    b.onclick=()=>tpSignDriver(h.i, c);
+    b.onclick=()=>{
+      /* 🪑 …y aquí la mudanza: si elegiste el asiento del vencido y hay hueco libre, el vencido se
+         corre allí ANTES de firmar — tpSignDriver ya no lo ve y no lo expulsa. */
+      if(!h.mueve && h.cur && !(c.d && h.cur.name===c.d.name)){
+        const _libre=ab.find(x=>x!==h && !x.cur && !x.mueve);
+        if(_libre){ const sl2=S.seats[S.tpTeam]; sl2[_libre.i]=h.cur; sl2[h.i]=null; }
+      }
+      /* 🪑 el de casa se muda al hueco ANTES de firmar al nuevo en su asiento. INTERCAMBIO, no
+         pisotón: el vencido que ocupaba el hueco queda en el asiento del nuevo, y ahí lo encuentra
+         la contabilidad del desplazado de `tpSignDriver` (campeón → puerta grande, resto → bolsa).
+         Pisarlo directamente era tragárselo la tierra — el mismo bug que ya se arregló una vez. */
+      if(h.mueve){ const sl=S.seats[S.tpTeam]; const _venc=sl[h.hueco]; sl[h.hueco]=sl[h.i]; sl[h.i]=_venc; }
+      tpSignDriver(h.i, c);
+    };
     box.appendChild(b);
   });
   scrollToDecision();
@@ -11412,9 +11686,13 @@ function tpDirectivaCierra(){
    Invertir el orden cambia los asientos → clave nueva → ofertas del otro asiento; volver a invertir
    devuelve la clave anterior → y con ella, las MISMAS ofertas. */
 function tpMercadoPool(abiertos){
+  /* 🚪 UN PORTAZO NO REBARAJA EL MERCADO (Carlos, 29-ago: «le ofrecí a Verstappen, no salió,
+     pensaba ofrecerle a Palou de segunda opción y se regeneró el pool»). Los rechazos ESTABAN en la
+     clave del caché, así que cada «no» te cambiaba la lista entera debajo de los pies. Ahora la
+     lista del invierno es estable: el que te dijo que no DESAPARECE de ella (filtro de abajo) y los
+     demás siguen donde estaban. */
   const _clave=[yearNow(), (abiertos||[]).map(h=>h.i).join(""),
     (S.seats[S.tpTeam]||[]).map(d=>(d&&d!=="PLAYER"&&d.name)||"-").join("|"),
-    S._tpNos||0, Object.keys(S._tpNo||{}).length,
     (S.tpReserva&&S.tpReserva.name)||"-",
       ].join("\u00b7");
   /* ⚠️ UN DICCIONARIO, NO UNA CASILLA. La primera versión guardaba una sola lista y al invertir el
@@ -11422,7 +11700,8 @@ function tpMercadoPool(abiertos){
      el 39% de los ciclos devolvía lo mismo. Con un mapa por clave, ir y volver es gratis. Se vacía
      al cambiar de año para que no crezca. */
   if(S._tpPoolY!==yearNow()){ S._tpPoolY=yearNow(); S._tpPool={}; }
-  if(S._tpPool && S._tpPool[_clave]) return S._tpPool[_clave];
+  const _sinPortazos=cs=>cs.filter(c=>!(c.d && (S._tpNo||{})[c.d.name]===yearNow()));
+  if(S._tpPool && S._tpPool[_clave]) return _sinPortazos(S._tpPool[_clave]);
   const tn=S.tpTeam, sl=S.seats[tn];
   const noY=S._tpNo||{};
   const cands=[];
@@ -11680,50 +11959,8 @@ function tpOddsTag(p, modo){
        : p>=.15? `<span class="odds o2">${ic} ${w[2]}</span>`
        :         `<span class="odds o1">${ic} ${w[3]}</span>`;
 }
-function tpTerna(i){
-  /* 🔓 DE TERNA CERRADA A POOL ELEGIBLE (playtest de Carlos: «ahora es limitante: renovar, un piloto
-     que yo no elijo, o una promesa random»). Ya no se filtra por «quién te diría que sí»: se enseña
-     un buen trozo de la parrilla y ELIGES TÚ a quién llamar — con su probabilidad a la vista, y el
-     rechazo posible. Quien te dijo que no este invierno no vuelve a la lista. */
-  const tn=S.tpTeam, sl=S.seats[tn], cur=sl[i], other=sl[1-i];
-  const noY=S._tpNo||{};
-  const cands=[];
-  /* 🐂 dirigiendo el FILIAL, la cantera manda también sobre ti: no renuevas a quien roza la salida
-     (29) y solo fichas promesas (≤26, sin títulos, sin crossovers). El resto del pool ni aparece. */
-  const soyFilial=isRBJr(tn);
-  const esPromesa=d=>d && (d.age||0)<=26 && !(d.titles||0) && !d.crossover && (d.skill||0)<88;   // un consagrado no baja al filial (Piastri, cazado por Carlos)
-  if(cur && cur!=="PLAYER" && !(soyFilial && (cur.age||0)>=RB_SALIDA-1)) cands.push({kind:"renew", d:cur});
-  if(S.tpReserva && (!other || other==="PLAYER" || S.tpReserva.name!==other.name) && (!cur||cur==="PLAYER"||S.tpReserva.name!==cur.name))
-    cands.push({kind:"probador", d:S.tpReserva});
-  const pool=[];
-  Object.entries(S.seats).forEach(([t,s2])=>{
-    if(t===tn || !Array.isArray(s2)) return;
-    s2.forEach((d,j)=>{
-      if(!d || d==="PLAYER" || mktMoved(d) || d.beast) return;
-      if(d._noVuelve===tn) return;   // 🚪 le echaste para sentar al veterano: contigo no firma más
-      if(other && other!=="PLAYER" && d.name===other.name) return;
-      if(noY[d.name]===yearNow()) return;              // ya te dijo que no este invierno
-      if(soyFilial && !esPromesa(d)) return;           // 🐂 el filial solo mira promesas
-      pool.push({kind:"fichar", d, from:t, j, odds:tpOdds(d,t)});
-    });
-  });
-  /* 🎯 EL POOL, POR PROBABILIDAD Y NO POR SKILL BRUTO (Carlos, 18-ago: «hacía ofertas a 4-5★ en
-     Cadillac y me rechazaban; filtrado con sentido + máximo de intentos»). Un coche malo NO ve a los
-     cinco mejores del mundo con «casi imposible»: ve a quien de verdad aceptaría —veteranos buenos ya
-     acabados, jóvenes sin experiencia, gente de nivel medio—. tpOdds ya modela ese «quién vendría».
-     Y hay tope de intentos: cada rechazo sube el suelo, así que insistir deja de traer imposibles. */
-  pool.sort((a,b)=>(b.odds||0)-(a.odds||0) || (b.d.skill||0)-(a.d.skill||0));
-  const _tries=(S._tpTries&&S._tpTries[i])||0;
-  const floor = _tries>=2 ? 0.45 : 0.12;
-  let top=pool.filter(c=>(c.odds||0)>=floor).slice(0,4);
-  // UNA apuesta aspiracional (el mejor por skill, aunque sea difícil) mientras no hayas gastado intentos
-  if(_tries<2){ const stretch=pool.find(c=>top.indexOf(c)<0 && (c.d.skill||0)>=88); if(stretch) top.push(stretch); }
-  cands.push(...top);
-  (S.freeAgents||[]).filter(d=>d&&d.name&&noY[d.name]!==yearNow() && !(other&&other!=="PLAYER"&&other.name===d.name) && (!soyFilial||esPromesa(d)))
-    .slice(0,2).forEach(d=>cands.push({kind:"libre", d, odds:.9}));
-  cands.push({kind:"rookie"});
-  return cands;
-}
+/* 🧹 aquí vivía `tpTerna(i)` (44 líneas): la terna cerrada del mercado viejo. La bolsa abierta
+   (`tpMercadoPool`) la dejó sin llamadores y sin uso — borrada el 28-ago tras verificarlo. */
 /* 🚪 RENOVAR YA NO ES UNILATERAL (Carlos, 22-ago: «¿el piloto podría no querer renovar para irse a
    otro equipo mejor, o peor por más dinero?» — hasta hoy solo se negaba al ser degradado de asiento).
    Cuatro motivos, por orden de peso: RENCOR (le fallaste en un dilema y no lo olvidó) · GLORIA (es
@@ -11941,9 +12178,10 @@ function tpGanarYa(){
   mk("🤝",L("«Vale. Este año lo damos todo»","\"Fine. This year we give it everything\"",{pt:"«Está bem. Este ano damos tudo»"}),
     L("Tienen razón en una cosa: el título no se gana el año que viene.","They're right about one thing: the title isn't won next year.",{pt:"Eles têm razão numa coisa: o título não se ganha no ano que vem."}),
     ()=>{ S.tpSinExprimir=0;
-      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(RB_EX_YA[0],RB_EX_YA[1]));
-      tpSembrar(1, -rnd(RB_EX_D1[0],RB_EX_D1[1]));      // 💸 la hucha al revés: el año que viene…
-      tpSembrar(2, -rnd(RB_EX_D2[0],RB_EX_D2[1]));      // …y sobre todo dentro de dos
+      const _f=tpSubirCoche(tn, rnd(RB_EX_YA[0],RB_EX_YA[1]));
+      S.tpTopYears=(S.tpTopYears||0)+1;
+      tpSembrar(1, -_f*rnd(RB_EX_D1[0],RB_EX_D1[1]));   // 💸 la hucha al revés: el año que viene…
+      tpSembrar(2, -_f*rnd(RB_EX_D2[0],RB_EX_D2[1]));   // …y sobre todo dentro de dos
       tpFijarTendencia();
       S.pendingEvents.push(L("🤝 Cedes, y el consejo respira. La fábrica vuelca hasta el último recurso en el coche de este año — y se nota desde la primera carrera. Lo que venga después, ya se verá.","🤝 You give in, and the board breathes out. The factory pours every last resource into this year's car — you feel it from race one. Whatever comes after, comes after.",{pt:"🤝 Você cede, e o conselho respira. A fábrica despeja cada recurso no carro deste ano — e se nota desde a primeira corrida. O que vier depois, logo se vê."}));
       tpRepartoScreen(); });
@@ -12038,13 +12276,40 @@ function tpBautizo(){
    empatar con continuidad en promedio pero con varianza y con el bache del segundo año.
      exprimir  → el año del golpe +6,5 contra +3,3 de continuidad (+3,2), y −0,5 al final
      proyecto  → +0,4 sobre continuidad al final: empate con dados */
-let RB_EX_YA=[4.5,6.0], RB_EX_D1=[0.4,1.0], RB_EX_D2=[1.6,3.2];
+/* ⚖️ LAS TRES OPCIONES, REEQUILIBRADAS (medido 28-ago). Tal y como estaban, EXPRIMIR ganaba a los
+   cuatro años en TODOS los niveles de coche —neto +2,1 contra +1,0 de continuidad y +0,7 del
+   proyecto— y encima te daba el mejor coche ya: no había ninguna razón para elegir otra cosa, o sea
+   que la pantalla del rumbo no era una decisión. La hipoteca de exprimir no llegaba a costar lo que
+   prometía (−3,1 contra un +5,25 de regalo) y el proyecto a dos años, que debería ser el salto
+   grande, salía a +0,84 de esperanza. Ahora: exprimir es un pico prestado que a la larga sale caro,
+   continuidad es el suelo seguro, y el proyecto es el que más da si aguantas el bache. */
+let RB_EX_YA=[4.5,6.0], RB_EX_D1=[0.8,1.8], RB_EX_D2=[3.2,4.6];
 let RB_CO_YA=[0.5,1.5];
 let RB_PR_YA=[0.5,2.0], RB_PR_A1=[0.2,0.9];
-let RB_PR_BIEN=[4.0,7.0], RB_PR_REG=[0.5,2.0], RB_PR_MAL=[-4.0,-1.5];
-let RB_PR_PESOS=[35,35,30];   // bien / regular / el caso Aston Martin
+let RB_PR_BIEN=[5.0,8.5], RB_PR_REG=[0.5,2.0], RB_PR_MAL=[-4.0,-1.5];
+let RB_PR_PESOS=[45,30,25];   // bien / regular / el caso Aston Martin
 
 function tpSembrar(anos, valor){ (S.tpCosecha=S.tpCosecha||[]).push({y:yearNow()+anos, v:valor}); }
+/* 🔝 EL TECHO YA NO SE TRAGA LA MEJORA. `Math.min(96, perf+g)` tiraba a la basura la parte que no
+   cabía: con el coche a 94, exprimir daba +1,4 en cuatro años en vez de +5, y las tres opciones del
+   rumbo se volvían la misma pantalla (queja de Carlos: «con coche top, todo el rumbo da igual»).
+   Guardar la sobra para el año siguiente no valía: con el coche a 96 tampoco cabía entonces y
+   exprimir salía a −2,2 neto —cobras poco y pagas la hipoteca entera: una trampa—. Lo que se hace
+   es COBRAR SOLO LO QUE ENTRA: la función devuelve la fracción aplicada y quien la llama escala su
+   deuda con ella. Y como bajo el techo ninguna opción puede dar mucho, lo que se decide ahí arriba
+   es otra cosa: el DESGASTE del ciclo (`tpTopYears`). Exprimir lo acelera, continuidad lo renueva,
+   el proyecto lo reinicia. Eso es lo que hace que con un cochazo el rumbo siga siendo una decisión. */
+function tpSubirCoche(tn, g){
+  const cur=S.f1perf[tn]||75, tope=96;
+  const cabe=Math.max(0, Math.min(g, tope-cur));
+  S.f1perf[tn]=Math.max(60, Math.min(tope, cur+cabe));
+  /* 🚫 EL TOPE DEL FILIAL, EN EL MOMENTO Y NO AL CIERRE. `evolveF1` lo aplicaba al acabar la
+     temporada, así que dirigiendo al filial podías subir el coche por encima de la casa madre y
+     CORRER EL AÑO ENTERO así — la carrera se simula con `f1perf`, no con el valor corregido de
+     diciembre. Cazado midiendo la era 2020: AlphaTauri a 91,6 con Red Bull en 88. */
+  tpCapFilial();
+  return g>0 ? cabe/g : 1;      // qué fracción de la mejora entró de verdad
+}
 /* la suma pendiente alimenta el chip de tendencia: la flecha pasa a ser un indicador honesto de tu
    propia hucha en vez de un objetivo abstracto */
 function tpPendiente(){ return (S.tpCosecha||[]).reduce((a,c)=>a+c.v,0); }
@@ -12063,8 +12328,34 @@ function tpCosechar(){
      efecto se ve donde tiene que verse: en el puesto del año. */
   if(Math.abs(total)>=.05){
     S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,(S.f1perf[S.tpTeam]||75)+total));
+    tpCapFilial();   // la hucha tampoco puede saltarse el tope del filial
   }
   tpFijarTendencia();
+}
+/* 👥 TUS PILOTOS, A LA VISTA (Carlos, 28-ago: «pongamos los pilotos en todo momento antes de donde
+   dice el rumbo del coche»). Una línea por titular —bandera, nombre, estrellas, títulos, edad, su
+   puesto del año pasado en pastilla y el contrato— y el probador debajo. Se pinta encima del sub. */
+/* 📢 AVISO DE INVIERNO. Lo que pasa entre temporadas iba SOLO a `pendingEvents`, que no se lee
+   hasta que la siguiente temporada ya ha corrido: Carlos perdió a Antonelli «sin saber por qué» y
+   se comió un reglamento nuevo enterándose un año tarde. Lo importante del invierno se enseña
+   ADEMÁS en la primera pantalla del propio invierno, y se consume al mostrarse. */
+function tpAviso(txt){ S._tpAvisoTxt=(S._tpAvisoTxt?S._tpAvisoTxt+"<br>":"")+txt; }
+function tpAvisoHTML(){ const t=S._tpAvisoTxt||""; S._tpAvisoTxt=null;
+  return t? `<span class="aviso-consejo">${t}</span><br>` : ""; }
+function tpPilotosHTML(){
+  const sl=S.seats[S.tpTeam]||[];
+  const col=(S.team&&S.team.color)||"#c9a227";
+  /* 🏷️ en CHIPS (Carlos, 29-ago), como los del garaje del mercado. Y la posición PEQUEÑA e inline,
+     pegada a la edad — el `.pos` de base es display:block y salía como una barra gigante. */
+  const linea=d=>{
+    if(!d||d==="PLAYER") return "";
+    const rk=S.rankD&&S.rankD[d.name];
+    const pos=rk?` <span class="pos ${posClass(rk)}" style="display:inline-block;width:auto;font-size:11px;padding:0 6px;border-radius:6px;vertical-align:middle">${rk===1?"🏆 1º":rk+"º"}</span>`:"";
+    return `<span class="gar-chip" style="border-color:${col};display:inline-block;margin:1px 0">${d.flag||"🏁"} ${d.name} ${tpEtiqueta(d)}${d.titles?` 👑×${d.titles}`:""} · ${d.age}${pos} · 📜${Math.max(0,d.tpc||0)}</span>`;
+  };
+  const filas=[linea(sl[0]), linea(sl[1])].filter(Boolean);
+  if(S.tpReserva) filas.push(`<span class="gar-chip" style="border-color:${col};display:inline-block;margin:1px 0">🧢 ${S.tpReserva.flag||"🏁"} ${S.tpReserva.name} ${tpEtiqueta(S.tpReserva)} · ${S.tpReserva.age}</span>`);
+  return filas.length? filas.join("<br>")+"<br>" : "";
 }
 function tpRumboScreen(){
   /* 🧢 EL BANQUILLO NO SE SALTA SU TURNO (lo cazó Carlos: «me quedé sin probador el mismo año que
@@ -12089,6 +12380,7 @@ function tpRumboScreen(){
   setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`})+" · "+tn, "");
   // setDecision escapa el HTML (lección del mercado): el chip se pinta por innerHTML
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=
+    tpAvisoHTML()+tpPilotosHTML()+
     L(`Tu coche: ${tpStars(tn)} ${_chipTr}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
       `Your car: ${tpStars(tn)} ${_chipTr}. Where you push the factory shows over 2-3 seasons.`,
       {pt:`O seu carro: ${tpStars(tn)} ${_chipTr}. Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}); }catch(e){}
@@ -12130,15 +12422,21 @@ function tpRumboScreen(){
   mk("⚡",L("Exprimir el coche ESTE año","Squeeze the car THIS year",{pt:"Espremer o carro ESTE ano"}),
     L("Mejora rápida ya, pero hipotecas el año siguiente.<br>Para dar un golpe cuando estás cerca.","Fast gains now, but you mortgage next year.<br>To strike when you're close.",{pt:"Melhora rápida já, mas hipoteca o próximo ano.<br>Para dar o bote quando está perto."}),
     ()=>{ S.tpSinExprimir=0; S._ganarYaFirme=null;   // 📊 exprimiste: el contador vuelve a cero (y si te habías plantado, ya no cuenta)
-      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(RB_EX_YA[0],RB_EX_YA[1]));
-      tpSembrar(1, -rnd(RB_EX_D1[0],RB_EX_D1[1]));      // 💸 la hucha al revés: el año que viene…
-      tpSembrar(2, -rnd(RB_EX_D2[0],RB_EX_D2[1]));      // …y sobre todo dentro de dos
+      const _f=tpSubirCoche(tn, rnd(RB_EX_YA[0],RB_EX_YA[1]));   // solo se hipoteca lo que se gastó
+      S.tpTopYears=(S.tpTopYears||0)+1;                 // 🌪️ y el ciclo se quema más deprisa
+      tpSembrar(1, -_f*rnd(RB_EX_D1[0],RB_EX_D1[1]));   // 💸 la hucha al revés: el año que viene…
+      tpSembrar(2, -_f*rnd(RB_EX_D2[0],RB_EX_D2[1]));   // …y sobre todo dentro de dos
       tpFijarTendencia();
       S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
   mk("⚖️",L("Mejoras SEGURAS y continuidad","SAFE gains and continuity",{pt:"Melhorias SEGURAS e continuidade"}),
     L("Subida pequeña pero segura, sin riesgo y sin hipotecar nada.<br>El término medio: ni golpe ni sacrificio.","A small but safe climb, no risk and nothing mortgaged.<br>The middle ground: no strike, no sacrifice.",{pt:"Subida pequena mas segura, sem risco e sem hipoteca.<br>O meio-termo: nem bote nem sacrifício."}),
     ()=>{ S.tpSinExprimir=(S.tpSinExprimir||0)+1;
-      S.f1perf[tn]=Math.min(96,(S.f1perf[tn]||75)+rnd(RB_CO_YA[0],RB_CO_YA[1]));
+      tpSubirCoche(tn, rnd(RB_CO_YA[0],RB_CO_YA[1]));
+      /* 🌪️ evolucionar el concepto RETRASA el agotamiento, no lo cancela. Restando 1 fijo anulaba
+         exacto el +1 que suma la temporada por ir arriba, y un coche a 94 se quedaba clavado en 96
+         para siempre: adiós al Red Bull '14 y al Mercedes '22. A medias, el ciclo se agota cada ~6
+         años en vez de cada 3. */
+      if(ch(.5)) S.tpTopYears=Math.max(0,(S.tpTopYears||0)-1);
       tpFijarTendencia();                               // ni siembra ni debe: lo que ves es lo que hay
       S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
   mk("🏗️",L("Proyecto a DOS AÑOS","TWO-YEAR project",{pt:"Projeto de DOIS ANOS"}),
@@ -12147,6 +12445,7 @@ function tpRumboScreen(){
       S.tpSinExprimir=(S.tpSinExprimir||0)+1;
       if(S._penProyecto) TPRE(-S._penProyecto);   // el precio de sacrificar el presente, avisado antes
       S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(RB_PR_YA[0],RB_PR_YA[1]));   // el peaje de hoy
+      S.tpTopYears=0;                                   // 🌪️ un coche nuevo de cero reinicia el ciclo
       tpSembrar(1, rnd(RB_PR_A1[0],RB_PR_A1[1]));       // el año que viene, un pelillo por encima
       /* 🎲 y a dos años el sobre cerrado. El tope de 95 ya no se lo come: esto es un INCREMENTO
          sobre lo que tengas, no un objetivo lejano que el techo recortaba (antes, con el coche en
@@ -12182,22 +12481,29 @@ function tpRepartoScreen(){
      coche: dónde has apostado y dónde has recortado. Eso es lo que esta pantalla decide. */
   /* las etiquetas dicen QUÉ HACE TU FÁBRICA con cada frente (Carlos: «no entiendo "tu gran apuesta"
      y "recortado"»): dónde estás metiendo el dinero de más, y de dónde lo estás quitando para pagarlo */
+  /* 💬 CHIPS, NO CONTABILIDAD (Carlos, 28-ago: «ese vocabulario es absurdo»). Fuera «le quitas
+     dinero» y compañía: un chip de color por eje —bueno/medio/pobre— que dice cómo está alimentado
+     ese frente. Verde el que recibe de más, gris el normal, rojo el que paga la fiesta. */
+  /* 💰 EL CHIP HABLA DE PRESUPUESTO, NO DE CALIDAD (Carlos, 29-ago: «¿aerodinámica pobre a pesar
+     de tener 4 estrellas?»). Las estrellas son tu puesto EN LA PARRILLA; el chip es dónde pone el
+     dinero TU fábrica. «Pobre» junto a 4★ parecía una contradicción — con «recortado» se lee lo que
+     es: eres 4º del mundo en aero Y le estás quitando dinero para pagar otro frente. */
+  const _chipInline="display:inline-block;width:auto;vertical-align:middle;font-size:11px;padding:1px 7px;border-radius:6px";
   const incl=e=>{ const v=pr[e];
-    return v>=2 ? L("◆◆ aquí va el dinero de más","◆◆ extra money goes here",{pt:"◆◆ o dinheiro extra vai aqui"})
-         : v===1 ? L("◆ algo más de dinero","◆ a bit more money",{pt:"◆ um pouco mais de dinheiro"})
-         : v===0 ? L("· presupuesto normal","· normal budget",{pt:"· orçamento normal"})
-         : v===-1 ? L("▽ le quitas dinero","▽ money taken from here",{pt:"▽ você tira dinheiro daqui"})
-         :          L("▽▽ pagas lo demás con esto","▽▽ this pays for the rest",{pt:"▽▽ isto paga o resto"}); };
+    return v>=1 ? `<span class="pos p1" style="${_chipInline}">💰 ${L("prioridad","priority",{pt:"prioridade"})}</span>`
+         : v===0 ? `<span class="pos rest" style="${_chipInline}">${L("normal","normal",{pt:"normal"})}</span>`
+         :         `<span class="pos" style="${_chipInline};background:#c0392b;color:#fff">${L("recortado","cut back",{pt:"cortado"})}</span>`; };
+
   /* 📋 EL ENUNCIADO NO REPITE LAS ESTRELLAS (lo cazó Carlos, 27-ago): salían aquí arriba y otra
      vez en cada una de las tres opciones, dos líneas más abajo. Aquí se queda solo la FORMA del
      coche —dónde metes el dinero de más y de dónde lo quitas—, que es lo que esta pantalla decide. */
   /* separador de RAYA y no de punto: el «·» ya es el marcador del presupuesto neutro, y al quitar
      las estrellas quedaba «Motor · presupuesto normal · Fiabilidad», imposible de leer. */
-  const resumen=PROF_EJES.map(e=>`${EJE_NOMBRE[e]()} ${incl(e)}`).join(" — ");
-  setDecision(L(`🔧 ¿Dónde ponemos el esfuerzo? · ${yearNow()}`,`🔧 Where do we put the effort? · ${yearNow()}`,{pt:`🔧 Onde colocamos o esforço? · ${yearNow()}`})+" · "+tn,
-    L(`Tu coche hoy: ${resumen}. Empujar un frente significa recortar en otro — la fábrica no da para todo.`,
-      `Your car today: ${resumen}. Pushing one front means cutting another — the factory can't do everything.`,
-      {pt:`O seu carro hoje: ${resumen}. Empurrar uma frente significa cortar noutra — a fábrica não dá para tudo.`}));
+  setDecision(L(`🔧 ¿Qué quieres desarrollar más este año? · ${yearNow()}`,`🔧 What do you want to develop most this year? · ${yearNow()}`,{pt:`🔧 O que você quer desenvolver mais este ano? · ${yearNow()}`})+" · "+tn,
+    /* 🗣️ una sola frase (Carlos, 29-ago: «eso ya lo vemos» — los chips de cada tarjeta ya cuentan
+       el estado, no hace falta repetirlo arriba). `resumen` muere aquí. */
+    L("Selecciona tu prioridad para este año.","Pick your priority for this year.",{pt:"Selecione a sua prioridade para este ano."}));
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=tpAvisoHTML()+tpPilotosHTML()+_d.innerHTML; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
@@ -12221,7 +12527,7 @@ function tpRepartoScreen(){
     const b=document.createElement("button"); b.className="offer dilemma"+(tope?" retire":"");
     const _ejeEmoji={motor:"⚙️", aero:"🌬️", fiab:"🛡️"}[eje]||"🔧";
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${_ejeEmoji}</span>
-      <span class="info"><span class="name">${EJE_NOMBRE[eje]()} ${e.txt} <span style="font-weight:600;opacity:.75">${incl(eje)}</span></span>
+      <span class="info"><span class="name">${EJE_NOMBRE[eje]()} ${e.txt} ${incl(eje)}</span>
       <span class="sub" style="display:block">${EJE_QUE_HACE[eje]()}</span>
       <span class="sub" style="display:block">${tope
         ? L("La fábrica ya vuelca aquí todo lo que puede","The factory already pours everything it can here",{pt:"A fábrica já coloca aqui tudo o que pode"})
@@ -12252,18 +12558,20 @@ function tpRepartoScreen(){
   const mios=tpDrvs();
   const margen=mios.filter(d=>(d.skill||0) < (d.ceil||97)-0.2);
   const q=document.createElement("button"); q.className="offer dilemma";
-  /* 🎨 el gris la dejaba fuera del grupo aunque es una opción más (Carlos, 27-ago): mismo dorado
-     que las tres de arriba, un tono más claro para que se distinga sin desentonar. */
-  q.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#e8c964,#b8902a)">✋</span>
+  /* 🎨 VERDE OLIVA, no dorado (Carlos, 28-ago: «que salga en otro color ligeramente diferente a los
+     otros 3»). El dorado claro del 27-ago no bastaba: en el móvil las cuatro se leían iguales. Esta
+     opción es de otra familia —no empuja ningún eje, invierte en las PERSONAS— y el color lo cuenta. */
+  q.style.border="2px solid #8fa452";
+  q.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#a9bf62,#6d8330)">✋</span>
     <span class="info"><span class="name">${L("Acostumbrar a tus pilotos a este coche","Let your drivers settle into this car",{pt:"Acostumar os seus pilotos a este carro"})}</span>
     <span class="sub" style="display:block">${L("Otro año con el mismo concepto: se lo aprenden de memoria y rinden más.","Another year with the same concept: they learn it inside out and get more from it.",{pt:"Mais um ano com o mesmo conceito: aprendem de cor e rendem mais."})}</span>
     <span class="sub" style="display:block">${margen.length
-      /* 🗣️ la coletilla «pero un piloto se puede ir, y el coche se queda» la quitó Carlos: es cierta
-         pero no viene a cuento aquí — nadie se va POR esto, y leído en frío parece una amenaza. Lo que
-         de verdad cuesta esta opción es el año que NO reformas el coche. */
-      ? L(`Mejoran ${margen.map(d=>surname(d.name)).join(" y ")} · a cambio, este año el coche no cambia de forma`,
-          `${margen.map(d=>surname(d.name)).join(" and ")} improve · in exchange, the car's shape stays as it is this year`,
-          {pt:`Melhoram ${margen.map(d=>surname(d.name)).join(" e ")} · em troca, este ano o carro não muda de forma`})
+      /* 🗣️ EN POSITIVO (Carlos, 28-ago): «a cambio, el coche no cambia de forma» no se entendía.
+         Se cuenta lo que HACES —pulir lo que ya hay— y no lo que dejas de hacer. La renuncia al
+         invierno de fábrica sigue implícita en «pulir en vez de reformar». */
+      ? L(`Pulir el coche en vez de reformarlo: ${margen.map(d=>surname(d.name)).join(" y ")} se adaptan y mejoran`,
+          `Polish the car instead of redesigning it: ${margen.map(d=>surname(d.name)).join(" and ")} adapt and improve`,
+          {pt:`Polir o carro em vez de reformá-lo: ${margen.map(d=>surname(d.name)).join(" e ")} se adaptam e melhoram`})
       : L("Los dos están ya en su techo: este año no ganarías nada por ahí","Both are already at their ceiling: you'd gain nothing there this year",{pt:"Os dois já estão no teto: por aí não ganharia nada este ano"})}</span></span>`;
   q.onclick=()=>{
     const suben=[];
@@ -12311,23 +12619,43 @@ function tpGoalFor(){
   }
   if(S.tpOwner && S.tpOwner.k==="win") target=Math.max(1,target-1);      // el ganador aprieta
   if(S.tpOwner && S.tpOwner.k==="young") target=Math.min(n-1,target+1);  // el paciente da aire
+  // 🏭 la marca aprieta CUANDO YA TIENE COCHE: pagar el mejor material y quedar quinto no vale
+  if(S.tpOwner && S.tpOwner.k==="brand" && p<=5) target=Math.max(1,target-1);
+  /* 📣 el showman no pide un puesto: pide un RIVAL. Se elige entre los vecinos de parrilla —el de
+     delante y el de detrás— para que sea pelea de verdad y no un imposible ni un regalo. */
+  let rival=null;
+  if(S.tpOwner && S.tpOwner.k==="show"){
+    const vecinos=[ord[p-2], ord[p]].filter(x=>x && x!==S.tpTeam);
+    if(vecinos.length) rival=vecinos[irnd(0,vecinos.length-1)];
+  }
   /* el suelo: por muy contento que esté el consejo, no se te puede pedir batir a tu propio coche por
      más de un puesto. Sin esto la memoria se convertiría en un trinquete que sube y no baja nunca. */
   target=Math.max(1, Math.max(p-1, Math.min(n-1, target)));
-  const meta = target===1 ? L("el título de constructores","the constructors' title",{pt:"o título de construtores"})
+  const meta = rival ? L(`acabar por delante de ${rival} en constructores`,`finish ahead of ${rival} in the constructors`,{pt:`terminar à frente da ${rival} nos construtores`})
+    : target===1 ? L("el título de constructores","the constructors' title",{pt:"o título de construtores"})
     : L(`terminar ${target}º de constructores o mejor`,`P${target} in the constructors or better`,{pt:`terminar em ${target}º dos construtores ou melhor`});
   const voz = !S.tpOwner? "" : S.tpOwner.k==="win"
     ? L("«He ganado en todo lo que he tocado. Aquí no va a ser distinto.»","«I've won at everything I've touched. This will be no different.»",{pt:"«Ganhei em tudo em que toquei. Aqui não vai ser diferente.»"})
     : S.tpOwner.k==="cut"
     ? L("«Esto no es una afición. Quiero resultados, y los quiero pronto.»","«This isn't a hobby. I want results, and I want them soon.»",{pt:"«Isto é um investimento, não um hobby. Que as contas fechem e vamos nos entender.»"})
+    : S.tpOwner.k==="brand"
+    ? L("«El presupuesto lo ponemos nosotros. Los resultados los pones tú.»","«We put up the budget. You put up the results.»",{pt:"«O orçamento colocamos nós. Os resultados coloca você.»"})
+    : S.tpOwner.k==="show"
+    /* 🗣️ la voz nombra al RIVAL (Carlos, 28-ago: «si estoy último, ¿a qué te refieres con el quinto
+       puesto?» — y «titular» encima se leía como piloto titular). La frase de la peli era fija y no
+       sabía dónde estabas; ahora dice exactamente lo que el listón pide. */
+    ? L(`«Me aburren los puestos. Quiero a ${rival||"nuestro rival"} por detrás y que se hable de nosotros.»`,
+        `«Positions bore me. I want ${rival||"our rival"} behind us and people talking about us.»`,
+        {pt:`«Posições me entediam. Quero a ${rival||"nosso rival"} atrás e todo mundo falando de nós.»`})
     : L("«Cree en el proyecto. Nosotros creemos en ti… de momento.»","«Believe in the project. We believe in you… for now.»",{pt:"«Acredite no projeto. Nós acreditamos em você… por enquanto.»"});
-  return {target, exp:p, year:yearNow(),
+  return {target, rival, exp:p, year:yearNow(),
     txt:L(`El consejo fija el listón de ${yearNow()}: ${meta}. ${voz}`,`The board sets the ${yearNow()} bar: ${meta}. ${voz}`,{pt:`O conselho fixa a meta de ${yearNow()}: ${meta}. ${voz}`}),
     short:"🎯 "+L(`Objetivo del consejo: ${meta}.`,`Board target: ${meta}.`,{pt:`Meta do conselho: ${meta}.`})};
 }
 function tpAnnounce(){
   if(S.retired) return;
   const g=tpGoalFor(); S.tpGoal=g;
+  try{ refreshCard(); }catch(e){}   // 🎯 el chip de la tarjeta, al día con el listón definitivo
   S.pendingEvents.push(g.short);
   setDecision(L(`🎯 El consejo fija el listón · ${yearNow()}`,`🎯 The board sets the bar · ${yearNow()}`,{pt:`🎯 O conselho fixa a meta · ${yearNow()}`})+" · "+S.tpTeam, g.txt);
   const box=$("offerList"); box.innerHTML="";
@@ -12444,7 +12772,13 @@ function simTP(row){
      y Alonso conservaron cada punto, y al equipo lo dejaron con cero y una multa de récord. El título
      es del piloto; el castigo es del equipo. */
   const rescataTitulo = !!champDrv && !_dqYo;
-  const met=cPos<=G.target || rescataTitulo;
+  /* 📣 EL LISTÓN DEL SHOWMAN ES UN RIVAL, NO UN PUESTO. Con este dueño puedes acabar 7º y haber
+     cumplido —si el rival acabó 8º— o 3º y haber fracasado. Es lo que lo hace distinto de los otros
+     cuatro: cambia la naturaleza del año, no su dificultad. Si el rival desapareció de la parrilla
+     (quiebra, cambio de era), se cae al listón normal en vez de dar por bueno cualquier cosa. */
+  const _posRival = (G.rival && S.rankC && S.rankC[G.rival]) || null;
+  const met = _posRival ? (cPos < _posRival || rescataTitulo)
+                        : (cPos<=G.target || rescataTitulo);
   /* 🎤 LO QUE PROMETISTE EN PRETEMPORADA SE COBRA AQUÍ (`tpMejorDelResto`, opción B). Dijiste en alto
      que este año dabais un salto grande. Si lo das, el paddock te lo apunta. Si no, te quedas sin el
      año de aire justo el año en que lo necesitabas, y encima se publica que lo habías prometido. */
@@ -12463,7 +12797,8 @@ function simTP(row){
   row.tpVerdict = met ? (rescataTitulo && cPos>G.target ? "titulo" : "ok") : (S.tpGrace ? "gracia" : (S.tpMissStreak>=1 ? "fuera" : "fallo"));
   /* 🧠 los NÚMEROS del año, no solo el veredicto: el consejo los relee al fijar el listón siguiente.
      `tpGoalTxt` ya guardaba esto, pero como frase escrita, y de una frase no se saca una media. */
-  row.tpTeam=tn; row.tpPos=cPos; row.tpTarget=G.target;
+  // con dueño showman, el 'listón' que recuerda el consejo es el puesto que hizo el rival
+  row.tpTeam=tn; row.tpPos=cPos; row.tpTarget=_posRival ? _posRival-1 : G.target;
   /* 🚫 …y si ese año os expulsaron, queda MARCADO. El puesto que guarda la fila (nT+1) es un castigo,
      no un resultado deportivo: no acabaste el último compitiendo, es que no estabas. Sin esta marca,
      el consejo con memoria leía «acabó 12º» y concluía que lo habías pasado mal, así que te BAJABA el
@@ -12511,10 +12846,10 @@ function simTP(row){
       TPRE(-3); S.cache[tn]=Math.max(30,(S.cache[tn]||60)-2);
       S.tpDeuda=(S.tpDeuda||0)+1;
       if(S.tpDeuda>=2){
-        S.tpQuiebra=tn;
-        row.events.push(L(`🪦 Tercer año en números rojos y ya no hay de dónde sacarlo: ${tn} echa el cierre. El equipo que compraste por una libra se lo lleva la deuda, y contigo dentro.`,
-          `🪦 A third year in the red and there's nothing left to draw on: ${tn} shuts down. The team you bought for a pound is taken by its debts, and you with it.`,
-          {pt:`🪦 Terceiro ano no vermelho e não há mais de onde tirar: a ${tn} fecha as portas. A equipe que você comprou por uma libra é levada pela dívida, e você junto.`}));
+        S.tpVentaForzosa=tn;
+        row.events.push(L(`🏦 Tercer año en números rojos y ya no hay de dónde sacarlo: los acreedores fuerzan la venta de ${tn}. El equipo se salva con dinero nuevo — y la primera decisión del comprador es apartarte del muro.`,
+          `🏦 A third year in the red and nothing left to draw on: the creditors force the sale of ${tn}. The team is saved with fresh money — and the buyer's first decision is to remove you from the pit wall.`,
+          {pt:`🏦 Terceiro ano no vermelho e não há mais de onde tirar: os credores forçam a venda da ${tn}. A equipe se salva com dinheiro novo — e a primeira decisão do comprador é te afastar do muro.`}));
       } else {
         row.events.push(L(`💸 Otro año por debajo del listón, y el dueño eres tú: nadie te echa, pero el agujero sale de tu bolsillo. Un año más así y no habrá equipo que salvar. −fama · −caché`,
           `💸 Another year below the bar, and the owner is you: nobody sacks you, but the hole comes out of your pocket. One more year like this and there'll be no team to save. −fame · −prestige of the team`,
@@ -12606,12 +12941,13 @@ function tpFirmarContrato(tn){
 }
 function tpWinter(){
   if(S.retired) return;
-  /* 🪦 EL EQUIPO QUEBRÓ CONTIGO DE DUEÑO. Desaparece de la parrilla de verdad y tú te quedas en la
-     calle: reutiliza la pantalla del despido, donde tu fama decide si alguien te recoge. */
-  if(S.tpQuiebra){
-    const tn=S.tpQuiebra; S.tpQuiebra=null; S.tpDeuda=0;
+  /* 🏦 VENTA FORZOSA (antes quiebra; lo corrigió Carlos, 28-ago: «¿tu equipo ya no existe? ¿por qué,
+     si es mío? En todo caso me apartan, pero el equipo sí existe»). Tenía razón y además es lo real
+     —los equipos en administración se venden: Force India '18—. El equipo SE QUEDA en la parrilla con
+     dueño nuevo; el que sale eres tú, por la pantalla del despido de siempre. */
+  if(S.tpVentaForzosa){
+    const tn=S.tpVentaForzosa; S.tpVentaForzosa=null; S.tpDeuda=0;
     const st=(S.tpStints||[]).at(-1); if(st) st.y1=yearNow()-1;
-    try{ killTeam(tn, {events:[]}); }catch(e){}
     S.tpOwner=null; S.tpContract=null; S.tpFired=true; S.tpFiredBy=tn;
     S.tpTeam=null; S.team=null;
     tpFiredScreen(); return;
@@ -12898,10 +13234,14 @@ function tpTemptCheck(){
 
 /* ── DILEMAS PROPIOS DEL MURO (semilla Fase 1) — regla de GPD: la decisión no otorga el
    resultado, ALTERA LAS CONDICIONES; la simulación es el juez. Efectos pequeños, historia grande. ── */
-/* ⚠️ TPRE REDONDEA, y `tpPrest` siempre es entero: eso hace que TPRE(-.5) NO HAGA NADA —75−0,5=74,5
-   y Math.round lo devuelve a 75—. Para un castigo leve hay que usar −.8 o −1. Hacia arriba sí
-   funciona (+.5 sube a 76), así que la trampa es asimétrica y solo muerde en negativo. */
-const TPRE=n=>{S.tpPrest=Math.round(Math.max(5,Math.min(99,S.tpPrest+n)));};
+/* 🎲 LA FRACCIÓN ES UN DADO (28-ago). Antes `Math.round` sobre la suma redondeaba los ,5 HACIA
+   ARRIBA: los 16 TPRE(-1.5) castigaban −1, los 11 TPRE(+1.5) premiaban +2, y TPRE(-.5) no hacía
+   NADA — el prestigio se inflaba sistemáticamente respecto a lo escrito. Ahora la parte entera se
+   aplica segura y la fracción es probabilidad de un punto extra con su signo: −2,5 = −2 y otra vez
+   −1 la mitad de las veces. El valor esperado es EXACTAMENTE el escrito, en todos los sitios a la
+   vez, sin retocar ninguno. Medido: media de −1,50 (antes −1,00) y +1,50 (antes +2,00). */
+const TPRE=n=>{ const s=Math.sign(n), a=Math.abs(n); let d=Math.floor(a); if(ch(a-d)) d++;
+  S.tpPrest=Math.round(Math.max(5,Math.min(99,S.tpPrest+s*d))); };
 const TPCAR=n=>{ if(S.f1perf[S.tpTeam]!=null){ S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+n)); tpCapFilial(); } };
 const TPTGT=n=>{ if(S.f1target[S.tpTeam]!=null) S.f1target[S.tpTeam]=Math.max(61,Math.min(95,S.f1target[S.tpTeam]+n)); };
 /* 🧢 EL PROBADOR DEL EQUIPO (playtest de Carlos: «debe ser fichable; empeora si no es titular y
@@ -12927,9 +13267,20 @@ function tpProbadorInvierno(){
   r.skill=Math.max(66,(r.skill||74)-rnd(.3,.8));   // en el banquillo no se rueda
   r.resYrs=(r.resYrs||0)+1;
   if(r.skill<=69 || r.age>=33){
-    S.pendingEvents.push(L(`🧢 ${surname(r.name)} cuelga el mono de probador: demasiados inviernos sin rodar.`,
-      `🧢 ${surname(r.name)} hangs up the reserve overalls: too many winters without racing.`,
-      {pt:`🧢 ${surname(r.name)} pendura o macacão de reserva: invernos demais sem rodar.`}));
+    /* 🗣️ el motivo REAL (Carlos, 29-ago: «Sainz solo estuvo 1 año de probador… no entiendo»). El
+       texto único culpaba a «demasiados inviernos» aunque saliera por EDAD al primer año. */
+    const _txtSale = (r.resYrs||0)>=3
+      ? L(`🧢 ${surname(r.name)} cuelga el mono de probador: demasiados inviernos sin rodar.`,
+          `🧢 ${surname(r.name)} hangs up the reserve overalls: too many winters without racing.`,
+          {pt:`🧢 ${surname(r.name)} pendura o macacão de reserva: invernos demais sem rodar.`})
+      : (r.age>=33)
+      ? L(`🧢 ${surname(r.name)} deja el banquillo: a los ${r.age}, esperar un volante que no llega ya no compensa.`,
+          `🧢 ${surname(r.name)} steps away from the bench: at ${r.age}, waiting for a seat that never comes isn't worth it.`,
+          {pt:`🧢 ${surname(r.name)} deixa o banco: aos ${r.age}, esperar um volante que não chega já não compensa.`})
+      : L(`🧢 ${surname(r.name)} deja el banquillo: sin rodar, su nivel se ha apagado y él lo sabe.`,
+          `🧢 ${surname(r.name)} steps away from the bench: without track time his edge has faded, and he knows it.`,
+          {pt:`🧢 ${surname(r.name)} deixa o banco: sem rodar, o nível dele se apagou e ele sabe.`});
+    S.pendingEvents.push(_txtSale); tpAviso(_txtSale);
     S.tpReserva=null;
     if(isRBJr(S.tpTeam)) tpCrearProbador();
     return;
@@ -13515,6 +13866,10 @@ const TP_DILEMAS=[
     espera. Los inviernos siguientes, si la jerarquía sigue invertida, hay chispas (tpYearStart). */
  {id:"tpExige",
   cond:()=>{ const sl=S.seats[S.tpTeam]||[]; const a=sl[0], b=sl[1];
+    /* ⏳ NUNCA el día 1 (Carlos, 28-ago: «me ha salido nada más empezar en dos partidas»). El texto
+       dice «los cronos dicen que ya es tan rápido» — sin una temporada corrida no hay cronos que
+       digan nada. La parrilla se siembra a veces con el 2 mejor que el 1, y saltaba de oficio. */
+    if((S.age||0)<1) return false;
     if(!a||!b||a==="PLAYER"||b==="PLAYER") return false;
     if((b.skill||0) < (a.skill||0)-0.2) return false;
     S._tpExi={n1:a, n2:b}; return true; },
@@ -13596,7 +13951,7 @@ const TP_DILEMAS=[
                {pt:`Você assina. A libra é simbólica; as dívidas não. Na segunda seguinte você entra pela mesma porta de sempre e tudo é diferente: ninguém pode te demitir nunca mais, e nunca mais vai ser culpa de outro. O projeto começa mancando — não há dinheiro — mas é SEU. −projeto`}); }},
    {l:()=>L("Buscarle un comprador y seguir de jefe","Find it a buyer and stay on as boss",{pt:"Achar um comprador e seguir de chefe"}),
     r:()=>roll(
-     [60,()=>{ S.tpOwner=TP_OWNERS[irnd(0,2)]; S.cache[S.tpTeam]=Math.min(96,(S.cache[S.tpTeam]||60)+2);
+     [60,()=>{ S.tpOwner=TP_OWNERS[irnd(0,TP_OWNERS.length-1)]; S.cache[S.tpTeam]=Math.min(96,(S.cache[S.tpTeam]||60)+2);
        return L(`Quemas dos meses de llamadas y encuentras dinero nuevo. El equipo respira, tú sigues en el muro… y arriba hay un desconocido con planes propios. Habrá que conocerle. +caché`,
                 `You burn two months on phone calls and find fresh money. The team breathes, you stay on the pit wall… and upstairs there's a stranger with plans of his own. You'll have to get to know him. +prestige of the team`,
                 {pt:`Você queima dois meses de ligações e encontra dinheiro novo. A equipe respira, você segue no muro… e lá em cima há um desconhecido com planos próprios. Vai ser preciso conhecê-lo. +cachê`}); }],
@@ -14625,7 +14980,18 @@ const TP_DILEMAS=[
     const tn=S.tpTeam;
     const ord=[...F1_TEAMS].sort((x,y)=>(S.f1perf[y.name]||70)-(S.f1perf[x.name]||70)).map(t=>t.name);
     const p=ord.indexOf(tn); if(p<1) return false;          // alguien por delante: da igual quién seas
-    const rk=n=>(S.rankD&&S.rankD[n])||20;
+    /* 📅 POSICIONES DE ESTE AÑO, NO DEL PASADO (lo cazó Carlos: «me dices que Verstappen va 7º…
+       que son las posiciones finales de 2029, pero el dilema es de 2030»). `rankD` es la tabla FINAL
+       del año anterior, y el texto habla en presente a cuatro carreras del final. Se calcula la
+       posición PREVISTA con el coche de este año: mismo peso piloto/coche que usa la simulación,
+       sin el ruido. No es la tabla exacta que saldrá —el gauss existe—, pero es «cómo va» de verdad,
+       no una foto vieja. */
+    const _w=drvW();
+    const _prev=[];
+    Object.entries(S.seats).forEach(([t2,s2])=>{ (s2||[]).forEach(d2=>{
+      if(d2&&d2!=="PLAYER") _prev.push({n:d2.name, sc:(d2.skill||75)*_w+(S.f1perf[t2]||70)*(1-_w)}); }); });
+    _prev.sort((x,y)=>y.sc-x.sc);
+    const rk=n=>{ const i=_prev.findIndex(x=>x.n===n); return i<0?20:i+1; };
     const dos=a.slice().sort((x,y)=>rk(x.name)-rk(y.name));
     S._carta={rival:ord[p-1], puesto:p+1,
               a:surname(dos[0].name), nA:dos[0].name, pA:rk(dos[0].name),
@@ -15194,12 +15560,12 @@ const TP_DILEMAS=[
            en aproximadamente la mitad de los casos. */
         const cabeError = (pr.age||99)<=24 && (pr.ceil||pr.skill||0)<92;
         if(cabeError && ch(.5)){ destapa=true; pr.ceil=Math.min(97,(pr.ceil||pr.skill)+irnd(3,6)); TPRE(1); } }
-      if(destapa) return L(`El chaval se pone el mono en agosto y a la tercera carrera el garaje ha dejado de hablar de ${c.titN}. No es que aguante: es que hay dos vueltas, el s\u00e1bado, en las que hace algo que en su ficha no pon\u00eda. El jefe de pista te busca el domingo por la noche y te dice, sin adornos, que llev\u00e1is a\u00f1os subestimando a este chico. +nivel y +techo para ${c.prN}, +cach\u00e9\n\nY en alg\u00fan sal\u00f3n, ${c.vetN} se entera por el peri\u00f3dico de qui\u00e9n se ha sentado en tu coche. Nadie le hab\u00eda prometido nada. Tampoco hace falta.`,
-        `The kid pulls on the overalls in August, and by the third race the garage has stopped talking about ${c.titN}. It isn't that he survives: it's that there are two laps, on Saturday, where he does something his file said he couldn't. The track engineer finds you on Sunday night and tells you flatly that you have spent years underrating this boy. +level and +ceiling for ${c.prN}, +standing\n\nAnd in some living room, ${c.vetN} finds out from the paper who is sitting in your car. Nobody had promised him anything. He doesn't need them to.`,
-        {pt:`O garoto veste o macac\u00e3o em agosto e na terceira corrida a garagem parou de falar de ${c.titN}. N\u00e3o \u00e9 que ele aguente: \u00e9 que h\u00e1 duas voltas, no s\u00e1bado, em que ele faz algo que a ficha dele n\u00e3o dizia. O chefe de pista te procura no domingo \u00e0 noite e diz, sem rodeios, que voc\u00eas passaram anos subestimando esse menino. +n\u00edvel e +teto para ${c.prN}, +presti\u00edgio\n\nE em alguma sala, ${c.vetN} fica sabendo pelo jornal quem sentou no seu carro. Ningu\u00e9m tinha prometido nada a ele. Nem precisa.`});
-      return L(`El chaval se pone el mono en agosto y no se lo quita hasta que vuelve ${c.titN}. No hace milagros —no ten\u00eda que hacerlos—, pero termina esas ${c.n} carreras sabiendo cosas del coche que no se aprenden en un simulador. La temporada paga el peaje; \u00e9l sale ganando. +nivel para ${c.prN}\n\nY en alg\u00fan sal\u00f3n, ${c.vetN} se entera por el peri\u00f3dico de qui\u00e9n se ha sentado en tu coche. Nadie le hab\u00eda prometido nada. Tampoco hace falta.`,
-               `The kid pulls on the overalls in August and doesn't take them off until ${c.titN} is back. He works no miracles —he wasn't meant to— but he finishes those ${c.n} races knowing things about the car you can't learn in a simulator. The season pays the toll; he comes out ahead. +level for ${c.prN}\n\nAnd in some living room, ${c.vetN} finds out from the paper who is sitting in your car. Nobody had promised him anything. He doesn't need them to.`,
-               {pt:`O garoto veste o macac\u00e3o em agosto e n\u00e3o o tira at\u00e9 ${c.titN} voltar. N\u00e3o faz milagres —n\u00e3o precisava— mas termina essas ${c.n} corridas sabendo coisas do carro que n\u00e3o se aprendem num simulador. A temporada paga o ped\u00e1gio; ele sai ganhando. +n\u00edvel para ${c.prN}\n\nE em alguma sala, ${c.vetN} fica sabendo pelo jornal quem sentou no seu carro. Ningu\u00e9m tinha prometido nada a ele. Nem precisa.`}); }},
+      if(destapa) return L(`El chaval se pone el mono en agosto y a la tercera carrera el garaje ha dejado de hablar de ${c.titN}. No es que aguante: es que hay dos vueltas, el s\u00e1bado, en las que hace algo que en su ficha no pon\u00eda. El jefe de pista te busca el domingo por la noche y te dice, sin adornos, que llev\u00e1is a\u00f1os subestimando a este chico. +nivel y +techo para ${c.prN}, +cach\u00e9.\n\nY en alg\u00fan sal\u00f3n, ${c.vetN} se entera por el peri\u00f3dico de qui\u00e9n se ha sentado en tu coche. Nadie le hab\u00eda prometido nada. Tampoco hace falta.`,
+        `The kid pulls on the overalls in August, and by the third race the garage has stopped talking about ${c.titN}. It isn't that he survives: it's that there are two laps, on Saturday, where he does something his file said he couldn't. The track engineer finds you on Sunday night and tells you flatly that you have spent years underrating this boy. +level and +ceiling for ${c.prN}, +standing.\n\nAnd in some living room, ${c.vetN} finds out from the paper who is sitting in your car. Nobody had promised him anything. He doesn't need them to.`,
+        {pt:`O garoto veste o macac\u00e3o em agosto e na terceira corrida a garagem parou de falar de ${c.titN}. N\u00e3o \u00e9 que ele aguente: \u00e9 que h\u00e1 duas voltas, no s\u00e1bado, em que ele faz algo que a ficha dele n\u00e3o dizia. O chefe de pista te procura no domingo \u00e0 noite e diz, sem rodeios, que voc\u00eas passaram anos subestimando esse menino. +n\u00edvel e +teto para ${c.prN}, +presti\u00edgio.\n\nE em alguma sala, ${c.vetN} fica sabendo pelo jornal quem sentou no seu carro. Ningu\u00e9m tinha prometido nada a ele. Nem precisa.`});
+      return L(`El chaval se pone el mono en agosto y no se lo quita hasta que vuelve ${c.titN}. No hace milagros —no ten\u00eda que hacerlos—, pero termina esas ${c.n} carreras sabiendo cosas del coche que no se aprenden en un simulador. La temporada paga el peaje; \u00e9l sale ganando. +nivel para ${c.prN}.\n\nY en alg\u00fan sal\u00f3n, ${c.vetN} se entera por el peri\u00f3dico de qui\u00e9n se ha sentado en tu coche. Nadie le hab\u00eda prometido nada. Tampoco hace falta.`,
+               `The kid pulls on the overalls in August and doesn't take them off until ${c.titN} is back. He works no miracles —he wasn't meant to— but he finishes those ${c.n} races knowing things about the car you can't learn in a simulator. The season pays the toll; he comes out ahead. +level for ${c.prN}.\n\nAnd in some living room, ${c.vetN} finds out from the paper who is sitting in your car. Nobody had promised him anything. He doesn't need them to.`,
+               {pt:`O garoto veste o macac\u00e3o em agosto e n\u00e3o o tira at\u00e9 ${c.titN} voltar. N\u00e3o faz milagres —n\u00e3o precisava— mas termina essas ${c.n} corridas sabendo coisas do carro que n\u00e3o se aprendem num simulador. A temporada paga o ped\u00e1gio; ele sai ganhando. +n\u00edvel para ${c.prN}.\n\nE em alguma sala, ${c.vetN} fica sabendo pelo jornal quem sentou no seu carro. Ningu\u00e9m tinha prometido nada a ele. Nem precisa.`}); }},
 
    /* B · el veterano: lo que ves es lo que se le supone; lo que pasa, se sortea */
    {l:()=>{ const c=S._les||{};
@@ -15681,6 +16047,7 @@ function openTPGrid(){ renderTPGrid(); $("tpGridModal").style.display="flex"; }
 function closeTPGrid(){ $("tpGridModal").style.display="none"; }
 function renderTPGrid(){
   const el=$("tpGridList"); if(!el) return;
+  tpCapFilial();   // 🚫 y tampoco se enseña al filial por encima de su casa madre
   const ranked=S.rankC && Object.keys(S.rankC).length;
   const ord=[...F1_TEAMS].sort((a,b)=> ranked
     ? ((S.rankC[a.name]||99)-(S.rankC[b.name]||99))
@@ -15754,7 +16121,7 @@ function endTPCareer(){
     [D, L("Mundiales de tus pilotos","Your drivers' titles",{pt:"Mundiais dos seus pilotos"}), D>=1],
     [S.wins, L("Victorias del equipo","Team wins",{pt:"Vitórias da equipe"})],
     [S.podiums, L("Podios","Podiums",{pt:"Pódios"})],
-    [best?best+"º":"—", L("Mejor puesto","Best finish",{pt:"Melhor posição"})],
+    [best?best+"º":"—", L("Mejor puesto constructores","Best constructors' finish",{pt:"Melhor posição de construtores"})],
     [S.tpPrest, L("Prestigio final","Final prestige",{pt:"Prestígio final"})],
   ].map(x=>`<div class="${x[2]?"gold":""}${(x[0]>=3&&x[2])?" shiny":""}"><div class="v">${x[0]}</div><div class="k">${x[1]}</div></div>`).join("");
   const shelf=[]; for(let i=0;i<C;i++)shelf.push("🏎️"); for(let i=0;i<D;i++)shelf.push("🏆");
