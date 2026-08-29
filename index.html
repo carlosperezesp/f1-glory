@@ -8578,6 +8578,15 @@ function bgF1Season(row){
 
 /* guarda el ranking completo de la temporada y devuelve funciones de delta vs el año pasado */
 function trackRanks(driverOrder, teamOrder){
+  /* 🚫 EL FILIAL TAMPOCO POR PUNTOS (Carlos, 29-ago, foto de 2043: Racing Bulls 7º y Red Bull 12º).
+     `tpCapFilial` protege el NIVEL del coche, pero la tabla de constructores sale de los PUNTOS de
+     los domingos, y con suerte y buenos pilotos el filial podía sumar más que la casa madre. La
+     regla es dura («jamás»): si el orden por puntos deja al junior por delante, se le recoloca
+     justo detrás de su casa madre antes de asignar posiciones. */
+  Object.entries(JUNIOR_OF).forEach(([junior,parent])=>{
+    const ji=teamOrder.indexOf(junior), pi=teamOrder.indexOf(parent);
+    if(ji>=0 && pi>=0 && ji<pi){ teamOrder.splice(ji,1); teamOrder.splice(teamOrder.indexOf(parent)+1,0,junior); }
+  });
   const prevD=S.rankD||{}, prevC=S.rankC||{};
   S.rankDPrev=prevD; S.rankCPrev=prevC;   // 🔼 persistidos: el desplegable pinta flechas en TODAS las filas
   S.rankD={}; driverOrder.forEach((n,i)=>{S.rankD[n]=i+1;});
@@ -8711,13 +8720,15 @@ function fsResto(cual){
       const eqAnual=(S.rankDTeam||{})[n];
       const eq=eqAnual || (Object.entries(S.seats||{}).find(([t,sl])=>(sl||[]).some(x=>x&&x!=="PLAYER"&&x.name===n))||[])[0];
       const mio = S.cat==="TP" && eq===S.tpTeam;   // los míos en su color; el resto, normal
-      return `<div class="srow extra${mio?" me":""}"><span class="nm">${p}º ${fl?flg(fl):""} ${mio?`<b>${surname(n)}</b>`:surname(n)}</span><span class="rt2">${_mvB((S.rankDPrev||{})[n],p)}${eq?teamBadge(eq):""}</span></div>`;
+      /* 🎨 el tinte de sube/baja, también aquí (Carlos: «solo sale el chip verde o rojo en el top 3») */
+      const _pv=(S.rankDPrev||{})[n], _cls=_pv==null?"":_pv>p?" mv-up":_pv<p?" mv-down":"";
+      return `<div class="srow extra${mio?" me":""}${_cls}"><span class="nm">${p}º ${fl?flg(fl):""} ${mio?`<b>${surname(n)}</b>`:surname(n)}</span><span class="rt2">${_mvB(_pv,p)}${eq?teamBadge(eq):""}</span></div>`;
     }).join("");
   }
   const r=S.rankC||{};
   const _mvB2=(prev,p)=> prev==null?"":prev>p?`<span class="mv up">▲${prev-p}</span>`:prev<p?`<span class="mv down">▼${p-prev}</span>`:`<span class="mv eq">=</span>`;
   return Object.entries(r).sort((a,b)=>a[1]-b[1]).filter(([t,p])=>p>medalTop)
-    .map(([t,p])=>`<div class="srow extra${tpManaged(t)||(S.team&&S.team.name===t)?" me":""}"><span class="nm">${p}º ${teamBadge(t)} ${t}</span>${_mvB2((S.rankCPrev||{})[t],p)}</div>`).join("");
+    .map(([t,p])=>`<div class="srow extra${tpManaged(t)||(S.team&&S.team.name===t)?" me":""}${(S.rankCPrev||{})[t]==null?"":((S.rankCPrev||{})[t]>p?" mv-up":(S.rankCPrev||{})[t]<p?" mv-down":"")}"><span class="nm">${p}º ${teamBadge(t)} ${t}</span>${_mvB2((S.rankCPrev||{})[t],p)}</div>`).join("");
 }
 function simTest(row,st){
   S.testYears++;
@@ -10985,9 +10996,11 @@ const TP_OWNERS=[
    /* ⚠️ solo cambia el RÓTULO: la clave `k:"win"` la miran una docena de sitios (el listón del
       consejo, los dilemas, la voz de la junta) y renombrarla los rompería todos. */
    lab:()=>L("🏆 Dueño ambicioso","🏆 Ambitious owner",{pt:"🏆 Dono ambicioso"}),
-   intro:()=>L("El dueño viene de ganarlo todo y no ha comprado esto para pasearse: exige más que nadie.",
-               "The owner has won everything and didn't buy this to cruise: he demands more than anyone.",
-               {pt:"O dono vem de ganhar tudo e não comprou isto para passear: exige mais do que ninguém."})},
+   /* 🗣️ sin biografía inventada (Carlos, 29-ago: «vengo YO de ganar, ¿por qué dice que el dueño
+      nuevo viene de ganar?»). Se describe el CARÁCTER, no un pasado que puede chocar con la partida. */
+   intro:()=>L("El dueño no ha comprado esto para pasearse: solo entiende de ganar, y exige más que nadie.",
+               "The owner didn't buy this to cruise: winning is all he understands, and he demands more than anyone.",
+               {pt:"O dono não comprou isto para passear: só entende de vencer, e exige mais do que ninguém."})},
   /* 💼 EL DUEÑO FINANCIERO. Antes se llamaba «tecnócrata» y no encajaba: un tecnócrata analiza datos
      de carrera, no recorta presupuestos (aviso de Carlos, 17-ago). Lo que este perfil es de verdad es
      alguien que compró el equipo como ACTIVO, no por pasión: ficha barato, invierte lo justo y
@@ -11024,6 +11037,23 @@ const TP_OWNERS=[
                "He doesn't care about the position, he cares about the noise: don't bring him fifth place, bring him a headline.",
                {pt:"Não lhe interessa a posição, lhe interessa o barulho: não lhe traga um quinto lugar, traga uma manchete."})},
 ];
+/* 🏭 ¿ESTE EQUIPO ES UNA MARCA DE COCHES? (Carlos, 29-ago: «¿tiene sentido un dueño fabricante en
+   APXGP? ¿y en Haas? ¿y en Alpine?»). Alpine SÍ —es Renault—; Haas y APXGP no, son el taller de un
+   señor. La lista cubre todas las eras (Renault, Honda, Jaguar…) y a los que entran por expansión
+   (Hyundai, Porsche, Toyota, Maserati, Lotus). Por SUBCADENA: pilla «Mercedes GP» y «BMW Sauber». */
+const MARCAS_F1=["Ferrari","Mercedes","Alpine","Renault","Aston Martin","Audi","Cadillac","McLaren",
+  "Honda","Toyota","BMW","Jaguar","Alfa Romeo","Porsche","Hyundai","Maserati","Lotus","Lancia","Matra"];
+function esMarcaF1(tn){ return MARCAS_F1.some(m=>String(tn||"").indexOf(m)>=0); }
+/* el abanico de dueños posibles para un equipo: el fabricante solo puede SER dueño de una marca de
+   inicio; a un privado llega COMPRÁNDOLO (el relevo o el dilema de la venta, que es el caso
+   Sauber→Audi). El filial no está en venta jamás: la casa madre no vende su equipo B. */
+function tpOwnersPosibles(tn, esRelevo){
+  return TP_OWNERS.filter(o=>{
+    if(o.k!=="brand") return true;
+    if(isRBJr(tn)) return false;                 // el filial no se vende a una marca
+    return esRelevo || esMarcaF1(tn);            // de inicio solo marcas; por venta, cualquiera
+  });
+}
 function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
 
 /* tarjeta del jefe: prestigio en vez de OVR, humor del consejo en vez de fama, dueño en vez de estilo */
@@ -11209,7 +11239,8 @@ function tpSignTeam(t, how){
   }
   S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
   S.tpTeam=S.team.name;
-  S.tpOwner=TP_OWNERS[irnd(0,TP_OWNERS.length-1)]; S.tpOwnerY=0;   // 🏢 años con este dueño, para el relevo
+  const _po=tpOwnersPosibles(S.tpTeam,false);
+  S.tpOwner=_po[irnd(0,_po.length-1)]; S.tpOwnerY=0;   // 🏢 años con este dueño; el fabricante solo de inicio en marcas
   S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
      equipo, no solo al empezar de cero, así que limpiarlo aquí borraba el rastro al cambiar de muro —
@@ -11318,7 +11349,7 @@ function tpYearStart(){
   if(S.tpTeam && S.tpOwner && S.tpOwner.k!=="self"){
     S.tpOwnerY=(S.tpOwnerY||0)+1;
     if(S.tpOwnerY>=TP_DUENO_MIN && ch(TP_DUENO_P)){
-      const otros=TP_OWNERS.filter(o=>o.k!==S.tpOwner.k);
+      const otros=tpOwnersPosibles(S.tpTeam,true).filter(o=>o.k!==S.tpOwner.k);
       const nuevoD=otros[irnd(0,otros.length-1)];
       S.tpOwner=nuevoD; S.tpOwnerY=0;
       tpAviso(L(`🏢 Cambio de manos: el dueño vende. ${nuevoD.intro()}`,
@@ -11853,7 +11884,11 @@ function tpSwapSeats(){
    un chaval, que para eso es una cantera. */
 function tpVetAcabado(){
   if(isRBJr(S.tpTeam)) return null;
-  const c=(S.freeAgents||[]).filter(d=>d && d.name && ((d.age||0)>=33 || ((d.skill||0)<=77 && (d.age||0)>=30)));
+  /* 🚪 quien te dijo que NO como piloto este invierno no acepta el banquillo (Carlos, 29-ago:
+     «Antonelli no quería renovar pero luego lo fiché de probador… si no quiere ser 1º o 2º piloto
+     en mi equipo no debería querer ser probador»). Elemental, y se colaba. */
+  const c=(S.freeAgents||[]).filter(d=>d && d.name && (S._tpNo||{})[d.name]!==yearNow()
+    && ((d.age||0)>=33 || ((d.skill||0)<=77 && (d.age||0)>=30)));
   c.sort((a,b)=>(b.skill||0)-(a.skill||0));
   return c[0]||null;
 }
@@ -12099,9 +12134,10 @@ function tpSignDriver(i,c){
           S.crossovers.push({name:_prev.name, flag:_prev.flag||"🏁", born:yearNow()-(_prev.age||34),
             base:Math.min(88,(_prev.skill||80)), ceil:Math.min(92,Math.max((_prev.skill||80)+2,(_prev.ceil||84)))});
         _colocado=true;
-        S.pendingEvents.push(L(`👑 ${surname(_prev.name)}, campeón del mundo, no espera a nadie: se lleva la corona ${serie}.`,
-          `👑 ${surname(_prev.name)}, a world champion, waits for no one: he takes his crown to ${serie}.`,
-          {pt:`👑 ${surname(_prev.name)}, campeão do mundo, não espera ninguém: leva a coroa ${serie}.`}));
+        /* 🗣️ sin «se lleva la corona» (Carlos, 29-ago): ganó AÑOS ANTES, no es el vigente. */
+        S.pendingEvents.push(L(`👑 ${surname(_prev.name)}, campeón del mundo, no espera tu llamada: se marcha ${serie}.`,
+          `👑 ${surname(_prev.name)}, a world champion, doesn't wait for your call: he leaves ${serie}.`,
+          {pt:`👑 ${surname(_prev.name)}, campeão do mundo, não espera a sua ligação: vai embora ${serie}.`}));
       } else {
         // un rival lo caza: primero un asiento vacío; si no, desplaza al más flojo de la parrilla
         const tnMe=S.tpTeam; let dest=null, dj=-1, victima=null;
@@ -12427,7 +12463,7 @@ function tpRumboScreen(){
       tpSembrar(1, -_f*rnd(RB_EX_D1[0],RB_EX_D1[1]));   // 💸 la hucha al revés: el año que viene…
       tpSembrar(2, -_f*rnd(RB_EX_D2[0],RB_EX_D2[1]));   // …y sobre todo dentro de dos
       tpFijarTendencia();
-      S.pendingEvents.push(L("⚡ Ordenas volcar el desarrollo en el coche de este año: mejoras ya, hipoteca mañana.","⚡ You pour development into this year's car: gains now, a mortgage on tomorrow.",{pt:"⚡ Você manda concentrar tudo no carro deste ano: ganhos já, hipoteca amanhã."})); });
+      /* 🧹 sin narración del rumbo en el resumen (Carlos, 29-ago) */ });
   mk("⚖️",L("Mejoras SEGURAS y continuidad","SAFE gains and continuity",{pt:"Melhorias SEGURAS e continuidade"}),
     L("Subida pequeña pero segura, sin riesgo y sin hipotecar nada.<br>El término medio: ni golpe ni sacrificio.","A small but safe climb, no risk and nothing mortgaged.<br>The middle ground: no strike, no sacrifice.",{pt:"Subida pequena mas segura, sem risco e sem hipoteca.<br>O meio-termo: nem bote nem sacrifício."}),
     ()=>{ S.tpSinExprimir=(S.tpSinExprimir||0)+1;
@@ -12438,7 +12474,7 @@ function tpRumboScreen(){
          años en vez de cada 3. */
       if(ch(.5)) S.tpTopYears=Math.max(0,(S.tpTopYears||0)-1);
       tpFijarTendencia();                               // ni siembra ni debe: lo que ves es lo que hay
-      S.pendingEvents.push(L("⚖️ Rumbo firme: evolución continua sin revoluciones.","⚖️ Steady course: continuous evolution, no revolutions.",{pt:"⚖️ Rumo firme: evolução contínua, sem revoluções."})); });
+      /* 🧹 sin narración del rumbo en el resumen (Carlos, 29-ago) */ });
   mk("🏗️",L("Proyecto a DOS AÑOS","TWO-YEAR project",{pt:"Projeto de DOIS ANOS"}),
     L("Sacrificas este año por la promesa de un coche mucho mejor dentro de dos.<br>El salto más grande, y el más arriesgado.","You sacrifice this year for the promise of a much better car in two.<br>The biggest leap, and the riskiest.",{pt:"Sacrifica este ano pela promessa de um carro muito melhor em dois.<br>O maior salto, e o mais arriscado."})+(avisoProyecto||""),
     ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
@@ -12454,7 +12490,7 @@ function tpRumboScreen(){
                         [RB_PR_PESOS[1],()=>rnd(RB_PR_REG[0],RB_PR_REG[1])],
                         [RB_PR_PESOS[2],()=>rnd(RB_PR_MAL[0],RB_PR_MAL[1])]));
       tpFijarTendencia();
-      S.pendingEvents.push(L("🏗️ Pones la fábrica a construir el coche de pasado mañana: el proyecto apunta alto.","🏗️ You set the factory on the car after next: the project aims high.",{pt:"🏗️ Você põe a fábrica no carro de depois de amanhã: o projeto mira alto."})); });
+      /* 🧹 sin narración del rumbo en el resumen (Carlos, 29-ago) */ });
   // retirada voluntaria: siempre disponible, nunca escondida
   const r=document.createElement("button"); r.className="offer retire";
   r.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
@@ -12484,15 +12520,18 @@ function tpRepartoScreen(){
   /* 💬 CHIPS, NO CONTABILIDAD (Carlos, 28-ago: «ese vocabulario es absurdo»). Fuera «le quitas
      dinero» y compañía: un chip de color por eje —bueno/medio/pobre— que dice cómo está alimentado
      ese frente. Verde el que recibe de más, gris el normal, rojo el que paga la fiesta. */
-  /* 💰 EL CHIP HABLA DE PRESUPUESTO, NO DE CALIDAD (Carlos, 29-ago: «¿aerodinámica pobre a pesar
-     de tener 4 estrellas?»). Las estrellas son tu puesto EN LA PARRILLA; el chip es dónde pone el
-     dinero TU fábrica. «Pobre» junto a 4★ parecía una contradicción — con «recortado» se lee lo que
-     es: eres 4º del mundo en aero Y le estás quitando dinero para pagar otro frente. */
+  /* 🏁 EL CHIP DICE TU PUESTO EN LA PARRILLA, CON PALABRAS (Carlos, 29-ago, segunda vuelta:
+     «"Recortado" ¿de dónde? ¡Si no tengo presupuesto!». Tenía razón dos veces: primero era calidad
+     confusa, luego un presupuesto que el juego no enseña por ningún lado. Lo que el jugador SÍ
+     entiende es dónde está cada frente respecto a los rivales — «élite de la parrilla», su
+     propuesta—. La inclinación interna ya la cuentan «se recorta de X» y el tope de la fábrica. */
   const _chipInline="display:inline-block;width:auto;vertical-align:middle;font-size:11px;padding:1px 7px;border-radius:6px";
-  const incl=e=>{ const v=pr[e];
-    return v>=1 ? `<span class="pos p1" style="${_chipInline}">💰 ${L("prioridad","priority",{pt:"prioridade"})}</span>`
-         : v===0 ? `<span class="pos rest" style="${_chipInline}">${L("normal","normal",{pt:"normal"})}</span>`
-         :         `<span class="pos" style="${_chipInline};background:#c0392b;color:#fff">${L("recortado","cut back",{pt:"cortado"})}</span>`; };
+  const incl=e=>{ const n5=est(e).n;
+    return n5>=5 ? `<span class="pos p1" style="${_chipInline}">${L("élite de la parrilla","grid elite",{pt:"elite do grid"})}</span>`
+         : n5===4 ? `<span class="pos p2" style="${_chipInline}">${L("zona alta de la parrilla","front of the grid",{pt:"parte de cima do grid"})}</span>`
+         : n5===3 ? `<span class="pos rest" style="${_chipInline}">${L("media tabla de la parrilla","midfield of the grid",{pt:"meio do grid"})}</span>`
+         : n5===2 ? `<span class="pos" style="${_chipInline};background:#c77f2a;color:#fff">${L("zona baja de la parrilla","lower end of the grid",{pt:"parte de baixo do grid"})}</span>`
+         :          `<span class="pos" style="${_chipInline};background:#c0392b;color:#fff">${L("cola de la parrilla","back of the grid",{pt:"fundo do grid"})}</span>`; };
 
   /* 📋 EL ENUNCIADO NO REPITE LAS ESTRELLAS (lo cazó Carlos, 27-ago): salían aquí arriba y otra
      vez en cada una de las tres opciones, dos líneas más abajo. Aquí se queda solo la FORMA del
@@ -12537,11 +12576,9 @@ function tpRepartoScreen(){
             {pt:`Você já é o melhor do grid aqui: isto não te sobe, te MANTÉM quando os outros apertarem · corta-se de ${EJE_NOMBRE[baja]()}`})
         : L(`Se recorta de ${EJE_NOMBRE[baja]()}`,`Cut from ${EJE_NOMBRE[baja]()}`,{pt:`Corta-se de ${EJE_NOMBRE[baja]()}`})}</span></span>`;
     b.onclick=()=>{
-      if(!tope){ pr[eje]++; pr[baja]--;
-        S.pendingEvents.push(L(`🔧 La fábrica vuelca el año en ${EJE_NOMBRE[eje]().toLowerCase()}, a costa de ${EJE_NOMBRE[baja]().toLowerCase()}.`,
-          `🔧 The factory throws the year at ${EJE_NOMBRE[eje]().toLowerCase()}, at the cost of ${EJE_NOMBRE[baja]().toLowerCase()}.`,
-          {pt:`🔧 A fábrica joga o ano em ${EJE_NOMBRE[eje]().toLowerCase()}, à custa de ${EJE_NOMBRE[baja]().toLowerCase()}.`}));
-      }
+      /* 🧹 sin narración en el resumen del año (Carlos, 29-ago: «no hace falta poner en qué se
+         invierte cada año») — la decisión ya la viste al tomarla y su efecto se ve en el coche. */
+      if(!tope){ pr[eje]++; pr[baja]--; }
       tpAnnounce();
     };
     box.appendChild(b);
@@ -12656,7 +12693,8 @@ function tpAnnounce(){
   if(S.retired) return;
   const g=tpGoalFor(); S.tpGoal=g;
   try{ refreshCard(); }catch(e){}   // 🎯 el chip de la tarjeta, al día con el listón definitivo
-  S.pendingEvents.push(g.short);
+  /* 🧹 el objetivo ya NO se escribe en el resumen del año (Carlos, 29-ago): vive en el chip de la
+     tarjeta todo el año y el veredicto (✅/❌) ya lo repite al cerrar. Tres veces era una de más. */
   setDecision(L(`🎯 El consejo fija el listón · ${yearNow()}`,`🎯 The board sets the bar · ${yearNow()}`,{pt:`🎯 O conselho fixa a meta · ${yearNow()}`})+" · "+S.tpTeam, g.txt);
   const box=$("offerList"); box.innerHTML="";
   const b=document.createElement("button"); b.className="offer dilemma";
@@ -13627,12 +13665,15 @@ const TP_DILEMAS=[
    {l:()=>L("Que lo decida la pista","Let the track decide",{pt:"Que a pista decida"}),r:()=>roll(
      [5,()=>(TPRE(2),L("La rivalidad interna eleva a los dos y tu equipo es el espectáculo del año. +prestigio","The internal rivalry lifts them both and your team is the show of the season. +prestige",{pt:"A rivalidade interna eleva os dois e a sua equipe é o show do ano. +prestígio"}))],
      [4,()=>(TPRE(-2),L("Sin jerarquía, las estrategias se pisan y los puntos se escapan entre los dos boxes. −prestigio","With no pecking order, strategies collide and points leak between the two garages. −prestige",{pt:"Sem hierarquia, as estratégias se atropelam e os pontos escapam entre os dois boxes. −prestígio"}))])}]},
- {id:"tpFabricante", cond:()=>S.age>=3 && (S.cache[S.tpTeam]||60)<86 && !(S.tpOwner&&S.tpOwner.k==="self"),
+ {id:"tpFabricante", cond:()=>S.age>=3 && (S.cache[S.tpTeam]||60)<86 && !(S.tpOwner&&S.tpOwner.k==="self")
+    && !(S.tpOwner&&S.tpOwner.k==="brand") && !isRBJr(S.tpTeam),   // 🏭 ya es de una marca / el filial no se vende
   t:()=>L("El fabricante quiere comprar","The manufacturer wants to buy",{pt:"A montadora quer comprar"}),
   d:()=>L("Un gigante del automóvil ofrece comprar el equipo: fábrica nueva, presupuesto de otro planeta… y sus propias ideas sobre quién manda aquí.",
           "A car giant offers to buy the team: a new factory, a budget from another planet… and its own ideas about who runs things here.",
           {pt:"Uma gigante do automóvel oferece comprar a equipe: fábrica nova, orçamento de outro planeta… e ideias próprias sobre quem manda aqui."}),opts:[
-   {l:()=>L("Apoyar la venta","Back the sale",{pt:"Apoiar a venda"}),r:()=>{ S.cache[S.tpTeam]=Math.min(96,(S.cache[S.tpTeam]||60)+8); TPTGT(6); S.tpOwner=TP_OWNERS[0];
+   {l:()=>L("Apoyar la venta","Back the sale",{pt:"Apoiar a venda"}),r:()=>{ S.cache[S.tpTeam]=Math.min(96,(S.cache[S.tpTeam]||60)+8); TPTGT(6);
+      /* 🏭 quien compra ES el fabricante: el dilema es anterior al tipo y te ponía un «ambicioso» */
+      S.tpOwner=TP_OWNERS.find(o=>o.k==="brand")||TP_OWNERS[0]; S.tpOwnerY=0;
      return L("La venta se cierra: dinero y músculo de fábrica… y un dueño nuevo que solo entiende de títulos. El proyecto apunta arriba y el listón, también.","The sale closes: factory money and muscle… and a new owner who only understands titles. The project aims up — and so does the bar.",{pt:"A venda sai: dinheiro e músculo de fábrica… e um dono novo que só entende de títulos. O projeto mira para cima — e a meta também."}); }},
    {l:()=>L("Defender la independencia","Defend independence",{pt:"Defender a independência"}),r:()=>(TPRE(1.5),
      L("Convences al consejo de seguir siendo dueños de su destino. El paddock respeta a los últimos independientes. +prestigio","You convince the board to stay masters of their own fate. The paddock respects the last independents. +prestige",{pt:"Você convence o conselho a seguir dono do próprio destino. O paddock respeita os últimos independentes. +prestígio"}))}]},
@@ -13871,7 +13912,10 @@ const TP_DILEMAS=[
        digan nada. La parrilla se siembra a veces con el 2 mejor que el 1, y saltaba de oficio. */
     if((S.age||0)<1) return false;
     if(!a||!b||a==="PLAYER"||b==="PLAYER") return false;
-    if((b.skill||0) < (a.skill||0)-0.2) return false;
+    /* 👑 el CAMPEÓN DEL MUNDO exige siempre, tenga el nivel que tenga (Carlos, 29-ago: «Russell fue
+       bicampeón de mi equipo y no me pedía ser primero»). Igualar al Nº1 en cronos también vale. */
+    const _campB = S.rankD && S.rankD[b.name]===1;
+    if(!_campB && (b.skill||0) < (a.skill||0)-0.2) return false;
     S._tpExi={n1:a, n2:b}; return true; },
   t:()=>{ const e=S._tpExi; return L(`${e?surname(e.n2.name):"Tu Nº2"} exige los galones`,`${e?surname(e.n2.name):"Your No.2"} demands the stripes`,{pt:`${e?surname(e.n2.name):"O seu Nº2"} exige os galões`}); },
   d:()=>{ const e=S._tpExi; if(!e) return "";
