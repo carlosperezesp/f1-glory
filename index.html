@@ -1829,6 +1829,40 @@ const GRID2000 = {
   "Minardi":[["M. Gené",26,74,78,0,"🇪🇸"],["G. Mazzacane",25,70,75,0,"🇦🇷"]],
   "Prost GP":[["J. Alesi",36,80,83,0,"🇫🇷"],["N. Heidfeld",23,78,86,0,"🇩🇪"]],
 };
+/* 🏍️ LA PARRILLA REAL DE 2007 — para el reto de Valentino (Carlos, 30-ago: «Valentino empieza en
+   2007, hay que hacer la parrilla de 2007»). Un reto con ranking no puede partir de una historia
+   alternativa simulada: todos los jugadores compiten en la MISMA parrilla, y esa parrilla es la que
+   fue. Rendimientos calibrados con los puntos reales del Mundial de constructores 2007 (Ferrari 204
+   y McLaren excluida pero con ritmo de 218; BMW Sauber 101 tercera en solitario; Renault 51;
+   Williams 33; Red Bull 24; Toyota 13; Toro Rosso 8; Honda 6; Super Aguri 4; Spyker 1).
+   TÍTULOS = los que tenía ANTES de 2007: solo Alonso (2005 y 2006). */
+const TEAMS_2007 = [
+  {name:"Ferrari",      abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:93},
+  {name:"McLaren",      abbr:"MCL", color:"#C0C0C8", color2:"#DD1E2F", perf:93},
+  {name:"BMW Sauber",   abbr:"BMW", color:"#0A4EA2", color2:"#C00000", perf:85},
+  {name:"Renault",      abbr:"REN", color:"#F5D800", color2:"#0A2E6E", perf:79},
+  {name:"Williams",     abbr:"WIL", color:"#1A3D7C", color2:"#7FB2E6", perf:77},
+  {name:"Red Bull",     abbr:"RBR", color:"#0A1E5E", color2:"#D4001A", perf:76},
+  {name:"Toyota",       abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:75},
+  {name:"Toro Rosso",   abbr:"STR", color:"#153A72", color2:"#D00000", perf:69},
+  {name:"Honda",        abbr:"HON", color:"#F5F5F5", color2:"#00A0DE", perf:68},
+  {name:"Super Aguri",  abbr:"SAF", color:"#D0021B", color2:"#F5F5F5", perf:66},
+  {name:"Spyker",       abbr:"SPY", color:"#F58220", color2:"#111111", perf:63},
+];
+// [nombre, edad en 2007, nivel, techo, títulos(antes de 2007), bandera]
+const GRID2007 = {
+  "Ferrari":     [["K. Räikkönen",27,93,95,0,"🇫🇮"],["F. Massa",26,88,90,0,"🇧🇷"]],
+  "McLaren":     [["F. Alonso",26,94,95,2,"🇪🇸"],["L. Hamilton",22,88,96,0,"🇬🇧"]],
+  "BMW Sauber":  [["N. Heidfeld",30,84,86,0,"🇩🇪"],["R. Kubica",22,84,91,0,"🇵🇱"]],
+  "Renault":     [["G. Fisichella",34,82,84,0,"🇮🇹"],["H. Kovalainen",25,80,86,0,"🇫🇮"]],
+  "Williams":    [["A. Wurz",33,78,80,0,"🇦🇹"],["N. Rosberg",22,82,90,0,"🇩🇪"]],
+  "Red Bull":    [["D. Coulthard",36,82,84,0,"🇬🇧"],["M. Webber",30,84,87,0,"🇦🇺"]],
+  "Toyota":      [["R. Schumacher",32,80,83,0,"🇩🇪"],["J. Trulli",33,82,85,0,"🇮🇹"]],
+  "Toro Rosso":  [["V. Liuzzi",26,78,81,0,"🇮🇹"],["S. Speed",24,74,79,0,"🇺🇸"]],
+  "Honda":       [["J. Button",27,86,89,0,"🇬🇧"],["R. Barrichello",35,83,85,0,"🇧🇷"]],
+  "Super Aguri": [["T. Sato",30,78,81,0,"🇯🇵"],["A. Davidson",28,77,81,0,"🇬🇧"]],
+  "Spyker":      [["C. Albers",28,73,77,0,"🇳🇱"],["A. Sutil",24,76,84,0,"🇩🇪"]],
+};
 // leyendas RETIRADAS conocidas en 2000. OJO: Schumacher (2), Häkkinen (2) y Villeneuve (1)
 // estaban EN ACTIVO ese año → no van aquí. El récord lo tenía Fangio con 5.
 const LEGENDS_2000 = [["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],
@@ -2833,11 +2867,12 @@ const CHALLENGES = {
           fameBase:190 },   // llega famosísimo… de otra cosa: en la F1 todavía no ha hecho nada
     // las dos puertas que existieron de verdad. Son LINAJES, no nombres: si en tu partida Red Bull no
     // compró Jaguar, no hay Toro Rosso y la puerta sigue llamándose Minardi, como se llamaba.
+    teams: TEAMS_2007, grid: GRID2007,
     doors:[
-      {line:"Minardi", note:["Una temporada para foguearte y, si eres rápido, subes",
+      {line:"Toro Rosso", note:["Una temporada para foguearte y, si eres rápido, subes",
                              "A season to learn the ropes and, if you're quick, you move up",
                              "Uma temporada para pegar rodagem e, se for rápido, você sobe"]},
-      {line:"Sauber",  note:["La cantera por la que Massa llegó a Ferrari",
+      {line:"BMW Sauber", note:["La cantera por la que Massa llegó a Ferrari",
                              "The feeder team that took Massa to Ferrari",
                              "A base pela qual Massa chegou à Ferrari"]},
     ],
@@ -3248,10 +3283,19 @@ function advanceEraTo(year){
   for(let y=desde+1; y<=year; y++){
     S.baseYear=y; S.age=guardaIni; S.startAge=guardaIni;   // → yearNow() === y
     papelera.year=y; papelera.events.length=0;
-    S.dpool.forEach(d=>{ if(d && d.age!=null) d.age++; }); // la parrilla cumple años
+    /* (la edad la pone npcSeason al correr el año — sumarla aquí TAMBIÉN doblaba los años.) */
     try{ processLineage(papelera); }catch(e){}             // 🧬 Benetton→Renault, quiebras…
     try{ processEntries(papelera); }catch(e){}             // 🆕 Toyota y compañía
     try{ processArrivals(papelera); }catch(e){}            // 🎬 Räikkönen, Montoya…
+    /* 🌍 …Y EL MUNDO CORRE DE VERDAD (cazado por Carlos el 30-ago, la víspera de Valentino: el reto
+       arrancaba en 2007 con la parrilla CONGELADA de 2001, porque estos tres procesos mueven marcas
+       y llegadas pero nadie simulaba las TEMPORADAS. Cada año intermedio corre entero; la papelera
+       se traga las noticias.) */
+    try{ evolveF1(null); }catch(e){}
+    try{ bgF1Season(papelera); }catch(e){}
+    try{ npcSeason(papelera); }catch(e){}
+    try{ npcRescateTalento(papelera); }catch(e){}
+    try{ rbCanteraInvernal(papelera); }catch(e){}
   }
   S.baseYear=year; S.age=guardaEdad; S.startAge=guardaIni;
 }
@@ -3288,6 +3332,69 @@ function setupChallenge(CH){
   const _ano = Array.isArray(CH.year) ? CH.year[irnd(0,CH.year.length-1)] : CH.year;
   S.chYear = _ano;
   advanceEraTo(_ano);
+  /* 🏁 PARRILLA FIJA DEL RETO. `advanceEraTo` mueve marcas y llegadas pero no simula temporadas, así
+     que un reto que viaja años (Valentino: era 2000 → 2007) arrancaba con la parrilla CONGELADA de
+     2001 —Häkkinen en McLaren, Alonso de compañero tuyo en Minardi—. Simular los años intermedios
+     tampoco vale: sale una historia INVENTADA, y en un reto con ranking todos parten de la MISMA
+     parrilla, que además debe ser LA QUE FUE (Carlos, 30-ago). El reto trae la suya y aquí se siembra.
+     ⚠️ Y EL MUNDO SIGUE VIVO: la primera versión vaciaba linajes, llegadas y expansiones — o sea,
+     mataba Honda→Brawn→Mercedes, Spyker→Force India→Aston, Renault→Alpine, Sauber→Audi, las quiebras
+     y los debuts que quedaban por venir. En vez de borrarlos se RE-ANCLAN al año del reto. */
+  if(CH.teams && CH.grid){
+    F1_TEAMS.length=0; CH.teams.forEach(t=>F1_TEAMS.push({...t, cat:"F1"}));
+    S.seats={}; S.dpool=[]; S.freeAgents=[]; S.retiredPool=[]; S.crossovers=[];
+    S.f1perf={}; S.f1target={}; S.f1char={}; S.cache={};
+    S.rankD={}; S.rankC={}; S.rankDPrev={}; S.rankCPrev={}; S.rankDTeam={};
+    F1_TEAMS.forEach(t=>{ S.f1perf[t.name]=t.perf; S.f1target[t.name]=t.perf;
+      S.f1char[t.name]=CHARS[irnd(0,2)]; S.cache[t.name]=t.perf; });
+    const _drop=S.chDrop||[];
+    Object.entries(CH.grid).forEach(([team,list])=>{
+      S.seats[team]=list.filter(d=>!_drop.includes(d[0])).map(([name,age,skill,ceil,titles,flag])=>{
+        const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d; });
+      while(S.seats[team].length<2) S.seats[team].push(mkRookie(false, team));
+    });
+    palmSeed(_ano);            // 🏆 el palmarés, recortado al año del reto (Schumacher con sus 7)
+    try{ if(typeof retiredSeed==="function") retiredSeed(S.baseYear); }catch(e){}
+    S.retiredPool=(S.retiredPool||[]).filter(r=>r && !S.dpool.some(d=>d.name===r.name));
+    const _hay = n => F1_TEAMS.some(t=>t.name===n);
+    /* 🧬 LINAJES re-anclados: la marca que exista HOY en la parrilla marca por dónde va la cadena;
+       lo anterior queda hecho, lo posterior sigue vivo (con su año empujado al futuro). Una cadena
+       cuya marca no está en la parrilla del reto es que ya murió (Arrows, Prost GP): se cierra. */
+    (S.lineage||[]).forEach(chn=>{
+      /* ⚠️ la PRIMERA coincidencia, no la última: la cadena de Benetton acaba volviendo a «Renault»
+         (Alpine→Renault en los 2030), así que quedarse con la última daba idx=3 y mataba Lotus y
+         Alpine de un plumazo. Cazado verificando. */
+      let cur=null, idx=-1;
+      (chn.steps||[]).some((st,i)=>{ if(st.to && _hay(st.to.name)){ cur=st.to.name; idx=i; return true; } return false; });
+      if(cur==null && _hay(chn.key)) cur=chn.key;
+      if(cur==null){ chn.cur=null; (chn.steps||[]).forEach(st=>st.done=true); return; }
+      chn.cur=cur;
+      (chn.steps||[]).forEach((st,i)=>{
+        if(i<=idx){ st.done=true; return; }
+        const w=st.w||[_ano+1,_ano+4];
+        if(w[1]<=_ano){ st.done=true; return; }              // su ventana ya pasó y no ocurrió
+        if(st.year<=_ano) st.year=irnd(Math.max(w[0],_ano+1), Math.max(w[1],_ano+2));
+      });
+    });
+    /* 🆕 EXPANSIONES: las que ya están en la parrilla del reto cuentan como entradas hechas —y si
+       eran frágiles (Super Aguri) se les cablea su quiebra, que es lo que hace `processEntries`—;
+       las que se quedaron por el camino se cierran; las futuras siguen esperando su año. */
+    (S.expansion||[]).forEach(e=>{
+      if(!e.team) return;
+      if(_hay(e.team.name)){
+        e.added=true;
+        (S.llegadaExp=S.llegadaExp||{})[e.team.name]=_ano;
+        // …y solo si `processEntries` no le cableó ya la suya al entrar (si no, Toyota tenía DOS quiebras)
+        if(e.dieAfter && !(S.lineage||[]).some(c=>c.key===e.team.name)){ S.lineage=S.lineage||[]; S.lineage.push({key:e.team.name, cur:e.team.name,
+          steps:[{die:true, year:_ano+irnd(e.dieAfter.w[0],e.dieAfter.w[1]), go:ch(e.dieAfter.p), done:false}]}); }
+      }
+      else if(e.year<=_ano || (e.range&&e.range[1]<=_ano)) e.added=true;
+    });
+    /* 🎬 LLEGADAS: quien ya está sentado no vuelve a debutar; a quien le tocaba antes del reto y no
+       llegó se le empuja a los años siguientes (Vettel debutó en 2007 a mitad de año: aparecerá). */
+    S.arrivals=(S.arrivals||[]).filter(a=>!S.dpool.some(d=>d.name===a.n));
+    S.arrivals.forEach(a=>{ if(a.y<=_ano) a.y=_ano+irnd(0,2); });
+  }
   // 3) tu ficha. Si el reto trae año de nacimiento, la edad SALE DEL AÑO que haya tocado: con una
   //    ventana de años, tener la edad escrita a mano haría que en 2006 y en 2007 tuvieras la misma.
   const _edad = CH.who.born ? (_ano - CH.who.born) : CH.who.age;
