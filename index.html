@@ -4743,7 +4743,10 @@ function mktRellenar(row, huecos, bolsa, cerrar){
       {pt:`✍️ ${surname(d.name)}, campeão do mundo, não espera: assina com a ${_dest}.`}));
     return !_dest;
   });
-  const _salen=bolsa.filter(d=>!S.freeAgents.includes(d) && (d.skill||0)>=76 && (d.yrs!=null));
+  /* 🧹 FUERA LA LISTA DE LOS QUE SE QUEDAN SIN VOLANTE (Carlos, 30-ago: «eso de "Sin volante para
+     el año que viene: Sainz · Gasly · Ocon…" FUERA»). La puse el 29-ago para que nadie desapareciera
+     en silencio, pero son cinco nombres ajenos cada invierno y ahogan las noticias que sí te tocan. */
+  const _salen=[];
   if(row && _salen.length){
     const _n=_salen.map(d=>surname(d.name)).join(" · ");   // TODOS: el 5º también merece su línea (detector, 29-ago)
     row.events.push(_salen.length===1
@@ -8662,6 +8665,15 @@ function alphaClash(row){
        verdad: que escogen al más joven de los dos. */
     const _edadQueda = stays==="PLAYER" ? S.age : ((stays&&stays.age)||30);
     const _joven = _edadQueda<=27;
+    /* 🧹 UN FICHAJE AJENO NO ES NOTICIA (Carlos, 30-ago: «fichajes, CERO; no quiero fichajes salvo
+       que tengan que ver con MI EQUIPO, o el equipo campeón vigente o el piloto campeón vigente»).
+       El movimiento SÍ ocurre —la parrilla lo refleja—, solo que ya no se cuenta si no te toca. */
+    {
+      const _mio = yo || tn===S.tpTeam || (dest&&dest.name)===S.tpTeam || (S.team&&S.team.name===tn);
+      const _campT = (S.rankC||{})[tn]===1 || (dest&&(S.rankC||{})[dest.name]===1);
+      const _campP = [va, stayName, vuelve].some(n=>n && (S.rankD||{})[String(n)]===1);
+      if(!(_mio || _campT || _campP)) return;
+    }
     row.events.push(L(
       modo==="peor"     ? `🥊 ${tn} construirá ${yo?"sobre ti":"sobre "+stayName} y dejará marchar a ${va}, que firma por ${dest.name} para ${yN}. ${vuelve} ocupará su asiento.`
     : modo==="mejor"    ? `🥊 Bombazo: ${va} anuncia que se irá a ${dest.name} en ${yN} buscando ser el número uno. ${vuelve} llegará a ${tn} para ser ${yo?"tu compañero":"compañero de "+stayName}.`
@@ -11666,10 +11678,8 @@ function tpYearStart(){
     const _pearce={name:"J. Pearce", flag:"🇬🇧", age:23, skill:Math.round(rnd(78,82)), ceil:90, titles:0};
     S.dpool.push(_hayes,_pearce); S.seats.APXGP=[_hayes,_pearce];
     S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!=="S. Hayes" && x.name!=="J. Pearce");
-    S.pendingEvents.push(L(
-      "🎬 Bombazo en el paddock: APXGP entra en la parrilla, con un veterano de 50 años al volante.",
-      "🎬 Paddock bombshell: APXGP joins the grid, with a 50-year-old veteran at the wheel.",
-      {pt:"🎬 Bomba no paddock: a APXGP entra no grid, com um veterano de 50 anos ao volante."}));
+    /* 🧹 SIN BOMBAZO (Carlos, ya me lo había pedido y se me quedó). La entrada de APXGP se ve sola
+       en la parrilla: anunciarla a bombo era una noticia ajena más ocupando el año. */
   }
   /* 🏢 LOS DUEÑOS TAMBIÉN CAMBIAN. Hasta ahora el dueño solo se movía por dos dilemas concretos, así
      que podías echarte veinte temporadas con el mismo señor (queja de Carlos). En la F1 los equipos
@@ -16417,9 +16427,9 @@ const TP_DILEMAS=[
               Carlos: «puede salir o no aunque el otro no cante»). Si canta, se fuerza a true. */
            S._crash={ y:yearNow(), n:c.onom, nN:c.on, bn:c.bn, gp:c.gp, curva:c.curva,
                       juicio:yearNow()+irnd(1,2), habra:ch(.75), callado:true, pagado:false, juzgado:false };
-           return L(`Vuelta ${(c.v||20)+2}, curva ${c.curva}. ${c.on} se sale sin tocar a nadie y el coche de seguridad entra antes de que la nube de polvo se pose. ${c.bn} gana la carrera y tu equipo celebra en el podio.\n\nNadie ha visto nada. Todavía. +1 victoria, +fama`,
-                    `Lap ${(c.v||20)+2}, turn ${c.curva}. ${c.on} goes off without touching anybody and the safety car is out before the dust settles. ${c.bn} wins the race and your team celebrates on the podium.\n\nNobody has seen anything. Yet. +1 win, +fame`,
-                    {pt:`Volta ${(c.v||20)+2}, curva ${c.curva}. ${c.on} sai sem tocar em ninguém e o safety car entra antes de a poeira baixar. ${c.bn} vence a corrida e a sua equipe comemora no pódio.\n\nNinguém viu nada. Ainda. +1 vitória, +fama`}); }}
+           return L(`Vuelta ${(c.v||20)+2}${c.gp?" en "+c.gp:""}, curva ${c.curva}. ${c.on} se sale sin tocar a nadie y el coche de seguridad entra antes de que la nube de polvo se pose. ${c.bn} gana la carrera y tu equipo celebra en el podio.\n\nNadie ha visto nada. Todavía. +1 victoria, +fama`,
+                    `Lap ${(c.v||20)+2}${c.gp?" at "+c.gp:""}, turn ${c.curva}. ${c.on} goes off without touching anybody and the safety car is out before the dust settles. ${c.bn} wins the race and your team celebrates on the podium.\n\nNobody has seen anything. Yet. +1 win, +fame`,
+                    {pt:`Volta ${(c.v||20)+2}${c.gp?" em "+c.gp:""}, curva ${c.curva}. ${c.on} sai sem tocar em ninguém e o safety car entra antes de a poeira baixar. ${c.bn} vence a corrida e a sua equipe comemora no pódio.\n\nNinguém viu nada. Ainda. +1 vitória, +fama`}); }}
        ]}; }}]},
  /* ⚖️ «EL JUICIO» — el desenlace del crashgate, uno a tres inviernos después (idea de Carlos, 26-ago:
     «podría incluso llegar 1 o 2 años tarde»). Solo existe si diste la orden. Si el que se estrelló
