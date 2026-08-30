@@ -37,6 +37,32 @@ function isoWeekKey(d) {
    en su tabla, y al terminar, el ranking se abría en `e:1990`, el servidor respondía «scope
    inválido» y el jugador leía «Aún no hay puntuaciones» justo después de acabar su carrera. */
 const ERAS_OK = ["1990", "2000", "2010", "2020", "2026"];
+/* 🏷️ EL NOMBRE SE COMPONE AL LEER, NO AL GUARDAR (30-ago-2026, lo cazó Carlos: «los rankings están
+   mal hechos, hay mezclas»). El display es UNO POR JUGADOR (`pl:<id>`) y se sobrescribe con su última
+   carrera, así que cada tabla enseñaba el nombre de la ÚLTIMA partida, viniera de donde viniera la
+   marca: VEDELLE salía como «PECHITO (VEDELLE)» en la tabla del CLÁSICO —su 3992 es de una carrera
+   normal— y ANTEK como «ALONSO (ANTEK)» dentro de la tabla del reto de PECHITO.
+   Las puntuaciones siempre estuvieron en la tabla correcta; mentía el rótulo.
+   Arreglo sin migrar datos ni gastar un comando más: se guarda igual, pero al LEER se extrae el apodo
+   limpio y se le pone el personaje que corresponde A ESTA TABLA. Los registros viejos quedan bien
+   solos. ⚠️ Si se añade un reto con `persona`, hay que añadirlo aquí. */
+const PERSONAS = { alonso01: "ALONSO", pechito: "PECHITO", valentino: "VALENTINO" };
+const PERSONAS_LISTA = Object.keys(PERSONAS).map((k) => PERSONAS[k]);
+function apodoLimpio(n) {
+  const s = String(n || "").trim();
+  /* solo se despega el prefijo si es un PERSONAJE conocido: un apodo con paréntesis puestos por el
+     jugador («PEPE (X)») se queda tal cual en vez de quedarse en «X». */
+  const m = /^([^()]+?)\s*\(([^()]+)\)$/.exec(s);
+  if (m && PERSONAS_LISTA.indexOf(m[1].trim().toUpperCase()) >= 0) return m[2].trim();
+  return s;
+}
+function nombrePara(scope, n) {
+  const apodo = apodoLimpio(n) || "—";
+  const c = /^c:(.+)$/.exec(scope);
+  const persona = c && PERSONAS[c[1]];
+  return persona ? persona + " (" + apodo + ")" : apodo;
+}
+
 function scopeKey(scope) {
   if (scope === "g") return "lb:global";
   if (scope === "w") return "lb:w:" + isoWeekKey(new Date());
@@ -70,7 +96,7 @@ module.exports = async (req, res) => {
       const disp = (await redis(["MGET"].concat(ids.map((x) => "pl:" + x)))) || [];
       rows.forEach((row, i) => {
         let d = {}; try { d = JSON.parse(disp[i] || "{}"); } catch (e) {}
-        row.name = d.n || "—"; row.flag = d.f || "🏁"; row.country = d.c || "";
+        row.name = nombrePara(scope, d.n); row.flag = d.f || "🏁"; row.country = d.c || "";
       });
     }
     let me = null;
