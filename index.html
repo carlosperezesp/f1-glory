@@ -4688,6 +4688,9 @@ function tpFaseACorte(n){
   const nT=Object.keys(S.rankC||{}).length||F1_TEAMS.length;
   const p=(S.rankC||{})[S.tpTeam]||nT;
   const base=.20 + .55*((p-1)/Math.max(1,nT-1));
+  /* 🧢 SIN TOPE. Lo puse a cuatro al ver la parrilla de Carlos con seis huecos, y me dijo que no
+     hacía falta: el reparto ya era correcto —esos asientos se cubren al cerrar tu mercado— y lo que
+     confundía era el nombre del chip, no la cantidad. Se arregló nombrándolo «por decidir». */
   return Math.round(n*Math.max(.05, Math.min(.90, base+rnd(-.15,.15))));
 }
 /* 🪑 EL REPARTO DE ASIENTOS. `cerrar` distingue la fase 🅰️ (solo coloca) de la 🅲️ (coloca y CIERRA el
@@ -4762,8 +4765,15 @@ function mktRellenar(row, huecos, bolsa, cerrar){
    de otro equipo, y reparte entre lo que siga libre.
    Las noticias van a pendingEvents porque la temporada que las generó ya está cerrada y pintada. */
 function tpFaseC(){
-  const f=S._tpFaseB; S._tpFaseB=null;
-  if(!f || f.y!==yearNow()) return;
+  S._tpFaseB=null;
+  /* 🐞 AQUÍ VIVÍA EL BUG QUE VACIÓ LA PARRILLA (lo cazó Carlos jugando, 30-ago). La primera versión
+     comprobaba que el año guardado coincidiera con `yearNow()`… pero la red de seguridad salta al
+     empezar la temporada SIGUIENTE, cuando el año ya ha avanzado: la comprobación fallaba siempre,
+     la función se iba sin rellenar y encima tiraba el estado. Los asientos vacíos se acumulaban
+     (1, 2, 3, 5…) hasta dejar equipos enteros sin pilotos.
+     La lección: no preguntar por un año guardado, sino por la realidad. Un asiento vacío está mal
+     SIEMPRE, venga del invierno que venga, así que se rellena y punto. Se le pasó a mi arnés porque
+     solo probaba el camino bueno —yo llamaba al cierre a mano— y nunca los malos. */
   const huecos=[];
   Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)||tpManaged(tm)) return;
     sl.forEach((d,i)=>{ if(d===null||d===undefined) huecos.push({tm,i}); }); });
@@ -11199,8 +11209,8 @@ const EJE_NOMBRE={
 };
 const EJE_QUE_HACE={
   aero: ()=>L("Sube el techo, no el suelo: años extraordinarios… o a medias","Raises the ceiling, not the floor: outstanding years… or wasted ones",{pt:"Sobe o teto, não o piso: anos extraordinários… ou pela metade"}),
-  motor:()=>L("Ritmo bruto","Raw pace",{pt:"Ritmo bruto"}),
-  fiab: ()=>L("El seguro: evita que el año se vaya al garete","The insurance: stops the year falling apart",{pt:"O seguro: evita que o ano vá por água abaixo"})
+  motor:()=>L("Velocidad punta y salida de curva: donde se gana el tiempo","Top speed and corner exit: where the lap time is won",{pt:"Velocidade de ponta e saída de curva: onde se ganha o tempo"}),
+  fiab: ()=>L("Evita averías: el coche que termina siempre suma","Avoids failures: the car that finishes always scores",{pt:"Evita quebras: o carro que termina sempre pontua"})
 };
 function ejePuesto(tn, eje){
   const orden=F1_TEAMS.map(t=>[t.name, ejeFuerza(t.name,eje)]).sort((a,b)=>b[1]-a[1]);
@@ -11429,6 +11439,18 @@ function tpRefreshCard(){
       _tg.style.display="";
       _tg.textContent="🎯 "+_obj+(S.tpGoal.year!==yearNow()?" ('"+String(S.tpGoal.year).slice(-2)+")":"");
     } else _tg.style.display="none";
+  }
+  /* 📣 …Y EL CAPRICHO DEL SHOWMAN, AL LADO (Carlos, 30-ago: «el tema del capricho es que no lo vi;
+     no vi por ningún lado que el jefe quería una estrella»). Tenía razón: se escribía UNA vez, en la
+     pantalla de inicio de temporada, y desaparecía — mientras el objetivo vivía todo el año en su
+     chip. Dos cosas que se piden igual tienen que verse igual. */
+  let _tc=$("tagCap");
+  if(!_tc){ _tc=document.createElement("span"); _tc.className="tag"; _tc.id="tagCap";
+    const _tags=document.querySelector("#driverCard .tags"); if(_tags) _tags.appendChild(_tc); }
+  if(_tc){
+    const _c=S.tpCapricho;
+    if(_c && S.tpOwner && S.tpOwner.k==="show"){ _tc.style.display=""; _tc.textContent=tpCaprichoChip(_c); }
+    else _tc.style.display="none";
   }
   try{ $("driverCard").classList.add("tp"); }catch(e){}
   $("valV").textContent=mood[0]; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
@@ -11799,6 +11821,7 @@ function tpYearStart(){
     }
   }
   S._tpNos=0;            // portazos de este invierno: al 5º, la directiva cierra el mercado
+  S._tpInsist=0;         // 📞 y las insistencias, que las paga tu prestigio
   S._tpRenovados={};     // contratos vencidos ya decididos este invierno (renovado o sustituido)
   tpMercado();
 }
@@ -11924,55 +11947,7 @@ function tpMercado(){
       <span class="info"><span class="name">${nm}</span>
       <span class="sub" style="display:block">${sub1}</span>
       <span class="sub" style="display:block">${sub2}</span></span>`;
-    b.onclick=()=>tpNegociar(c, ()=>{
-      /* 📞 la llamada: puede decirte que NO. Cinco portazos en un invierno y la directiva te quita el
-         teléfono (petición de Carlos: «así no pierdes el tiempo tanteando fichajes ad eternum»).
-         📜 Y ahora el dado lleva dentro los años que le has ofrecido: un agente libre seguía
-         aceptando siempre —por eso se saltaba la tirada—, pero pedirle cinco años cuando quiere uno
-         también es motivo de portazo. La renovación tira aparte, en tpSignDriver, para conservar su
-         texto y que el que se va firme con otro. */
-      const _pf = c.kind==="renew" ? null
-                : (c.odds!=null?c.odds:.95) * (c._facAnios||1);
-      if(_pf!=null && _pf<.97 && Math.random()>_pf){
-        S._tpNos=(S._tpNos||0)+1;
-        S._tpNo=S._tpNo||{}; S._tpNo[c.d.name]=yearNow();
-        if(S._tpNos>=5){ tpDirectivaCierra(); return; }
-        S._tpNoTxt=(c.kind==="cross"
-          ? L(`❌ ${surname(c.d.name)} te dice que no: prefiere seguir mandando donde está a sufrir en la F1.`,
-              `❌ ${surname(c.d.name)} turns you down: he'd rather keep winning where he is than suffer in F1.`,
-              {pt:`❌ ${surname(c.d.name)} diz não: prefere seguir mandando onde está a sofrer na F1.`})
-          : !c.from
-          ? L(`❌ ${surname(c.d.name)} te dice que no: no firma por ${c._anios} ${c._anios===1?"año":"años"}.`,
-              `❌ ${surname(c.d.name)} turns you down: he won't sign for ${c._anios} ${c._anios===1?"year":"years"}.`,
-              {pt:`❌ ${surname(c.d.name)} diz não: não assina por ${c._anios} ${c._anios===1?"ano":"anos"}.`})
-          : L(`❌ ${surname(c.d.name)} te dice que no: se queda en ${c.from}.`,
-          `❌ ${surname(c.d.name)} turns you down: he stays at ${c.from}.`,
-          {pt:`❌ ${surname(c.d.name)} diz não: fica na ${c.from}.`}))
-          + (S._tpNos===4 ? "<br>"+L("⚠️ La directiva empieza a impacientarse: un portazo más y cerrarán el mercado por ti.",
-                                     "⚠️ The board is losing patience: one more slammed door and they'll close the market for you.",
-                                     {pt:"⚠️ A diretoria está perdendo a paciência: mais uma porta na cara e fecharão o mercado por você."}) : "");
-        tpMercado(); return;
-      }
-      // aceptó: ¿dónde lo sientas?
-      /* 🪑 RENOVAR TAMBIÉN ELIGE ASIENTO (playtest de Carlos: «hay veces que los dos terminan contrato
-         y querría darle al 1 el 2 y al 2 el 1, pero solo me ofrece renovarlos en sus posiciones»).
-         Con más de un hueco abierto, la renovación pasa por la misma pantalla de colocación. */
-      const ab=tpAbiertos();
-      if(c.kind==="renew"){ if(ab.length>1) tpElegirAsiento(c, ab); else tpSignDriver(c.i, c); return; }
-      /* 🛡️ sin ningún asiento abierto no hay dónde sentarlo: se vuelve al mercado en vez de reventar.
-         `ab[0].i` sobre una lista vacía tiraba la pantalla entera (cazado el 26-ago). */
-      if(!ab.length){ tpMercado(); return; }
-      /* 🪑 CON UN SOLO HUECO TAMBIÉN SE ELIGE (Carlos, 28-ago, mercado de Cadillac: «¿no está lo de
-         seleccionar asiento?»). El fichaje iba de oficio al único hueco: con el otro asiento ocupado
-         por contrato vivo no había forma de sentar al nuevo de escudero y subir al de casa al Nº1.
-         Ahora se ofrecen los dos asientos; el de casa no sale del equipo, PASA al hueco. */
-      if(ab.length<=1){
-        const _otro=1-ab[0].i, _od=(S.seats[S.tpTeam]||[])[_otro];
-        if(_od && _od!=="PLAYER"){ tpElegirAsiento(c, [ab[0], {i:_otro, cur:_od, mueve:true, hueco:ab[0].i}]); return; }
-        tpSignDriver(ab[0].i, c); return;
-      }
-      tpElegirAsiento(c, ab);
-    });
+    b.onclick=()=>tpNegociar(c, ()=>tpLlamada(c));
     box.appendChild(b);
   });
   scrollToDecision();
@@ -12051,6 +12026,7 @@ function tpDirectivaCierra(){
     }
     ab=tpAbiertos();
   }
+  tpFaseC();   // 🅲️ la directiva cierra TU mercado: se reparte también el resto de la parrilla
 }
 /* el POOL del mercado, ya sin asiento fijo: renovaciones (ancladas a su asiento), el probador, los
    fichables por probabilidad, los agentes libres y la cantera. La lógica es la de la terna de siempre;
@@ -12396,6 +12372,111 @@ function tpNegociar(c, sigue){
   v.onclick=()=>tpMercado();
   box.appendChild(v);
   scrollToDecision();
+}
+/* 📞 LA LLAMADA, EN TRES DESENLACES (rediseño con Carlos, 30-ago). Antes era un dado y una puerta:
+   si salía que no, se acababa ahí — y le daba rabia con razón, porque un «difícil» que sale mal te
+   deja sin nada aunque le hubieras ofrecido justo lo que pedía.
+   Ahora la misma tirada distingue DOS preguntas con el mismo dado, así que quedan anidadas:
+     · ¿le interesa venir?            → la probabilidad base, la del chip
+     · ¿y por estos años?             → la base recortada por la duración que le ofreces
+   Si pasa las dos, firma. Si le interesa venir pero NO por esos años, te CONTRAOFERTA un número
+   intermedio y decides tú. Y si directamente no le interesas, te queda INSISTIR: una llamada más,
+   peor, y las que puedas permitirte las paga tu prestigio. */
+let ROT_C_INSISTE=.72;   // cuánto empeora la probabilidad al insistir
+function tpInsistenciasQuedan(){
+  const pr=S.tpPrest||50;
+  return (1 + (pr>=60?1:0) + (pr>=85?1:0)) - (S._tpInsist||0);
+}
+function tpLlamada(c, reintento){
+  if(c.kind==="renew") return tpTrasSi(c);   // la renovación tira aparte, en tpSignDriver
+  const base=(c.odds!=null?c.odds:.95), fac=c._facAnios||1;
+  const pen=reintento?ROT_C_INSISTE:1;
+  const r=Math.random();                      // un solo dado: las dos preguntas quedan anidadas
+  if(r <= base*fac*pen) return tpTrasSi(c);
+  const leInteresa = r <= base*pen;
+  if(leInteresa && c._anios!=null && fac<1 && !c._contra && ch(.35+(S.tpPrest||50)/200))
+    return tpContraoferta(c);
+  return tpPortazo(c, reintento);
+}
+/* 🤝 LA CONTRAOFERTA: ni lo suyo ni lo tuyo. Sale del punto medio entre lo que pide y lo que ofreces. */
+function tpContraoferta(c){
+  const pide=tpAniosPide(c.d), dif=c._anios-pide;
+  const n=Math.max(1, Math.min(5, pide + Math.sign(dif)*Math.max(1, Math.round(Math.abs(dif)/2))));
+  c._contra=n;
+  setDecision(`${c.d.flag||"🏁"} ${c.d.name} · `+L(`pide ${n} ${n===1?"año":"años"}`,
+    `wants ${n} ${n===1?"year":"years"}`,{pt:`pede ${n} ${n===1?"ano":"anos"}`}), "");
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const si=document.createElement("button"); si.className="offer";
+  si.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">✍️</span>
+    <span class="info"><span class="name">${L(`Firmar por ${n}`,`Sign for ${n}`,{pt:`Assinar por ${n}`})}</span></span>`;
+  si.onclick=()=>{ c._anios=n; c._facAnios=1; tpTrasSi(c); };
+  box.appendChild(si);
+  const no=document.createElement("button"); no.className="offer";
+  no.innerHTML=`<span class="team-dot dot" style="background:#3a3a3a">✖️</span>
+    <span class="info"><span class="name">${L("Dejarlo","Walk away",{pt:"Deixar"})}</span></span>`;
+  /* 🚪 rechazar TÚ no es un portazo: no cuenta para los cinco de la directiva, pero él ya no vuelve
+     este invierno — la negociación se rompió, y la rompiste tú. */
+  no.onclick=()=>{ S._tpNo=S._tpNo||{}; S._tpNo[c.d.name]=yearNow(); tpMercado(); };
+  box.appendChild(no);
+  scrollToDecision();
+}
+/* 📞 …Y SI TE DICE QUE NO, TODAVÍA PUEDES INSISTIR (Carlos: «debería haber al menos 1 oportunidad,
+   quizá ligada a la fama mía»). Una siempre; dos con prestigio 60; tres con 85. */
+function tpPortazo(c, yaInsistido){
+  if(!yaInsistido && tpInsistenciasQuedan()>0 && c.odds!=null && c.d){
+    const p2=Math.max(.03,Math.min(.97,(c.odds!=null?c.odds:.95)*(c._facAnios||1)*ROT_C_INSISTE));
+    setDecision(`❌ ${c.d.flag||"🏁"} ${c.d.name} `+L("te dice que no","turns you down",{pt:"diz não"}), "");
+    $("decRecap").style.display="none";
+    const box=$("offerList"); box.innerHTML="";
+    const ins=document.createElement("button"); ins.className="offer";
+    ins.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">📞</span>
+      <span class="info"><span class="name">${L("Insistir","Push again",{pt:"Insistir"})}</span>
+      <span class="sub" style="display:block">${tpOddsTag(p2)}</span></span>`;
+    ins.onclick=()=>{ S._tpInsist=(S._tpInsist||0)+1; tpLlamada(c, true); };
+    box.appendChild(ins);
+    const dej=document.createElement("button"); dej.className="offer";
+    dej.innerHTML=`<span class="team-dot dot" style="background:#3a3a3a">✖️</span>
+      <span class="info"><span class="name">${L("Dejarlo","Leave it",{pt:"Deixar"})}</span></span>`;
+    dej.onclick=()=>tpPortazo(c, true);
+    box.appendChild(dej);
+    scrollToDecision();
+    return;
+  }
+  S._tpNos=(S._tpNos||0)+1;
+  S._tpNo=S._tpNo||{}; S._tpNo[c.d.name]=yearNow();
+  if(S._tpNos>=5){ tpDirectivaCierra(); return; }
+  S._tpNoTxt=(c.kind==="cross"
+    ? L(`❌ ${surname(c.d.name)} te dice que no: prefiere seguir mandando donde está a sufrir en la F1.`,
+        `❌ ${surname(c.d.name)} turns you down: he'd rather keep winning where he is than suffer in F1.`,
+        {pt:`❌ ${surname(c.d.name)} diz não: prefere seguir mandando onde está a sofrer na F1.`})
+    : !c.from
+    ? L(`❌ ${surname(c.d.name)} te dice que no: no firma por ${c._anios} ${c._anios===1?"año":"años"}.`,
+        `❌ ${surname(c.d.name)} turns you down: he won't sign for ${c._anios} ${c._anios===1?"year":"years"}.`,
+        {pt:`❌ ${surname(c.d.name)} diz não: não assina por ${c._anios} ${c._anios===1?"ano":"anos"}.`})
+    : L(`❌ ${surname(c.d.name)} te dice que no: se queda en ${c.from}.`,
+        `❌ ${surname(c.d.name)} turns you down: he stays at ${c.from}.`,
+        {pt:`❌ ${surname(c.d.name)} diz não: fica na ${c.from}.`}))
+    + (S._tpNos===4 ? "<br>"+L("⚠️ La directiva empieza a impacientarse: un portazo más y cerrarán el mercado por ti.",
+                               "⚠️ The board is losing patience: one more slammed door and they'll close the market for you.",
+                               {pt:"⚠️ A diretoria está perdendo a paciência: mais uma porta na cara e fecharão o mercado por você."}) : "");
+  tpMercado();
+}
+/* ✍️ ACEPTÓ: ¿dónde lo sientas? */
+function tpTrasSi(c){
+  /* 🪑 RENOVAR TAMBIÉN ELIGE ASIENTO (playtest de Carlos: «hay veces que los dos terminan contrato
+     y querría darle al 1 el 2 y al 2 el 1, pero solo me ofrece renovarlos en sus posiciones»). */
+  const ab=tpAbiertos();
+  if(c.kind==="renew"){ if(ab.length>1) tpElegirAsiento(c, ab); else tpSignDriver(c.i, c); return; }
+  /* 🛡️ sin ningún asiento abierto no hay dónde sentarlo: se vuelve al mercado en vez de reventar. */
+  if(!ab.length){ tpMercado(); return; }
+  /* 🪑 CON UN SOLO HUECO TAMBIÉN SE ELIGE (Carlos, 28-ago): el de casa no sale del equipo, PASA. */
+  if(ab.length<=1){
+    const _otro=1-ab[0].i, _od=(S.seats[S.tpTeam]||[])[_otro];
+    if(_od && _od!=="PLAYER"){ tpElegirAsiento(c, [ab[0], {i:_otro, cur:_od, mueve:true, hueco:ab[0].i}]); return; }
+    tpSignDriver(ab[0].i, c); return;
+  }
+  tpElegirAsiento(c, ab);
 }
 function tpOddsTag(p, modo){
   /* 🎨 escala de color + UNA palabra (petición de Carlos: «mucho texto en el mercado»).
@@ -13061,10 +13142,10 @@ function tpRepartoScreen(){
       <span class="sub" style="display:block">${tope
         ? L("La fábrica ya vuelca aquí todo lo que puede","The factory already pours everything it can here",{pt:"A fábrica já coloca aqui tudo o que pode"})
         : tope5
-        ? L(`Ya eres el mejor de la parrilla aquí: esto no te sube, te MANTIENE cuando los demás aprieten · se recorta de ${EJE_NOMBRE[baja]()}`,
-            `You're already the grid's best here: this doesn't lift you, it KEEPS you there when the others close in · cut from ${EJE_NOMBRE[baja]()}`,
-            {pt:`Você já é o melhor do grid aqui: isto não te sobe, te MANTÉM quando os outros apertarem · corta-se de ${EJE_NOMBRE[baja]()}`})
-        : L(`Se recorta de ${EJE_NOMBRE[baja]()}`,`Cut from ${EJE_NOMBRE[baja]()}`,{pt:`Corta-se de ${EJE_NOMBRE[baja]()}`})}</span></span>`;
+        ? L("Ya eres el mejor de la parrilla aquí: esto no te sube, te MANTIENE cuando los demás aprieten",
+            "You're already the grid's best here: this doesn't lift you, it KEEPS you there when the others close in",
+            {pt:"Você já é o melhor do grid aqui: isto não te sobe, te MANTÉM quando os outros apertarem"})
+        : ""}</span></span>`;   /* 🧹 fuera «se recorta de X» (Carlos, 30-ago): el jugador ya ve el reparto al elegir */
     b.onclick=()=>{
       /* 🧹 sin narración en el resumen del año (Carlos, 29-ago: «no hace falta poner en qué se
          invierte cada año») — la decisión ya la viste al tomarla y su efecto se ve en el coche. */
@@ -13156,6 +13237,13 @@ function tpAmigoNuevo(){
   const a=cands[irnd(0,cands.length-1)];
   S.tpAmigo={name:a.name, flag:a.flag||"🏁", age:a.age, titles:a.titles||0,
              skill:Math.max(72,Math.round(a.skill||80)), ceil:Math.max(72,Math.round(a.skill||80))};
+}
+/* 📣 la versión CORTA, para el chip de la tarjeta: cabe al lado del objetivo y dice lo mismo. */
+function tpCaprichoChip(c){
+  if(!c) return "";
+  if(c.t==="rival")    return "📣 "+L(`por delante de ${c.rival}`,`ahead of ${c.rival}`,{pt:`à frente da ${c.rival}`});
+  if(c.t==="victoria") return "📣 "+L("ganar una carrera","win a race",{pt:"vencer uma corrida"});
+  return "📣 "+L("fichar a un nombre","sign a big name",{pt:"contratar um nome"});
 }
 function tpCaprichoTxt(c){
   if(!c) return "";
@@ -16670,13 +16758,20 @@ function renderTPGrid(){
   ord.forEach(t=>{
     const mine=tpManaged(t.name);
     const dr=(S.seats[t.name]||[]).map(d=>{
-      if(!d) return `<span style="opacity:.6">🪑 ${L("asiento libre","open seat",{pt:"vaga livre"})}</span>`;
+      if(!d) return `<span style="opacity:.6">🪑 ${S._tpFaseB
+        ? L("por decidir","being decided",{pt:"a definir"})
+        : L("asiento libre","open seat",{pt:"vaga livre"})}</span>`;
       if(d==="PLAYER") return "";
       /* el puesto en pastilla, y un guión cuando aún no tiene: así todas las tarjetas tienen la
          misma forma y no parece que a unas les falte un dato */
       const _p=S.rankD&&S.rankD[d.name];
       const rk=` <span class="pos ${_p?posClass(_p):"nada"}">${_p?(_p===1?"🏆 1º":_p+"º"):"—"}</span>`;
-      const con=(mine&&d.tpc!=null)?` · 📜${Math.max(0,d.tpc)}`:"";
+      /* 📜 DE TODA LA PARRILLA, no solo de los tuyos (Carlos, 30-ago). El chip era de cuando los
+         NPC no tenían contrato; ahora lo tienen, y ver quién termina este invierno es lo que te deja
+         planear a quién asaltar. El 0 se pinta como «vencido»: es el que puedes fichar ya. */
+      const con=(d.tpc!=null)
+        ? (d.tpc<=0 ? ` · <b style="opacity:.85">${L("vencido","expired",{pt:"vencido"})}</b>` : ` · 📜${d.tpc}`)
+        : "";
       // 🆕 debuta con este equipo este año: no estaba aquí al cerrar la temporada pasada
       const nuevo=(S._seatsPrev && S._seatsPrev[d.name]!==t.name)?" 🆕":"";
       return `<span class="drv" style="background:var(--panel2,rgba(127,127,127,.12));border:1px solid transparent;border-radius:8px;padding:3px 8px">${d.flag||"🏁"} ${surname(d.name)}${nuevo} <b>${tpEtiqueta(d)}</b>${(d.titles||0)?` 👑${d.titles>1?"×"+d.titles:""}`:""} · ${d.age}${rk}${con}</span>`;
