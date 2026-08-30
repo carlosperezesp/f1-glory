@@ -2561,6 +2561,12 @@ const CHALLENGES = {
        delante al 56%: sigues en la mitad de abajo, que es la gracia, pero compites. */
     who:{ born:1979, ovr:80, ceil:93, flag:"🇮🇹", country:"Italia", style:"agresivo", num:"46",
           fameBase:190 },   // llega famosísimo… de otra cosa: en la F1 todavía no ha hecho nada
+    /* 🌟 SU FAMA COTIZA SI RINDE (Carlos, 30-ago). Valentino llega famosísimo y con toda la parrilla
+       dudando de él: lo que le abre puertas no es el puesto, es hacerlo MEJOR DE LO QUE DA SU COCHE
+       —la regla Alonso-en-Minardi—. Solo en este reto: en una carrera normal las ofertas siguen
+       mirando el resultado a secas. Calibrado para que, rindiendo bien, un grande pueda llamar a
+       los dos años; si se limita a lo que da el coche, no suma nada. */
+    repSobre:true,
     // las dos puertas que existieron de verdad. Son LINAJES, no nombres: si en tu partida Red Bull no
     // compró Jaguar, no hay Toro Rosso y la puerta sigue llamándose Minardi, como se llamaba.
     /* 🚪 con parrilla fija, las puertas son NOMBRES de 2007: la Minardi de la oferta se llamaba ya
@@ -2590,7 +2596,7 @@ const CHALLENGES = {
     persona:"VALENTINO",
     // ⏳ El 24-ago es de Pechito y el 31 del Reto III. Valentino cierra el mes: si para entonces está
     //    la traducción al italiano, su lanzamiento y el del idioma se refuerzan solos.
-    at:"2026-09-07T10:00:00Z",
+    at:"2026-08-31T10:00:00Z",
   },
   // 🐲 LA BESTIA (idea de Carlos). Familia «reglas», no «revivir a alguien»: partida NORMAL
   // desde el karting, pero el año que pisas la F1 debuta un piloto ficticio de OVR 99 que NO envejece,
@@ -2603,8 +2609,8 @@ const CHALLENGES = {
        "The year you reach Formula 1, someone who shouldn't exist will debut alongside you: a 99-rated driver who never ages, never declines and never retires. He'll be there every Sunday of your career, in one of the best cars. No tricks, no shortcuts. How many titles can you tear away from him?",
        "No ano em que você pisar na Fórmula 1, vai estrear com você alguém que não deveria existir: um piloto de 99 que não envelhece, não cai e nunca se aposenta. Ele vai estar lá todo domingo da sua carreira, num dos melhores carros. Sem truques nem atalhos. Quantos Mundiais você é capaz de arrancar dele?"],
     // ⏸️ GUARDADA (decisión de Carlos, 10-ago): Valentino le quita el sitio de Reto II y La Bestia
-    //    espera. Fecha lejana a propósito para que NO se dispare sola; se le pone la buena al sacarla.
-    at:"2027-01-01T10:00:00Z",
+    //    espera. (30-ago: Carlos le pone fecha — sale una semana después de Valentino.)
+    at:"2026-09-07T10:00:00Z",
   },
   /* 🅿️ EL SITIO GUARDADO, AL FINAL A PROPÓSITO (Carlos, 24-ago: «Valentino es el III, el IV todavía
      no está 100% decidido»). Estaba entre Pechito y Valentino y se comía el III aunque no exista.
@@ -9021,6 +9027,16 @@ function nextOffers(){
     const pedRep = S.f1Seasons<=3 ? juniorPedigree()*1.5 : 0;
     let rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180)+pedRep;
     // 🎤 castigo por conformista: un proyecto ganador te descarta esta temporada (te sales de la élite)
+    /* 🌟 el bono de sobre-rendimiento del reto (ver `repSobre`): «lo que toca» con tu coche es el
+       puesto que da su sitio en la parrilla (el 8º coche → 15º-16º), y cada puesto por encima cuenta.
+       Tope de 6 para que siga haciendo falta una carrera, no un año suelto. */
+    const _chRep=challengeNow();
+    if(_chRep && _chRep.repSobre && S.team){
+      const _toca=gridRank(S.team.name)*2-0.5;
+      const _sobre=Math.max(0, _toca-(S.seasons.at(-1).pos ?? 99));
+      if(_sobre>0){ rep+=Math.min(6,_sobre*0.8); S._repSobre=+Math.min(6,_sobre*0.8).toFixed(1); }
+      else S._repSobre=0;
+    }
     if(S.tooHumble){ rep-=6; S.tooHumble=false; sub=L("😐 Un proyecto ganador te descarta: dudan de tu ambición. ","😐 A winning project passes on you: they doubt your ambition. ",{pt:"😐 Um projeto vencedor te descarta: duvidam da sua ambição. "}); }
     if(rep<68&&S.age>=33){ endCareer(); return; }
     // el perdón llega con los años; a un CAMPEÓN se le vuelve a llamar antes (2 años vs 4) y más fácil
