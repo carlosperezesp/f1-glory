@@ -11044,27 +11044,27 @@ const TP_OWNERS=[
   {k:"win",
    /* ⚠️ solo cambia el RÓTULO: la clave `k:"win"` la miran una docena de sitios (el listón del
       consejo, los dilemas, la voz de la junta) y renombrarla los rompería todos. */
-   lab:()=>L("🏆 Dueño ambicioso","🏆 Ambitious owner",{pt:"🏆 Dono ambicioso"}),
+   lab:()=>L("🏆 CEO ambicioso","🏆 Ambitious CEO",{pt:"🏆 CEO ambicioso"}),
    /* 🗣️ sin biografía inventada (Carlos, 29-ago: «vengo YO de ganar, ¿por qué dice que el dueño
       nuevo viene de ganar?»). Se describe el CARÁCTER, no un pasado que puede chocar con la partida. */
-   intro:()=>L("El dueño no ha comprado esto para pasearse: solo entiende de ganar, y exige más que nadie.",
-               "The owner didn't buy this to cruise: winning is all he understands, and he demands more than anyone.",
-               {pt:"O dono não comprou isto para passear: só entende de vencer, e exige mais do que ninguém."})},
+   intro:()=>L("El nuevo CEO solo entiende de ganar: exige más que nadie.",
+               "The new CEO only understands winning: he demands more than anyone.",
+               {pt:"O novo CEO só entende de vencer: exige mais do que ninguém."})},
   /* 💼 EL DUEÑO FINANCIERO. Antes se llamaba «tecnócrata» y no encajaba: un tecnócrata analiza datos
      de carrera, no recorta presupuestos (aviso de Carlos, 17-ago). Lo que este perfil es de verdad es
      alguien que compró el equipo como ACTIVO, no por pasión: ficha barato, invierte lo justo y
      mira la puerta de salida. De ahí sale, el día que se le dé efecto mecánico, que castigue las
      apuestas a largo plazo — una hoja de cálculo no entiende sacrificar un año por el siguiente. */
   {k:"cut",
-   lab:()=>L("💼 Dueño exigente","💼 Demanding owner",{pt:"💼 Dono exigente"}),
+   lab:()=>L("💼 CEO exigente","💼 Demanding CEO",{pt:"💼 CEO exigente"}),
    /* 🗣️ el RÓTULO pasó a «exigente» (Carlos, 28-ago) y el personaje tenía que seguirlo: antes
       hablaba de «un financiero» y de «un fondo», jerga que no se oye en un paddock. Es el mismo tipo
       —cero paciencia, resultados YA— contado como se cuenta en la F1. */
-   intro:()=>L("Al mando hay alguien que no regala nada: quiere resultados este año, ficha barato y no descarta vender si sale número.",
-               "The man in charge gives nothing away: he wants results this year, signs cheap, and won't rule out selling if the numbers add up.",
-               {pt:"No comando há alguém que não dá nada de graça: quer resultados este ano, contrata barato e não descarta vender se a conta fechar."})},
+   intro:()=>L("Al mando hay alguien que no regala nada: quiere resultados este año y ficha barato.",
+               "The man in charge gives nothing away: he wants results this year and signs cheap.",
+               {pt:"No comando há alguém que não dá nada de graça: quer resultados este ano e contrata barato."})},
   {k:"young",
-   lab:()=>L("🌱 Dueño paciente","🌱 Patient owner",{pt:"🌱 Dono paciente"}),
+   lab:()=>L("🌱 CEO paciente","🌱 Patient CEO",{pt:"🌱 CEO paciente"}),
    intro:()=>L("La junta es joven y cree en los proyectos largos: te darán aire… mientras vean una dirección.",
                "The board is young and believes in long projects: they'll give you air… as long as they see a direction.",
                {pt:"A direção é jovem e acredita em projetos longos: vão te dar ar… enquanto virem um rumo."})},
@@ -11073,7 +11073,7 @@ const TP_OWNERS=[
      nota el presupuesto cada invierno. A cambio, una marca no puede verse perdiendo: cuanto mejor es
      tu coche, más te aprieta el listón. Te pagan el mejor coche y te exigen usarlo. */
   {k:"brand",
-   lab:()=>L("🏭 Dueño fabricante","🏭 Manufacturer owner",{pt:"🏭 Dono fabricante"}),
+   lab:()=>L("🏭 CEO de la marca","🏭 Brand CEO",{pt:"🏭 CEO da marca"}),
    intro:()=>L("Detrás hay una marca, no un señor: entran con la chequera abierta y una sola condición, que aquí no se viene a hacer bulto.",
                "There's a brand behind it, not a man: they come in with the chequebook open and one condition — you don't come here to make up the numbers.",
                {pt:"Atrás há uma marca, não um senhor: entram com o talão aberto e uma só condição, aqui não se vem para fazer número."})},
@@ -11081,7 +11081,7 @@ const TP_OWNERS=[
      número de la clasificación: es un rival concreto al que hay que acabar por delante. Cambia la
      naturaleza del año — puedes ser 7º y haber cumplido, o 3º y haber fracasado. */
   {k:"show",
-   lab:()=>L("📣 Dueño showman","📣 Showman owner",{pt:"📣 Dono showman"}),
+   lab:()=>L("📣 CEO showman","📣 Showman CEO",{pt:"📣 CEO showman"}),
    intro:()=>L("No le interesa el puesto, le interesa el ruido: no le traigas un quinto puesto, tráele un titular.",
                "He doesn't care about the position, he cares about the noise: don't bring him fifth place, bring him a headline.",
                {pt:"Não lhe interessa a posição, lhe interessa o barulho: não lhe traga um quinto lugar, traga uma manchete."})},
@@ -11097,10 +11097,13 @@ function esMarcaF1(tn){ return MARCAS_F1.some(m=>String(tn||"").indexOf(m)>=0); 
    inicio; a un privado llega COMPRÁNDOLO (el relevo o el dilema de la venta, que es el caso
    Sauber→Audi). El filial no está en venta jamás: la casa madre no vende su equipo B. */
 function tpOwnersPosibles(tn, esRelevo){
+  /* 🐂 el FILIAL siempre con CEO paciente (Carlos, 30-ago: «que no exija mucho, puesto que son
+     filiales») — su función es formar chavales para la casa madre, no pelear nada. Y sin relevo:
+     la casa madre no cambia la cúpula de su equipo B por dramatismo. */
+  if(isRBJr(tn)) return TP_OWNERS.filter(o=>o.k==="young");
   return TP_OWNERS.filter(o=>{
     if(o.k!=="brand") return true;
-    if(isRBJr(tn)) return false;                 // el filial no se vende a una marca
-    return esRelevo || esMarcaF1(tn);            // de inicio solo marcas; por venta, cualquiera
+    return esRelevo || esMarcaF1(tn);            // de inicio solo marcas; por compra, cualquiera
   });
 }
 function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
@@ -11388,19 +11391,21 @@ function tpYearStart(){
      inviernos. Pequeño y constante —lo bastante para que en una etapa larga se note, no tanto como
      para regalarte el campeonato—. `tpSubirCoche` respeta el techo y el tope del filial. */
   if(S.tpTeam && S.tpOwner && S.tpOwner.k==="brand") tpSubirCoche(S.tpTeam, rnd(TP_MARCA[0],TP_MARCA[1]));
-  if(S.tpTeam && S.tpOwner && S.tpOwner.k!=="self"){
+  if(S.tpTeam && S.tpOwner && S.tpOwner.k!=="self" && !isRBJr(S.tpTeam)){   // 🐂 el filial no cambia de cúpula
     S.tpOwnerY=(S.tpOwnerY||0)+1;
     if(S.tpOwnerY>=TP_DUENO_MIN && ch(TP_DUENO_P)){
       const otros=tpOwnersPosibles(S.tpTeam,true).filter(o=>o.k!==S.tpOwner.k);
       const nuevoD=otros[irnd(0,otros.length-1)];
       S.tpOwner=nuevoD; S.tpOwnerY=0;
-      tpAviso(L(`🏢 Cambio de manos: el dueño vende. ${nuevoD.intro()}`,
-                `🏢 Change of hands: the owner sells. ${nuevoD.intro()}`,
-                {pt:`🏢 Mudança de mãos: o dono vende. ${nuevoD.intro()}`}));
+      /* 🏢 CÚPULA, no venta (Carlos, 30-ago: «salió que Ferrari cambiaba de dueño» — a Ferrari no
+         la vende nadie; lo que cambia es el CEO, como Domenicali o Vigna en la vida real). */
+      tpAviso(L(`🏢 Cambio en la cúpula: llega un CEO nuevo. ${nuevoD.intro()}`,
+                `🏢 Change at the top: a new CEO arrives. ${nuevoD.intro()}`,
+                {pt:`🏢 Mudança na cúpula: chega um novo CEO. ${nuevoD.intro()}`}));
       S.pendingEvents.push(L(
-        `🏢 Cambio de manos en ${S.tpTeam}: el dueño vende y arriba se sienta gente nueva. ${nuevoD.intro()}`,
-        `🏢 ${S.tpTeam} changes hands: the owner sells and new people sit upstairs. ${nuevoD.intro()}`,
-        {pt:`🏢 ${S.tpTeam} muda de mãos: o dono vende e lá em cima senta gente nova. ${nuevoD.intro()}`}));
+        `🏢 Cambio en la cúpula de ${S.tpTeam}: llega un CEO nuevo. ${nuevoD.intro()}`,
+        `🏢 Change at the top of ${S.tpTeam}: a new CEO arrives. ${nuevoD.intro()}`,
+        {pt:`🏢 Mudança na cúpula da ${S.tpTeam}: chega um novo CEO. ${nuevoD.intro()}`}));
     }
   }
   /* 🎯 EL LISTÓN, VISIBLE DESDE EL PRIMER DÍA — y calculado DESPUÉS del relevo de dueños (Carlos, 29-ago:
@@ -11546,9 +11551,11 @@ function tpAsientoLinea(i){
   const col=(S.team&&S.team.color)||"#c9a227";
   const sl=S.seats[S.tpTeam]||[], d=sl[i];
   const tag = i===0 ? L("1·Nº1","1·No.1",{pt:"1·Nº1"}) : "2";
+  /* ⭐ con estrellas y edad (Carlos, 30-ago: «¡muéstrame mis pilotos en todo momento! así sé sus
+     estrellas y si quiero fichar a otro, o ponerlo de primero o de segundo») */
   const cuerpo = (!d || d==="PLAYER") ? `<b>${tag}</b> ${L("LIBRE","OPEN",{pt:"LIVRE"})}`
-    : ((d.tpc||0)<=0 && !S._tpRenovados[d.name]) ? `<b>${tag}</b> ${surname(d.name)} · ${L("vencido","expired",{pt:"vencido"})}`
-    : `<b>${tag}</b> ${surname(d.name)} · 📜${Math.max(0,d.tpc||0)}`;
+    : ((d.tpc||0)<=0 && !S._tpRenovados[d.name]) ? `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)} · ${d.age} · ${L("vencido","expired",{pt:"vencido"})}`
+    : `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)} · ${d.age} · 📜${Math.max(0,d.tpc||0)}`;
   return `<span class="gar-chip" style="border-color:${col}">${cuerpo}</span>`;
 }
 function tpMercado(){
@@ -11561,10 +11568,13 @@ function tpMercado(){
      con los dos asientos ocupados; el asiento 1 corre con el mejor coche del garaje, así que esto es
      jerarquía de verdad, no estética. */
   const _sl=S.seats[S.tpTeam]||[];
-  const _swap=(_sl[0]&&_sl[0]!=="PLAYER"&&_sl[1]&&_sl[1]!=="PLAYER")
+  /* ↔️ también con UN solo ocupante (Carlos, 30-ago: «así el jugador tiene libertad en todo
+     momento para mover, ver las ofertas y ver qué le convence») — mover al de casa de silla deja
+     el hueco en la otra. */
+  const _swap=((_sl[0]&&_sl[0]!=="PLAYER")||(_sl[1]&&_sl[1]!=="PLAYER"))
     ? ` <span class="gar-chip" style="border-color:${_colG};cursor:pointer" onclick="tpSwapSeats()">↔️ ${L("invertir orden","swap order",{pt:"inverter ordem"})}</span>` : "";
   const garaje=[tpAsientoLinea(0), tpAsientoLinea(1),
-    `<span class="gar-chip" style="border-color:${_colG}">🧢 ${S.tpReserva?surname(S.tpReserva.name):L("LIBRE","OPEN",{pt:"LIVRE"})}</span>`].join(" ")+_swap;
+    `<span class="gar-chip" style="border-color:${_colG}">🧢 ${S.tpReserva?surname(S.tpReserva.name)+" "+tpEtiqueta(S.tpReserva):L("LIBRE","OPEN",{pt:"LIVRE"})}</span>`].join(" ")+_swap;
   /* ⚠️ setDecision escribe con textContent: el HTML de la cabecera del garaje (los <b>, el <br>)
      salía LITERAL en pantalla. Se pasa el texto plano a setDecision y el HTML se pinta después. */
   setDecision(L(`✍️ El mercado · ${yearNow()}`,`✍️ The market · ${yearNow()}`,{pt:`✍️ O mercado · ${yearNow()}`})+" · "+S.tpTeam,
@@ -11916,7 +11926,8 @@ function tpPoolScreen(){
 
 function tpSwapSeats(){
   const sl=S.seats[S.tpTeam]||[];
-  if(!sl[0]||sl[0]==="PLAYER"||!sl[1]||sl[1]==="PLAYER") return;
+  if((!sl[0]||sl[0]==="PLAYER")&&(!sl[1]||sl[1]==="PLAYER")) return;   // solo si hay al menos uno que mover
+  if(sl[0]==="PLAYER"||sl[1]==="PLAYER") return;
   /* ↔️ SE APUNTA AL CONFIRMAR, NO A CADA CLIC (lo cazó Carlos jugando el 27-ago: «lo hice 3-4
      veces y salió esa noticia 3-4 veces»). Probar un orden no es una decisión; el orden con el que
      ARRANCAS la temporada sí. Se guarda quién era el Nº1 la PRIMERA vez que tocas el botón y la
@@ -11959,36 +11970,50 @@ function tpProbadorHueco(){
   if(S.retired) return;
   if(S.tpReserva){ tpRumboScreen(); return; }
   const vet=tpVetAcabado();
-  if(!vet){
-    // sin veterano que ofrecer no hay decisión: el canterano llega solo, como siempre
-    tpCrearProbador(); tpRumboScreen(); return;
+  /* 🧢 SE ELIGE ENTRE PERSONAS, NO ENTRE CATEGORÍAS (Carlos, 30-ago: «dame a elegir entre 2-3
+     jóvenes; y no los llames canteranos, llamémosle jóvenes»). Sin veterano: tres jóvenes con
+     nombre, bandera y estrellas. Con veterano: dos jóvenes y él. Los candidatos se sortean UNA vez
+     por invierno (caché por año): repintar la pantalla no rebaraja caras. */
+  if(!S._probCands || S._probCands.y!==yearNow()){
+    const n=vet?2:3, list=[];
+    for(let i=0;i<n;i++) list.push(mkRookie(true, S.tpTeam));
+    S._probCands={y:yearNow(), list};
   }
   setDecision(L(`🧢 El banquillo está vacío · ${yearNow()}`,`🧢 The bench is empty · ${yearNow()}`,{pt:`🧢 O banco está vazio · ${yearNow()}`})+" · "+S.tpTeam,
-    L("Necesitas un probador. Puedes formar a un canterano… o sentar a un viejo conocido del paddock que ya no encuentra volante.",
-      "You need a reserve. You can groom an academy kid… or seat an old paddock hand who can't find a drive any more.",
-      {pt:"Você precisa de um reserva. Pode formar um garoto da base… ou sentar um velho conhecido do paddock que já não acha volante."}));
+    vet
+    ? L("Necesitas un probador. Jóvenes con hambre… o un viejo conocido del paddock que ya no encuentra volante.",
+        "You need a reserve. Hungry youngsters… or an old paddock hand who can't find a drive any more.",
+        {pt:"Você precisa de um reserva. Jovens com fome… ou um velho conhecido do paddock que já não acha volante."})
+    : L("Necesitas un probador. Tres jóvenes esperan la llamada: elige a quién formar.",
+        "You need a reserve. Three youngsters are waiting for the call: choose who to groom.",
+        {pt:"Você precisa de um reserva. Três jovens esperam a ligação: escolha quem formar."}));
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
-  const b1=document.createElement("button"); b1.className="offer";
-  b1.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">🎓</span>
-    <span class="info"><span class="name">${L("Un canterano","An academy kid",{pt:"Um garoto da base"})}</span>
-    <span class="sub" style="display:block">${L("Joven, moldeable, y crece esperando su oportunidad","Young, mouldable, and he grows while he waits",{pt:"Jovem, moldável, e cresce enquanto espera"})}</span></span>`;
-  b1.onclick=()=>{ tpCrearProbador(); tpRumboScreen(); };
-  box.appendChild(b1);
-  const b2=document.createElement("button"); b2.className="offer";
-  b2.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#71717c,#3f3f46)">🧢</span>
-    <span class="info"><span class="name">${vet.flag||"🏁"} ${vet.name}</span>
-    <span class="sub" style="display:block">${tpEtiqueta(vet)} · ${vet.age} ${L("años","yo",{pt:"anos"})} · ${L("veterano sin volante","veteran without a drive",{pt:"veterano sem volante"})}</span>
-    <span class="sub" style="display:block">${L("Un sustituto decente mañana mismo. Recorrido, poco.","A decent stand-in from day one. Upside, little.",{pt:"Um substituto decente já amanhã. Margem, pouca."})}</span></span>`;
-  b2.onclick=()=>{
-    S.freeAgents=(S.freeAgents||[]).filter(x=>x&&x.name!==vet.name);
-    vet.probador=true; S.tpReserva=vet;
-    S.pendingEvents.push(L(`🧢 ${surname(vet.name)} vuelve al paddock como tu probador: el teléfono que esperaba no era este, pero suena igual.`,
-      `🧢 ${surname(vet.name)} returns to the paddock as your reserve: not the phone call he was waiting for, but it rings all the same.`,
-      {pt:`🧢 ${surname(vet.name)} volta ao paddock como seu reserva: não era o telefonema que esperava, mas toca do mesmo jeito.`}));
-    tpRumboScreen();
-  };
-  box.appendChild(b2);
+  S._probCands.list.forEach(j=>{
+    const b1=document.createElement("button"); b1.className="offer";
+    b1.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">🎓</span>
+      <span class="info"><span class="name">${j.flag||"🏁"} ${j.name}</span>
+      <span class="sub" style="display:block">${L("Joven","Youngster",{pt:"Jovem"})} · ${tpEtiqueta(j)} · ${j.age} ${L("años","yo",{pt:"anos"})}</span></span>`;   /* 🤫 sin sobreexplicar (Carlos, 30-ago): que el jugador DESCUBRA que el joven crece — como en el clásico nadie te dice que quedarte años mejora el coche, y es bonito */
+    b1.onclick=()=>{ j.probador=true; S.tpReserva=j; S._probCands=null;
+      S.pendingEvents.push(L(`🧢 ${j.name} es tu nuevo probador.`,`🧢 ${j.name} is your new reserve driver.`,{pt:`🧢 ${j.name} é o seu novo reserva.`}));
+      tpRumboScreen(); };
+    box.appendChild(b1);
+  });
+  if(vet){
+    const b2=document.createElement("button"); b2.className="offer";
+    b2.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#71717c,#3f3f46)">🧢</span>
+      <span class="info"><span class="name">${vet.flag||"🏁"} ${vet.name}</span>
+      <span class="sub" style="display:block">${tpEtiqueta(vet)} · ${vet.age} ${L("años","yo",{pt:"anos"})} · ${L("veterano sin volante","veteran without a drive",{pt:"veterano sem volante"})}</span></span>`;   /* 🤫 ídem: la mecánica del veterano se descubre jugando */
+    b2.onclick=()=>{
+      S.freeAgents=(S.freeAgents||[]).filter(x=>x&&x.name!==vet.name);
+      vet.probador=true; S.tpReserva=vet; S._probCands=null;
+      S.pendingEvents.push(L(`🧢 ${surname(vet.name)} vuelve al paddock como tu probador: el teléfono que esperaba no era este, pero suena igual.`,
+        `🧢 ${surname(vet.name)} returns to the paddock as your reserve: not the phone call he was waiting for, but it rings all the same.`,
+        {pt:`🧢 ${surname(vet.name)} volta ao paddock como seu reserva: não era o telefonema que esperava, mas toca do mesmo jeito.`}));
+      tpRumboScreen();
+    };
+    box.appendChild(b2);
+  }
   scrollToDecision();
 }
 /* 🪑 EL ASIENTO PESA (Carlos, 28-ago: «Bearman o Gasly quizá solo quieren ser mi nº1»). Antes
@@ -12957,9 +12982,8 @@ function simTP(row){
       ? L(`✅ ${cPos}º de constructores, por debajo del listón… pero tienes al CAMPEÓN DEL MUNDO en tu coche. El consejo no discute un título de pilotos.`,
           `✅ P${cPos} in the constructors, below the bar… but you have the WORLD CHAMPION in your car. The board doesn't argue with a drivers' title.`,
           {pt:`✅ ${cPos}º de construtores, abaixo da meta… mas você tem o CAMPEÃO MUNDIAL no seu carro. O conselho não discute um título de pilotos.`})
-      : L(`✅ ${cPos===1?"Campeones":cPos+"º"} de constructores: objetivo cumplido, el consejo respira.`,
-          `✅ ${cPos===1?"Champions":"P"+cPos} in the constructors: target met, the board breathes.`,
-          {pt:`✅ ${cPos===1?"Campeões":cPos+"º"} de construtores: meta cumprida, o conselho respira.`}));
+      : null);   /* 🧹 el «cumplido» a secas ya lo dice el chip del veredicto (Carlos, 30-ago) */
+    if(row.events[row.events.length-1]==null) row.events.pop();
     if(S.tpOwner && S.tpOwner.k==="self" && S.tpDeuda){
       S.tpDeuda=0;
       row.events.push(L(`💚 Cumplir el listón siendo tu propio dueño tiene premio contable: las cuentas vuelven a cuadrar y los números rojos se quedan atrás.`,
@@ -12968,9 +12992,7 @@ function simTP(row){
     }
   } else if(S.tpGrace && !_promesaRota){
     S.tpGrace=false; S.tpLastMet=false;
-    row.events.push(L(`🛡️ ${cPos}º: por debajo del listón, pero tu jugada en los despachos te compra un año de aire.`,
-      `🛡️ P${cPos}: below the bar, but your boardroom play buys you a year of air.`,
-      {pt:`🛡️ ${cPos}º: abaixo da meta, mas a sua jogada nos bastidores compra um ano de ar.`}));
+    /* 🧹 el chip ya dice «fallado, pero te compras un año» */
   } else {
     S.tpMissStreak=(S.tpMissStreak||0)+1; S.tpLastMet=false;
     if(_promesaRota) row.events.push(L(
@@ -12996,13 +13018,9 @@ function simTP(row){
       }
     } else if(S.tpMissStreak>=2){
       S.tpFired=true; S.tpFiredBy=tn;
-      row.events.push(L(`🚪 Segundo año sin cumplir: el consejo de ${tn} te destituye.`,
-        `🚪 A second year below target: the ${tn} board removes you.`,
-        {pt:`🚪 Segundo ano sem cumprir: o conselho da ${tn} te destitui.`}));
+      /* 🧹 el chip ya dice «fallado por segundo año: destituido» */
     } else {
-      row.events.push(L(`❌ ${cPos}º: por debajo del listón del consejo (${G.target}º). Otro año así y rodarán cabezas — la tuya.`,
-        `❌ P${cPos}: below the board's bar (P${G.target}). Another year like this and heads will roll — yours.`,
-        {pt:`❌ ${cPos}º: abaixo da meta do conselho (${G.target}º). Mais um ano assim e cabeças vão rolar — a sua.`}));
+      /* 🧹 el chip ya dice «no cumplido, el consejo aprieta» */
     }
   }
   /* 🌪️ FATIGA DEL CICLO GANADOR. Al equipo gestionado le quitamos el dado de evolveF1 (el rumbo es
@@ -13357,9 +13375,13 @@ function tpTemptCheck(){
     <span class="perfwrap"><span class="perf">${tpStars(t.name)}</span></span>`;
   b.onclick=()=>tpSignTeam(t,"tentacion");
   box.appendChild(b);
-  const s=document.createElement("button"); s.className="offer dilemma";
-  s.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">🤝</span>
-    <span class="info"><span class="name">${L("Quedarte y terminar el trabajo","Stay and finish the job",{pt:"Ficar e terminar o trabalho"})}</span>
+  /* 🏠 quedarse enseña TU equipo —escudo, colores y estrellas— igual que la oferta rival
+     (Carlos, 30-ago: «si no, despista un poco») */
+  const s=document.createElement("button"); s.className="offer";
+  const _mi=(S.team&&S.team.color)||"#c9a227";
+  s.style.border="2px solid "+_mi; s.style.borderLeftWidth="6px";
+  s.innerHTML=`${badge(S.tpTeam,"dot")}<span class="info"><span class="name">${L("Quedarte y terminar el trabajo","Stay and finish the job",{pt:"Ficar e terminar o trabalho"})} · ${S.tpTeam}</span>
+    <span class="perfwrap"><span class="perf">${tpStars(S.tpTeam)}</span></span>
     <span class="sub" style="display:block">${L("La lealtad también cotiza en el paddock","Loyalty is worth something in the paddock too",{pt:"A lealdade também vale no paddock"})}</span></span>`;
   s.onclick=()=>{ S.tpPrest=Math.min(99,S.tpPrest+2);
     S.pendingEvents.push(L(`🤝 Rechazas a ${t.name}: te quedas a terminar el trabajo. El paddock toma nota de tu palabra.`,
@@ -13403,7 +13425,19 @@ function tpProbadorInvierno(){
   if(!S.tpReserva){ if(isRBJr(S.tpTeam)) tpCrearProbador(); return; }
   const r=S.tpReserva;
   r.age=(r.age||20)+1;
-  r.skill=Math.max(66,(r.skill||74)-rnd(.3,.8));   // en el banquillo no se rueda
+  /* 🧢 LA LÓGICA DEL BANQUILLO (Carlos, 30-ago): el JOVEN crece esperando —menos que un titular
+     (un titular de su edad sube 1-3 al año; él 0,3-0,7)— porque entrena, rueda los viernes y
+     aprende el coche. El VETERANO ya no crece (se oxida, como siempre), pero su experiencia
+     EMPUJA EL DESARROLLO: +0,25-0,5 de coche cada invierno, el sensor humano que un chaval no es.
+     Entre medias (25-29), lo de siempre: ni una cosa ni la otra, solo el óxido. */
+  if((r.age||0)<=24){ r.skill=Math.min(r.ceil||95,(r.skill||74)+rnd(.3,.7)); }
+  else {
+    r.skill=Math.max(66,(r.skill||74)-rnd(.3,.8));   // en el banquillo no se rueda
+    if((r.age||0)>=30 && S.f1perf[S.tpTeam]!=null){
+      S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+rnd(.25,.5)));
+      tpCapFilial();
+    }
+  }
   r.resYrs=(r.resYrs||0)+1;
   if(r.skill<=69 || r.age>=33){
     /* 🗣️ el motivo REAL (Carlos, 29-ago: «Sainz solo estuvo 1 año de probador… no entiendo»). El
