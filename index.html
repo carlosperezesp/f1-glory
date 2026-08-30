@@ -4409,6 +4409,58 @@ function npcSeason(row){
 // años, los Massa/Button existen) y la diversidad de campeones. Si algún día se quiere MÁS movimiento,
 // el siguiente escalón medido fue base .13 → 3,5 traspasos, a costa de bajar las estancias largas a 3,9%.
 const ROT={ base:.09, porAno:.06, gracia:1, flojo:.20, tope:.5 };
+/* 📜 CONTRATOS DE VERDAD PARA TODA LA PARRILLA — SOLO EN EL MODO JEFE (`npcMercadoOrdinario` es
+   código compartido con el clásico, que se queda con su dado de siempre).
+   Escala de Carlos (30-ago): 1 año para debutantes, veteranos y asientos «a prueba» de la cola ·
+   2 el estándar de la media tabla · 3 para el hecho en un top-6 o el joven con techo que quieren
+   retener · 4-5 para la estrella en un top-4 o el fenómeno por el que un grande apuesta.
+   Hoy la permanencia mediana es de DOS AÑOS PARA TODOS —el mismo dado para Verstappen que para el
+   segundo de Haas—; con esto la estabilidad se concentra arriba y la rotación abajo, como en la F1.
+   🐂 El filial siempre 1-2: es un asiento de formación, no un proyecto. */
+/* 📏 CALIBRADO CONTRA LA ROTACIÓN REAL (30-ago). Con salir:.62 y la cola a 1 año fijo salía 39,7%
+   —el 41% de la parrilla firmaba a un año—; con esto, 28% y permanencia por tramos que ya es la de
+   la F1: arriba 5 años, media tabla 2, cola 2. Vencimientos por invierno: ~9 de 22, entre 4 y 15. */
+let ROT_C={ salir:.40, flojo:.22, tope:.90, suelo:.15, estrella:.35 };   // al VENCER: probabilidad de no renovar
+function tpContratoPara(d, team){
+  if(!d || d==="PLAYER") return 2;
+  if(isRBJr(team)) return irnd(1,2);
+  const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+  const p=ord.indexOf(team)+1, n=ord.length||11;
+  const edad=d.age||27, nivel=d.skill||75, techo=d.ceil||nivel;
+  const grande=p<=4, pequeno=p>=n-2;
+  /* 👑 UN TÍTULO NO BASTA, Y ADEMÁS CADUCA (Carlos, 30-ago: «si gano el mundial con 35 años, estoy
+     todavía en mi prime… si pasan años, da igual si eres veterano o joven: se entiende que eres
+     bueno, pero que hace tiempo que no ganas»). Lo que pesa no es cuántos títulos tienes: es CUÁNDO
+     ganaste el último. Hay que seguir rindiendo, y hay que haber ganado hace poco. */
+  const _cy=d.champYears||[];
+  const desde = _cy.length ? yearNow()-_cy[_cy.length-1]
+              : ((d.titles||0)>=1 ? 6 : 99);   // con títulos pero sin fecha (parrilla sembrada): lejano
+  const campeonFresco = desde<=2;   // acaba de ganar: sigue en su prime, tenga la edad que tenga
+  const campeon = desde<=5;         // aún cuenta; a partir de ahí el título deja de abrir puertas
+  const enForma = nivel>=86;
+  const estrella=(campeon && enForma) || nivel>=88;
+  const fenomeno=edad<=23 && techo>=90;
+  const promesa=edad<=25 && techo>=88;
+  const debutante=edad<=21 && nivel<78;
+  /* 👴 LA EDAD MANDA SOBRE TODO: nadie firma un proyecto largo a los 36, tenga los títulos que
+     tenga. Va ANTES que el bloque de la estrella, que es donde se colaban los veteranos. */
+  if(edad>=36) return campeonFresco ? 2 : 1;          // 👑 ganar a los 35 te compra un proyecto, no una despedida
+  if(edad>=33) return campeonFresco ? 3 : irnd(1,2);
+  if(debutante) return 1;
+  /* 🎲 EL CAMPEÓN JOVEN CON EL TÍTULO YA LEJANO es el caso variable (Carlos): él quiere seguir
+     ganando —aquí o en un grande— y el equipo que ganó con él quiere retenerlo. Se juega a cara o
+     cruz: o lo atan largo, o firma corto para volver a elegir pronto. */
+  if(campeon && !campeonFresco && edad<=28 && enForma) return ch(.5) ? irnd(3,4) : irnd(1,2);
+  if(grande && (estrella||fenomeno)) return irnd(4,5);
+  /* 💎 un equipo pequeño ATA a su joya —para protegerla y para poder venderla—: es el modelo Red
+     Bull/Sauber, y antes le daba 1-2 años, que es justo lo contrario de lo que haría. */
+  if(fenomeno || estrella) return 3;
+  /* ⚠️ y la cola NO es 1 año para todo el mundo: eso daba el 41% de la parrilla a un año y disparaba
+     la rotación al 39,7% (medido). Un piloto hecho en un equipo malo también firma dos. */
+  if(pequeno) return promesa ? 3 : irnd(1,2);
+  if(p<=6 || promesa) return 3;
+  return 2;
+}
 /* 🆘 MERCADO DE RESCATE. Auditando el mercado salió que un PILOTAZO podía pudrirse años en un coche de
    cola: Tsunoda 13 temporadas seguidas, Hamilton 10, y el Alonso de 90 que Carlos vio tres años en un
    Minardi. Faltaba la vía más obvia del mercado real: que un equipo de ARRIBA vaya activamente a por un
@@ -4585,18 +4637,67 @@ function npcMercadoOrdinario(row){
       // al año y la nuestra iba al ~15% (2,2 traspasos/temporada). Base más alta, gracia de 2 años.
       const p=Math.min(ROT.tope, Math.max(.02,
         ROT.base + Math.max(0,d.yrs-ROT.gracia)*ROT.porAno + (vet!==null ? vet : (flojo?ROT.flojo:0))));
+      /* 📜 EN EL MODO JEFE MANDA EL CONTRATO: un piloto NO se mueve mientras le quede. Al vencer,
+         o renueva (y firma una duración nueva) o sale al mercado. En el clásico, el dado de siempre. */
+      let sale;
+      if(S.cat==="TP"){
+        if(d.tpc==null) d.tpc=tpContratoPara(d,tm);
+        d.tpc--;
+        if(d.tpc>0) sale=false;
+        else {
+          /* 🌟 a una ESTRELLA en un equipo grande no la sueltan al vencer: se la renueva casi
+             siempre (Verstappen en Red Bull desde 2016, Hamilton nueve años en Mercedes). Sin esto
+             la permanencia arriba se quedaba en 2 años, igual que en la media tabla. */
+          const _ordC=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+          const _top=_ordC.indexOf(tm)>=0 && _ordC.indexOf(tm)<4;
+          const _star=((d.titles||0)>=1 && (d.skill||0)>=86) || (d.skill||0)>=88;
+          let pSalir=Math.min(ROT_C.tope, Math.max(ROT_C.suelo,
+            ROT_C.salir + (vet!==null ? vet*2 : (flojo?ROT_C.flojo:0))));
+          if(_top && _star && (d.age||30)<33) pSalir*=ROT_C.estrella;
+          sale=ch(pSalir);
+          if(!sale) d.tpc=tpContratoPara(d,tm);          // renueva: contrato nuevo
+        }
+      } else sale=ch(p);
       // a un galáctico en su prime NO lo echa su propio equipo (y con el caché activo, echarlo podía
       // hacerlo desaparecer de la F1 si ningún equipo con pedigrí tenía hueco ese año)
-      if(!primeGalactico(d) && !mktMoved(d) && ch(p)){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
+      if(!primeGalactico(d) && !mktMoved(d) && sale){ bolsa.push(d); sl[i]=null; huecos.push({tm,i}); }
     });
   });
   // 🔁 vía Albon: los agentes libres del año pasado (buenos que se quedaron sin asiento) reentran en la bolsa
   (S.freeAgents||[]).forEach(d=>{ d.yrs=0; bolsa.push(d); }); S.freeAgents=[];
-  // el mejor coche elige primero
-  huecos.sort((a,b)=>perf(b.tm)-perf(a.tm));
+  huecos.sort((a,b)=>perf(b.tm)-perf(a.tm));   // el mejor coche elige primero
+  /* 🅰️🅱️🅲️ EL INVIERNO POR FASES · SOLO EN EL MODO JEFE (diseño de Carlos, 30-ago-2026).
+     Antes la parrilla se llenaba ENTERA antes de que tú salieras al mercado, así que todo lo bueno
+     ya tenía dueño y solo podías robar contra probabilidad. Ahora el invierno se parte:
+       🅰️ una PARTE de los huecos se cubre ya (los demás equipos también fichan),
+       🅱️ sales tú al mercado con lo que siga libre —y con los asientos que siguen vacíos a la vista—,
+       🅲️ y al cerrar tu mercado se rellena el resto de la parrilla.
+     Cuánto se cubre antes de que llegues lo marca el MUNDIAL DE CONSTRUCTORES: el campeón elige casi
+     primero, el último llega cuando ya se han repartido las cartas. */
+  let resto=[];
+  if(S.cat==="TP" && S.tpTeam && !S.tpFired && huecos.length) resto=huecos.splice(tpFaseACorte(huecos.length));
+  mktRellenar(row, huecos, bolsa, !resto.length);
+  /* 🅱️ lo que sigue libre queda A LA VISTA durante tu mercado, de mejor a peor: las tarjetas de
+     agente libre cogen los dos primeros, y sin ordenar te enseñaban a cualquiera. */
+  if(resto.length){ S._tpFaseB={y:yearNow(), h:resto};
+    S.freeAgents=bolsa.sort((a,b)=>(b.skill||0)-(a.skill||0)); }
+}
+/* 🎲 CUÁNTOS HUECOS SE CUBREN ANTES DE QUE LLEGUES. Campeón de constructores ~20%, último ~75%, y una
+   varianza de ±15 puntos encima: el orden de elección pesa, pero no es una cola de banco. */
+function tpFaseACorte(n){
+  const nT=Object.keys(S.rankC||{}).length||F1_TEAMS.length;
+  const p=(S.rankC||{})[S.tpTeam]||nT;
+  const base=.20 + .55*((p-1)/Math.max(1,nT-1));
+  return Math.round(n*Math.max(.05, Math.min(.90, base+rnd(-.15,.15))));
+}
+/* 🪑 EL REPARTO DE ASIENTOS. `cerrar` distingue la fase 🅰️ (solo coloca) de la 🅲️ (coloca y CIERRA el
+   mercado: nevera, despedidas y red de seguridad). En el modo clásico se llama una sola vez, con
+   `cerrar` a true, y se comporta exactamente igual que siempre. */
+function mktRellenar(row, huecos, bolsa, cerrar){
+  const perf = t => (S.f1perf[t] ?? 75);
   const ord=[...F1_TEAMS].sort((a,b)=>perf(b.name)-perf(a.name)).map(t=>t.name);
   huecos.forEach(h=>{
-    const nuevo=()=>{ S.seats[h.tm][h.i]=mkRookie(isRBJr(h.tm), h.tm); };
+    const nuevo=()=>{ const r=mkRookie(isRBJr(h.tm), h.tm); if(S.cat==="TP") r.tpc=tpContratoPara(r,h.tm); S.seats[h.tm][h.i]=r; };
     // el filial de Red Bull no ficha veteranos ni campeones tampoco por esta vía;
     // y un galáctico en su prime solo firma donde hay CACHÉ (el crepuscular va donde quiera)
     const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=27 || (d.titles||0)>0)) && canLureStar(h.tm,d);
@@ -4616,8 +4717,10 @@ function npcMercadoOrdinario(row){
     }
     if(!eleg){ nuevo(); return; }
     bolsa.splice(bolsa.indexOf(eleg),1);
-    eleg.yrs=0; S.seats[h.tm][h.i]=eleg;
+    eleg.yrs=0; if(S.cat==="TP") eleg.tpc=tpContratoPara(eleg,h.tm);
+    S.seats[h.tm][h.i]=eleg;
   });
+  if(!cerrar) return;   // 🅰️ la fase A solo coloca: el mercado lo cierra la fase C, tras el tuyo
   /* 🔁 los buenos que se quedan sin asiento no se esfuman: esperan en la nevera a la próxima ventana.
      🚪 Y LOS DEMÁS YA NO SE EVAPORAN EN SILENCIO (detector del 29-ago, pregunta de Carlos: Albon con
      27 años y 84 desaparecía del mundo por ser el CUARTO de una nevera de tres; Ocon con 80, por no
@@ -4651,7 +4754,24 @@ function npcMercadoOrdinario(row){
   // 🔒 red de seguridad: ningún asiento puede quedarse vacío bajo ninguna circunstancia
   // (salvo el equipo gestionado en TP: su hueco lo cubre el jugador antes de la próxima temporada)
   Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl) || tpManaged(tm)) return;
-    sl.forEach((d,i)=>{ if(d===null||d===undefined) sl[i]=mkRookie(isRBJr(tm), tm); }); });
+    sl.forEach((d,i)=>{ if(d===null||d===undefined){ const r=mkRookie(isRBJr(tm), tm); if(S.cat==="TP") r.tpc=tpContratoPara(r,tm); sl[i]=r; } }); });
+}
+/* 🅲️ SE CIERRA EL MERCADO. Corre al salir tú del mercado —y, por si no llegaste a pisarlo (te
+   despidieron, te retiraste), como red al empezar la temporada siguiente: la parrilla NUNCA corre
+   con asientos vacíos. Recoge los huecos que dejó la fase A, más los que hayas abierto tú fichando
+   de otro equipo, y reparte entre lo que siga libre.
+   Las noticias van a pendingEvents porque la temporada que las generó ya está cerrada y pintada. */
+function tpFaseC(){
+  const f=S._tpFaseB; S._tpFaseB=null;
+  if(!f || f.y!==yearNow()) return;
+  const huecos=[];
+  Object.entries(S.seats).forEach(([tm,sl])=>{ if(!Array.isArray(sl)||tpManaged(tm)) return;
+    sl.forEach((d,i)=>{ if(d===null||d===undefined) huecos.push({tm,i}); }); });
+  const bolsa=(S.freeAgents||[]).filter(d=>d&&d.name); S.freeAgents=[];
+  huecos.sort((a,b)=>(S.f1perf[b.tm]??75)-(S.f1perf[a.tm]??75));
+  const row={events:[]};
+  mktRellenar(row, huecos, bolsa, true);
+  row.events.forEach(e=>S.pendingEvents.push(e));
 }
 /* 🔙 EL COMEBACK (Schumacher 2010, Räikkönen 2012, Alonso 2021): como mucho UNO por partida — que sea
    un notición, no la norma. Un notable retirado joven puede volver 2-4 años después, con el óxido
@@ -8566,6 +8686,7 @@ let INERCIA_RANK=0.45;
    se iban al 4,0%; el dato real es 2,3% (213 transiciones que midió Carlos). Barrido a σ=2,0 sobre
    ~2.900 transiciones: 0,20 → 4,0% · 0,32 → 2,9% · **0,45 → 2,2%**. Se queda en 0,45. */   // cuánto pesa el puesto del año pasado en el score (calibrado abajo)
 function bgF1Season(row){
+  if(S._tpFaseB) tpFaseC();   // 🅲️ red: si no llegaste a cerrar tu mercado, se cierra solo antes de correr
   /* 🚫 LA GUARDA DEFINITIVA DEL FILIAL. «Racing Bulls jamás debe ser mejor que Red Bull» (Carlos) es
      una regla dura, y taparla escritura a escritura es frágil: hay ~30 sitios que tocan `f1perf`
      —dilemas, escenarios de reto, escuderías que entran nuevas, y varios que BAJAN a la casa madre,
@@ -11095,6 +11216,15 @@ function initTPState(){
   Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{
     if(d && d!=="PLAYER" && d.skill!=null) d.skill=Math.max(70, Math.min((d.ceil||97)-1, d.skill+rnd(-2,2)));
   }));
+  /* 📜 y su contrato: la parrilla entera arranca con años reales encima, no en blanco */
+  /* 👑 FECHA A LOS TÍTULOS DE SALIDA. Los pilotos sembrados traen `titles` pero no `champYears`, y
+     sin fecha el contrato los trata como excampeones caducados: el vigente campeón del mundo salía
+     pidiendo un año. Se les data hacia atrás, y al vigente se le pone el año pasado. */
+  Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{
+    if(!d || d==="PLAYER" || !(d.titles>0) || (d.champYears||[]).length) return;
+    d.champYears=[yearNow() - (d.name===S.lastChampName ? 1 : irnd(1,4))]; }));
+  Object.entries(S.seats).forEach(([t,sl])=>(sl||[]).forEach(d=>{
+    if(d && d!=="PLAYER") d.tpc=tpContratoPara(d,t); }));
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
@@ -11703,7 +11833,7 @@ function tpAsientoLinea(i){
 function tpMercado(){
   if(S.retired) return;
   const abiertos=tpAbiertos();
-  if(!abiertos.length){ tpProbadorHueco(); return; }
+  if(!abiertos.length){ tpFaseC(); tpProbadorHueco(); return; }   // 🅲️ tu mercado ha terminado: se reparte el resto
   const nAb=abiertos.length;
   const _colG=(S.team&&S.team.color)||"#c9a227";
   /* ↔️ INVERTIR EL ORDEN (Carlos, 20-ago: «cambiar asientos: todavía no hay ninguna opción»). Solo
@@ -11758,31 +11888,31 @@ function tpMercado(){
     if(c.kind==="renew"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${(c.d.age>=34)?1:2} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
+      sub2=`📜${tpAniosPide(c.d)} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
       const _ro=tpRenovarOdds(c.d); if(_ro.motivo) sub2+=" · "+tpOddsTag(_ro.p,"renov");
       dotTxt="🤝";
     } else if(c.kind==="probador"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;   // el 🧢 ya lo pone el punto de color: dos gorras eran una errata
       sub1=L("Tu probador","Your reserve driver",{pt:"O seu reserva"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
-      sub2="📜2 · "+L("por fin sería titular","would finally get his shot",{pt:"finalmente seria titular"});
+      sub2=`📜${tpAniosPide(c.d)} · `+L("por fin sería titular","would finally get his shot",{pt:"finalmente seria titular"});
       dotTxt="🧢";
     } else if(c.kind==="libre"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Agente libre","Free agent",{pt:"Agente livre"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜2 · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`;
+      sub2=`📜${tpAniosPide(c.d)} · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`;
     } else if(c.kind==="amigo"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=tpEtiqueta(c.d)+` · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2="📜1 · "+L("el CEO lo ha convencido","the CEO has talked him into it",{pt:"o CEO o convenceu"});
+      sub2=`📜${tpAniosPide(c.d)} · `+L("el CEO lo ha convencido","the CEO has talked him into it",{pt:"o CEO o convenceu"});
       dotTxt="🤝";
     } else if(c.kind==="cross"){
       nm=`🌎 ${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
-      sub2=`📜2 · `+tpOddsTag(c.odds||.7);
+      sub2=`📜${tpAniosPide(c.d)} · `+tpOddsTag(c.odds||.7);
     } else if(c.kind==="fichar"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${(((c.d.age||30)<=24 && (c.d.ceil||0)>=88)?3:2)} · `+tpOddsTag(c.odds||.5);
+      sub2=`📜${tpAniosPide(c.d)} · `+tpOddsTag(c.odds||.5);
     } else {
       /* sin 🎓 en el nombre: el punto de color ya lo lleva y salía dos veces seguidas */
       nm=L("Apostar por la cantera","Bet on the academy",{pt:"Apostar na base"})+(c.d?` · ${c.d.flag||"🏁"} ${c.d.name}`:"");
@@ -11794,10 +11924,16 @@ function tpMercado(){
       <span class="info"><span class="name">${nm}</span>
       <span class="sub" style="display:block">${sub1}</span>
       <span class="sub" style="display:block">${sub2}</span></span>`;
-    b.onclick=()=>{
+    b.onclick=()=>tpNegociar(c, ()=>{
       /* 📞 la llamada: puede decirte que NO. Cinco portazos en un invierno y la directiva te quita el
-         teléfono (petición de Carlos: «así no pierdes el tiempo tanteando fichajes ad eternum»). */
-      if(c.odds!=null && c.kind!=="libre" && Math.random()>c.odds){
+         teléfono (petición de Carlos: «así no pierdes el tiempo tanteando fichajes ad eternum»).
+         📜 Y ahora el dado lleva dentro los años que le has ofrecido: un agente libre seguía
+         aceptando siempre —por eso se saltaba la tirada—, pero pedirle cinco años cuando quiere uno
+         también es motivo de portazo. La renovación tira aparte, en tpSignDriver, para conservar su
+         texto y que el que se va firme con otro. */
+      const _pf = c.kind==="renew" ? null
+                : (c.odds!=null?c.odds:.95) * (c._facAnios||1);
+      if(_pf!=null && _pf<.97 && Math.random()>_pf){
         S._tpNos=(S._tpNos||0)+1;
         S._tpNo=S._tpNo||{}; S._tpNo[c.d.name]=yearNow();
         if(S._tpNos>=5){ tpDirectivaCierra(); return; }
@@ -11805,6 +11941,10 @@ function tpMercado(){
           ? L(`❌ ${surname(c.d.name)} te dice que no: prefiere seguir mandando donde está a sufrir en la F1.`,
               `❌ ${surname(c.d.name)} turns you down: he'd rather keep winning where he is than suffer in F1.`,
               {pt:`❌ ${surname(c.d.name)} diz não: prefere seguir mandando onde está a sofrer na F1.`})
+          : !c.from
+          ? L(`❌ ${surname(c.d.name)} te dice que no: no firma por ${c._anios} ${c._anios===1?"año":"años"}.`,
+              `❌ ${surname(c.d.name)} turns you down: he won't sign for ${c._anios} ${c._anios===1?"year":"years"}.`,
+              {pt:`❌ ${surname(c.d.name)} diz não: não assina por ${c._anios} ${c._anios===1?"ano":"anos"}.`})
           : L(`❌ ${surname(c.d.name)} te dice que no: se queda en ${c.from}.`,
           `❌ ${surname(c.d.name)} turns you down: he stays at ${c.from}.`,
           {pt:`❌ ${surname(c.d.name)} diz não: fica na ${c.from}.`}))
@@ -11832,7 +11972,7 @@ function tpMercado(){
         tpSignDriver(ab[0].i, c); return;
       }
       tpElegirAsiento(c, ab);
-    };
+    });
     box.appendChild(b);
   });
   scrollToDecision();
@@ -12203,6 +12343,60 @@ function tpOdds(d, from, asiento){
   } else p += .04;
   return Math.max(.05,Math.min(.95,p));
 }
+/* 📜 LOS AÑOS SE NEGOCIAN (Carlos, 30-ago-2026: «yo quiero a Verstappen, que en mi partida quiere 2
+   años, pero yo le quiero dar 4; podemos negociar por 3 y a veces aceptará, a veces no»). Cada
+   piloto llega con lo que PIDE —el mismo perfil que rige a toda la parrilla— y tú ofreces lo que
+   quieras: separarte de su petición le cuesta al sí, y cuanto más te separes, más.
+   La petición se memoriza por invierno: `tpContratoPara` lleva dados dentro y sin esto la tarjeta
+   enseñaba un número distinto cada vez que se repintaba la pantalla. */
+function tpAniosPide(d){
+  if(!d) return 3;
+  if(S._tpPideY!==yearNow()){ S._tpPideY=yearNow(); S._tpPide={}; }
+  S._tpPide=S._tpPide||{};
+  if(S._tpPide[d.name]==null) S._tpPide[d.name]=tpContratoPara(d, S.tpTeam);
+  return S._tpPide[d.name];
+}
+/* 🎚️ ALARGAR NO CUESTA LO MISMO A TODOS: a un veterano o a un piloto flojo le estás ofreciendo
+   seguridad y la agarra; una estrella quiere volver a sentarse a negociar pronto y se resiste.
+   Acortar cuesta siempre: nadie regala seguridad. */
+function tpAniosFactor(d, pide, n){
+  const dif=n-pide; if(!dif || !d) return 1;
+  const estrella=((d.titles||0)>=1 && (d.skill||0)>=86) || (d.skill||0)>=88;
+  const seguridad=(d.age||30)>=33 || (d.skill||0)<78;
+  let f=[1,.78,.55,.35,.22][Math.min(4,Math.abs(dif))];
+  f *= dif>0 ? (seguridad?1.3 : estrella?.65 : 1) : .9;
+  return Math.max(.04, Math.min(1, f));
+}
+function tpBaseSi(c){
+  if(c.kind==="renew"){ const r=tpRenovarOdds(c.d); return r.motivo? r.p : 1; }
+  if(c.kind==="libre"||c.kind==="probador") return .95;
+  return c.odds!=null? c.odds : .9;
+}
+/* 📜 LA MESA. Cinco duraciones, cada una con su probabilidad: eso es toda la pantalla. */
+function tpNegociar(c, sigue){
+  const d=c.d;
+  if(!d || c.kind==="rookie"){ c._anios=null; c._facAnios=1; sigue(); return; }
+  const pide=tpAniosPide(d), base=tpBaseSi(c);
+  setDecision(`${d.flag||"🏁"} ${d.name} · `+L(`pide ${pide} ${pide===1?"año":"años"}`,
+    `asking for ${pide} ${pide===1?"year":"years"}`,{pt:`pede ${pide} ${pide===1?"ano":"anos"}`}), "");
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  for(let n=1;n<=5;n++){
+    const f=tpAniosFactor(d,pide,n), pr=Math.max(.03,Math.min(.97,base*f));
+    const b=document.createElement("button"); b.className="offer";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">📜</span>
+      <span class="info"><span class="name">${n} ${n===1?L("año","year",{pt:"ano"}):L("años","years",{pt:"anos"})}</span>
+      <span class="sub" style="display:block">${tpOddsTag(pr, c.kind==="renew"?"renov":null)}</span></span>`;
+    b.onclick=()=>{ c._anios=n; c._facAnios=f; sigue(); };
+    box.appendChild(b);
+  }
+  const v=document.createElement("button"); v.className="offer";
+  v.innerHTML=`<span class="team-dot dot" style="background:#3a3a3a">↩︎</span>
+    <span class="info"><span class="name">${L("Volver","Back",{pt:"Voltar"})}</span></span>`;
+  v.onclick=()=>tpMercado();
+  box.appendChild(v);
+  scrollToDecision();
+}
 function tpOddsTag(p, modo){
   /* 🎨 escala de color + UNA palabra (petición de Carlos: «mucho texto en el mercado»).
      🤝 Y una RENOVACIÓN no se dice igual que un fichaje (lo cazó Carlos jugando el 28-ago): a
@@ -12311,10 +12505,17 @@ function tpSignDriver(i,c){
     // 🚪 ¿quiere él? (las renovaciones de oficio de la directiva no se pueden rechazar: van con _silencioso)
     if(!c._silencioso){
       const _ro=tpRenovarOdds(d);
-      if(_ro.motivo && !ch(_ro.p)){
+      /* 📜 los AÑOS entran en la misma tirada: pedirle una duración que no quiere es motivo de
+         portazo aunque no tuviera ninguna otra pega con quedarse. Una sola tirada, aquí, para
+         conservar el texto de siempre y que el que se va firme con otro. */
+      const _pR=(_ro.motivo?_ro.p:1)*(c._facAnios||1);
+      if(_pR<1 && !ch(_pR)){
         const sl0=S.seats[tn]; sl0[c.i]=null;
         S._tpNo=S._tpNo||{}; S._tpNo[d.name]=yN;
-        S._tpNoTxt=tpNoRenuevaTxt(d,_ro.motivo);
+        S._tpNoTxt=_ro.motivo ? tpNoRenuevaTxt(d,_ro.motivo)
+          : L(`❌ ${surname(d.name)} rompe la negociación: no renueva por ${c._anios} ${c._anios===1?"año":"años"}.`,
+              `❌ ${surname(d.name)} walks out of the talks: he won't re-sign for ${c._anios} ${c._anios===1?"year":"years"}.`,
+              {pt:`❌ ${surname(d.name)} rompe a negociação: não renova por ${c._anios} ${c._anios===1?"ano":"anos"}.`});
         const _dest=tpColocaYa(d);   // ✍️ un campeón/top firma YA con otro; el resto, a la bolsa
         if(_dest){ S._tpNoTxt+="<br>"+L(`✍️ Y no tarda ni dos semanas: ${surname(d.name)} firma con ${_dest} y correrá esta temporada.`,
             `✍️ And it takes him barely two weeks: ${surname(d.name)} signs with ${_dest} and will race this season.`,
@@ -12339,24 +12540,26 @@ function tpSignDriver(i,c){
       tpMercado(); return;
     }
     if(i!==c.i){ S.seats[tn][c.i]=null; }   // cambia de asiento: el suyo queda abierto para el mercado
-    d.tpc=(d.age>=34)?1:2;
+    d.tpc=c._anios||((d.age>=34)?1:2);
     S._tpRenovados=S._tpRenovados||{}; S._tpRenovados[d.name]=true;   // 🪑 su hueco deja de estar abierto
+    const _n=d.tpc;
+    const _es=_n===1?"un año":_n+" temporadas", _en=_n===1?"one year":_n+" seasons", _pt=_n===1?"um ano":_n+" temporadas";
     S.pendingEvents.push(c._silencioso
-      ? L(`🏛️ La directiva renueva a ${surname(d.name)}${d.age>=34?" un año":" dos temporadas"}: alguien tenía que hacerlo.`,
-          `🏛️ The board renews ${surname(d.name)}${d.age>=34?" for a year":" for two seasons"}: somebody had to.`,
-          {pt:`🏛️ A diretoria renova ${surname(d.name)}${d.age>=34?" por um ano":" por duas temporadas"}: alguém tinha que fazer.`})
-      : L(`🤝 Renuevas a ${surname(d.name)}${d.age>=34?" un año más":" dos temporadas"}.`,
-      `🤝 You renew ${surname(d.name)}${d.age>=34?" for one more year":" for two seasons"}.`,
-      {pt:`🤝 Você renova ${surname(d.name)}${d.age>=34?" por mais um ano":" por duas temporadas"}.`}));
+      ? L(`🏛️ La directiva renueva a ${surname(d.name)} ${_es}: alguien tenía que hacerlo.`,
+          `🏛️ The board renews ${surname(d.name)} for ${_en}: somebody had to.`,
+          {pt:`🏛️ A diretoria renova ${surname(d.name)} por ${_pt}: alguém tinha que fazer.`})
+      : L(`🤝 Renuevas a ${surname(d.name)} ${_es}.`,
+      `🤝 You renew ${surname(d.name)} for ${_en}.`,
+      {pt:`🤝 Você renova ${surname(d.name)} por ${_pt}.`}));
   } else if(c.kind==="probador"){
     d=c.d; delete d.probador; S.tpReserva=null;
     d.skill=Math.min(d.ceil||95,(d.skill||74)+rnd(1,2));   // 🧢 por fin rueda: sacude el óxido
-    d.tpc=2; d.yrs=0;
+    d.tpc=c._anios||2; d.yrs=0;
     S.pendingEvents.push(L(`🧢 Le das la alternativa a tu probador: ${d.name} pasa a titular, y se le nota el hambre.`,
       `🧢 You give your reserve his shot: ${d.name} steps up, and the hunger shows.`,
       {pt:`🧢 Você dá a alternativa ao seu reserva: ${d.name} vira titular, e a fome aparece.`}));
   } else if(c.kind==="amigo"){
-    d=c.d; d.tpc=1; d.yrs=0; S.dpool.push(d);
+    d=c.d; d.tpc=c._anios||1; d.yrs=0; S.dpool.push(d);
     S.tpAmigo=null;                                   // 🤝 una carta, no una tienda: gastada
     S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!==d.name);
     S.freeAgents=(S.freeAgents||[]).filter(x=>x && x.name!==d.name);
@@ -12364,13 +12567,13 @@ function tpSignDriver(i,c){
       `🤝 ${surname(d.name)} is back on the grid with you: the CEO talked him into it.`,
       {pt:`🤝 ${surname(d.name)} volta ao grid com vocês: o CEO o convenceu.`}));
   } else if(c.kind==="cross"){
-    d=c.d; d.tpc=2; d.yrs=0; S.dpool.push(d);   // entra al mundo: el bote de crossovers ya no lo re-ofrece
+    d=c.d; d.tpc=c._anios||2; d.yrs=0; S.dpool.push(d);   // entra al mundo: el bote de crossovers ya no lo re-ofrece
     S.pendingEvents.push(L(`🌎 Bombazo: ${surname(d.name)} deja su categoría y cruza a la F1 con tu equipo.`,
       `🌎 Blockbuster: ${surname(d.name)} leaves his series and crosses to F1 with your team.`,
       {pt:`🌎 Bomba: ${surname(d.name)} deixa a categoria dele e cruza para a F1 com a sua equipe.`}));
   } else if(c.kind==="libre"){
     d=c.d; S.freeAgents=(S.freeAgents||[]).filter(x=>x && x.name!==d.name);
-    d.tpc=(d.age>=34)?1:2; d.yrs=0;
+    d.tpc=c._anios||((d.age>=34)?1:2); d.yrs=0;
     S.pendingEvents.push(L(`✍️ Fichas al agente libre ${surname(d.name)}: llevaba tiempo esperando ese teléfono.`,
       `✍️ You sign free agent ${surname(d.name)}: he'd been waiting by that phone a while.`,
       {pt:`✍️ Você contrata o agente livre ${surname(d.name)}: ele esperava essa ligação há tempo.`}));
@@ -12378,7 +12581,7 @@ function tpSignDriver(i,c){
     d=c.d;
     // su equipo tapa el hueco con un canterano (mismo patrón que el desplazado de occupySeat)
     S.seats[c.from][c.j]=mkRookie(isRBJr(c.from), c.from);
-    d.tpc=((d.age||30)<=24 && (d.ceil||0)>=88)?3:2; d.yrs=0;
+    d.tpc=c._anios||(((d.age||30)<=24 && (d.ceil||0)>=88)?3:2); d.yrs=0;
     /* ⏱️ EN PRESENTE. Este evento se escribe en el INVIERNO pero se guarda en pendingEvents y se
        vuelca en la fila de la temporada que viene a continuación: cuando el jugador lo lee, esa
        temporada YA se ha corrido. Decía «correrá contigo en 2029» dentro de la fila de 2029 (lo cazó
