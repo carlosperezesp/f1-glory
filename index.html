@@ -11109,9 +11109,12 @@ function initTPState(){
    NADIE puede despedirte — la presión pasa de la silla al bolsillo. */
 const OWNER_SELF={k:"self",
   lab:()=>L("🧑‍✈️ Dueño: TÚ","🧑‍✈️ Owner: YOU",{pt:"🧑‍✈️ Dono: VOCÊ"}),
-  intro:()=>L("El equipo es tuyo. Nadie te puede echar — pero cada agujero lo pagas tú.",
-              "The team is yours. Nobody can sack you — but every hole comes out of your pocket.",
-              {pt:"A equipe é sua. Ninguém pode te demitir — mas cada rombo sai do seu bolso."})};
+  /* 🗣️ «cada agujero lo pagas tú» era falso: el jugador no pone dinero de su bolsillo. Lo que sí
+     existe es la contabilidad del equipo (chip CUENTAS → números rojos → acreedores → venta
+     forzosa), así que el texto la anticipa sin explicarla (Carlos, 30-ago). */
+  intro:()=>L("El equipo es tuyo. Nadie te puede echar… pero las cuentas no perdonan.",
+              "The team is yours. Nobody can sack you… but the books don't forgive.",
+              {pt:"A equipe é sua. Ninguém pode te demitir… mas as contas não perdoam."})};
 /* 🏷️ el bote de COMPRADORES (Carlos: «podríamos traer a BMW, a Toyota, a Honda…»). Seis marcas con
    logo en la carpeta; los colores se pisan con los de la entrada de expansión si la era la trae. */
 /* 🏷️ el bote de COMPRADORES, ocho marcas con logo en la carpeta y cada una con SU ÉPOCA (Carlos,
@@ -11170,44 +11173,56 @@ const TP_OWNERS=[
    lab:()=>L("🏆 CEO ambicioso","🏆 Ambitious CEO",{pt:"🏆 CEO ambicioso"}),
    /* 🗣️ sin biografía inventada (Carlos, 29-ago: «vengo YO de ganar, ¿por qué dice que el dueño
       nuevo viene de ganar?»). Se describe el CARÁCTER, no un pasado que puede chocar con la partida. */
-   intro:()=>L("El nuevo CEO solo entiende de ganar: exige más que nadie.",
-               "The new CEO only understands winning: he demands more than anyone.",
-               {pt:"O novo CEO só entende de vencer: exige mais do que ninguém."})},
+   /* 🗣️ texto de Carlos (30-ago). El mío decía «aquí el segundo puesto no se celebra» y se rompía
+      justo donde más se usa: en un equipo de cola. */
+   intro:()=>L("Solo entiende de ganar, y no lo disimula. Quiere llegar a lo más alto y mantenerse.",
+               "Winning is all he understands, and he doesn't hide it. He wants the top, and to stay there.",
+               {pt:"Só entende de vencer, e não disfarça. Quer chegar ao topo e ficar lá."})},
   /* 💼 EL DUEÑO FINANCIERO. Antes se llamaba «tecnócrata» y no encajaba: un tecnócrata analiza datos
      de carrera, no recorta presupuestos (aviso de Carlos, 17-ago). Lo que este perfil es de verdad es
      alguien que compró el equipo como ACTIVO, no por pasión: ficha barato, invierte lo justo y
      mira la puerta de salida. De ahí sale, el día que se le dé efecto mecánico, que castigue las
      apuestas a largo plazo — una hoja de cálculo no entiende sacrificar un año por el siguiente. */
   {k:"cut",
-   lab:()=>L("💼 CEO exigente","💼 Demanding CEO",{pt:"💼 CEO exigente"}),
+   /* 💼 «exigente» se leía igual que «ambicioso» en un chip, y no es eso: este es el que recorta y
+      no espera a mañana (Carlos, 30-ago). */
+   lab:()=>L("💼 CEO cortoplacista","💼 Short-term CEO",{pt:"💼 CEO imediatista"}),
    /* 🗣️ el RÓTULO pasó a «exigente» (Carlos, 28-ago) y el personaje tenía que seguirlo: antes
       hablaba de «un financiero» y de «un fondo», jerga que no se oye en un paddock. Es el mismo tipo
       —cero paciencia, resultados YA— contado como se cuenta en la F1. */
-   intro:()=>L("Al mando hay alguien que no regala nada: quiere resultados este año y ficha barato.",
-               "The man in charge gives nothing away: he wants results this year and signs cheap.",
-               {pt:"No comando há alguém que não dá nada de graça: quer resultados este ano e contrata barato."})},
+   /* 🗣️ fuera «ficha barato»: esa mecánica NO existe (no abarata ningún fichaje). */
+   intro:()=>L("No mira más allá de diciembre: quiere resultados este año, y del que viene ya hablaremos.",
+               "He doesn't look past December: he wants results this year, and next year we'll talk.",
+               {pt:"Não olha além de dezembro: quer resultados este ano, e do que vem falamos depois."})},
   {k:"young",
    lab:()=>L("🌱 CEO paciente","🌱 Patient CEO",{pt:"🌱 CEO paciente"}),
-   intro:()=>L("La junta es joven y cree en los proyectos largos: te darán aire… mientras vean una dirección.",
-               "The board is young and believes in long projects: they'll give you air… as long as they see a direction.",
-               {pt:"A direção é jovem e acredita em projetos longos: vão te dar ar… enquanto virem um rumo."})},
+   /* 🗣️ hablaba de «la junta»: aquí hay un CEO. Y «una dirección» no significaba nada. */
+   intro:()=>L("Cree en los proyectos largos y te lo dice a la cara: tendrás tiempo, mientras el equipo vaya a alguna parte.",
+               "He believes in long projects and says so to your face: you'll have time, as long as the team is going somewhere.",
+               {pt:"Acredita em projetos longos e diz isso na sua cara: você terá tempo, enquanto a equipe for a algum lugar."})},
   /* 🏭 EL FABRICANTE (Carlos, 28-ago). Los tres de antes ocupaban tres casillas —apretar, castigar el
      largo plazo, dar aire— y ninguno PONÍA DINERO. Este sí: una marca compra el equipo y la fábrica
      nota el presupuesto cada invierno. A cambio, una marca no puede verse perdiendo: cuanto mejor es
      tu coche, más te aprieta el listón. Te pagan el mejor coche y te exigen usarlo. */
   {k:"brand",
-   lab:()=>L("🏭 CEO de la marca","🏭 Brand CEO",{pt:"🏭 CEO da marca"}),
-   intro:()=>L("Detrás hay una marca, no un señor: entran con la chequera abierta y una sola condición, que aquí no se viene a hacer bulto.",
-               "There's a brand behind it, not a man: they come in with the chequebook open and one condition — you don't come here to make up the numbers.",
-               {pt:"Atrás há uma marca, não um senhor: entram com o talão aberto e uma só condição, aqui não se vem para fazer número."})},
+   /* 🏭 «de la marca» describía DE QUIÉN DEPENDE, y eso cambia según el equipo. «Equipo de fábrica»
+      es el término real de la F1 para esto y aguanta en Ferrari 1990, Alpine 2026 o un Minardi
+      comprado por Toyota (Carlos, 30-ago). */
+   lab:()=>L("🏭 CEO de fábrica","🏭 Works-team CEO",{pt:"🏭 CEO de fábrica"}),
+   /* 🗣️ fuera la chequera y el «una marca, no un señor»: era lenguaje de compraventa, no de cúpula. */
+   intro:()=>L("Responde ante un constructor: llega con presupuesto de verdad y con la marca mirando por encima del hombro.",
+               "He answers to a manufacturer: he arrives with a real budget and the brand looking over his shoulder.",
+               {pt:"Responde a uma montadora: chega com orçamento de verdade e com a marca olhando por cima do ombro."})},
   /* 📣 EL SHOWMAN (Carlos, 28-ago). El único al que no le importa el PUESTO. Su listón no es un
      número de la clasificación: es un rival concreto al que hay que acabar por delante. Cambia la
      naturaleza del año — puedes ser 7º y haber cumplido, o 3º y haber fracasado. */
   {k:"show",
    lab:()=>L("📣 CEO showman","📣 Showman CEO",{pt:"📣 CEO showman"}),
-   intro:()=>L("No le interesa el puesto, le interesa el ruido: no le traigas un quinto puesto, tráele un titular.",
-               "He doesn't care about the position, he cares about the noise: don't bring him fifth place, bring him a headline.",
-               {pt:"Não lhe interessa a posição, lhe interessa o barulho: não lhe traga um quinto lugar, traga uma manchete."})},
+   /* 🗣️ fuera el «quinto puesto» (falso en un equipo de cola) y fuera «titular», que se leía como
+      PILOTO titular. «Portadas» no tiene esa ambigüedad. */
+   intro:()=>L("Los puestos le aburren: lo suyo son las portadas.",
+               "Positions bore him: what he wants is front pages.",
+               {pt:"As posições o entediam: o que ele quer são capas de jornal."})},
 ];
 /* 🏭 ¿ESTE EQUIPO ES UNA MARCA DE COCHES? (Carlos, 29-ago: «¿tiene sentido un dueño fabricante en
    APXGP? ¿y en Haas? ¿y en Alpine?»). Alpine SÍ —es Renault—; Haas y APXGP no, son el taller de un
@@ -11279,9 +11294,8 @@ function tpRefreshCard(){
   if(!_tg){ _tg=document.createElement("span"); _tg.className="tag"; _tg.id="tagGoal";
     const _tags=document.querySelector("#driverCard .tags"); if(_tags) _tags.appendChild(_tg); }
   if(_tg){
-    if(S.tpGoal && (S.tpGoal.rival || S.tpGoal.target!=null)){
-      const _obj = S.tpGoal.rival ? ("> "+S.tpGoal.rival)
-        : (S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º");
+    if(S.tpGoal && S.tpGoal.target!=null){
+      const _obj = (S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º");
       _tg.style.display="";
       _tg.textContent="🎯 "+_obj+(S.tpGoal.year!==yearNow()?" ('"+String(S.tpGoal.year).slice(-2)+")":"");
     } else _tg.style.display="none";
@@ -11415,7 +11429,8 @@ function tpSignTeam(t, how){
   S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
   S.tpTeam=S.team.name;
   const _po=tpOwnersPosibles(S.tpTeam,false);
-  S.tpOwner=_po[irnd(0,_po.length-1)]; S.tpOwnerY=0;   // 🏢 años con este dueño; el fabricante solo de inicio en marcas
+  S.tpOwner=_po[irnd(0,_po.length-1)]; S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0;   // 🏢 el de fábrica solo de inicio en equipos-marca
+  tpAmigoNuevo();   // 🤝 y su agenda, si es el showman
   S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
      equipo, no solo al empezar de cero, así que limpiarlo aquí borraba el rastro al cambiar de muro —
@@ -11516,10 +11531,13 @@ function tpYearStart(){
   if(S.tpTeam && S.tpOwner && S.tpOwner.k==="brand") tpSubirCoche(S.tpTeam, rnd(TP_MARCA[0],TP_MARCA[1]));
   if(S.tpTeam && S.tpOwner && S.tpOwner.k!=="self" && !isRBJr(S.tpTeam)){   // 🐂 el filial no cambia de cúpula
     S.tpOwnerY=(S.tpOwnerY||0)+1;
-    if(S.tpOwnerY>=TP_DUENO_MIN && ch(TP_DUENO_P)){
+    /* 📣 el showman aburrido tres años seguidos vende SIN esperar al dado: se va porque se aburre,
+       no porque toque. La bandera la pone el veredicto del capricho. */
+    if(S._tpCeoAburrido || (S.tpOwnerY>=TP_DUENO_MIN && ch(TP_DUENO_P))){
+      S._tpCeoAburrido=false;
       const otros=tpOwnersPosibles(S.tpTeam,true).filter(o=>o.k!==S.tpOwner.k);
       const nuevoD=otros[irnd(0,otros.length-1)];
-      S.tpOwner=nuevoD; S.tpOwnerY=0;
+      S.tpOwner=nuevoD; S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0; tpAmigoNuevo();
       /* 🏢 CÚPULA, no venta (Carlos, 30-ago: «salió que Ferrari cambiaba de dueño» — a Ferrari no
          la vende nadie; lo que cambia es el CEO, como Domenicali o Vigna en la vida real). */
       tpAviso(L(`🏢 Cambio en la cúpula: llega un CEO nuevo. ${nuevoD.intro()}`,
@@ -11538,6 +11556,7 @@ function tpYearStart(){
      Se calcula aquí un listón provisional (mismo cálculo); `tpAnnounce` lo recalcula por si un dilema
      cambia al dueño por el camino, y ahí el chip se refresca solo. */
   S.tpGoal=tpGoalFor();
+  tpCaprichoNuevo();     // 📣 y el capricho del showman, si lo hay
   try{ refreshCard(); }catch(e){}
   /* 🚑 «el lesionado vuelve entero» ya no necesita código: nunca se le toca el nivel. Se pierde
      N carreras, no puntúa en ellas, y al año siguiente corre las suyas como cualquiera. */
@@ -11751,6 +11770,11 @@ function tpMercado(){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Agente libre","Free agent",{pt:"Agente livre"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
       sub2=`📜2 · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`;
+    } else if(c.kind==="amigo"){
+      nm=`${c.d.flag||"🏁"} ${c.d.name}`;
+      sub1=tpEtiqueta(c.d)+` · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub2="📜1 · "+L("el CEO lo ha convencido","the CEO has talked him into it",{pt:"o CEO o convenceu"});
+      dotTxt="🤝";
     } else if(c.kind==="cross"){
       nm=`🌎 ${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
@@ -11973,6 +11997,11 @@ function tpMercadoPool(abiertos){
      arreglarlo: **2.895 pantallas de mercado y CERO tarjetas de cantera**, y de 31 inversiones en la
      joya de la academia, 23 (el 74%) se quedaban sin cobrar porque no había por dónde ficharla.
      Si hay joya guardada, la tarjeta la nombra y ficha a ELLA. */
+  /* 🤝 el amigo del CEO: entra en la lista mientras haya asiento libre y no se haya gastado. Su
+     probabilidad es alta diga lo que diga tu coche — es lo que lo hace útil en un equipo malo. */
+  if(S.tpAmigo && S.tpOwner && S.tpOwner.k==="show"
+     && !(S.seats[S.tpTeam]||[]).some(d=>d&&d!=="PLAYER"&&d.name===S.tpAmigo.name))
+    cands.push({kind:"amigo", d:S.tpAmigo, odds:.9});
   cands.push({kind:"rookie"});
   cands.push(...top, ...fuera);
   (S._tpPool=S._tpPool||{})[_clave]=cands;
@@ -12326,6 +12355,14 @@ function tpSignDriver(i,c){
     S.pendingEvents.push(L(`🧢 Le das la alternativa a tu probador: ${d.name} pasa a titular, y se le nota el hambre.`,
       `🧢 You give your reserve his shot: ${d.name} steps up, and the hunger shows.`,
       {pt:`🧢 Você dá a alternativa ao seu reserva: ${d.name} vira titular, e a fome aparece.`}));
+  } else if(c.kind==="amigo"){
+    d=c.d; d.tpc=1; d.yrs=0; S.dpool.push(d);
+    S.tpAmigo=null;                                   // 🤝 una carta, no una tienda: gastada
+    S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!==d.name);
+    S.freeAgents=(S.freeAgents||[]).filter(x=>x && x.name!==d.name);
+    S.pendingEvents.push(L(`🤝 ${surname(d.name)} vuelve a la parrilla con vosotros: el CEO lo ha convencido.`,
+      `🤝 ${surname(d.name)} is back on the grid with you: the CEO talked him into it.`,
+      {pt:`🤝 ${surname(d.name)} volta ao grid com vocês: o CEO o convenceu.`}));
   } else if(c.kind==="cross"){
     d=c.d; d.tpc=2; d.yrs=0; S.dpool.push(d);   // entra al mundo: el bote de crossovers ya no lo re-ofrece
     S.pendingEvents.push(L(`🌎 Bombazo: ${surname(d.name)} deja su categoría y cruza a la F1 con tu equipo.`,
@@ -12362,6 +12399,10 @@ function tpSignDriver(i,c){
         {pt:`🎓 Você aposta na base: estreia ${d.name}. Os relatórios o veem ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`}));
     }
   }
+  /* 📣 ¿es un nombre que suene? (para el capricho del showman) — campeón, crack, o estrella que
+     cruza de otra categoría. Se marca aquí, en el embudo por el que pasan TODOS los fichajes. */
+  if(d && d!=="PLAYER" && ((d.titles||0)>=1 || (d.skill||0)>=86 || c.kind==="cross" || c.kind==="amigo"))
+    S._tpFichajeSonado=true;
   /* 🚪 EL NO RENOVADO NO SE LO TRAGA LA TIERRA. Antes, firmar a otro encima de un contrato vencido
      sobrescribía al ocupante y desaparecía de la F1 — ni bolsa ni mercado (bug cazado al diseñar el
      hueco libre; mismo pecado que el flojo del veterano con prisa). Ahora sale a agentes libres. */
@@ -12874,6 +12915,51 @@ function tpRepartoScreen(){
   box.appendChild(q);
   scrollToDecision();
 }
+/* 📣 EL CAPRICHO DEL SHOWMAN. Los otros cuatro CEO deciden si te echan; este decide cuánto vales
+   para los demás. Su listón NO sustituye al del consejo (decisión de Carlos, 30-ago): convive con él
+   y paga en FAMA — cumplir da prestigio, fallar lo quita. Y como la fama alimenta las ofertas de
+   otros equipos, «que se hable de nosotros» pasa a ser mecánica de verdad.
+   Rota entre tres cosas que el juego YA sabe medir, y solo pide la que tiene sentido con tu
+   situación: nunca una victoria con el peor coche, ni un fichaje con el garaje lleno. */
+let TP_CAP_PREMIO=2, TP_CAP_CASTIGO=1, TP_CAP_ABURRE=3;   // fama al cumplir/fallar · años hasta que vende
+function tpCaprichoNuevo(){
+  if(!(S.tpOwner && S.tpOwner.k==="show") || !S.tpTeam){ S.tpCapricho=null; return; }
+  const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+  const p=ord.indexOf(S.tpTeam)+1;
+  const tipos=[];
+  /* 🥊 el RIVAL escala: cada año que cumples, quiere uno más arriba. Si fallas, vuelve al vecino. */
+  const rival=ord[Math.max(0, p-2-(S.tpCapNivel||0))] || ord[p] || null;
+  if(rival && rival!==S.tpTeam) tipos.push({t:"rival", rival});
+  if(p<=6) tipos.push({t:"victoria"});                                   // solo si el coche da para soñarlo
+  if(typeof tpAbiertos==="function" && tpAbiertos().length) tipos.push({t:"fichaje"});
+  if(!tipos.length){ S.tpCapricho=null; return; }
+  S.tpCapricho={...tipos[irnd(0,tipos.length-1)], year:yearNow()};
+  S._tpFichajeSonado=false;
+}
+/* 🤝 LA AGENDA DEL CEO. El agujero que vio Carlos: en un equipo malo el capricho «tráeme un nombre»
+   sería imposible, porque un 5★ no firma por un Haas. Pero un excampeón de 38 al que llama un amigo,
+   sí — y eso pasa en la F1 todo el rato. Así que el showman no solo pide ruido: lo trae.
+   UNO por CEO, elegido al llegar: si lo fichas se gasta, y si el CEO se va se lo lleva.
+   Se equilibra solo — 33-42 años, nivel ya caído, no crece: te llevas UN NOMBRE, no un piloto.
+   ⚠️ SE SORTEA, no se coge al mejor: cogiendo al mejor salían 2 nombres por era y uno acaparaba el
+   93% (Prost, Häkkinen). Sorteando hay 5-9 distintos por era (medido el 30-ago).
+   Entre retirados y libres siempre hay alguien: la tercera fuente (robar a un rival) no hace falta. */
+function tpAmigoNuevo(){
+  S.tpAmigo=null;
+  if(!(S.tpOwner && S.tpOwner.k==="show")) return;
+  const vale=d=>d && d.name && (d.age||0)>=33 && (d.age||0)<=42 && (((d.titles||0)>=1)||((d.skill||0)>=84));
+  const cands=[].concat((S.retiredPool||[]).filter(vale), (S.freeAgents||[]).filter(vale));
+  if(!cands.length) return;
+  const a=cands[irnd(0,cands.length-1)];
+  S.tpAmigo={name:a.name, flag:a.flag||"🏁", age:a.age, titles:a.titles||0,
+             skill:Math.max(72,Math.round(a.skill||80)), ceil:Math.max(72,Math.round(a.skill||80))};
+}
+function tpCaprichoTxt(c){
+  if(!c) return "";
+  if(c.t==="rival")    return L(`acabar por delante de ${c.rival}`,`finish ahead of ${c.rival}`,{pt:`terminar à frente da ${c.rival}`});
+  if(c.t==="victoria") return L("ganar una carrera","win a race",{pt:"vencer uma corrida"});
+  return L("fichar a un nombre que suene","sign a name people know",{pt:"contratar um nome conhecido"});
+}
 function tpGoalFor(){
   const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
   const n=ord.length, p=ord.indexOf(S.tpTeam)+1;
@@ -12904,18 +12990,13 @@ function tpGoalFor(){
   if(S.tpOwner && S.tpOwner.k==="young") target=Math.min(n-1,target+1);  // el paciente da aire
   // 🏭 la marca aprieta CUANDO YA TIENE COCHE: pagar el mejor material y quedar quinto no vale
   if(S.tpOwner && S.tpOwner.k==="brand" && p<=5) target=Math.max(1,target-1);
-  /* 📣 el showman no pide un puesto: pide un RIVAL. Se elige entre los vecinos de parrilla —el de
-     delante y el de detrás— para que sea pelea de verdad y no un imposible ni un regalo. */
-  let rival=null;
-  if(S.tpOwner && S.tpOwner.k==="show"){
-    const vecinos=[ord[p-2], ord[p]].filter(x=>x && x!==S.tpTeam);
-    if(vecinos.length) rival=vecinos[irnd(0,vecinos.length-1)];
-  }
+  /* 📣 EL SHOWMAN YA NO SUSTITUYE EL LISTÓN (Carlos, 30-ago: «que el consejo siga pidiéndote
+     puesto»). El consejo pide su puesto como con cualquier CEO —eso es lo que decide si sobrevives—
+     y el capricho del showman vive aparte, en `S.tpCapricho`, y paga en FAMA. */
   /* el suelo: por muy contento que esté el consejo, no se te puede pedir batir a tu propio coche por
      más de un puesto. Sin esto la memoria se convertiría en un trinquete que sube y no baja nunca. */
   target=Math.max(1, Math.max(p-1, Math.min(n-1, target)));
-  const meta = rival ? L(`acabar por delante de ${rival} en constructores`,`finish ahead of ${rival} in the constructors`,{pt:`terminar à frente da ${rival} nos construtores`})
-    : target===1 ? L("el título de constructores","the constructors' title",{pt:"o título de construtores"})
+  const meta = target===1 ? L("el título de constructores","the constructors' title",{pt:"o título de construtores"})
     : L(`terminar ${target}º de constructores o mejor`,`P${target} in the constructors or better`,{pt:`terminar em ${target}º dos construtores ou melhor`});
   const voz = !S.tpOwner? "" : S.tpOwner.k==="win"
     ? L("«He ganado en todo lo que he tocado. Aquí no va a ser distinto.»","«I've won at everything I've touched. This will be no different.»",{pt:"«Ganhei em tudo em que toquei. Aqui não vai ser diferente.»"})
@@ -12924,14 +13005,9 @@ function tpGoalFor(){
     : S.tpOwner.k==="brand"
     ? L("«El presupuesto lo ponemos nosotros. Los resultados los pones tú.»","«We put up the budget. You put up the results.»",{pt:"«O orçamento colocamos nós. Os resultados coloca você.»"})
     : S.tpOwner.k==="show"
-    /* 🗣️ la voz nombra al RIVAL (Carlos, 28-ago: «si estoy último, ¿a qué te refieres con el quinto
-       puesto?» — y «titular» encima se leía como piloto titular). La frase de la peli era fija y no
-       sabía dónde estabas; ahora dice exactamente lo que el listón pide. */
-    ? L(`«Me aburren los puestos. Quiero a ${rival||"nuestro rival"} por detrás y que se hable de nosotros.»`,
-        `«Positions bore me. I want ${rival||"our rival"} behind us and people talking about us.»`,
-        {pt:`«Posições me entediam. Quero a ${rival||"nosso rival"} atrás e todo mundo falando de nós.»`})
+    ? L("«Los puestos me aburren.»","«Positions bore me.»",{pt:"«As posições me entediam.»"})
     : L("«Cree en el proyecto. Nosotros creemos en ti… de momento.»","«Believe in the project. We believe in you… for now.»",{pt:"«Acredite no projeto. Nós acreditamos em você… por enquanto.»"});
-  return {target, rival, exp:p, year:yearNow(),
+  return {target, exp:p, year:yearNow(),
     /* 🗣️ sin la frase del dueño (Carlos, 29-ago: «no añadamos narrativa que no podamos sostener») */
     txt:L(`El consejo fija el listón de ${yearNow()}: ${meta}.`,`The board sets the ${yearNow()} bar: ${meta}.`,{pt:`O conselho fixa a meta de ${yearNow()}: ${meta}.`}),
     short:"🎯 "+L(`Objetivo del consejo: ${meta}.`,`Board target: ${meta}.`,{pt:`Meta do conselho: ${meta}.`})};
@@ -12939,10 +13015,16 @@ function tpGoalFor(){
 function tpAnnounce(){
   if(S.retired) return;
   const g=tpGoalFor(); S.tpGoal=g;
+  tpCaprichoNuevo();
   try{ refreshCard(); }catch(e){}   // 🎯 el chip de la tarjeta, al día con el listón definitivo
   /* 🧹 el objetivo ya NO se escribe en el resumen del año (Carlos, 29-ago): vive en el chip de la
      tarjeta todo el año y el veredicto (✅/❌) ya lo repite al cerrar. Tres veces era una de más. */
-  setDecision(L(`🎯 El consejo fija el listón · ${yearNow()}`,`🎯 The board sets the bar · ${yearNow()}`,{pt:`🎯 O conselho fixa a meta · ${yearNow()}`})+" · "+S.tpTeam, g.txt);
+  /* 📣 y, si tu CEO es el showman, su capricho debajo: son dos cosas distintas y se ve que lo son */
+  const _cap=S.tpCapricho;
+  setDecision(L(`🎯 El consejo fija el listón · ${yearNow()}`,`🎯 The board sets the bar · ${yearNow()}`,{pt:`🎯 O conselho fixa a meta · ${yearNow()}`})+" · "+S.tpTeam,
+    g.txt + (_cap ? " " + L(`📣 Y el CEO quiere lo suyo: ${tpCaprichoTxt(_cap)}.`,
+                            `📣 And the CEO wants his: ${tpCaprichoTxt(_cap)}.`,
+                            {pt:`📣 E o CEO quer o dele: ${tpCaprichoTxt(_cap)}.`}) : ""));
   const box=$("offerList"); box.innerHTML="";
   const b=document.createElement("button"); b.className="offer dilemma";
   b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
@@ -13057,13 +13139,7 @@ function simTP(row){
      y Alonso conservaron cada punto, y al equipo lo dejaron con cero y una multa de récord. El título
      es del piloto; el castigo es del equipo. */
   const rescataTitulo = !!champDrv && !_dqYo;
-  /* 📣 EL LISTÓN DEL SHOWMAN ES UN RIVAL, NO UN PUESTO. Con este dueño puedes acabar 7º y haber
-     cumplido —si el rival acabó 8º— o 3º y haber fracasado. Es lo que lo hace distinto de los otros
-     cuatro: cambia la naturaleza del año, no su dificultad. Si el rival desapareció de la parrilla
-     (quiebra, cambio de era), se cae al listón normal en vez de dar por bueno cualquier cosa. */
-  const _posRival = (G.rival && S.rankC && S.rankC[G.rival]) || null;
-  const met = _posRival ? (cPos < _posRival || rescataTitulo)
-                        : (cPos<=G.target || rescataTitulo);
+  const met = cPos<=G.target || rescataTitulo;
   /* 🎤 LO QUE PROMETISTE EN PRETEMPORADA SE COBRA AQUÍ (`tpMejorDelResto`, opción B). Dijiste en alto
      que este año dabais un salto grande. Si lo das, el paddock te lo apunta. Si no, te quedas sin el
      año de aire justo el año en que lo necesitabas, y encima se publica que lo habías prometido. */
@@ -13082,16 +13158,13 @@ function simTP(row){
   row.tpVerdict = met ? (rescataTitulo && cPos>G.target ? "titulo" : "ok") : (S.tpGrace ? "gracia" : (S.tpMissStreak>=1 ? "fuera" : "fallo"));
   /* 🧠 los NÚMEROS del año, no solo el veredicto: el consejo los relee al fijar el listón siguiente.
      `tpGoalTxt` ya guardaba esto, pero como frase escrita, y de una frase no se saca una media. */
-  // con dueño showman, el 'listón' que recuerda el consejo es el puesto que hizo el rival
-  row.tpTeam=tn; row.tpPos=cPos; row.tpTarget=_posRival ? _posRival-1 : G.target;
+  row.tpTeam=tn; row.tpPos=cPos; row.tpTarget=G.target;
   /* 🚫 …y si ese año os expulsaron, queda MARCADO. El puesto que guarda la fila (nT+1) es un castigo,
      no un resultado deportivo: no acabaste el último compitiendo, es que no estabas. Sin esta marca,
      el consejo con memoria leía «acabó 12º» y concluía que lo habías pasado mal, así que te BAJABA el
      listón al año siguiente — medido: el 13% de las veces te premiaba por haber hecho trampas. */
   if(_dqYo) row.tpDQ=true;
-  row.tpGoalTxt = G.rival
-    ? L(`acabar por delante de ${G.rival}`,`finish ahead of ${G.rival}`,{pt:`terminar à frente da ${G.rival}`})
-    : G.target===1
+  row.tpGoalTxt = G.target===1
     ? L("título de constructores","constructors' title",{pt:"título de construtores"})
     : L(`${G.target}º de constructores o mejor`,`P${G.target} constructors or better`,{pt:`${G.target}º de construtores ou melhor`});
   if(!met) S._histFallo={target:G.target, pos:cPos, year:row.year};   // 📰 el titular necesita los DOS números
@@ -13145,6 +13218,42 @@ function simTP(row){
     } else {
       /* 🧹 el chip ya dice «no cumplido, el consejo aprieta» */
     }
+  }
+  /* 📣 EL CAPRICHO DEL CEO SHOWMAN se juzga aparte del listón del consejo. Un título —de pilotos o
+     de constructores— lo cumple SIEMPRE, sea cual sea (Carlos: «si gano el campeonato el showman no
+     se enfada»): no hay portada más grande. Cumplir sube el rival del año siguiente; fallar lo baja
+     y suma aburrimiento — y a los TRES seguidos vende, que no es lo mismo que echarte. */
+  const _cap=S.tpCapricho;
+  if(_cap && _cap.year===row.year && S.tpOwner && S.tpOwner.k==="show"){
+    const _titulo = cPos===1 || !!champDrv;
+    const _cumple = _titulo
+      || (_cap.t==="rival"    && cPos < ((S.rankC&&S.rankC[_cap.rival])||99))
+      || (_cap.t==="victoria" && tWins>0)
+      || (_cap.t==="fichaje"  && !!S._tpFichajeSonado);
+    if(_cumple){
+      TPRE(TP_CAP_PREMIO); S.tpCapFallos=0; S.tpCapNivel=(S.tpCapNivel||0)+1;
+      row.events.push(_titulo
+        ? L(`📣 Al CEO le da igual lo que pidiera: con este título hay portada para meses. +fama`,
+            `📣 The CEO doesn't care what he asked for: this title is front pages for months. +fame`,
+            {pt:`📣 O CEO nem liga para o que pediu: com este título há capa para meses. +fama`})
+        : L(`📣 ${tpCaprichoTxt(_cap).charAt(0).toUpperCase()+tpCaprichoTxt(_cap).slice(1)}: el CEO tiene su portada, y tu nombre va en ella. +fama`,
+            `📣 ${tpCaprichoTxt(_cap).charAt(0).toUpperCase()+tpCaprichoTxt(_cap).slice(1)}: the CEO gets his front page, and your name is on it. +fame`,
+            {pt:`📣 ${tpCaprichoTxt(_cap).charAt(0).toUpperCase()+tpCaprichoTxt(_cap).slice(1)}: o CEO tem a capa dele, e o seu nome está nela. +fama`}));
+    } else {
+      TPRE(-TP_CAP_CASTIGO); S.tpCapNivel=0;
+      S.tpCapFallos=(S.tpCapFallos||0)+1;
+      if(S.tpCapFallos>=TP_CAP_ABURRE){
+        S.tpCapFallos=0; S._tpCeoAburrido=true;
+        row.events.push(L(`📣 Tercer año sin una sola portada: el CEO se aburre de ti y del equipo. −fama`,
+          `📣 A third year without a single front page: the CEO grows bored of you and the team. −fame`,
+          {pt:`📣 Terceiro ano sem uma única capa: o CEO se entedia de você e da equipe. −fama`}));
+      } else {
+        row.events.push(L(`📣 El CEO quería ${tpCaprichoTxt(_cap)} y no lo tiene: un año más sin salir en ningún sitio. −fama`,
+          `📣 The CEO wanted to ${tpCaprichoTxt(_cap)} and didn't get it: another year off the front pages. −fame`,
+          {pt:`📣 O CEO queria ${tpCaprichoTxt(_cap)} e não tem: mais um ano sem sair em lugar nenhum. −fama`}));
+      }
+    }
+    S.tpCapricho=null;
   }
   /* 🌪️ FATIGA DEL CICLO GANADOR. Al equipo gestionado le quitamos el dado de evolveF1 (el rumbo es
      tuyo), pero sin ese dado un grande no caía NUNCA: 19 constructores de 20 en la tanda de pruebas.
