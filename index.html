@@ -11097,15 +11097,19 @@ let TP_MODE=false;
 function tpManaged(tn){ return typeof S!=="undefined" && S && S.cat==="TP" && S.tpTeam===tn; }
 
 function initTPCard(){
-  if(!PREVIEW && !BETA) return;   // 🧪 abierto en la BETA; en main sigue tras el preview
+  /* 🔒 LA BETA SE CIERRA (Carlos, 31-ago-2026, camino del lanzamiento del viernes 4). Hasta hoy el
+     modo se abría a cualquiera que tuviera la URL de la rama; a partir de ahora hace falta el
+     preview, igual que en producción. Sus amigos dejan de tener acceso.
+     ⚠️ Quien ya pasara alguna vez por `?preview=glory26` sigue entrando: el permiso vive en su
+     localStorage, no en la URL. Para echar también a esos hay que cambiar la CLAVE de guardado. */
+  if(!PREVIEW) return;
   const c=document.getElementById("tpCard"); if(!c) return;
   c.classList.remove("soon");
   const b=document.getElementById("badgeTP");
   if(b){ b.className="new-badge";
     /* 🧪 en la BETA lo ven varios probadores, así que «SOLO TÚ» no encaja */
-    if(BETA){ b.dataset.es=b.dataset.en=b.dataset.pt=b.dataset.pl=b.dataset.fr="🧪 BETA"; b.textContent="🧪 BETA"; }
-    else { b.dataset.es="🔒 SOLO TÚ"; b.dataset.en="🔒 YOU ONLY"; b.dataset.pt="🔒 SÓ VOCÊ"; b.dataset.pl="🔒 TYLKO TY"; b.dataset.fr="🔒 TOI SEUL";
-      b.textContent=L("🔒 SOLO TÚ","🔒 YOU ONLY",{pt:"🔒 SÓ VOCÊ"}); } }
+    b.dataset.es="🔒 SOLO TÚ"; b.dataset.en="🔒 YOU ONLY"; b.dataset.pt="🔒 SÓ VOCÊ"; b.dataset.pl="🔒 TYLKO TY"; b.dataset.fr="🔒 TOI SEUL";
+    b.textContent=L("🔒 SOLO TÚ","🔒 YOU ONLY",{pt:"🔒 SÓ VOCÊ"}); }
   c.style.cursor="pointer";
   c.onclick=startTPFlow;
 }
