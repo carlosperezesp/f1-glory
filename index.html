@@ -9144,10 +9144,15 @@ function nextOffers(){
         }
       }
       const cur=F1_TEAMS.find(t=>t.name===S.team.name)||S.team;
-      if(cur && isRBJr(cur.name) && S.age>=RB_SALIDA)
-        sub=(sub||"")+L("🐂 El filial no renueva a los 29: su política es promocionar o soltar. ",
-          "🐂 The junior team doesn't renew at 29: their policy is promote or release. ",
-          {pt:"🐂 A filial não renova aos 29: a política é promover ou soltar. "});
+      /* 🐂 …y el aviso solo si de VERDAD no te renuevan (Carlos, 31-ago, con la captura delante: el
+         texto salía encima de una oferta de renovación de Toro Rosso). Mira la misma regla que abre
+         o cierra la puerta, no la edad por su cuenta: así nunca se vuelven a contradecir. */
+      if(cur && isRBJr(cur.name) && !rbOk(cur))
+        /* la edad, la de VERDAD: el 29 estaba escrito a mano y en el reto de Valentino la puerta se
+           cierra a los 31, así que el aviso mentía por dos años. */
+        sub=(sub||"")+L(`🐂 El filial no renueva a los ${S.age}: su política es promocionar o soltar. `,
+          `🐂 The junior team doesn't renew at ${S.age}: their policy is promote or release. `,
+          {pt:`🐂 A filial não renova aos ${S.age}: a política é promover ou soltar. `});
       /* 🐞 ESTA RAMA IGNORABA `burned`/`neverHire` y la otra (la del mercado corto) sí los mira. Se
          cazó midiendo el dilema «necesitan tu asiento»: negocias quedarte a cambio de que el año
          siguiente no te renueven… y te renovaban igual. Un equipo quemado NO te ofrece renovar. */
