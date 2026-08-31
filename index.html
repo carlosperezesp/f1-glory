@@ -3100,6 +3100,9 @@ const RELEASES = {
      (10:00Z, como todas). El plan que hay detrás: los LUNES entran los retos nuevos y los
      VIERNES las novedades gordas —eras, modos—, para que haya algo dos veces por semana. */
   dec1990: { at:"2026-08-21T10:00:00Z" },
+  /* 🧑‍💼 EL MODO TEAM PRINCIPAL. Viernes 4 de septiembre a las 12:00 de España (10:00Z), siguiendo el
+     plan de siempre: los lunes retos, los viernes novedades gordas. */
+  tp: { at:"2026-09-04T10:00:00Z" },
   // 📅 el modo Reto semanal abre con el PRIMER reto: su fecha sale del propio registro CHALLENGES,
   //    así añadir un reto nuevo no obliga a tocar esto (cada reto trae su `at`).
   get retos(){ const f=Object.values(CHALLENGES).map(c=>c.at).filter(Boolean).sort();
@@ -3172,6 +3175,8 @@ function refreshReleases(){
   a = pintaDecada("dec2000","2000", L("Disponible el 10 de agosto a las 12:00","Available 10 August at 12:00 CEST",{pt:"Disponível em 10 de agosto às 12:00"})) || a;
   a = pintaDecada("dec1990","1990", L("Disponible el 21 de agosto a las 12:00","Available 21 August at 12:00 CEST",{pt:"Disponível em 21 de agosto às 12:00"})) || a;
   let b=paintBadge(document.getElementById("badgeReto"), "retos");
+  b = paintBadge(document.getElementById("badgeTP"), "tp") || b;   // 🧑‍💼 la cuenta atrás del modo jefe
+  try{ initTPCard(); }catch(e){}   // …y el día que salga, la tarjeta se abre sin recargar
   // ⚠️ el ¡NUEVO! del modo Reto NO puede caducar 14 días después del PRIMER reto: cada reto que entra
   // es una novedad. Si el más reciente ya publicado es fresco, se vuelve a encender la pegatina.
   const ult=chLive()[0], be=document.getElementById("badgeReto");
@@ -10006,13 +10011,12 @@ let TP_MODE=false;
 function tpManaged(tn){ return typeof S!=="undefined" && S && S.cat==="TP" && S.tpTeam===tn; }
 
 function initTPCard(){
-  if(!PREVIEW) return;   // Fase 1 en pruebas: el público sigue viendo «Próximamente»
+  /* 🧑‍💼 hasta el 4 de septiembre la tarjeta enseña la cuenta atrás y no se puede pulsar; ese día se
+     abre sola. El preview la adelanta para poder probarla. La pegatina la pinta `paintBadge`, que es
+     quien sabe si faltan días, si es mañana o si hay que poner cronómetro. */
+  if(!relOpen("tp")) return;
   const c=document.getElementById("tpCard"); if(!c) return;
   c.classList.remove("soon");
-  const b=document.getElementById("badgeTP");
-  if(b){ b.className="new-badge";
-    b.dataset.es="🔒 SOLO TÚ"; b.dataset.en="🔒 YOU ONLY"; b.dataset.pt="🔒 SÓ VOCÊ"; b.dataset.pl="🔒 TYLKO TY"; b.dataset.fr="🔒 TOI SEUL";
-    b.textContent=L("🔒 SOLO TÚ","🔒 YOU ONLY",{pt:"🔒 SÓ VOCÊ"}); }
   c.style.cursor="pointer";
   c.onclick=startTPFlow;
 }
