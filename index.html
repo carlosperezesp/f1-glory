@@ -8690,7 +8690,22 @@ function returnF1Offers(){
 // Racing Bulls es el equipo-cantera: solo ficha PROMESAS. No persigue a veteranos NI a consagrados (campeones/élite).
 /* 🐂 la cantera vale también para TI (Carlos, 17-ago): a los 29 el filial no te ofrece renovar,
    aunque quieras quedarte. Antes cortaba a los 32. */
-function rbOk(t){ return !(t && isRBJr(t.name) && (S.age>=RB_SALIDA || (S.titles.f1||0)>0 || S.ovr>=87)); }
+function rbOk(t){
+  if(!t || !isRBJr(t.name)) return true;
+  /* 🏍️ LA EXCEPCIÓN DE VALENTINO (Carlos, 31-ago-2026, el día del lanzamiento). Llega con 28 años,
+     así que la regla de los 29 le echaba del filial al primer invierno: una sola temporada para
+     foguearse, que es justo lo que el reto NO quiere. Aquí puede quedarse hasta tres.
+     Y la puerta se cierra al salir: la excepción vale mientras siga dentro, así que en cuanto ficha
+     por otro equipo el filial deja de llamarle para siempre. Nadie más se beneficia — `rbOk` solo
+     mira al jugador, y esto solo se enciende en este reto. */
+  if(S.challenge==="valentino"){
+    /* ⚠️ el contador bueno es `S.yearsAtTeam`: en el historial el equipo se guarda como OBJETO, así
+       que compararlo con el nombre daba siempre cero (medido: seguía echándole a los 29). */
+    const dentro = S.team && S.team.name===t.name;
+    return !!dentro && (S.yearsAtTeam||0)<3 && !(S.titles.f1||0) && S.ovr<87;
+  }
+  return !(S.age>=RB_SALIDA || (S.titles.f1||0)>0 || S.ovr>=87);
+}
 /* 🎚️ CUÁNTAS PUERTAS SE ABREN. Antes casi siempre tres, entraras cuando entraras y estuvieras como
    estuvieras (medido: 2,91 por pantalla en las cuatro eras). Encargo de Carlos: que costar llegar se
    note, y que al final de la carrera el teléfono suene menos.
