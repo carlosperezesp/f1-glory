@@ -906,6 +906,8 @@ body.conBeta #topBtns{top:44px}
       <span id="deathOptTxt"></span>
     </label>
   </div>
+  <!-- 🧑‍💼 las cuatro notas del modo jefe: solo se rellenan si entras como Team Principal -->
+  <div id="tpNotas" style="display:none;margin:10px auto 14px;text-align:left;max-width:640px"></div>
   <div class="actions">
     <button class="btn ghost" onclick="backToIntro()" data-es="Volver" data-pt="Voltar" data-pl="Wróć" data-fr="Retour" data-pt="Voltar" data-en="Back">Volver</button>
     <button class="btn" id="btnConfirm" disabled onclick="startCareer()" data-es="Confirmar identidad" data-pt="Confirmar identidade" data-pl="Potwierdź tożsamość" data-fr="Confirmer l'identité" data-pt="Confirmar identidade" data-en="Confirm identity">Confirmar identidad</button>
@@ -3674,6 +3676,52 @@ function showIdentity(){
     if(_era.deadly) $("deathOptTxt").innerHTML = L(
       "<b>Accidentes mortales</b><br>En estos años morir corriendo era una posibilidad real, y de ahí salieron los grandes cambios de seguridad. Si dejas la casilla marcada, en alguna partida un piloto puede no volver — y puedes ser tú. Si la quitas, todos los accidentes se quedan en sustos y lesiones: los pilotos seguirán compitiendo y se retirarán por edad o por nivel, como en el resto del juego.",
       "<b>Fatal accidents</b><br>In these years dying at the wheel was a real possibility, and it's where the great safety changes came from. Leave this ticked and in some careers a driver may not come back — and it could be you. Untick it and every accident stops at a scare or an injury: drivers keep racing and retire through age or form, like everywhere else in the game.",{pt:"<b>Acidentes fatais</b><br>Naqueles anos morrer correndo era uma possibilidade real, e foi daí que saíram as grandes mudanças de segurança. Se deixar a caixa marcada, em alguma partida um piloto pode não voltar — e pode ser você. Se desmarcar, todos os acidentes ficam em sustos e lesões: os pilotos vão seguir competindo e vão se aposentar por idade ou por nível, como no resto do jogo."});
+  }
+  /* 🧑‍💼 LAS CUATRO NOTAS DEL JEFE (Carlos, 31-ago-2026: «algo sencillo, 3-5 notas máximo… el resto
+     lo tienen que averiguar jugando ellos»). Solo van las que NO se descubren solas: las estrellas
+     engañan porque son un puesto y no una nota, el contrato manda sobre el mercado entero, el
+     asiento 1 no es estética, y el objetivo del consejo es lo que te puede echar. Todo lo demás
+     —el rumbo del coche, los caprichos del CEO, la negociación— se aprende jugando, que es la gracia. */
+  const _tpN=$("tpNotas");
+  if(_tpN){
+    if(TP_MODE){
+      /* ⭐ las estrellas se explican CON estrellas, no con un emoji (Carlos, 31-ago): las del coche
+         son un puesto en la parrilla; las de un piloto llevan las tres tintas de verdad —dorada lo
+         que es hoy, azul lo que puede llegar a ser, apagada lo que no dará—, las mismas clases que
+         usa `tpEtiqueta`, así que lo que se ve aquí es exactamente lo que verá en su garaje. */
+      const nota=(marca,fuerte,resto)=>`<div style="display:flex;gap:10px;align-items:flex-start;margin:8px 0">
+        <span style="flex-shrink:0;min-width:62px;text-align:right;letter-spacing:.5px;line-height:1.5">${marca}</span>
+        <span><b>${fuerte}</b> ${resto}</span></div>`;
+      const coche=`★★★<span class="st-e">☆☆</span>`;
+      const piloto=`<span class="st-c">★★★</span><span class="st-p">☆</span><span class="st-e">☆</span>`;
+      _tpN.innerHTML = `<div style="font-size:14px;line-height:1.45;background:var(--panel2,rgba(127,127,127,.10));border-radius:12px;padding:12px 14px">
+        <div style="font-weight:800;margin-bottom:4px">${L("Cinco cosas antes de empezar","Five things before you start",{pt:"Cinco coisas antes de começar"})}</div>
+        ${nota(coche,
+          L("Las estrellas del coche son un puesto, no una nota.","Your car's stars are a ranking, not a score.",{pt:"As estrelas do carro são uma posição, não uma nota."}),
+          L("Cinco significa que eres el mejor de la parrilla en eso. Y el coche no se queda quieto: mejora y se degrada, así que puedes bajar sin haber tocado nada porque los demás han apretado.",
+            "Five means you're the best on the grid at it. And the car never sits still: it improves and it decays, so you can drop without touching a thing because the others pushed harder.",
+            {pt:"Cinco significa que você é o melhor do grid nisso. E o carro não fica parado: melhora e se degrada, então você pode cair sem mexer em nada porque os outros apertaram."}))}
+        ${nota(piloto,
+          L("Las de un piloto son su nivel y su techo.","A driver's stars are his level and his ceiling.",{pt:"As de um piloto são o nível e o teto dele."}),
+          L("Las doradas son lo que es hoy. Las azules, hasta dónde puede llegar todavía. Las apagadas, lo que no va a dar.",
+            "The gold ones are what he is today. The blue ones, how far he can still go. The dim ones, what he'll never reach.",
+            {pt:"As douradas são o que ele é hoje. As azuis, até onde ainda pode chegar. As apagadas, o que não vai dar."}))}
+        ${nota("📜",
+          L("El contrato son años.","A contract is years.",{pt:"O contrato são anos."}),
+          L("Mientras le queden, ese piloto no se mueve. Cuando vencen, o renuevas o sale al mercado — y otros irán a por él.",
+            "While a driver has years left, he doesn't move. When they run out, you renew him or he hits the market — and others will go for him.",
+            {pt:"Enquanto restarem anos, esse piloto não se move. Quando vencem, ou você renova ou ele vai ao mercado — e outros vão atrás dele."}))}
+        ${nota("🪑",
+          L("El asiento 1 se lleva el mejor coche del garaje.","Seat 1 gets the best car in the garage.",{pt:"O assento 1 leva o melhor carro da garagem."}),
+          L("Decidir quién se sienta ahí es decidir tu Nº1, y el otro lo sabe.",
+            "Deciding who sits there is deciding your No.1, and the other one knows it.",
+            {pt:"Decidir quem senta ali é decidir o seu Nº1, e o outro sabe disso."}))}
+        ${nota("🎯",
+          L("El consejo te pone un objetivo cada año.","The board sets you a target every year.",{pt:"O conselho te dá um objetivo todo ano."}),
+          L("Fallarlo dos veces seguidas te cuesta el puesto.","Miss it twice in a row and you're out.",{pt:"Falhar duas vezes seguidas custa o seu cargo."}))}
+      </div>`;
+      _tpN.style.display="block";
+    } else _tpN.style.display="none";
   }
   /* 🧪 EN MODO PRUEBAS NO SE RELLENA UNA FICHA: se entra a probar. Nombre TEST, bandera de Andorra
      (que no es de nadie, así no se confunde con una partida de verdad) y estilo al azar, para que las
