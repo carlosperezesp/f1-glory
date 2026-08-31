@@ -4423,7 +4423,15 @@ const ROT={ base:.09, porAno:.06, gracia:1, flojo:.20, tope:.5 };
 /* 📏 CALIBRADO CONTRA LA ROTACIÓN REAL (30-ago). Con salir:.62 y la cola a 1 año fijo salía 39,7%
    —el 41% de la parrilla firmaba a un año—; con esto, 28% y permanencia por tramos que ya es la de
    la F1: arriba 5 años, media tabla 2, cola 2. Vencimientos por invierno: ~9 de 22, entre 4 y 15. */
-let ROT_C={ salir:.40, flojo:.22, tope:.90, suelo:.15, estrella:.35 };   // al VENCER: probabilidad de no renovar
+/* 🔄 .40 → .32 el 31-ago-2026. La rotación se me había ido al 32% y yo la daba por buena en 29-30
+   porque MI ARNÉS NO CORRÍA `checkExpansion`: medía un mundo sin equipos nuevos ni quiebras, que es
+   justo lo que más mueve la parrilla (−3,7 puntos al apagarlo). Atribución del exceso, medida:
+   expansiones 3,7 · cantera del filial 2,3 · rescate de talento 2,0 · alphaClash 1,1. Los tres
+   últimos y las expansiones son mundo real y no se tocan; se aprieta el único canal que es mío.
+   Barrido (14 partidas por punto): .40 → 31,4% · .34 → 29,0% · .32 → 29,6% · .28 → 28,1%.
+   Se elige .32 y no .28 porque por debajo de .34 la COLA empieza a retener tanto como la media
+   tabla, y un equipo de cola cambia de pilotos MÁS que un midfield, no menos. */
+let ROT_C={ salir:.32, flojo:.22, tope:.90, suelo:.15, estrella:.35 };   // al VENCER: probabilidad de no renovar
 function tpContratoPara(d, team){
   if(!d || d==="PLAYER") return 2;
   if(isRBJr(team)) return irnd(1,2);
