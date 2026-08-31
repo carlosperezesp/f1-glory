@@ -1711,6 +1711,30 @@ const GRID2007 = {
 };
 // leyendas RETIRADAS conocidas en 2000. OJO: Schumacher (2), Häkkinen (2) y Villeneuve (1)
 // estaban EN ACTIVO ese año → no van aquí. El récord lo tenía Fangio con 5.
+/* 🏆 LOS QUE SE RETIRAN DESPUÉS DEL AÑO BASE (lo cazó Carlos, 31-ago-2026, terminando una partida
+   del reto de Valentino: «¿no aparece Schumacher con 7 mundiales?»). `S.legends` viene congelado en
+   el año base de la era, pero un reto puede empezar SIETE años más tarde: en 2007 el récord de la
+   F1 lo tenía Schumacher con 7 desde 2004, y el juego seguía diciendo que era Fangio con 5, porque
+   Schumacher —que en 2000 estaba en activo— no entraba en la lista de retirados y en 2007 ya no
+   estaba en la parrilla. No existía en ninguna parte.
+   El cuarto campo es el primer año en que cuenta como leyenda retirada, y el segundo son los
+   títulos que tenía ENTONCES, no los del año base. */
+const LEGENDS_TARDIAS = {
+  "2000": [["M. Schumacher",7,"🇩🇪",2007],   // 7º título en 2004; se retira tras 2006
+           ["M. Häkkinen",2,"🇫🇮",2002],     // se retira tras 2001
+           ["J. Villeneuve",1,"🇨🇦",2007]],  // última temporada, 2006
+  "2010": [["M. Schumacher",7,"🇩🇪",2013]],  // el regreso con Mercedes acaba en 2012
+};
+/* la lista de leyendas de una era, adelantada hasta el año en que de verdad empieza la partida */
+function legendsHasta(eraId, anio){
+  const base=((ERAS[eraId]||{}).legends)||[];
+  const extra=(LEGENDS_TARDIAS[eraId]||[]).filter(x=>x[3]<=anio);
+  if(!extra.length) return base;
+  const m={}; base.forEach(x=>{ m[x[0]]=x; });
+  extra.forEach(x=>{ const y=[x[0],x[1],x[2]];
+    if(!m[x[0]] || x[1]>m[x[0]][1]) m[x[0]]=y; });
+  return Object.values(m).sort((a,b)=>b[1]-a[1]);
+}
 const LEGENDS_2000 = [["J.M. Fangio",5,"🇦🇷"],["A. Prost",4,"🇫🇷"],["J. Brabham",3,"🇦🇺"],["J. Stewart",3,"🇬🇧"],
   ["N. Lauda",3,"🇦🇹"],["N. Piquet",3,"🇧🇷"],["A. Senna",3,"🇧🇷"],["A. Ascari",2,"🇮🇹"],["J. Clark",2,"🇬🇧"],
   ["G. Hill",2,"🇬🇧"],["E. Fittipaldi",2,"🇧🇷"],["N. Mansell",1,"🇬🇧"],["D. Hill",1,"🇬🇧"]];
@@ -2978,7 +3002,8 @@ function setupChallenge(CH){
         const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d; });
       while(S.seats[team].length<2) S.seats[team].push(mkRookie(false, team));
     });
-    palmSeed(_ano);            // 🏆 el palmarés, recortado al año del reto (Schumacher con sus 7)
+    palmSeed(_ano);            // 🏆 el palmarés de EQUIPOS, recortado al año del reto
+    S.legends=legendsHasta(S.era, _ano);   // 🏆 …y el de PILOTOS, que se quedaba en el año base
     try{ if(typeof retiredSeed==="function") retiredSeed(S.baseYear); }catch(e){}
     S.retiredPool=(S.retiredPool||[]).filter(r=>r && !S.dpool.some(d=>d.name===r.name));
     const _hay = n => F1_TEAMS.some(t=>t.name===n);
