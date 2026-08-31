@@ -4644,8 +4644,16 @@ function npcMercadoOrdinario(row){
          o renueva (y firma una duración nueva) o sale al mercado. En el clásico, el dado de siempre. */
       let sale;
       if(S.cat==="TP"){
-        if(d.tpc==null) d.tpc=tpContratoPara(d,tm);
-        d.tpc--;
+        /* 🆕 EL RECIÉN LLEGADO NO NACE VENCIDO (lo destapó una pregunta de Carlos: «¿cuándo veo a
+           quién va a fichar Hyundai?»). Los equipos que entran a mitad de partida se sientan ANTES
+           que el mercado, así que a sus pilotos se les estampaba el contrato y se les descontaba esa
+           misma noche: uno de un año nacía a cero y el mercado podía soltarlo el invierno de su
+           debut. Medido: 38 de 100 equipos nuevos cambiaban de alineación al estrenarse, y un
+           Caterham llegó a soltar a Trulli para volver a ficharlo él mismo horas después.
+           Su primer invierno no descuenta — el mismo trato que ya tenía tu propio contrato. */
+        if(d.tpc==null){ d.tpc=tpContratoPara(d,tm); d._alta=yearNow(); }
+        if(d._alta===yearNow()) delete d._alta;
+        else d.tpc--;
         if(d.tpc>0) sale=false;
         else {
           /* 🌟 a una ESTRELLA en un equipo grande no la sueltan al vencer: se la renueva casi
