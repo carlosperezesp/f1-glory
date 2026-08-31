@@ -329,6 +329,9 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tl-row.champ{background:linear-gradient(90deg,#fff6d8,#fffdf4 60%,transparent)}
 .tl-row.champ:hover{background:linear-gradient(90deg,#ffefc2,#fffdf4 60%,transparent)}
 .tl-row .age{font-weight:800;background:var(--panel2);border-radius:9px;text-align:center;padding:6px 0}
+/* 🧑‍💼 en el modo jefe ese número no es la edad, es la temporada: se dice (Carlos, 30-ago). Cabe en
+   los mismos 52px porque la etiqueta va encima, pequeña, y el número debajo como siempre. */
+.tl-row.tp .age .lbl{display:block;font-size:8px;letter-spacing:.4px;font-weight:700;opacity:.6;text-transform:uppercase;line-height:1.15}
 .tl-row.champ .age{background:linear-gradient(135deg,#e10600,#ff4d1c);color:#fff;box-shadow:0 4px 10px rgba(225,6,0,.3)}
 .tl-row .club{display:flex;align-items:center;gap:8px;min-width:0}
 .tl-row .club .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -10462,7 +10465,9 @@ function renderTimeline(){
     // 👑 pilotos y 🏭 constructores en dos líneas pero UNA sola tarjeta (afinado con Carlos)
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")}<br>🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
     div.innerHTML=`
-      <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${r.age}</span>
+      <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${esTP
+        ? `<span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span>${r.age}`
+        : r.age}</span>
       <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}
         <span><span class="nm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
@@ -11965,37 +11970,43 @@ function tpMercado(){
 /* 🪑 ¿DÓNDE LO SIENTAS? Solo aparece con más de un hueco. El asiento 1 no es estética: es el Nº1 de
    facto, y corre con el mejor coche del garaje. Elegir asiento es elegir jerarquía. */
 function tpElegirAsiento(c, ab){
+  /* 🪑 LA PANTALLA DE ASIENTO, REHECHA (Carlos, 30-ago: «no quedan claras las opciones… e incluso
+     en esta pantalla quiero ver el estatus de mis pilotos, aunque no sea definitivo, para juzgar si
+     quiero quitarme a uno o a otro porque tiene más o menos estrellas»). Fuera el párrafo que
+     explicaba qué es el asiento 1 —eso se aprende jugando— y dentro el garaje de verdad, con sus
+     estrellas. Cada botón dice lo que PASA si lo eliges, no lo que el asiento significa. */
+  /* ⚠️ NADA DE tpEtiqueta AQUÍ: devuelve HTML y setDecision escribe con textContent, así que las
+     estrellas salían como `<span class="st-c">★★</span>` en crudo. Las estrellas van abajo, en el
+     garaje, que sí se pinta con innerHTML. */
   setDecision(L(`✍️ ${c.d?c.d.name:L("El debutante","The rookie",{pt:"O estreante"})} acepta · ¿dónde lo sientas?`,
                 `✍️ ${c.d?c.d.name:"The rookie"} accepts · which seat?`,
-                {pt:`✍️ ${c.d?c.d.name:"O estreante"} aceita · onde ele senta?`})+" · "+S.tpTeam,
-    L("El asiento 1 es el Nº1 de la casa: se lleva el mejor coche del garaje. El 2 escuda, aprende… y a veces muerde.",
-      "Seat 1 is the house No.1: he gets the best car in the garage. Seat 2 shields, learns… and sometimes bites.",
-      {pt:"O assento 1 é o Nº1 da casa: leva o melhor carro da garagem. O 2 escuda, aprende… e às vezes morde."}));
+                {pt:`✍️ ${c.d?c.d.name:"O estreante"} aceita · onde ele senta?`})+" · "+S.tpTeam, "");
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=[tpAsientoLinea(0), tpAsientoLinea(1)].join(" "); }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
-  ab.forEach(h=>{
+  [...ab].sort((x,y)=>x.i-y.i).forEach(h=>{   // 🪑 el Nº1 primero: es la jerarquía, no una lista
     const b=document.createElement("button"); b.className="offer";
     const rol = h.i===0
-      ? L("Asiento 1 · el Nº1: el mejor coche del garaje","Seat 1 · the No.1: the best car in the garage",{pt:"Assento 1 · o Nº1: o melhor carro da garagem"})
-      : L("Asiento 2 · el escudero: coche un punto por detrás","Seat 2 · the wingman: a car a step behind",{pt:"Assento 2 · o escudeiro: carro um passo atrás"});
+      ? L("Asiento 1 · el Nº1 del garaje","Seat 1 · the garage No.1",{pt:"Assento 1 · o Nº1 da garagem"})
+      : L("Asiento 2 · el escudero","Seat 2 · the wingman",{pt:"Assento 2 · o escudeiro"});
     const esElMismo = h.cur && c.d && h.cur.name===c.d.name;   // renovándole en su propio asiento
+    const _otroLibre = h.cur && ab.some(x=>x!==h && !x.cur && !x.mueve);
+    const _nb = h.cur ? surname(h.cur.name) : "";
+    const _est = h.cur ? " "+tpEtiqueta(h.cur) : "";
+    /* 🎯 la línea de abajo dice LA CONSECUENCIA, en imperativo: «mover a X al nº2», «despedir a X».
+       Antes describía el estado de partida («hoy lo ocupa X con el contrato vencido»), que es lo que
+       ya ves arriba en el garaje, y encima no dejaba claro qué iba a pasar si pulsabas. */
     const quien = esElMismo
-      ? L("su asiento de siempre","his usual seat",{pt:"o assento de sempre"})
-      : h.mueve ? L(`hoy lo ocupa ${surname(h.cur.name)} — pasaría al asiento ${h.hueco+1}, no sale del equipo`,
-                    `currently ${surname(h.cur.name)} — he'd move to seat ${h.hueco+1}, he stays with the team`,
-                    {pt:`hoje é de ${surname(h.cur.name)} — passaria ao assento ${h.hueco+1}, não sai da equipe`})
-      : (h.cur && ab.some(x=>x!==h && !x.cur && !x.mueve))
+      ? L("Se queda en su asiento","He keeps his seat",{pt:"Fica no assento dele"})
+      : h.mueve ? L(`Mover a ${_nb}${_est} al nº${h.hueco+1}`,`Move ${_nb}${_est} to No.${h.hueco+1}`,{pt:`Mover ${_nb}${_est} para o nº${h.hueco+1}`})
+      : _otroLibre
       /* 🪑 CON OTRO HUECO LIBRE, EL VENCIDO NO SALE: PASA (Carlos, 29-ago: «¿por qué no puedo fichar
-         a Costoya y tratar de renovar a Leclerc como el nº2?»). Antes sentar al nuevo en el asiento
-         del vencido lo expulsaba aunque hubiera sitio de sobra. Ahora se corre al hueco libre con su
-         contrato vencido intacto, y el mercado te sigue ofreciendo renovarlo — en su asiento nuevo. */
-      ? L(`hoy lo ocupa ${surname(h.cur.name)} con el contrato vencido — pasaría al otro asiento, aún renovable`,
-          `currently ${surname(h.cur.name)}, contract expired — he'd move to the other seat, still renewable`,
-          {pt:`hoje é de ${surname(h.cur.name)}, contrato vencido — passaria ao outro assento, ainda renovável`})
-      : h.cur ? L(`hoy lo ocupa ${surname(h.cur.name)} con el contrato vencido — saldría del equipo`,
-                            `currently ${surname(h.cur.name)}, contract expired — he would leave the team`,
-                            {pt:`hoje é de ${surname(h.cur.name)}, contrato vencido — ele sairia da equipe`})
-                       : L("hoy está libre","currently open",{pt:"hoje está livre"});
+         a Costoya y tratar de renovar a Leclerc como el nº2?»). */
+      ? L(`Mover a ${_nb}${_est} al otro asiento · sigue renovable`,
+          `Move ${_nb}${_est} to the other seat · still renewable`,
+          {pt:`Mover ${_nb}${_est} para o outro assento · ainda renovável`})
+      : h.cur ? L(`Despedir a ${_nb}${_est}`,`Release ${_nb}${_est}`,{pt:`Dispensar ${_nb}${_est}`})
+              : L("Asiento libre","Open seat",{pt:"Vaga livre"});
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${h.i===0?"👑":"🛡️"}</span>
       <span class="info"><span class="name">${rol}</span>
       <span class="sub" style="display:block">${quien}</span></span>`;
@@ -12202,7 +12213,7 @@ function tpPoolScreen(){
   scrollToDecision();
 }
 
-function tpSwapSeats(){
+function tpSwapSeats(dest){
   const sl=S.seats[S.tpTeam]||[];
   if((!sl[0]||sl[0]==="PLAYER")&&(!sl[1]||sl[1]==="PLAYER")) return;   // solo si hay al menos uno que mover
   if(sl[0]==="PLAYER"||sl[1]==="PLAYER") return;
@@ -12213,7 +12224,9 @@ function tpSwapSeats(){
      así que ir y volver no deja rastro, que es justo lo que pasa en un despacho de verdad. */
   if(S._ordenIni===undefined) S._ordenIni=(sl[0]&&sl[0].name)||null;
   const a=sl[0]; sl[0]=sl[1]; sl[1]=a;
-  tpMercado();
+  /* ↩️ vuelve a la pantalla DESDE LA QUE se pulsó: llamarlo desde el rumbo y aterrizar en el
+     mercado sería un salto en el tiempo. */
+  if(dest==="rumbo") tpRumboScreen(); else tpMercado();
 }
 
 /* 🧢 EL HUECO DEL PROBADOR, EXPLÍCITO (encargo de Carlos: «hoy es implícito»). Solo aparece cuando se
@@ -12971,6 +12984,11 @@ function tpPilotosHTML(){
     return `<span class="gar-chip" style="border-color:${col};display:inline-block;margin:1px 0">${d.flag||"🏁"} ${d.name} ${tpEtiqueta(d)}${d.titles?` 👑×${d.titles}`:""} · ${d.age}${pos} · 📜${Math.max(0,d.tpc||0)}</span>`;
   };
   const filas=[linea(sl[0]), linea(sl[1])].filter(Boolean);
+  /* ↔️ Y AQUÍ TAMBIÉN SE PUEDE INVERTIR (Carlos, 30-ago: «hay momentos en los que deberías dejarme
+     la opción de invertir el orden»). Esta es la pantalla del rumbo: la última antes de arrancar la
+     temporada, o sea el último momento en que cambiar de Nº1 todavía significa algo. */
+  if((sl[0]&&sl[0]!=="PLAYER")||(sl[1]&&sl[1]!=="PLAYER"))
+    filas.push(`<span class="gar-chip" style="border-color:${col};cursor:pointer;display:inline-block;margin:1px 0" onclick="tpSwapSeats('rumbo')">↔️ ${L("invertir orden","swap order",{pt:"inverter ordem"})}</span>`);
   if(S.tpReserva) filas.push(`<span class="gar-chip" style="border-color:${col};display:inline-block;margin:1px 0">🧢 ${S.tpReserva.flag||"🏁"} ${S.tpReserva.name} ${tpEtiqueta(S.tpReserva)} · ${S.tpReserva.age}</span>`);
   return filas.length? filas.join("<br>")+"<br>" : "";
 }
