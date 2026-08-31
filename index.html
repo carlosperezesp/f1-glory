@@ -11691,8 +11691,11 @@ function tpYearStart(){
     const _pearce={name:"J. Pearce", flag:"🇬🇧", age:23, skill:Math.round(rnd(78,82)), ceil:90, titles:0};
     S.dpool.push(_hayes,_pearce); S.seats.APXGP=[_hayes,_pearce];
     S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!=="S. Hayes" && x.name!=="J. Pearce");
-    /* 🧹 SIN BOMBAZO (Carlos, ya me lo había pedido y se me quedó). La entrada de APXGP se ve sola
-       en la parrilla: anunciarla a bombo era una noticia ajena más ocupando el año. */
+    /* 🧹 SIN BOMBAZO (Carlos): la entrada de APXGP se anuncia como la de cualquier otro equipo, con
+       la misma línea que usa `processEntries`. Ni portada ni veterano de 50 años: eso se ve solo. */
+    S.pendingEvents.push(L("🆕 APXGP se estrena en la Fórmula 1 esta temporada.",
+      "🆕 APXGP makes its Formula 1 debut this season.",
+      {pt:"🆕 A APXGP estreia na Fórmula 1 nesta temporada."}));
   }
   /* 🏢 LOS DUEÑOS TAMBIÉN CAMBIAN. Hasta ahora el dueño solo se movía por dos dilemas concretos, así
      que podías echarte veinte temporadas con el mismo señor (queja de Carlos). En la F1 los equipos
