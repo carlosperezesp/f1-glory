@@ -329,9 +329,11 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tl-row.champ{background:linear-gradient(90deg,#fff6d8,#fffdf4 60%,transparent)}
 .tl-row.champ:hover{background:linear-gradient(90deg,#ffefc2,#fffdf4 60%,transparent)}
 .tl-row .age{font-weight:800;background:var(--panel2);border-radius:9px;text-align:center;padding:6px 0}
-/* 🧑‍💼 en el modo jefe ese número no es la edad, es la temporada: se dice (Carlos, 30-ago). Cabe en
-   los mismos 52px porque la etiqueta va encima, pequeña, y el número debajo como siempre. */
-.tl-row.tp .age .lbl{display:block;font-size:8px;letter-spacing:.4px;font-weight:700;opacity:.6;text-transform:uppercase;line-height:1.15}
+/* 🧑‍💼 en el modo jefe ese número no es la edad, es la temporada: se dice (Carlos, 30-ago). Y en UNA
+   línea —«Temporada 6», no «Temporada» encima del 6— (Carlos, 31-ago), así que la celda deja de ser
+   una columna de 52px y pasa a ocupar su propia línea, alineada a la izquierda. */
+.tl-row.tp .age{grid-column:1/-1;justify-self:start;width:auto;text-align:left;padding:3px 10px;font-size:11px;letter-spacing:.3px}
+.tl-row.tp .age .lbl{font-size:11px;font-weight:800;letter-spacing:.3px}
 .tl-row.champ .age{background:linear-gradient(135deg,#e10600,#ff4d1c);color:#fff;box-shadow:0 4px 10px rgba(225,6,0,.3)}
 .tl-row .club{display:flex;align-items:center;gap:8px;min-width:0}
 .tl-row .club .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -4582,14 +4584,14 @@ function rbCanteraInvernal(row){
         const fuera=ms[wi]; ms[wi]=d; sl[i]=mkRookie(true, tn);
         if(fuera && fuera!=="PLAYER"){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(fuera); }
         mktMark(d, fuera, tn, madre);
-        row.events.push(L(`✍️ ${surname(d.name)} asciende de ${tn} a ${madre}; debuta ${sl[i].name}.`,
+        if(noticiaRelevante([tn,madre],[d.name])) row.events.push(L(`✍️ ${surname(d.name)} asciende de ${tn} a ${madre}; debuta ${sl[i].name}.`,
           `✍️ ${surname(d.name)} moves up from ${tn} to ${madre}; ${sl[i].name} debuts.`,
           {pt:`✍️ ${surname(d.name)} sobe da ${tn} para a ${madre}; estreia ${sl[i].name}.`}));
       } else {
         S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d);
         sl[i]=mkRookie(true, tn);
         mktMark(d, tn);
-        row.events.push(L(`✍️ ${surname(d.name)} deja ${tn}; debuta ${sl[i].name}.`,
+        if(noticiaRelevante([tn],[d.name])) row.events.push(L(`✍️ ${surname(d.name)} deja ${tn}; debuta ${sl[i].name}.`,
           `✍️ ${surname(d.name)} leaves ${tn}; ${sl[i].name} debuts.`,
           {pt:`✍️ ${surname(d.name)} deixa a ${tn}; estreia ${sl[i].name}.`}));
       }
@@ -8541,7 +8543,7 @@ function processArrivals(row){
       homeBuffOne(d); S.dpool.push(d);
       slots[wi]=d; placed++;
       // solo se anuncia el debut de las FUTURAS ESTRELLAS (techo base ≥93): el resto entra sin titular, menos ruido
-      if(a.c>=93) row.events.push(L(`🌱 Debut en la F1: ${a.n} llega a ${tn}.`,`🌱 F1 debut: ${a.n} joins ${tn}.`,{pt:`🌱 Estreia na F1: ${a.n} chega à ${tn}.`}));
+      if(a.c>=93 && noticiaRelevante([tn],[a.n])) row.events.push(L(`🌱 Debut en la F1: ${a.n} llega a ${tn}.`,`🌱 F1 debut: ${a.n} joins ${tn}.`,{pt:`🌱 Estreia na F1: ${a.n} chega à ${tn}.`}));
       break;
     }
   }
@@ -8589,7 +8591,7 @@ function poachStar(tn, row){
   if(mktMoved(best) || mktMoved(weak) || mktMoved(tn) || mktMoved(bT)) return;
   mktMark(tn, bT, best, weak);
   S.seats[bT][bI]=weak; slots[wIdx]=best;
-  row.events.push(L(`💰 ${tn} mueve ficha y firma a ${surname(best.name)}, que dejará ${bT} en ${nextY(row)}.`,
+  if(noticiaRelevante([tn,bT],[best.name])) row.events.push(L(`💰 ${tn} mueve ficha y firma a ${surname(best.name)}, que dejará ${bT} en ${nextY(row)}.`,
                     `💰 ${tn} make their move and sign ${surname(best.name)}, who leaves ${bT} for ${nextY(row)}.`,{pt:`💰 A ${tn} se mexe e contrata ${surname(best.name)}, que deixará a ${bT} em ${nextY(row)}.`}));
 }
 function alphaClash(row){
@@ -10530,7 +10532,7 @@ function renderTimeline(){
     const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")}<br>🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${esTP
-        ? `<span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span>${r.age}`
+        ? `<span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}`
         : r.age}</span>
       <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}
         <span><span class="nm">${r.team2
@@ -11143,6 +11145,21 @@ function printCareer(){
 let TP_MODE=false;
 // ¿es este el equipo gestionado por el jugador en una partida de TP? (la guarda de la cala)
 function tpManaged(tn){ return typeof S!=="undefined" && S && S.cat==="TP" && S.tpTeam===tn; }
+/* 📰 ¿ESTA NOTICIA ME TOCA? (Carlos, 30 y 31-ago: «fichajes, CERO; no quiero fichajes salvo que
+   tengan que ver con MI EQUIPO, o el equipo campeón vigente o el piloto campeón vigente»). El
+   movimiento ENTRE EQUIPOS AJENOS sigue ocurriendo y la parrilla lo refleja: lo único que cambia es
+   que ya no se narra. Solo en el modo jefe; el clásico se queda como estaba.
+   ⚠️ Carlos confirmó el 31-ago que el campeón vigente SÍ es noticia aunque el fichaje no le toque
+   a él: «si es el campeón vigente, está bien así». No apretar más esta regla. */
+function noticiaRelevante(equipos, pilotos){
+  if(typeof S==="undefined" || !S || S.cat!=="TP") return true;
+  const eq=[].concat(equipos||[]).filter(Boolean);
+  const pi=[].concat(pilotos||[]).filter(Boolean).map(String);
+  if(eq.some(t=>t===S.tpTeam)) return true;
+  if(eq.some(t=>(S.rankC||{})[t]===1)) return true;
+  if(pi.some(n=>(S.rankD||{})[n]===1)) return true;
+  return false;
+}
 
 function initTPCard(){
   /* 🔒 LA BETA SE CIERRA (Carlos, 31-ago-2026, camino del lanzamiento del viernes 4). Hasta hoy el
