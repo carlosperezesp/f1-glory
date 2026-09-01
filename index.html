@@ -3458,8 +3458,21 @@ function validateIdentity(){
    quince o veinte eventos ella sola. Ya sabemos a qué juega la gente; volveremos a medir cuando
    haya modos nuevos que valga la pena instrumentar.
    👉 Para volver a medir: poner TRACK_ON en true. Las llamadas a track() siguen todas en su sitio. */
-const TRACK_ON = false;
-function track(name, data){ if(!TRACK_ON) return; try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){} }
+/* 📊 TELEMETRÍA, ENCENDIDA Y CON FRENO (Carlos, 31-ago-2026, con la factura delante).
+   El dato que manda: las visitas de página ya generaban 10.910 eventos en UN día = $0,33 diarios,
+   y el ciclo iba por $3,96 de los $20 incluidos en seis días. Encender los eventos personalizados a
+   pelo —entre 3 y 6 por partida— doblaría esa línea y se comería el crédito, y con «Pause Projects»
+   encendido eso significa el sitio caído.
+   Por eso se manda solo una FRACCIÓN de las visitas. Para lo que se quiere saber —qué % juega al
+   modo jefe, con qué equipos, a qué edad se retiran— una muestra da el mismo porcentaje que el
+   total; lo que no da son cifras absolutas, y esas ya las tienes en las visitas.
+   ⚠️ El sorteo se hace UNA vez por visita, no por evento: si no, de un mismo jugador llegaría el
+   `career_started` y no el `career_ended`, y los embudos saldrían torcidos.
+   Para subirlo o bajarlo, toca solo TRACK_SAMPLE. A 1 se manda todo. */
+const TRACK_ON = true;
+const TRACK_SAMPLE = 0.15;
+const TRACK_ME = Math.random() < TRACK_SAMPLE;
+function track(name, data){ if(!TRACK_ON || !TRACK_ME) return; try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){} }
 function startCareer(){
   sel.name = $("inName").value.trim().toUpperCase();
   sel.num = $("inNum").value;
@@ -10269,7 +10282,9 @@ function tpSignTeam(t, how){
   sl.forEach((d,i)=>{ if(d&&d!=="PLAYER") d.tpc=((i===0)===flip)?1:2; });
   S.tpStints.push({team:S.tpTeam, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
   if(how==="start"){
-    track("career_started",{mode:"tp", team:S.tpTeam, lang:LANG, era:"2026"});
+    /* 🧑‍💼 el equipo ya viajaba aquí; se le añade el CEO que te toca, que es gratis —un campo más en
+       un evento que ya se manda— en vez de un evento nuevo, que con esta factura no sale a cuenta. */
+    track("career_started",{mode:"tp", team:S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?", lang:LANG, era:"2026"});
     S.pendingEvents.push(L(`🧑‍💼 ${S.tpTeam} te presenta como su nuevo Team Principal. ${S.tpOwner.intro()}`,
       `🧑‍💼 ${S.tpTeam} unveils you as their new Team Principal. ${S.tpOwner.intro()}`,
       {pt:`🧑‍💼 A ${S.tpTeam} te apresenta como novo Team Principal. ${S.tpOwner.intro()}`}));
