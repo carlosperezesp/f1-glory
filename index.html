@@ -94,7 +94,28 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .mode-menu{display:flex;flex-direction:column;gap:11px;width:100%;max-width:430px;margin:4px auto 0;animation:fadeUp .6s .32s both}
 .mode-card{position:relative;display:flex;align-items:center;gap:13px;padding:13px 18px;border:2px solid var(--line);border-radius:16px;background:var(--panel);text-align:left}
 .mode-card.soon{opacity:.5}
-.mode-ico{font-size:24px;flex-shrink:0;filter:grayscale(.4)}
+/* 🎨 LOS ICONOS DE CARLOS, EN SU TEJA (3-sep-2026). Sustituyen a los emojis del menú. Van sobre una
+   teja clara y no sueltos, porque están dibujados con trazo azul MUY oscuro (#2b3440) y el panel del
+   modo oscuro es #1d1f28: sin fondo propio, el volante negro de «carrera» y los radios de «retro»
+   desaparecían. La teja es la misma en los dos temas, así que el icono se ve igual de bien en ambos
+   y no hace falta inventarse una segunda versión de cada dibujo.
+   ⚠️ Y van redimensionados a 96px en /ico/: los originales son de 637 a 704px y pesaban 532 KB entre
+   los cuatro, medio mega que cargaba todo el que entra para verlos a 30 píxeles. Ahora, 56 KB. */
+/* 🎨 SIN TEJA (Carlos, 3-sep: «no me gusta que vengan rodeados de un cuadrado blanco. Solo quiero el
+   logo»). Los tres de las tarjetas llevan relleno claro propio —el calendario, la camisa, la llanta—
+   así que se sostienen sobre el panel oscuro sin fondo detrás. El que NO se sostenía era el volante
+   negro del botón rojo, y ese es otro caso. */
+.mode-ico{flex-shrink:0;width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center}
+.mode-ico img{display:block;width:34px;height:34px;object-fit:contain}
+.mode-card{transition:border-color .15s, transform .15s, box-shadow .15s}
+.mode-card:not(.soon):hover{border-color:var(--accent);transform:translateY(-1px)}
+/* 🏁 y el botón grande estrena el volante: es el modo principal y no tenía icono ninguno */
+.btn-ico{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+/* 🏁 el volante, a su tamaño y con sus colores (Carlos, 3-sep: «se ve muy pequeño, lo quiero con los
+   colores originales, mismo tamaño que los otros»). */
+.btn-ico::before{content:"";width:34px;height:34px;flex-shrink:0;
+  background:url("/ico/carrera.png") center/contain no-repeat}
 .mode-txt{display:flex;flex-direction:column;min-width:0}
 .mode-txt b{font-size:15px;font-weight:800;color:var(--text)}
 .mode-txt small{font-size:12px;color:var(--muted);margin-top:1px}
@@ -651,22 +672,22 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   <div class="flag">🏁</div>
   <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-pt="Construa a sua carreira<br>na <span>Fórmula 1</span>" data-pl="Zbuduj swoją karierę<br>w <span>Formule 1</span>" data-fr="Construis ta carrière<br>en <span>Formule 1</span>" data-pt="Constrói a tua carreira<br>na <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
   <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-pt="Comece no karting, suba pela F4, F3 e F2, conquiste uma vaga e enfrente Verstappen, Norris, Antonelli e os que virão. A história da F1 continua sendo escrita… com você dentro." data-pl="Zacznij od kartingu, przejdź przez F4, F3 i F2, wywalcz sobie fotel i zmierz się z Verstappenem, Norrisem, Antonellim i tymi, którzy dopiero nadejdą. Historia F1 wciąż się pisze… a ty jesteś w środku." data-fr="Commence en karting, gravis la F4, la F3 et la F2, décroche un baquet et affronte Verstappen, Norris, Antonelli et ceux qui suivront. L'histoire de la F1 continue de s'écrire… avec toi dedans." data-pt="Começa no karting, sobe pela F4, F3 e F2, ganha um lugar na grelha e luta contra Verstappen, Norris, Antonelli e os que hão de vir. A história da F1 continua a escrever-se… contigo lá dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
-  <button class="btn" onclick="startCareerFlow('2026')" data-es="Iniciar carrera" data-pt="Iniciar carreira" data-pl="Rozpocznij karierę" data-fr="Commencer la carrière" data-pt="Iniciar carreira" data-en="Start career">Iniciar carrera</button>
+  <button class="btn btn-ico" onclick="startCareerFlow('2026')" data-es="Iniciar carrera" data-pt="Iniciar carreira" data-pl="Rozpocznij karierę" data-fr="Commencer la carrière" data-pt="Iniciar carreira" data-en="Start career">Iniciar carrera</button>
   <div class="mode-menu">
     <div class="mode-card soon" id="challengeCard">
       <span class="soon-badge" id="badgeReto" data-es="Próximamente" data-pt="Em breve" data-pl="Wkrótce" data-fr="Bientôt" data-pt="Em breve" data-en="Coming soon">Próximamente</span>
-      <span class="mode-ico">📅</span>
+      <span class="mode-ico"><img src="/ico/retosemanal.png" alt="" width="30" height="30" loading="lazy"></span>
       <span class="mode-txt"><b data-es="Reto semanal" data-pt="Desafio semanal" data-pl="Wyzwanie tygodnia" data-fr="Défi hebdomadaire" data-pt="Desafio semanal" data-en="Weekly challenge">Reto semanal</b><small id="retoSub" data-es="Un escenario nuevo cada semana" data-pt="Um cenário novo a cada semana" data-pl="Nowy scenariusz co tydzień" data-fr="Un nouveau scénario chaque semaine" data-pt="Um cenário novo todas as semanas" data-en="A new scenario every week">Un escenario nuevo cada semana</small></span>
     </div>
     <div class="decade-grid" id="challengeGrid" style="display:none"></div>
     <div class="mode-card soon" id="tpCard">
       <span class="soon-badge" id="badgeTP" data-es="Próximamente" data-pt="Em breve" data-pl="Wkrótce" data-fr="Bientôt" data-pt="Em breve" data-en="Coming soon">Próximamente</span>
-      <span class="mode-ico">🧑‍💼</span>
+      <span class="mode-ico"><img src="/ico/teamprincipal.png" alt="" width="30" height="30" loading="lazy"></span>
       <span class="mode-txt"><b data-es="Modo Team Principal" data-pt="Modo Chefe de Equipe" data-pl="Tryb szefa zespołu" data-fr="Mode Directeur d'écurie" data-pt="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-pt="Contrate os melhores pilotos, desenvolva o melhor carro e leve a sua equipe à glória" data-pl="Podpisuj najlepszych kierowców, rozwijaj najlepszy samochód i poprowadź zespół po chwałę" data-fr="Recrute les meilleurs pilotes, développe la meilleure voiture et mène ton écurie à la gloire" data-pt="Contrata os melhores pilotos, desenvolve o melhor carro e leva a tua equipa à glória" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
     </div>
     <div class="mode-card retro-on" id="retroCard" onclick="toggleRetro()">
       <span class="new-badge" id="badgeRetro" data-es="¡Nuevo!" data-pt="Novo!" data-pl="Nowość!" data-fr="Nouveau !" data-pt="Novo!" data-en="New!">¡Nuevo!</span>
-      <span class="mode-ico">🕰️</span>
+      <span class="mode-ico"><img src="/ico/retro.png" alt="" width="30" height="30" loading="lazy"></span>
       <span class="mode-txt"><b data-es="Modo Retro" data-pt="Modo Retrô" data-pl="Tryb retro" data-fr="Mode Rétro" data-pt="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Empieza tu carrera en otra época" data-pt="Comece a sua carreira em outra época" data-pl="Zacznij karierę w innej epoce" data-fr="Commence ta carrière à une autre époque" data-pt="Começa a tua carreira noutra época" data-en="Start your career in another era">Empieza tu carrera en otra época</small></span>
       <span class="retro-caret" id="retroCaret">▾</span>
     </div>
@@ -11056,7 +11077,77 @@ const TP_DILEMAS=[
     ⚠️ Hoy solo se lee la variante de telemetría: `startTPFlow()` fija SELECTED_ERA="2026", así que el
     modo jefe únicamente existe en la era actual. La otra rama queda lista para el día que el muro se
     abra a las retro. ═══════════════════════════════════════════════════════════════════════ */
- {id:"tpGomas", cond:()=>tpDrvs().length>0,
+ {id:"tpSafety", cond:()=>tpDrvs().length>=2 && yearNow()>=1993,
+   /* 🚨 EL COCHE DE SEGURIDAD, DESDE EL MURO (inspirado en el test de estrategia de F1 Racing, 2005,
+      que trajo Carlos). No es el `safetycar` del modo clásico: allí eres el piloto y decides si
+      entras; aquí eres el jefe y tienes que ELEGIR ENTRE LOS TUYOS, que es lo único que solo puede
+      hacer un Team Principal. El que se queda fuera se acuerda, y por eso toca la moral.
+      🔒 CANDADO DE AÑO: el coche de seguridad no se usa de forma regular hasta 1993. En una partida
+      de 1990 este dilema no puede salir. */
+   t:()=>L("Sale el coche de seguridad","The safety car is out",{pt:"Sai o safety car"}),
+   d:()=>{ const a=tpDrvs(); const yr=yearNow();
+     /* 🏆 LOS PUESTOS DEPENDEN DE DÓNDE ESTÉS (Carlos, 31-ago): si peleas el Mundial, lo que está en
+        juego es el podio; si no, el último punto. Y el ÚLTIMO PUNTO no es siempre el décimo —era el
+        8º entre 2003 y 2009 y el 6º antes—, así que sale de la tabla de puntos de la propia era.
+        Sin esto, el reto de Valentino (2007) hablaría de un décimo puesto que no puntuaba. */
+     const ult=ptsTable(yr).length;
+     const arriba=((S.rankC||{})[S.tpTeam]||99)<=3;
+     const pIn=arriba?2:ult, pOut=arriba?6:ult+4;
+     const i=dilVar("scQ",()=>irnd(0,1));
+     const nIn=surname((a[i]||a[0]).name), nOut=surname((a[1-i]||a[0]).name);
+     const gps=gpList(yr), gp=gps[dilVar("scGp",()=>irnd(0,gps.length-1))];
+     const vta=dilVar("scV",()=>irnd(Math.max(10,Math.round(gp.laps*.45)), Math.max(12,gp.laps-10)));
+     const oEn=n=>n+(n===1?"st":n===2?"nd":n===3?"rd":"th");
+     const juego = arriba
+       ? L(`peleando el podio`,`fighting for the podium`,{pt:`brigando pelo pódio`})
+       : L(`en el último punto`,`in the last points place`,{pt:`no último ponto`});
+     const nada = arriba ? "" : L(", sin nada",", with nothing",{pt:", sem nada"});
+     return L(`Vuelta ${vta} en ${gp.n}. Un doblado se estampa a la salida de la última curva y el coche de seguridad entra antes de que se pose el polvo. Tienes a ${nIn} ${pIn}º, ${juego}, y a ${nOut} ${pOut}º${nada}. El pit lane solo da para uno: si los metes a los dos, el segundo pierde media carrera esperando su turno.`,
+              `Lap ${vta} at ${gp.n}. A backmarker plants it on the exit of the last corner and the safety car is out before the dust settles. You have ${nIn} ${oEn(pIn)}, ${juego}, and ${nOut} ${oEn(pOut)}${nada}. The pit lane only has room for one: bring both in and the second loses half a race waiting his turn.`,
+              {pt:`Volta ${vta} em ${gp.n}. Um retardatário bate na saída da última curva e o safety car entra antes de a poeira baixar. Você tem ${nIn} em ${pIn}º, ${juego}, e ${nOut} em ${pOut}º${nada}. O pit lane só dá para um: se meter os dois, o segundo perde meia corrida esperando a vez.`}); },
+   opts:[
+    {l:()=>{ const arriba=((S.rankC||{})[S.tpTeam]||99)<=3;
+       return arriba
+         ? L("«Entra el del podio. Eso no se regala»","«Bring in the one on the podium. You don't give that away»",{pt:"«Entra o do pódio. Isso não se dá de presente»"})
+         : L("«Entra el que puntúa. No se regala un punto»","«Bring in the one scoring. You don't give away a point»",{pt:"«Entra o que pontua. Não se dá um ponto de presente»"}); },
+     r:()=>{ const a=tpDrvs(); const i=dilVar("scQ",()=>irnd(0,1));
+       const nIn=surname((a[i]||a[0]).name), nOut=surname((a[1-i]||a[0]).name);
+       return roll(
+        [5,()=>{tpDrvSkill(nIn,1);TPRE(1);
+          /* 🏆 Y EL PODIO CUENTA DE VERDAD (Carlos, 31-ago: «las victorias sí se cuentan, no?»).
+             `S.podiums` es la misma cuenta que sale en tu ficha y en el resumen de carrera; hasta hoy
+             ningún dilema del modo jefe la tocaba, solo los del clásico. Si peleabas el podio y el
+             coche de seguridad te lo salva, el podio se APUNTA. Cuando lo que está en juego es el
+             último punto no se suma nada: ahí el premio es la moral, porque un punto no tiene
+             casilla propia donde caer. */
+          const arr=((S.rankC||{})[S.tpTeam]||99)<=3;
+          if(arr) S.podiums++;
+          return L(`Sale con gomas nuevas y en el reinicio se come dos coches. Baja del monoplaza sabiendo que el muro jugó para él.${arr?" +1 podio,":""} +moral de ${nIn}, +prestigio`,
+                   `He comes out on new tyres and takes two cars at the restart. He climbs out knowing the wall played for him.${arr?" +1 podium,":""} +${nIn}'s morale, +prestige`,
+                   {pt:`Sai com pneus novos e no recomeço come dois carros. Desce do carro sabendo que o muro jogou por ele.${arr?" +1 pódio,":""} +moral de ${nIn}, +prestígio`});}],
+        [5,()=>{tpDrvSkill(nOut,-1);TPRE(-.5);
+          return L(`${nOut} se queda fuera con la goma muerta, aguanta cuatro vueltas y se lo comen todos. Baja del coche sin hablar con nadie. −moral de ${nOut}, −prestigio leve`,
+                   `${nOut} stays out on dead rubber, holds on for four laps and gets swallowed by the pack. He climbs out without a word to anyone. −${nOut}'s morale, slight −prestige`,
+                   {pt:`${nOut} fica fora com o pneu morto, aguenta quatro voltas e é engolido por todos. Desce do carro sem falar com ninguém. −moral de ${nOut}, −prestígio leve`});}])}},
+    {l:()=>L("«Entra el otro. El que no tiene nada que perder»","«Bring in the other one. The one with nothing to lose»",{pt:"«Entra o outro. O que não tem nada a perder»"}),
+     /* 🎲 Y ESTO ES LOTERÍA (Carlos: «en la realidad no creo que pase tan a menudo»). Meter a un coche
+        desde atrás sale bien 2 veces de 10; las otras 8 se reparten entre no servir de nada y costarte
+        lo que ya tenías. */
+     r:()=>{ const a=tpDrvs(); const i=dilVar("scQ",()=>irnd(0,1));
+       const nIn=surname((a[i]||a[0]).name), nOut=surname((a[1-i]||a[0]).name);
+       return roll(
+        [2,()=>{tpDrvSkill(nOut,2);TPRE(1.5);
+          return L(`${nOut} vuelve a pista con gomas nuevas y remonta hasta los puntos. Acaban puntuando los dos, y el garaje aprende que aquí no se da a nadie por perdido. +prestigio, ++moral de ${nOut}`,
+                   `${nOut} rejoins on new tyres and climbs into the points. Both of them score, and the garage learns that nobody gets written off here. +prestige, ++${nOut}'s morale`,
+                   {pt:`${nOut} volta à pista com pneus novos e sobe até os pontos. Os dois pontuam, e a garagem aprende que aqui ninguém é dado como perdido. +prestígio, ++moral de ${nOut}`});}],
+        [4,()=>L(`${nOut} remonta lo justo para quedarse a las puertas. El que se quedó fuera aguantó lo suyo. Ni bien ni mal. Sin cambios.`,
+                 `${nOut} climbs just enough to fall short. The one left out held on to what he had. Neither good nor bad. No change.`,
+                 {pt:`${nOut} sobe o suficiente para ficar às portas. O que ficou fora aguentou o dele. Nem bem nem mal. Sem mudanças.`})],
+        [4,()=>{TPRE(-1);tpDrvSkill(nIn,-1);
+          return L(`${nIn} pierde su puesto en el reinicio y ${nOut} no llega a ninguna parte. Te quedas sin las dos cosas. −prestigio, −moral de ${nIn}`,
+                   `${nIn} loses his place at the restart and ${nOut} gets nowhere. You end up with neither. −prestige, −${nIn}'s morale`,
+                   {pt:`${nIn} perde a posição no recomeço e ${nOut} não chega a lugar nenhum. Você fica sem as duas coisas. −prestígio, −moral de ${nIn}`});}])}}]},
+  {id:"tpGomas", cond:()=>tpDrvs().length>0,
   t:()=>L("El muro y la goma","The pit wall and the tyres",{pt:"O muro e o pneu"}),
   d:()=>{ const a=tpDrvs(); const n=a[0]?surname(a[0].name):"tu piloto"; const yr=yearNow();
     /* 🎲 QUE NO SALGA SIEMPRE CALCADO (lo pidió Carlos al probarlo): circuito y vuelta de la época,
