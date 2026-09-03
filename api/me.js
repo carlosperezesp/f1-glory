@@ -27,7 +27,7 @@ function isoWeekKey(d) {
    público —con su etiqueta «¡nuevo!»— y no estaba en ninguno: las carreras de los 90 no entraban
    en su tabla, y al terminar, el ranking se abría en `e:1990`, el servidor respondía «scope
    inválido» y el jugador leía «Aún no hay puntuaciones» justo después de acabar su carrera. */
-const ERAS_OK = ["1990", "2000", "2010", "2020", "2026"];
+const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp"];   // 🧑‍💼 "tp" = modo jefe, tabla propia
 function scopeKey(scope) {
   if (scope === "g") return "lb:global";
   if (scope === "w") return "lb:w:" + isoWeekKey(new Date());

@@ -2535,7 +2535,7 @@ function gpAt(yr){ const cs=gpList(yr); return cs[irnd(0,cs.length-1)].n; }
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
 function startCareerFlow(era){ CHALLENGE=null; TP_MODE=false;
-  if(TEST_MODE && TESTS[TEST_MODE] && TESTS[TEST_MODE].era) era=TESTS[TEST_MODE].era; SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
+  if(TEST_MODE && TESTS[TEST_MODE] && TESTS[TEST_MODE].era) era=TESTS[TEST_MODE].era; SELECTED_ERA = era||"2026"; showIdentity(); }
 // 🕰️ Modo Retro: la tarjeta despliega el selector de décadas (2010 y 2020 jugables; el resto, en camino)
 function toggleRetro(){
   const rc=document.getElementById("retroCard"), g=document.getElementById("decadeGrid");
@@ -3551,7 +3551,11 @@ function startCareer(){
   // — es el que va al ranking, y ahí compites como tú, no como él.
   const _chSel = challengeNow();
   if(_chSel && _chSel.who){ sel.country=_chSel.who.country; sel.flag=_chSel.who.flag; sel.style=_chSel.who.style; sel.num=_chSel.who.num; }
-  track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG, era: SELECTED_ERA});
+  /* 📊 EN EL MODO JEFE ESTE NO SE MANDA. Ahí se manda otro `career_started` al elegir equipo, con el
+     equipo y el CEO, que es lo que importa; este llevaba tu ESTILO DE PILOTAJE, que de jefe no
+     conduces. Eran dos eventos con el mismo nombre y cargas distintas: cuota gastada y el panel
+     mezclando dos cosas. */
+  if(!TP_MODE) track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG, era: SELECTED_ERA});
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   const ERA = ERAS[SELECTED_ERA] || ERAS["2026"];  // 🕰️ era elegida: 2026 (actual) o retro 2010/2020
   S = {
@@ -8381,7 +8385,11 @@ function simF1(row,st){
     c:row.top3c, cmv:constrRank.slice(0,3).map((e,i)=>mvC(e[0],i+1)),
     myPos:pos, myConstr:constrPos, myPosMv:mvD("__ME__",pos), myConstrMv:mvC(myTeam,constrPos)};
   if(row.apxWin) row.events.push(L("🎬 Victoria con APXGP: la remontada digna de Hollywood.","🎬 A win with APXGP: a comeback worthy of Hollywood.",{pt:"🎬 Vitória com a APXGP: a recuperação digna de Hollywood."}));
-  if(pos===1){ S.lastChampName=null; S.titles.f1++; track("title_won", {team: myTeam, age: S.age, era: S.era||"2026"}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️",{pt:"🏆 CAMPEÃO MUNDIAL!! …e o título se decidiu por uma decisão da FIA a seu favor. 🏛️"}):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!",{pt:"🏆 CAMPEÃO MUNDIAL DE FÓRMULA 1!!"})); }
+  if(pos===1){ S.lastChampName=null; S.titles.f1++;
+    /* 📊 SOLO EL PRIMER TÍTULO. Una carrera de leyenda mandaba siete eventos idénticos; lo que se
+       quiere saber —con qué equipo y a qué edad se llega arriba— está en el primero, y CUÁNTOS
+       títulos acabaste teniendo ya viaja en `career_ended`. De siete eventos a uno. */
+    if(S.titles.f1===1) track("title_won", {team: myTeam, age: S.age, era: S.era||"2026"}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️",{pt:"🏆 CAMPEÃO MUNDIAL!! …e o título se decidiu por uma decisão da FIA a seu favor. 🏛️"}):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!",{pt:"🏆 CAMPEÃO MUNDIAL DE FÓRMULA 1!!"})); }
   else {
     const champ=standings[0];
     S.lastChampName=champ.name;                    // 👑 para que nadie eche al campeón vigente
@@ -9669,7 +9677,11 @@ function submitScore(){
     // te dejaría fuera de esa tabla para siempre.
     let best={}; try{ best=JSON.parse(localStorage.getItem("f1g_best")||"{}"); }catch(e){}
     const wk=isoWeekNow();
-    const era=S.era||"2026", ch=S.challenge||null;
+    /* 🧑‍💼 EL MODO JEFE VA A SU PROPIA TABLA. No es una época, pero viaja por el mismo carril porque
+       la maquinaria de ámbitos ya existe. Y tiene tabla aparte por la misma razón que la tuvo el
+       retro: puntúa en otra escala —suma los resultados de los DOS pilotos del equipo—. */
+    const esTP = S.cat==="TP";
+    const era=esTP ? "tp" : (S.era||"2026"), ch=esTP ? null : (S.challenge||null);
     const kEra="e"+era, kCh=ch?("c"+ch):null;
     const gBest=best.g||0, wBest=(best.w===wk)?(best.wg||0):0;
     const eBest=best[kEra]||0, cBest=kCh?(best[kCh]||0):0;
@@ -9681,7 +9693,12 @@ function submitScore(){
       era: S.era||"2026", ch: S.challenge||null,   // 🏆 para las tablas por época y por reto
       secs: S._t0 ? Math.round((Date.now()-S._t0)/1000) : 0,   // tiempo real jugando esta carrera
       ns: (S.seasons||[]).length,                              // nº total de temporadas (junior+F1)
-      b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons } };
+      /* ⚠️ `seasons` EN EL MODO JEFE. `S.f1Seasons` cuenta TUS temporadas como piloto, y de jefe son
+         CERO: el servidor recibía 2 títulos con 0 temporadas y lo rechazaba por «stats incoherentes»
+         antes siquiera de mirar nada más. Se detectó midiendo un envío de verdad, antes de abrir el
+         modo. De jefe, tus temporadas son las que llevas al mando. */
+      b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp,
+          seasons: esTP ? (S.seasons||[]).length : S.f1Seasons } };
     // ⚠️ la cola PRIMERO: si el móvil se queda sin conexión justo aquí (o cierras la pestaña al ver la
     // pantalla final), la carrera ya está a salvo para reintentarla. Se limpia sola al confirmarse.
     pendSave({body, nb});
@@ -9704,7 +9721,8 @@ function openRanking(){
   // tras terminar una carrera, se abre en la tabla que le corresponde: la del reto si jugabas un reto,
   // si no la de su época — es donde el jugador quiere verse a sí mismo.
   if(typeof S!=="undefined" && S){
-    if(S.challenge) rankScope="c:"+S.challenge;
+    if(S.cat==="TP") rankScope="e:tp";            // 🧑‍💼 su tabla, no la de 2026
+    else if(S.challenge) rankScope="c:"+S.challenge;
     else if(S.era) rankScope="e:"+S.era;
   }
   const go=()=>loadRanking(rankScope);
@@ -9746,18 +9764,20 @@ function rankTabDefs(){
            {s:"e", lab:L("🕰️ Por época","🕰️ By era",{pt:"🕰️ Por época"})}];
   const vivos=(typeof chLive==="function")?chLive():[];
   if(vivos.length) t.push({s:"c:"+vivos[0].id, lab:L("📅 Reto","📅 Challenge",{pt:"📅 Desafio"})});
+  /* 🧑‍💼 la del jefe solo aparece cuando el modo está abierto: antes del 4-sep sería una pestaña vacía */
+  if(typeof relOpen==="function" && relOpen("tp")) t.push({s:"e:tp", lab:L("🧑‍💼 Jefe","🧑‍💼 Boss",{pt:"🧑‍💼 Chefe"})});
   return t;
 }
 function renderRankTabs(scope){
   const box=$("rankTabs"); if(!box) return;
   box.innerHTML=rankTabDefs().map(t=>
-    `<button data-s="${t.s}" class="${(scope===t.s||(t.s==="e"&&scope.indexOf("e:")===0))?"on":""}">${t.lab}</button>`).join("");
+    `<button data-s="${t.s}" class="${(scope===t.s||(t.s==="e"&&scope.indexOf("e:")===0&&scope!=="e:tp"))?"on":""}">${t.lab}</button>`).join("");
   [...box.querySelectorAll("button")].forEach(b=>b.onclick=()=>{
     loadRanking(b.dataset.s==="e" ? "e:"+(S&&S.era||"2026") : b.dataset.s);
   });
   // sub-pestañas de época, solo cuando estás en «Por época»
   const sub=$("rankEras"); if(!sub) return;
-  if(scope.indexOf("e:")===0){
+  if(scope.indexOf("e:")===0 && scope!=="e:tp"){   // 🧑‍💼 el jefe no es una época: sin sub-pestañas
     sub.style.display="";
     /* ⚠️ al abrir una época nueva, además de esta línea hay que añadirla a ERAS_OK en submit.js,
        leaderboard.js Y me.js. Son cuatro sitios y en 1990 se olvidaron los tres del servidor. */
@@ -10129,7 +10149,11 @@ function initTPCard(){
   c.style.cursor="pointer";
   c.onclick=startTPFlow;
 }
-function startTPFlow(){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA="2026"; track("mode_selected",{era:"tp"}); showIdentity(); }
+/* 📊 SIN `mode_selected` (4-sep-2026). Se mandaba al elegir época o modo y otra vez al confirmar
+   la ficha, y `career_started` YA lleva la era y el modo: era un evento por partida contando dos
+   veces lo mismo. Lo único que se pierde es el abandono en la pantalla del nombre, y eso se deduce
+   comparando visitas con partidas empezadas, que no cuesta cuota. */
+function startTPFlow(){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA="2026"; showIdentity(); }
 
 /* ═══════════ 🔧 EL REPARTO DEL COCHE (fase 1: solo vive, todavía no afecta a nada) ═══════════
    El coche de cada equipo sigue valiendo lo que dice `f1perf`. Lo nuevo es DE QUÉ ESTÁ HECHO ese
@@ -10355,7 +10379,8 @@ function tpSignTeam(t, how){
   if(how==="start"){
     /* 🧑‍💼 el equipo ya viajaba aquí; se le añade el CEO que te toca, que es gratis —un campo más en
        un evento que ya se manda— en vez de un evento nuevo, que con esta factura no sale a cuenta. */
-    track("career_started",{mode:"tp", team:S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?", lang:LANG, era:"2026"});
+    track("career_started",{mode:"tp", team:S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?",
+      country: sel.country||"?", lang:LANG, era:"2026"});
     S.pendingEvents.push(L(`🧑‍💼 ${S.tpTeam} te presenta como su nuevo Team Principal. ${S.tpOwner.intro()}`,
       `🧑‍💼 ${S.tpTeam} unveils you as their new Team Principal. ${S.tpOwner.intro()}`,
       {pt:`🧑‍💼 A ${S.tpTeam} te apresenta como novo Team Principal. ${S.tpOwner.intro()}`}));
@@ -11474,7 +11499,13 @@ function endTPCareer(){
   S.retired=true;
   const C=S.titles.constr, D=S.titles.f1, yrs=S.age, best=S.tpBestPos===99?null:S.tpBestPos;
   const teams=[...new Set((S.tpStints||[]).map(s=>s.team))];
-  track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
+  /* 📊 TODO LO DEL JEFE VIAJA AQUÍ, en campos de un evento que ya se mandaba: cuesta cero cuota.
+     `fired` es la pregunta que de verdad importa —¿te echaron o lo dejaste tú?—, `teams` cuántas
+     escuderías dirigiste y `owner` con qué CEO acabaste. */
+  track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss",
+    constructors:C, drivers_titles:D, seasons:yrs, era:"2026",
+    fired: !!S.tpFired, teams:(S.tpStints||[]).length, owner:(S.tpOwner&&S.tpOwner.k)||"?",
+    prestige: Math.round(S.tpPrest||0)});
   const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
   const _finTP=paisFin(sel.flag);   // 🕰️ misma regla en el final del jefe
   $("endName").innerHTML=(_finTP && yearNow()>_finTP) ? "" : flg(sel.flag)+" ";

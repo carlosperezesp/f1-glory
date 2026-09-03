@@ -36,7 +36,7 @@ function isoWeekKey(d) {
    público —con su etiqueta «¡nuevo!»— y no estaba en ninguno: las carreras de los 90 no entraban
    en su tabla, y al terminar, el ranking se abría en `e:1990`, el servidor respondía «scope
    inválido» y el jugador leía «Aún no hay puntuaciones» justo después de acabar su carrera. */
-const ERAS_OK = ["1990", "2000", "2010", "2020", "2026"];
+const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp"];   // 🧑‍💼 "tp" = modo jefe, tabla propia
 /* 🏷️ EL NOMBRE SE COMPONE AL LEER, NO AL GUARDAR (30-ago-2026, lo cazó Carlos: «los rankings están
    mal hechos, hay mezclas»). El display es UNO POR JUGADOR (`pl:<id>`) y se sobrescribe con su última
    carrera, así que cada tabla enseñaba el nombre de la ÚLTIMA partida, viniera de donde viniera la

@@ -104,7 +104,12 @@ module.exports = async (req, res) => {
        podían declarar 400 podios. Ahora se atan a las temporadas: el calendario más largo del juego
        son 24 carreras (racesIn), y se dejan 24 de margen por las carreras de sustituto, que no salen
        de tus temporadas como titular. */
-    const techoCarreras = seasons * 24 + 24;
+    /* 🧑‍💼 EN EL MODO JEFE PUNTÚAN DOS COCHES, no uno: el techo se dobla. Sin esto, una temporada
+       de jefe con sus dos pilotos en el podio ya rompía el tope y el servidor devolvía «más
+       resultados que carreras posibles» — o sea que los equipos DOMINANTES eran justo los
+       rechazados. Se detectó antes de abrir el modo, midiendo un envío de verdad. */
+    const dosCoches = String(body.era || "") === "tp";
+    const techoCarreras = seasons * (dosCoches ? 48 : 24) + (dosCoches ? 48 : 24);
     if (podiums > techoCarreras || poles > techoCarreras || wins > techoCarreras) {
       res.status(400).json({ error: "más resultados que carreras posibles" }); return;
     }
@@ -135,7 +140,12 @@ module.exports = async (req, res) => {
     // nada que llegue del cliente entra como clave de Redis sin filtrar.
     /* 🕰️ ⚠️ MISMA LISTA EN CUATRO SITIOS (leaderboard.js, me.js y las sub-pestañas de index.html).
        Si falta una época aquí, esa carrera NO entra en su tabla — le pasó a 1990 durante cinco días. */
-    const ERAS_OK = ["1990", "2000", "2010", "2020", "2026"];
+    /* 🧑‍💼 "tp" NO ES UNA ÉPOCA, es el modo jefe, pero viaja por el mismo carril porque la maquinaria
+       de tablas por ámbito ya existe y funciona. Tiene tabla propia por la misma razón que la tuvo el
+       retro: puntúa en otra escala. Medido el 4-sep-2026: una partida de jefe de CINCO temporadas en
+       la que además te despiden da 436 puntos, contra una mediana de 90 en el clásico de 2026 — y es
+       que suma las victorias y los podios de LOS DOS pilotos del equipo. */
+    const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp"];
     const era = ERAS_OK.indexOf(String(body.era || "")) >= 0 ? String(body.era) : null;
     const ch = /^[a-z0-9]{3,16}$/.test(String(body.ch || "")) ? String(body.ch) : null;
 
@@ -155,7 +165,14 @@ module.exports = async (req, res) => {
       st: { f1, constr, wins, podiums, poles, subcamp, seasons }, sc: secs, ns: ns, ch: ch || undefined });
     // Tablas: la GLOBAL histórica no se toca (nadie pierde su puesto) y se añaden las de época y reto,
     // que arrancan limpias. Todo en UN pipeline → sigue siendo un solo viaje a la base de datos.
-    const cmds = [
+    /* 🧑‍💼 EL MODO JEFE NO ENTRA NI EN LA GLOBAL NI EN LA SEMANAL. Es la misma decisión que ya se
+       tomó con el retro pero llevada hasta el final: con 436 puntos por una partida corta y fallida,
+       dejarlo entrar en la global habría barrido en una tarde la tabla histórica de los pilotos, y esa
+       tabla tiene una promesa: nadie pierde el puesto que ya tenía. Compite consigo mismo. */
+    const soloSuTabla = String(body.era || "") === "tp";
+    const cmds = soloSuTabla
+      ? [["SET", "pl:" + id, disp]]
+      : [
       ["ZADD", wk, "GT", gloria, id],
       ["ZADD", GL, "GT", gloria, id],
       ["EXPIRE", wk, 60 * 60 * 24 * 21], // la semanal se renueva; la global NO caduca
