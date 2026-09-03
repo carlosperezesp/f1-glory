@@ -148,6 +148,24 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 /* la década con cuenta atrás va en ROJO como las jugables (está a punto de llegar, no «apagada» como
    las décadas lejanas), solo que con la cuenta debajo. Sin dorado: llamaba demasiado la atención. */
 .decade-grid .dec .dec-sub{display:block;font-size:10px;font-weight:800;letter-spacing:.3px;opacity:.85;margin-top:1px;text-transform:uppercase;font-variant-numeric:tabular-nums}
+/* 🏎️ LA DÉCADA CON SU COCHE (ilustraciones de Carlos, 3-sep-2026). La librea dice la época aunque a
+   este tamaño no distingas el coche: eso fue lo que decidió el diseño —«lo que mola es que asocias
+   cada librea a una época»—. El coche cabe ENTERO en los 81px que mide el botón en un móvil, sin
+   recortar, y el año se le monta un poco encima; probamos a ampliarlo para que llenara y se comía
+   los alerones. Las imágenes van a 420px y con la paleta recortada: 62 KB las cuatro, frente a los
+   840 KB de los originales. */
+.decade-grid .dec.car{position:relative;overflow:hidden;min-height:62px;padding:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.decade-grid .dec.car .dec-y{position:relative;z-index:2;font-size:17px;line-height:1;padding-top:9px;
+  text-shadow:0 1px 4px rgba(0,0,0,.55), 0 0 12px rgba(0,0,0,.4)}
+.decade-grid .dec.car .dec-sub{position:relative;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.decade-grid .dec.car img{position:absolute;left:2px;right:2px;bottom:9px;width:calc(100% - 4px);
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));pointer-events:none}
+/* con una línea más de texto —la cuenta atrás, o el «¡nuevo!» de las recién abiertas— el botón
+   crece y el coche baja, para que no queden los tres apretados en 62px. Lo tenía atado solo a la
+   cuenta atrás y el «¡nuevo!» de 1990 se comía el coche. */
+.decade-grid .dec.car.con-sub{min-height:76px}
+.decade-grid .dec.car.con-sub img{bottom:5px}
 .decade-grid .dec.dec-count{opacity:1;background:#ff8168;border-color:#ff8168;color:#fff}
 /* 📚 archivo de retos: siguen jugables, pero en discreto para que destaque el actual */
 .decade-grid .dec.dec-arch{background:var(--panel2);border-color:var(--line);color:var(--ink);opacity:.8}
@@ -698,8 +716,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <button class="dec locked" disabled>1980</button>
       <button class="dec locked" id="dec1990" disabled>1990</button>
       <button class="dec locked" id="dec2000" disabled>2000</button>
-      <button class="dec" onclick="startCareerFlow('2010')">2010</button>
-      <button class="dec" onclick="startCareerFlow('2020')">2020</button>
+      <button class="dec car" onclick="startCareerFlow('2010')"><span class="dec-y">2010</span><img src="/ico/2010car.png" alt="" loading="lazy"></button>
+      <button class="dec car" onclick="startCareerFlow('2020')"><span class="dec-y">2020</span><img src="/ico/2020car.png" alt="" loading="lazy"></button>
       <div class="dec-note" data-es="Las demás décadas están en camino 🏗️" data-pt="As outras décadas estão a caminho 🏗️" data-pl="Pozostałe dekady są w drodze 🏗️" data-fr="Les autres décennies arrivent 🏗️" data-pt="As outras décadas estão a caminho 🏗️" data-en="The other decades are on the way 🏗️">Las demás décadas están en camino 🏗️</div>
     </div>
   </div>
@@ -3211,8 +3229,16 @@ function pintaDecada(id, era, cuando){
     else if(i.dias===1) pie=L("¡mañana!","tomorrow!",{pt:"amanhã!"});
     else pie=L(`en ${i.dias} días`,`in ${i.dias} days`,{pt:`em ${i.dias} dias`});
   } else if(i.fresco) pie=L("¡nuevo!","new!",{pt:"novo!"});
-  b.innerHTML = pie ? `${era}<small class="dec-sub">${pie}</small>` : era;
+  /* 🏎️ EL COCHE DE LA DÉCADA (Carlos, 3-sep). Ojo: esta función REESCRIBE el innerHTML cada vez que
+     refresca la cuenta atrás, así que el coche tiene que ir aquí dentro; si se pusiera solo en el
+     HTML estático, 1990 y 2000 lo perderían al primer repintado. Las décadas aún cerradas
+     (1950-1980) no pasan por aquí: se quedan como pastillas grises, sin coche. */
+  b.classList.add("car");
+  b.innerHTML = `<span class="dec-y">${era}</span>`
+    + (pie ? `<small class="dec-sub">${pie}</small>` : "")
+    + `<img src="/ico/${era}car.png" alt="" loading="lazy">`;
   b.classList.toggle("dec-count", !!pie && !i.live);
+  b.classList.toggle("con-sub", !!pie);   // 🏎️ hueco para el coche cuando hay línea extra
   b.title = ok ? "" : cuando;
   return corriendo;
 }
