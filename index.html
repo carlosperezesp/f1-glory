@@ -79,6 +79,7 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 #intro::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;opacity:.9;
   background:repeating-conic-gradient(#15151e 0% 25%, #fff 0% 50%) 0 0/32px 32px}
 #intro .flag{font-size:46px;letter-spacing:6px;animation:fadeUp .6s both}
+#intro .flag svg{display:block;margin:0 auto;filter:drop-shadow(0 7px 18px rgba(225,6,0,.32))}
 #intro h1{font-size:clamp(36px,6vw,68px);font-weight:900;text-align:center;line-height:1.02;animation:fadeUp .6s .08s both}
 #intro h1 span{background:linear-gradient(92deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
 #intro p{color:var(--muted);max-width:540px;text-align:center;font-size:17px;line-height:1.55;animation:fadeUp .6s .16s both}
@@ -687,7 +688,17 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 
 <!-- ========== INTRO ========== -->
 <section id="intro">
-  <div class="flag">🏁</div>
+  <!-- 🏁 EL LOGO, NO EL EMOJI (Carlos, 3-sep). Es el mismo damero del favicon, en línea: 523 bytes,
+       cero peticiones extra, escala sin pixelarse y lleva su propio fondo rojo, así que se sostiene
+       igual en claro y en oscuro sin tener que inventarle una segunda versión. -->
+  <div class="flag" aria-hidden="true"><svg viewBox="0 0 32 32" width="56" height="56">
+    <rect width="32" height="32" rx="7" fill="#e10600"/>
+    <g fill="#fff">
+      <rect x="4" y="4" width="6" height="6"/><rect x="16" y="4" width="6" height="6"/>
+      <rect x="10" y="10" width="6" height="6"/><rect x="22" y="10" width="6" height="6"/>
+      <rect x="4" y="16" width="6" height="6"/><rect x="16" y="16" width="6" height="6"/>
+      <rect x="10" y="22" width="6" height="6"/><rect x="22" y="22" width="6" height="6"/>
+    </g></svg></div>
   <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-pt="Construa a sua carreira<br>na <span>Fórmula 1</span>" data-pl="Zbuduj swoją karierę<br>w <span>Formule 1</span>" data-fr="Construis ta carrière<br>en <span>Formule 1</span>" data-pt="Constrói a tua carreira<br>na <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
   <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-pt="Comece no karting, suba pela F4, F3 e F2, conquiste uma vaga e enfrente Verstappen, Norris, Antonelli e os que virão. A história da F1 continua sendo escrita… com você dentro." data-pl="Zacznij od kartingu, przejdź przez F4, F3 i F2, wywalcz sobie fotel i zmierz się z Verstappenem, Norrisem, Antonellim i tymi, którzy dopiero nadejdą. Historia F1 wciąż się pisze… a ty jesteś w środku." data-fr="Commence en karting, gravis la F4, la F3 et la F2, décroche un baquet et affronte Verstappen, Norris, Antonelli et ceux qui suivront. L'histoire de la F1 continue de s'écrire… avec toi dedans." data-pt="Começa no karting, sobe pela F4, F3 e F2, ganha um lugar na grelha e luta contra Verstappen, Norris, Antonelli e os que hão de vir. A história da F1 continua a escrever-se… contigo lá dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
   <button class="btn btn-ico" onclick="startCareerFlow('2026')" data-es="Iniciar carrera" data-pt="Iniciar carreira" data-pl="Rozpocznij karierę" data-fr="Commencer la carrière" data-pt="Iniciar carreira" data-en="Start career">Iniciar carrera</button>
