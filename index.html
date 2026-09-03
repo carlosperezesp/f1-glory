@@ -162,6 +162,15 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .decade-grid .dec.car .dec-sub{position:relative;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .decade-grid .dec.car img{position:absolute;left:2px;right:2px;bottom:9px;width:calc(100% - 4px);
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));pointer-events:none}
+/* 🩶 las décadas aún cerradas llevan su coche en GRIS (Carlos, 3-sep): se ve qué época te espera sin
+   que parezca que ya se puede jugar. El gris va en la propia imagen, no con un filtro CSS, para que
+   no cueste pintado en cada repintado. */
+.decade-grid .dec.locked.car .dec-y{text-shadow:none}
+.decade-grid .dec.locked.car img{filter:none;opacity:.75}
+/* 📏 las ocho, exactamente iguales de alto y con el año a la misma altura: las cerradas se veían más
+   bajas y el año más arriba, y la fila quedaba descuadrada (lo vio Carlos). */
+.decade-grid .dec.car{min-height:70px}
+.decade-grid .dec.car .dec-y{padding-top:13px}
 /* con una línea más de texto —la cuenta atrás, o el «¡nuevo!» de las recién abiertas— el botón
    crece y el coche baja, para que no queden los tres apretados en 62px. Lo tenía atado solo a la
    cuenta atrás y el «¡nuevo!» de 1990 se comía el coche. */
@@ -715,16 +724,16 @@ img.tlogo.mb{width:20px;height:20px;border:none}
       <span class="mode-txt"><b data-es="Modo Team Principal" data-pt="Modo Chefe de Equipe" data-pl="Tryb szefa zespołu" data-fr="Mode Directeur d'écurie" data-pt="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-pt="Contrate os melhores pilotos, desenvolva o melhor carro e leve a sua equipe à glória" data-pl="Podpisuj najlepszych kierowców, rozwijaj najlepszy samochód i poprowadź zespół po chwałę" data-fr="Recrute les meilleurs pilotes, développe la meilleure voiture et mène ton écurie à la gloire" data-pt="Contrata os melhores pilotos, desenvolve o melhor carro e leva a tua equipa à glória" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
     </div>
     <div class="mode-card retro-on" id="retroCard" onclick="toggleRetro()">
-      <span class="new-badge" id="badgeRetro" data-es="¡Nuevo!" data-pt="Novo!" data-pl="Nowość!" data-fr="Nouveau !" data-pt="Novo!" data-en="New!">¡Nuevo!</span>
+      <span class="new-badge" id="badgeRetro" style="display:none" data-es="¡Nuevo!" data-pt="Novo!" data-pl="Nowość!" data-fr="Nouveau !" data-pt="Novo!" data-en="New!">¡Nuevo!</span>
       <span class="mode-ico"><img src="/ico/retro.png" alt="" width="30" height="30" loading="lazy"></span>
       <span class="mode-txt"><b data-es="Modo Retro" data-pt="Modo Retrô" data-pl="Tryb retro" data-fr="Mode Rétro" data-pt="Modo Retro" data-en="Retro mode">Modo Retro</b><small data-es="Empieza tu carrera en otra época" data-pt="Comece a sua carreira em outra época" data-pl="Zacznij karierę w innej epoce" data-fr="Commence ta carrière à une autre époque" data-pt="Começa a tua carreira noutra época" data-en="Start your career in another era">Empieza tu carrera en otra época</small></span>
       <span class="retro-caret" id="retroCaret">▾</span>
     </div>
     <div class="decade-grid" id="decadeGrid" style="display:none">
-      <button class="dec locked" disabled>1950</button>
-      <button class="dec locked" disabled>1960</button>
-      <button class="dec locked" disabled>1970</button>
-      <button class="dec locked" disabled>1980</button>
+      <button class="dec locked car" disabled><span class="dec-y">1950</span><img src="/ico/1950car.png" alt="" loading="lazy"></button>
+      <button class="dec locked car" disabled><span class="dec-y">1960</span><img src="/ico/1960car.png" alt="" loading="lazy"></button>
+      <button class="dec locked car" disabled><span class="dec-y">1970</span><img src="/ico/1970car.png" alt="" loading="lazy"></button>
+      <button class="dec locked car" disabled><span class="dec-y">1980</span><img src="/ico/1980car.png" alt="" loading="lazy"></button>
       <button class="dec locked" id="dec1990" disabled>1990</button>
       <button class="dec locked" id="dec2000" disabled>2000</button>
       <button class="dec car" onclick="startCareerFlow('2010')"><span class="dec-y">2010</span><img src="/ico/2010car.png" alt="" loading="lazy"></button>
@@ -3239,7 +3248,11 @@ function pintaDecada(id, era, cuando){
     else if(i.dias<=0){ pie=L("en ","in ",{pt:"em "})+hms(i.ms); corriendo=true; }
     else if(i.dias===1) pie=L("¡mañana!","tomorrow!",{pt:"amanhã!"});
     else pie=L(`en ${i.dias} días`,`in ${i.dias} days`,{pt:`em ${i.dias} dias`});
-  } else if(i.fresco) pie=L("¡nuevo!","new!",{pt:"novo!"});
+  }
+  /* 🧹 SIN «¡nuevo!» EN LAS DÉCADAS (Carlos, 3-sep). Duraba catorce días y a los pocos deja de ser
+     noticia: lo que llama la atención es el coche. La pegatina sigue viva donde sí tiene sentido
+     —los retos, que entran cada lunes, y el modo jefe—; aquí sobra y además descuadraba la altura
+     del botón frente a las décadas cerradas. */
   /* 🏎️ EL COCHE DE LA DÉCADA (Carlos, 3-sep). Ojo: esta función REESCRIBE el innerHTML cada vez que
      refresca la cuenta atrás, así que el coche tiene que ir aquí dentro; si se pusiera solo en el
      HTML estático, 1990 y 2000 lo perderían al primer repintado. Las décadas aún cerradas
@@ -11114,7 +11127,86 @@ const TP_DILEMAS=[
     ⚠️ Hoy solo se lee la variante de telemetría: `startTPFlow()` fija SELECTED_ERA="2026", así que el
     modo jefe únicamente existe en la era actual. La otra rama queda lista para el día que el muro se
     abra a las retro. ═══════════════════════════════════════════════════════════════════════ */
- {id:"tpSafety", cond:()=>tpDrvs().length>=2 && yearNow()>=1993,
+ {id:"tpSabDom", cond:()=>tpDrvs().length>0,
+   /* 🔧 SÁBADO O DOMINGO (test de estrategia de F1 Racing 2005, pregunta 3, Catalunya). No es una
+      moneda al aire: LEE TU COCHE. `S.f1prof[equipo]` guarda {aero, motor, fiab} de −2 a +2 para
+      todos los equipos, y aero son curvas y motor es recta. Si tu coche es de motor, la premisa es
+      la de la revista —vuelas en recta y te comen en las curvas— y dejarlo suelto es tu arma; si es
+      de aero, la premisa se invierte y el que acierta es el alerón. La opción que va A FAVOR de tu
+      coche sale bien mucho más a menudo, así que el dilema premia conocer tu propio coche.
+      ⚖️ Y el TEXTO se ajusta a tu puesto (Carlos: «hacer pole implica ser un equipo bueno de por
+      sí»): con un top 3-4 se habla de poles y de ganar; con un equipo de media tabla o de cola, de
+      llegar a la Q3 y de rascar puntos. Un Haas no hace poles ni gana adelantando a tres. */
+   t:()=>L("Sábado o domingo","Saturday or Sunday",{pt:"Sábado ou domingo"}),
+   d:()=>{ const yr=yearNow();
+     const gps=gpList(yr), gp=gps[dilVar("sdGp",()=>irnd(0,gps.length-1))];
+     const pr=(S.f1prof||{})[S.tpTeam]||{aero:0,motor:0};
+     const dif=(pr.motor||0)-(pr.aero||0);
+     const km=dilVar("sdKm",()=>irnd(8,14));
+     const cuerpo = dif>0
+       ? L(`por recta pasáis ${km} kilómetros por hora más rápido que los de delante, y en el sector de curvas lo perdéis todo. Con alerón se tapa el agujero de las curvas y sales más adelante el sábado; dejándolo suelto llegas al domingo con la única arma que tienes para adelantar.`,
+           `you're ${km} km/h quicker than the cars ahead down the straight, and you lose all of it through the corner sector. Wing covers the hole in the corners and puts you further up on Saturday; leaving it off gets you to Sunday with the only weapon you have to overtake.`,
+           {pt:`na reta vocês passam ${km} km/h mais rápido que os da frente, e no setor de curvas perdem tudo. Com asa se tapa o buraco das curvas e você sai mais à frente no sábado; deixando solta, chega ao domingo com a única arma que tem para ultrapassar.`})
+       : dif<0
+       ? L(`en las curvas les coméis medio segundo y en la recta os lo devuelven entero. Cargar más alerón aprieta todavía más el sábado; aligerarlo es aceptar el sábado que tengáis a cambio de poder defenderos el domingo.`,
+           `you take half a second out of them through the corners and they hand it all back on the straight. More wing squeezes Saturday even harder; trimming it out means accepting whatever Saturday you get in exchange for being able to defend on Sunday.`,
+           {pt:`nas curvas vocês tiram meio segundo e na reta devolvem tudo. Carregar mais asa aperta ainda mais o sábado; aliviá-la é aceitar o sábado que vier em troca de poder se defender no domingo.`})
+       : L(`el coche va igual de bien en una tanda corta que en una larga, y no da para las dos. Con alerón el sábado sale redondo y el domingo se hace largo; sin él, al revés.`,
+           `the car is as happy on a short run as on a long one, and it won't do both. With wing, Saturday comes out perfect and Sunday drags; without it, the other way round.`,
+           {pt:`o carro vai igual de bem numa tanda curta e numa longa, e não dá para as duas. Com asa o sábado sai redondo e o domingo fica longo; sem ela, ao contrário.`});
+     return L(`Viernes por la tarde en ${gp.n}. Tus ingenieros traen el dato del día: ${cuerpo} Hay que decidirlo antes de la última tanda.`,
+              `Friday afternoon at ${gp.n}. Your engineers bring the number of the day: ${cuerpo} It has to be settled before the last run.`,
+              {pt:`Sexta à tarde em ${gp.n}. Seus engenheiros trazem o dado do dia: ${cuerpo} Tem de ser decidido antes da última tanda.`}); },
+   opts:[
+    {l:()=>L("«Cárgalo de alerón. Quiero estar delante el sábado»","«Load the wing on. I want to be up there on Saturday»",{pt:"«Carrega de asa. Quero estar na frente no sábado»"}),
+     r:()=>{ const a=tpDrvs(), n=a[0]?surname(a[0].name):"tu piloto";
+       const pr=(S.f1prof||{})[S.tpTeam]||{aero:0,motor:0};
+       const aFavor=((pr.aero||0)-(pr.motor||0))>=0;      // el alerón le va bien a un coche de aero
+       const top=((S.rankC||{})[S.tpTeam]||99)<=4;
+       return roll(
+        [aFavor?6:3,()=>{TPRE(2);tpDrvSkill(n,1);
+          return top
+            ? L(`Cuatro poles este año, y una de ellas en el circuito donde nunca habíais salido de la tercera fila. El paddock habla de vosotros los sábados. ++prestigio, +moral de ${n}`,
+                `Four poles this year, one of them at the circuit where you'd never started better than the third row. The paddock talks about you on Saturdays. ++prestige, +${n}'s morale`,
+                {pt:`Quatro poles este ano, uma delas no circuito onde vocês nunca tinham saído da terceira fila. O paddock fala de vocês nos sábados. ++prestígio, +moral de ${n}`})
+            : L(`Cuatro veces en la Q3 y una segunda fila que nadie esperaba. Para lo que sois, el sábado se ha convertido en vuestro día. ++prestigio, +moral de ${n}`,
+                `Four Q3s and a second row nobody saw coming. For what you are, Saturday has become your day. ++prestige, +${n}'s morale`,
+                {pt:`Quatro vezes no Q3 e uma segunda fila que ninguém esperava. Para o que vocês são, o sábado virou o dia de vocês. ++prestígio, +moral de ${n}`});}],
+        [aFavor?4:7,()=>{TPRE(.5);TPCAR(-1);
+          return L(`Sales delante y te comen en la primera vuelta, domingo tras domingo. Y el desarrollo del año se ha ido entero en una vuelta rápida. +prestigio leve, −coche`,
+                   `You start up front and get eaten on lap one, Sunday after Sunday. And the year's development has gone entirely into one fast lap. slight +prestige, −car`,
+                   {pt:`Você sai na frente e é comido na primeira volta, domingo após domingo. E o desenvolvimento do ano foi inteiro numa volta rápida. +prestígio leve, −carro`});}])}},
+    {l:()=>L("«Déjalo suelto. El domingo se adelanta»","«Leave it off. Sunday is where you overtake»",{pt:"«Deixa solta. No domingo se ultrapassa»"}),
+     r:()=>{ const a=tpDrvs(), n=a[0]?surname(a[0].name):"tu piloto";
+       const pr=(S.f1prof||{})[S.tpTeam]||{aero:0,motor:0};
+       const aFavor=((pr.motor||0)-(pr.aero||0))>=0;      // dejarlo suelto le va bien a un coche de motor
+       const top=((S.rankC||{})[S.tpTeam]||99)<=4;
+       return roll(
+        [aFavor?4:2,()=>{TPRE(1.5);
+          /* 🏆 LO QUE DICE EL TEXTO, SE APUNTA (Carlos: «si tienes podios o victorias, deben
+             sumarse»). `S.wins` y `S.podiums` son las cuentas que salen en tu ficha y en la pantalla
+             final. Un equipo grande gana; uno pequeño firma el podio de su vida, que ya es la noticia
+             del año — regalar victorias en la cola cantaría. */
+          if(top){ S.wins++; S.podiums++; } else S.podiums++;
+          return top
+            ? L(`Sales cuarto, adelantas a tres y ganas. El coche era eso: un arma de domingo. +1 victoria, +prestigio`,
+                `You start fourth, pass three and win. That's what the car was: a Sunday weapon. +1 win, +prestige`,
+                {pt:`Você sai em quarto, ultrapassa três e vence. O carro era isso: uma arma de domingo. +1 vitória, +prestígio`})
+            : L(`Sales decimosexto y acabas en el podio. El equipo no había subido ahí en años y el box tarda un rato en creérselo. +1 podio, +prestigio`,
+                `You start sixteenth and finish on the podium. The team hadn't been up there in years and the garage takes a while to believe it. +1 podium, +prestige`,
+                {pt:`Você sai em décimo sexto e termina no pódio. A equipe não subia ali havia anos e o box demora a acreditar. +1 pódio, +prestígio`});}],
+        [4,()=>{ if(top){ S.podiums++;
+            return L(`No hay pole en todo el año, pero los domingos los remontáis. Un podio que el sábado no prometía. +1 podio`,
+                     `Not a single pole all year, but you climb back on Sundays. A podium Saturday never promised. +1 podium`,
+                     {pt:`Nenhuma pole o ano todo, mas nos domingos vocês remontam. Um pódio que o sábado não prometia. +1 pódio`}); }
+          return L(`Los sábados son un desastre y los domingos, dignos. Acabáis donde acabaríais igual, pero adelantando. Sin cambios.`,
+                   `Saturdays are a disaster and Sundays are respectable. You finish where you'd finish anyway, but overtaking. No change.`,
+                   {pt:`Os sábados são um desastre e os domingos, dignos. Vocês terminam onde terminariam de qualquer jeito, mas ultrapassando. Sem mudanças.`});}],
+        [aFavor?2:4,()=>{TPRE(-1.5);tpDrvSkill(n,-1);
+          return L(`Salís tan atrás que no hay remontada posible: os pasáis el año atrapados en el tráfico, mirando cómo se va el de delante. −prestigio, −moral de ${n}`,
+                   `You start so far back there's no way through: you spend the year stuck in traffic, watching the car ahead disappear. −prestige, −${n}'s morale`,
+                   {pt:`Vocês saem tão atrás que não há remontada: passam o ano presos no tráfego, vendo o da frente ir embora. −prestígio, −moral de ${n}`});}])}}]},
+  {id:"tpSafety", cond:()=>tpDrvs().length>=2 && yearNow()>=1993,
    /* 🚨 EL COCHE DE SEGURIDAD, DESDE EL MURO (inspirado en el test de estrategia de F1 Racing, 2005,
       que trajo Carlos). No es el `safetycar` del modo clásico: allí eres el piloto y decides si
       entras; aquí eres el jefe y tienes que ELEGIR ENTRE LOS TUYOS, que es lo único que solo puede
