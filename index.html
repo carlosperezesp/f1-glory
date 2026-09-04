@@ -6861,7 +6861,8 @@ let P_GOMAS=.5, P_TOQUE=.06;
 /* 🤝 el favor del veterano vive en una ventana de DOS temporadas (eres novato, sin títulos y en media
    tabla) y compitiendo con los ~56 dilemas de F1 salía 1 vez cada 60 carreras: o va con prioridad o no
    existe. Como constante, para poder medirla A/B como las demás. */
-let P_FAVOR=.3;
+let P_FAVOR=.12;   // 4-sep-2026: .3 salía en el 31,5% de los sorteos de su ventana — Carlos: «siento
+                   // que sale mucho», y llevaba razón. A .12 sale en el 13,4%, al nivel del chaval.
 let P_BLANCO=.45;   // ⏸️ cada cuánto asoma la oferta del año en blanco en la puerta de la F1
 let P_DEBUT=.2, P_PATRON=.26, P_CHAVAL=.12;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // el mecenas: .55 -> 48% de las carreras, .5 -> 21%. Sigue siendo demasiado para «la llamada que te cambia la vida»: se busca ~1 de cada 10
 function pickDilemma(){
