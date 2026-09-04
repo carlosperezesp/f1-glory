@@ -14790,6 +14790,69 @@ const TP_DILEMAS=[
           return L(`Rompéis un coche que funcionaba persiguiendo un fantasma, y tardáis media temporada en volver a donde estabais. ${n} lo dice en la radio antes que en el box. −−coche, −moral de ${n}`,
                    `You break a car that worked chasing a ghost, and it takes half a season to get back where you were. ${n} says it on the radio before he says it in the garage. −−car, −${n}'s morale`,
                    {pt:`Vocês quebram um carro que funcionava perseguindo um fantasma, e demoram meia temporada para voltar onde estavam. ${n} diz isso no rádio antes de dizer no box. −−carro, −moral de ${n}`});}])}}]},
+  {id:"tpDomingo", cond:()=>tpDrvs().length>0 && (S.seasons||[]).length>=1,
+   /* 🌦️ EL DOMINGO QUE NO ESPERABAIS (test de F1 Racing 2005, pregunta 5, Hockenheim: prepararon el
+      fin de semana para 50°C y el domingo amaneció 15 grados más frío). Dos ejes, y ésa es la gracia:
+      · `fiab` — si la fábrica sabe rehacer un coche en dos horas o lo rompe intentándolo.
+      · EL NIVEL Y EL TECHO DE TU Nº1 — si hay alguien capaz de dar tres vueltas y decir qué falta.
+      ⚖️ DECIDE EL Nº1, no el mejor de los dos (decisión de Carlos): el asiento 1 se lleva el mejor
+      coche del garaje y es el de referencia, así que la elección de asiento que hiciste en el mercado
+      te vuelve aquí. Si pusiste de Nº1 a uno rápido que no sabe leer el coche, este domingo lo pagas.
+      ⚖️ Y pondera TALENTO, no edad: un chaval de 21 con techo de 92 da mejor información que un
+      veterano de 34 con nivel 79. La sensibilidad no es la edad. */
+   t:()=>L("El domingo que no esperabais","The Sunday you didn't plan for",{pt:"O domingo que vocês não esperavam"}),
+   d:()=>{ const yr=yearNow();
+     const gps=gpList(yr), gp=gps[dilVar("doGp",()=>irnd(0,gps.length-1))];
+     const a=tpDrvs(); const uno=a[0]||a[1]; const n=uno?surname(uno.name):"tu piloto";
+     const q=dilVar("doQ",()=>irnd(0,2));
+     const gr=dilVar("doGr",()=>irnd(9,16));
+     const sorpresa = q===0
+       ? L(`amanece con ${gr} grados menos de los que anunciaban y el asfalto frío no calienta la goma`,
+           `it comes up ${gr} degrees colder than forecast and the cold tarmac won't switch the tyre on`,
+           {pt:`amanhece com ${gr} graus a menos do que anunciavam e o asfalto frio não aquece o pneu`})
+       : q===1
+       ? L(`ha llovido de madrugada y el segundo sector sigue mojado a la hora de la salida`,
+           `it rained overnight and the second sector is still wet at the start`,
+           {pt:`choveu de madrugada e o segundo setor ainda está molhado na hora da largada`})
+       : L(`se ha levantado un viento de costado que no había soplado en todo el fin de semana`,
+           `a crosswind has got up that hadn't blown all weekend`,
+           {pt:`levantou-se um vento de través que não soprou o fim de semana inteiro`});
+     return L(`Domingo por la mañana en ${gp.n}. Todo el fin de semana lo habéis preparado para otras condiciones y ${sorpresa}. Los reglajes son los de otro día. ${n} os mira desde el box esperando que alguien diga algo.`,
+              `Sunday morning at ${gp.n}. You've spent the whole weekend preparing for other conditions and ${sorpresa}. The setup belongs to a different day. ${n} is looking at you from the garage waiting for somebody to say something.`,
+              {pt:`Domingo de manhã em ${gp.n}. Vocês prepararam o fim de semana inteiro para outras condições e ${sorpresa}. Os acertos são de outro dia. ${n} olha para vocês do box esperando que alguém diga alguma coisa.`}); },
+   opts:[
+    {l:()=>L("«Corremos con lo probado. Es lo único que conocemos»","«We race what we tested. It's the only thing we know»",{pt:"«Corremos com o testado. É a única coisa que conhecemos»"}),
+     r:()=>{ const fi=(((S.f1prof||{})[S.tpTeam])||{fiab:0}).fiab||0;
+       const casa = fi>=1 ? 6 : fi<=-1 ? 3 : 5;    // 🔩 una casa seria prepara cosas que aguantan
+       return roll(
+        [casa,()=>{TPCAR(1);TPRE(1);
+          return L(`El coche no era el ideal, pero era el CONOCIDO: sin sorpresas, sin errores y sin nadie fuera de la pista. Los que se pusieron a cambiar cosas a las once de la mañana se quedaron por el camino. +coche, +prestigio`,
+                   `The car wasn't the right one, but it was the KNOWN one: no surprises, no mistakes, nobody in the gravel. The ones who started changing things at eleven in the morning fell by the wayside. +car, +prestige`,
+                   {pt:`O carro não era o ideal, mas era o CONHECIDO: sem surpresas, sem erros e sem ninguém fora da pista. Os que começaram a mudar coisas às onze da manhã ficaram pelo caminho. +carro, +prestígio`});}],
+        [10-casa,()=>{TPRE(-1.5);
+          return L(`Salís con el coche de otro domingo y os pasáis la carrera de pasajeros: nadie se estrella y nadie puntúa. En el box lo saben desde la vuelta cuatro. −prestigio`,
+                   `You go out with a different Sunday's car and spend the race as passengers: nobody crashes and nobody scores. The garage has known since lap four. −prestige`,
+                   {pt:`Vocês largam com o carro de outro domingo e passam a corrida como passageiros: ninguém bate e ninguém pontua. No box sabem desde a volta quatro. −prestígio`});}])}},
+    {l:()=>L("«Rehacedlo ahora. Que él nos diga qué necesita»","«Redo it now. Let him tell us what he needs»",{pt:"«Refaçam agora. Que ele diga do que precisa»"}),
+     r:()=>{ const a=tpDrvs(); const uno=a[0]||a[1]; const n=uno?surname(uno.name):"tu piloto";
+       const fi=(((S.f1prof||{})[S.tpTeam])||{fiab:0}).fiab||0;
+       /* 🎯 EL Nº1 ES QUIEN LEE EL COCHE. Cuenta su nivel, y si es joven, su TECHO: la madera de crack
+          ya trae la sensibilidad puesta aunque el nivel todavía no haya llegado. */
+       const niv=(uno&&uno.skill)||0, techo=(uno&&uno.ceil)||niv, edad=(uno&&uno.age)||30;
+       const lee = niv>=88 || (edad<=25 && techo>=90) ? 5 : niv>=80 ? 3 : 1;
+       const bien = Math.max(1, lee + (fi>=1 ? 1 : fi<=-1 ? -1 : 0));
+       return roll(
+        [bien,()=>{S.podiums++;TPRE(1.5);tpDrvSkill(n,1);
+          return L(`${n} da tres vueltas, entra y describe exactamente lo que falta. Los mecánicos llegan a la parrilla con las manos negras y sale un domingo que no estaba en ningún plan. +1 podio, +prestigio, +moral de ${n}`,
+                   `${n} does three laps, comes in and describes exactly what's missing. The mechanics reach the grid with black hands and out comes a Sunday that wasn't in anybody's plan. +1 podium, +prestige, +${n}'s morale`,
+                   {pt:`${n} dá três voltas, entra e descreve exatamente o que falta. Os mecânicos chegam ao grid com as mãos pretas e sai um domingo que não estava em plano nenhum. +1 pódio, +prestígio, +moral de ${n}`});}],
+        [4,()=>L(`Cambiáis a ciegas y acabáis donde habríais acabado igual. Una mañana entera de nervios para nada. Sin cambios.`,
+                 `You change blind and finish where you'd have finished anyway. A whole morning of nerves for nothing. No change.`,
+                 {pt:`Vocês mudam às cegas e terminam onde terminariam de qualquer jeito. Uma manhã inteira de nervos para nada. Sem mudanças.`})],
+        [Math.max(1, 10-bien-4),()=>{TPCAR(-2);tpDrvSkill(n,-1);
+          return L(`Tocáis lo que no había que tocar con el coche ya en la parrilla. El domingo se va en la primera vuelta y la semana siguiente se va en volver a donde estabais. −−coche, −moral de ${n}`,
+                   `You touch what shouldn't have been touched with the car already on the grid. Sunday is gone on lap one and the following week is gone getting back to where you were. −−car, −${n}'s morale`,
+                   {pt:`Vocês mexem no que não devia ser mexido com o carro já no grid. O domingo se vai na primeira volta e a semana seguinte se vai em voltar para onde estavam. −−carro, −moral de ${n}`});}])}}]},
   {id:"tpMorro", cond:()=>tpDrvs().length>0 && (S.seasons||[]).length>=1,
    /* 🔧 EL MORRO EN LA PRIMERA VUELTA (test de F1 Racing 2005, pregunta 7, Sepang). La revista
       respondía «cambia morro y gomas y pásate a una parada»: rehacer la carrera entera alrededor del
