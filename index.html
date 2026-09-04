@@ -382,6 +382,13 @@ img.tlogo.mb{width:20px;height:20px;border:none}
    línea —«Temporada 6», no «Temporada» encima del 6— (Carlos, 31-ago), así que la celda deja de ser
    una columna de 52px y pasa a ocupar su propia línea, alineada a la izquierda. */
 .tl-row.tp .age{grid-column:1/-1;justify-self:start;width:auto;text-align:left;padding:3px 10px;font-size:11px;letter-spacing:.3px}
+/* 📐 …Y AL OCUPAR LA FILA ENTERA, TODO LO DEMÁS BAJA UNA CELDA. El chip de constructores dejaba de
+   caer en la columna estrecha de 74px y aterrizaba en la ancha (411px en escritorio), donde `.pos`
+   —que de base es display:block— se estiraba hasta convertirse en una barra dorada de lado a lado.
+   En móvil no cantaba porque esa columna es estrecha. Lo cazó Carlos el día del lanzamiento.
+   Se les da columna explícita en vez de dejarlo a la colocación automática. */
+.tl-row.tp > .club{grid-column:1/3}
+.tl-row.tp > .pos{grid-column:3;justify-self:end;display:inline-block;width:auto}
 .tl-row.tp .age .lbl{font-size:11px;font-weight:800;letter-spacing:.3px}
 .tl-row.champ .age{background:linear-gradient(135deg,#e10600,#ff4d1c);color:#fff;box-shadow:0 4px 10px rgba(225,6,0,.3)}
 .tl-row .club{display:flex;align-items:center;gap:8px;min-width:0}
@@ -4145,7 +4152,12 @@ function startCareer(){
 window.addEventListener("beforeunload", function(e){
   try{
     if(typeof S==="undefined" || !S || S.retired) return;
-    if(!S.seasons || S.seasons.length<1) return;
+    /* 🧑‍💼 EL MODO JEFE TIENE TRABAJO ANTES DE LA PRIMERA TEMPORADA (4-sep-2026, el día que salió).
+       La regla original pedía una temporada corrida, pero de jefe eliges escudería, fijas el rumbo
+       del coche y pasas un mercado entero antes de que corra la primera: varios minutos de decisiones
+       con el aviso apagado, que es justo cuando más duele perderlas. Basta con haber elegido equipo. */
+    const hayJefe = S.cat==="TP" && !!S.tpTeam;
+    if(!hayJefe && (!S.seasons || S.seasons.length<1)) return;
     e.preventDefault(); e.returnValue="";   // las dos formas: los navegadores no se ponen de acuerdo
     return "";
   }catch(err){}
@@ -12420,7 +12432,7 @@ function tpSwapSeats(dest){
   const a=sl[0]; sl[0]=sl[1]; sl[1]=a;
   /* ↩️ vuelve a la pantalla DESDE LA QUE se pulsó: llamarlo desde el rumbo y aterrizar en el
      mercado sería un salto en el tiempo. */
-  if(dest==="rumbo") tpRumboScreen(); else tpMercado();
+  if(dest==="rumbo"){ _ordenDesdeSwap=true; tpRumboScreen(); } else tpMercado();
 }
 
 /* 🧢 EL HUECO DEL PROBADOR, EXPLÍCITO (encargo de Carlos: «hoy es implícito»). Solo aparece cuando se
@@ -13186,6 +13198,7 @@ function tpPilotosHTML(){
   if(S.tpReserva) filas.push(`<span class="gar-chip" style="border-color:${col};display:inline-block;margin:1px 0">🧢 ${S.tpReserva.flag||"🏁"} ${S.tpReserva.name} ${tpEtiqueta(S.tpReserva)} · ${S.tpReserva.age}</span>`);
   return filas.length? filas.join("<br>")+"<br>" : "";
 }
+let _ordenDesdeSwap=false;   // ↔️ marca de «este repintado sale de invertir el orden», no de cerrar
 function tpRumboScreen(){
   /* 🧢 EL BANQUILLO NO SE SALTA SU TURNO (lo cazó Carlos: «me quedé sin probador el mismo año que
      perdí al 1er piloto y solo me dio la opción de fichar al piloto»). `tpProbadorHueco` colgaba de
@@ -13197,7 +13210,13 @@ function tpRumboScreen(){
   if(!S.retired && S.tpTeam && !S.tpReserva && S._huecoAno!==yearNow()){
     S._huecoAno=yearNow(); tpProbadorHueco(); return;
   }
-  tpOrdenConfirma();
+  /* ↔️ ⚠️ NO SE CONFIRMA SI EL REPINTADO VIENE DE INVERTIR EL ORDEN (4-sep-2026, primer día del
+     modo, lo cazó Carlos con seis «Reordenas el garaje» seguidos en la misma temporada). El botón de
+     invertir vive en esta pantalla desde el 31-ago y vuelve a pintarla, así que cada clic pasaba por
+     aquí y escribía su noticia — justo lo que `tpOrdenConfirma` existía para evitar. La confirmación
+     es el CIERRE del invierno: probar un orden no lo es. */
+  if(!_ordenDesdeSwap) tpOrdenConfirma();
+  _ordenDesdeSwap=false;
   if(S.retired) return;
   if(S._bautizo){ tpBautizo(); return; }   // 🏷️ acabas de comprar el equipo: ponle nombre
   if(ganarYaCond()){ tpGanarYa(); return; }
@@ -14654,7 +14673,130 @@ const TP_DILEMAS=[
     ⚠️ Hoy solo se lee la variante de telemetría: `startTPFlow()` fija SELECTED_ERA="2026", así que el
     modo jefe únicamente existe en la era actual. La otra rama queda lista para el día que el muro se
     abra a las retro. ═══════════════════════════════════════════════════════════════════════ */
- {id:"tpSabDom", cond:()=>tpDrvs().length>0,
+ {id:"tpLibres", cond:()=>tpDrvs().length>0 && (S.seasons||[]).length>=1,
+   /* 🔬 LOS LIBRES DECÍAN OTRA COSA (test de F1 Racing 2005, pregunta 1, Nürburgring: mandas el
+      viernes y en la crono te caes seis puestos). La respuesta de la revista era «no toques nada»,
+      porque los de delante iban cargados. Aquí no hay respuesta correcta fija: LA DECIDE TU CASA.
+      🔩 CABLEADO A `fiab` (idea de Carlos). El tercer eje de `S.f1prof` es la fiabilidad, y una
+      fiabilidad alta no es solo que el coche no rompa: es una organización metódica, que mide bien y
+      cuyos datos valen. Con `fiab` alta, fiarte de tus números acierta 7 de cada 10; con `fiab` baja
+      son 4 de 10 y lo sensato pasa a ser rehacerlo. Igual que en «Sábado o domingo»: la respuesta
+      correcta depende de tu equipo, no de un dado.
+      ⚖️ Y las posiciones salen de tu puesto real en constructores, para que el enunciado no prometa
+      un viernes que tu coche no puede firmar. */
+   t:()=>L("Los libres decían otra cosa","Practice said otherwise",{pt:"Os treinos livres diziam outra coisa"}),
+   d:()=>{ const yr=yearNow();
+     const gps=gpList(yr), gp=gps[dilVar("lbGp",()=>irnd(0,gps.length-1))];
+     const nC=Math.max(10,(F1_TEAMS||[]).length*2);
+     const pos=((S.rankC||{})[S.tpTeam]||99);
+     let v1,v2,q1,q2;
+     if(pos<=4){ v1=1; v2=2; q1=dilVar("lbQ",()=>irnd(5,7)); q2=q1+1; }
+     else if(pos<=8){ v1=dilVar("lbV",()=>irnd(6,8)); v2=v1+2; q1=dilVar("lbQ",()=>irnd(13,15)); q2=q1+2; }
+     else { v1=dilVar("lbV",()=>irnd(9,11)); v2=v1+2; q1=dilVar("lbQ",()=>irnd(16,nC-2)); q2=Math.min(nC,q1+2); }
+     const viernes = pos<=4
+       ? L(`vuestros dos coches mandaron las dos tandas, ${v1}º y ${v2}º, con margen`,
+           `your two cars topped both sessions, P${v1} and P${v2}, with margin`,
+           {pt:`seus dois carros mandaram nas duas tandas, ${v1}º e ${v2}º, com folga`})
+       : L(`acabasteis ${v1}º y ${v2}º, lo mejor del año con diferencia`,
+           `you ended up P${v1} and P${v2}, comfortably your best of the year`,
+           {pt:`vocês terminaram em ${v1}º e ${v2}º, o melhor do ano com folga`});
+     return L(`Sábado por la mañana en ${gp.n}. El viernes ${viernes}. En la primera vuelta de la crono salís ${q1}º y ${q2}º, a seis décimas de donde estabais. Tus ingenieros dicen que el coche no ha cambiado, que los datos son los mismos. El cronómetro dice otra cosa. Quedan dos horas.`,
+              `Saturday morning at ${gp.n}. On Friday ${viernes}. On the first qualifying run you come out P${q1} and P${q2}, six tenths off where you were. Your engineers say the car hasn't changed, that the data is the same. The stopwatch says otherwise. Two hours to go.`,
+              {pt:`Sábado de manhã em ${gp.n}. Na sexta ${viernes}. Na primeira volta da classificação vocês saem em ${q1}º e ${q2}º, a seis décimos de onde estavam. Seus engenheiros dizem que o carro não mudou, que os dados são os mesmos. O cronômetro diz outra coisa. Faltam duas horas.`}); },
+   opts:[
+    {l:()=>L("«No tocamos nada. Los datos son los datos»","«We touch nothing. The data is the data»",{pt:"«Não mexemos em nada. Os dados são os dados»"}),
+     r:()=>{ const fi=(((S.f1prof||{})[S.tpTeam])||{fiab:0}).fiab||0;
+       const casaSeria = fi>=1 ? 7 : fi<=-1 ? 4 : 5;   // 🔩 tu fiabilidad decide si tus números valen
+       return roll(
+        [casaSeria,()=>{TPRE(1.5);TPCAR(1);
+          return L(`Tenías razón: los de delante iban cargados el viernes para que os confiarais. El fin de semana sale como estaba escrito, y la oficina técnica aprende que el jefe les cubre cuando el cronómetro les lleva la contraria. +prestigio, +coche`,
+                   `You were right: the cars ahead ran heavy on Friday so you'd get comfortable. The weekend goes exactly as written, and the technical office learns the boss backs them when the stopwatch disagrees. +prestige, +car`,
+                   {pt:`Você tinha razão: os da frente andaram carregados na sexta para vocês se acomodarem. O fim de semana sai como estava escrito, e a engenharia aprende que o chefe os cobre quando o cronômetro os contraria. +prestígio, +carro`});}],
+        [10-casaSeria,()=>{TPRE(-1.5);
+          return L(`El dato estaba mal y os lo comisteis entero. Un fin de semana tirado, y esta vez el error no salió del muro: lo firmaste tú. −prestigio`,
+                   `The data was wrong and you swallowed it whole. A weekend thrown away, and this time the mistake didn't come from the wall: you signed it. −prestige`,
+                   {pt:`O dado estava errado e vocês engoliram inteiro. Um fim de semana jogado fora, e desta vez o erro não saiu do muro: você assinou. −prestígio`});}])}},
+    {l:()=>L("«Rehacedlo. Lo que veo no cuadra con lo que me contáis»","«Redo it. What I'm seeing doesn't match what you're telling me»",{pt:"«Refaçam. O que eu vejo não bate com o que me contam»"}),
+     r:()=>{ const a=tpDrvs(), n=a[0]?surname(a[0].name):"tu piloto";
+       const fi=(((S.f1prof||{})[S.tpTeam])||{fiab:0}).fiab||0;
+       /* con una casa seria, rehacer lo que ya funcionaba es sobre todo una manera de romperlo; con
+          una casa desordenada, es la única forma de encontrar lo que se les había escapado. */
+       const acierta = fi>=1 ? 2 : fi<=-1 ? 5 : 3;
+       return roll(
+        [acierta,()=>{TPCAR(2);TPRE(1);
+          return L(`A las once de la noche alguien mira donde nadie había mirado y aparece. El coche sale otro el domingo, y lo que aprendisteis esa noche os dura el año. ++coche, +prestigio`,
+                   `At eleven at night someone looks where nobody had looked, and there it is. The car is a different thing on Sunday, and what you learned that night lasts you the year. ++car, +prestige`,
+                   {pt:`Às onze da noite alguém olha onde ninguém tinha olhado, e aparece. O carro é outro no domingo, e o que aprenderam naquela noite dura o ano. ++carro, +prestígio`});}],
+        [4,()=>L(`Cambiáis por cambiar. Ni mejor ni peor, y una noche entera sin dormir. Sin cambios.`,
+                 `You change for the sake of changing. No better, no worse, and a whole night without sleep. No change.`,
+                 {pt:`Vocês mudam por mudar. Nem melhor nem pior, e uma noite inteira sem dormir. Sem mudanças.`})],
+        [10-acierta-4,()=>{TPCAR(-2);tpDrvSkill(n,-1);
+          return L(`Rompéis un coche que funcionaba persiguiendo un fantasma, y tardáis media temporada en volver a donde estabais. ${n} lo dice en la radio antes que en el box. −−coche, −moral de ${n}`,
+                   `You break a car that worked chasing a ghost, and it takes half a season to get back where you were. ${n} says it on the radio before he says it in the garage. −−car, −${n}'s morale`,
+                   {pt:`Vocês quebram um carro que funcionava perseguindo um fantasma, e demoram meia temporada para voltar onde estavam. ${n} diz isso no rádio antes de dizer no box. −−carro, −moral de ${n}`});}])}}]},
+  {id:"tpMorro", cond:()=>tpDrvs().length>0 && (S.seasons||[]).length>=1,
+   /* 🔧 EL MORRO EN LA PRIMERA VUELTA (test de F1 Racing 2005, pregunta 7, Sepang). La revista
+      respondía «cambia morro y gomas y pásate a una parada»: rehacer la carrera entera alrededor del
+      coche tocado. Aquí la segunda opción es la que el juego NO te dejaba tomar hasta hoy: dar el
+      domingo por perdido y GUARDAR las piezas. Es la decisión que de verdad tiene un equipo sin
+      presupuesto, y sin ella el modo jefe solo sabía empujar.
+      🔩 CABLEADO A `S.tpMissStreak`, los años seguidos que llevas fallando el listón. Si el consejo
+      ya te aprieta no puedes permitirte regalar un domingo —te juegas el puesto— y guardar piezas
+      sale caro; si vas cumpliendo, guardar es de listos. La misma idea que en los otros dos: la
+      respuesta correcta la marca tu situación, no un dado. */
+   t:()=>L("El morro en la primera vuelta","The nose on lap one",{pt:"O bico na primeira volta"}),
+   d:()=>{ const yr=yearNow();
+     const gps=gpList(yr), gp=gps[dilVar("moGp",()=>irnd(0,gps.length-1))];
+     const a=tpDrvs(); const i=dilVar("moQ",()=>irnd(0,Math.max(0,a.length-1)));
+     const n=surname((a[i]||a[0]).name);
+     const apretado=(S.tpMissStreak||0)>=1;
+     const cierre = apretado
+       ? L(`Y el consejo lleva un año mirándote de reojo: cada punto de este año es tuyo o de tu sustituto.`,
+           `And the board has spent a year watching you sideways: every point this year is yours or your replacement's.`,
+           {pt:`E o conselho passou um ano te olhando de lado: cada ponto deste ano é seu ou do seu substituto.`})
+       : L(`El campeonato va como tiene que ir, así que la pregunta es qué te cuesta más caro.`,
+           `The championship is going as it should, so the question is what costs you more.`,
+           {pt:`O campeonato vai como tem de ir, então a pergunta é o que sai mais caro.`});
+     return L(`Primera vuelta en ${gp.n}. Un toque en la salida y ${n} entra a boxes con el morro partido: sale último, a una vuelta de nadie y con sesenta por delante. Ibais a dos paradas. ${cierre}`,
+              `Lap one at ${gp.n}. Contact at the start and ${n} pits with a broken nose: he rejoins last, a lap from nobody and with sixty to go. You were on a two-stop. ${cierre}`,
+              {pt:`Primeira volta em ${gp.n}. Um toque na largada e ${n} entra nos boxes com o bico quebrado: sai por último, a uma volta de ninguém e com sessenta pela frente. Vocês iam a duas paradas. ${cierre}`}); },
+   opts:[
+    {l:()=>L("«Rehaced la carrera entera alrededor de él»","«Rebuild the whole race around him»",{pt:"«Refaçam a corrida inteira em volta dele»"}),
+     r:()=>{ const a=tpDrvs(); const i=dilVar("moQ",()=>irnd(0,Math.max(0,a.length-1)));
+       const n=surname((a[i]||a[0]).name);
+       const apretado=(S.tpMissStreak||0)>=1;
+       return roll(
+        [apretado?4:3,()=>{S.podiums++;TPRE(1.5);tpDrvSkill(n,1);
+          return L(`Una parada, sesenta vueltas con la misma goma y una remontada que no se calla nadie: ${n} acaba en el podio desde el último puesto. De esas carreras se habla durante años. +1 podio, +prestigio, +moral de ${n}`,
+                   `One stop, sixty laps on the same rubber and a comeback nobody shuts up about: ${n} finishes on the podium from dead last. They talk about races like that for years. +1 podium, +prestige, +${n}'s morale`,
+                   {pt:`Uma parada, sessenta voltas com o mesmo pneu e uma remontada que ninguém cala: ${n} termina no pódio vindo do último lugar. Dessas corridas se fala por anos. +1 pódio, +prestígio, +moral de ${n}`});}],
+        [4,()=>{TPRE(.5);
+          return L(`Remonta hasta los puntos y el box se lo celebra como una victoria. No cambia el año, pero ${n} sabe que no lo dejasteis tirado. +prestigio leve`,
+                   `He climbs into the points and the garage celebrates it like a win. It doesn't change the year, but ${n} knows you didn't leave him out there. slight +prestige`,
+                   {pt:`Ele sobe até os pontos e o box comemora como uma vitória. Não muda o ano, mas ${n} sabe que não o abandonaram. +prestígio leve`});}],
+        [apretado?2:3,()=>{TPCAR(-1);
+          return L(`Sesenta vueltas exprimiendo un coche tocado para acabar decimocuarto. El motor llega a la siguiente cita con más kilómetros de los que debía y la fábrica paga la factura. −coche`,
+                   `Sixty laps wringing out a damaged car to finish fourteenth. The engine reaches the next round with more miles than it should and the factory picks up the bill. −car`,
+                   {pt:`Sessenta voltas espremendo um carro tocado para terminar em décimo quarto. O motor chega à próxima etapa com mais quilômetros do que devia e a fábrica paga a conta. −carro`});}])}},
+    {l:()=>L("«Retiradlo. Guardad el motor y las piezas»","«Retire it. Save the engine and the parts»",{pt:"«Recolham. Guardem o motor e as peças»"}),
+     r:()=>{ const a=tpDrvs(); const i=dilVar("moQ",()=>irnd(0,Math.max(0,a.length-1)));
+       const n=surname((a[i]||a[0]).name);
+       const apretado=(S.tpMissStreak||0)>=1;
+       /* 🔩 con el consejo encima, regalar un domingo es carísimo; sin presión, es de listos. */
+       return roll(
+        [apretado?2:5,()=>{TPCAR(1);
+          return L(`El coche vuelve entero al camión y esas piezas aguantan tres carreras más de las previstas. Nadie lo cuenta, pero el año se nota. +coche`,
+                   `The car goes back in the truck in one piece and those parts last three races longer than planned. Nobody writes about it, but the year shows it. +car`,
+                   {pt:`O carro volta inteiro para o caminhão e aquelas peças duram três corridas a mais do que o previsto. Ninguém conta, mas o ano sente.`});}],
+        [3,()=>{tpDrvSkill(n,-1);
+          return L(`${n} lo entiende, pero le cuesta: llevaba toda la semana diciendo que este era su circuito y lo apagáis en la vuelta uno. −moral de ${n}`,
+                   `${n} understands it, but it stings: he'd spent all week saying this was his circuit and you switched him off on lap one. −${n}'s morale`,
+                   {pt:`${n} entende, mas dói: passou a semana dizendo que este era o circuito dele e vocês o desligam na volta um. −moral de ${n}`});}],
+        [apretado?5:2,()=>{TPRE(-1.5);tpDrvSkill(n,-1);
+          return L(`El abandono sale en todas las crónicas del lunes y el consejo lo lee como rendirse en la vuelta uno. Con lo justos que vais, esa lectura cuesta cara. −prestigio, −moral de ${n}`,
+                   `The retirement makes every Monday column and the board reads it as giving up on lap one. As tight as things are, that reading is expensive. −prestige, −${n}'s morale`,
+                   {pt:`O abandono sai em todas as crônicas de segunda e o conselho lê como desistir na volta um. Do jeito que vocês estão, essa leitura sai cara. −prestígio, −moral de ${n}`});}])}}]},
+  {id:"tpSabDom", cond:()=>tpDrvs().length>0,
    /* 🔧 SÁBADO O DOMINGO (test de estrategia de F1 Racing 2005, pregunta 3, Catalunya). No es una
       moneda al aire: LEE TU COCHE. `S.f1prof[equipo]` guarda {aero, motor, fiab} de −2 a +2 para
       todos los equipos, y aero son curvas y motor es recta. Si tu coche es de motor, la premisa es
