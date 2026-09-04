@@ -5918,8 +5918,17 @@ function startSeasonRun(){
   setDecision(L("Temporada ","Season ",{pt:"Temporada "})+yearNow()+L(" en curso… 🏎️"," under way… 🏎️",{pt:" a decorrer… 🏎️"}),"",true);
   setTimeout(()=>{
     if(S.retired) return;
-    simSeason();
-    refreshCard();
+    /* 🛟 RED DEBAJO DE LA TEMPORADA (4-sep-2026, primer día del modo jefe: un jugador contó que «no
+       avanzaba la temporada»). Esta cadena no tenía protección: si `simSeason` lanzaba una excepción,
+       se rompía y el jugador se quedaba mirando «Temporada N en curso…» para siempre, sin un solo
+       botón y con la partida perdida. Ahora el fallo no congela: se sigue adelante y, sobre todo, se
+       AVISA por telemetría, que es la única forma de encontrar el fallo de verdad — un cuelgue
+       silencioso no deja rastro y nadie te lo puede contar con detalle. */
+    try{ simSeason(); }
+    catch(e){
+      try{ track("season_error", {msg:String((e&&e.message)||e).slice(0,80), cat:S.cat||"?", era:S.era||"?", y:yearNow()}); }catch(_){ }
+    }
+    try{ refreshCard(); }catch(e){}
     if(S.retired) return;
     setTimeout(nextOffers, 180);
   }, 160);
