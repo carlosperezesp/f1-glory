@@ -2850,7 +2850,7 @@ function tpGpCalor(){ const cs=gpList(yearNow()).filter(c=>["Hungaroring","Barce
 /* ================= IDENTIDAD ================= */
 // 🕰️ arranque por era: la pantalla de identidad es la misma; solo fija qué mundo se sembrará
 function startCareerFlow(era){ CHALLENGE=null; TP_MODE=false;
-  if(TEST_MODE && TESTS[TEST_MODE] && TESTS[TEST_MODE].era) era=TESTS[TEST_MODE].era; SELECTED_ERA = era||"2026"; track("mode_selected", {era: SELECTED_ERA}); showIdentity(); }
+  if(TEST_MODE && TESTS[TEST_MODE] && TESTS[TEST_MODE].era) era=TESTS[TEST_MODE].era; SELECTED_ERA = era||"2026"; showIdentity();   /* 📊 sin `mode_selected`: `career_started` ya manda la era */ }
 // 🕰️ Modo Retro: la tarjeta despliega el selector de décadas (2010 y 2020 jugables; el resto, en camino)
 function toggleRetro(){
   const rc=document.getElementById("retroCard"), g=document.getElementById("decadeGrid");
@@ -3981,7 +3981,15 @@ function validateIdentity(){
 const TRACK_ON = true;
 const TRACK_SAMPLE = 0.15;
 const TRACK_ME = Math.random() < TRACK_SAMPLE;
-function track(name, data){ if(!TRACK_ON || !TRACK_ME) return; try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){} }
+/* 📊 el muestreo vale para saber PORCENTAJES —qué parte juega a cada modo—, pero NO para los avisos
+   de error: esos son raros por definición y los quieres todos. Un cuelgue que le pasa a diez personas
+   no puede reportarse una vez y media. Los `*_error` se saltan la muestra; su coste es despreciable
+   justamente porque casi nunca ocurren. */
+function track(name, data){
+  if(!TRACK_ON) return;
+  if(!TRACK_ME && !/_error$/.test(name)) return;
+  try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){}
+}
 function startCareer(){
   sel.name = $("inName").value.trim().toUpperCase();
   sel.num = $("inNum").value;
@@ -3989,7 +3997,7 @@ function startCareer(){
   // — es el que va al ranking, y ahí compites como tú, no como él.
   const _chSel = challengeNow();
   if(_chSel && _chSel.who){ sel.country=_chSel.who.country; sel.flag=_chSel.who.flag; sel.style=_chSel.who.style; sel.num=_chSel.who.num; }
-  track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG, era: SELECTED_ERA});
+  if(!TP_MODE) track("career_started", {style: sel.style||"?", country: sel.country||"?", lang: LANG, era: SELECTED_ERA});
   const startAge=irnd(14,16); // arrancas con 14, 15 o 16 → más/menos años de karting, cada carrera distinta
   const ERA = ERAS[SELECTED_ERA] || ERAS["2026"];  // 🕰️ era elegida: 2026 (actual) o retro 2010/2020
   S = {
@@ -9491,7 +9499,12 @@ function simF1(row,st){
     c:row.top3c, cmv:constrRank.slice(0,3).map((e,i)=>mvC(e[0],i+1)),
     myPos:pos, myConstr:constrPos, myPosMv:mvD("__ME__",pos), myConstrMv:mvC(myTeam,constrPos)};
   if(row.apxWin) row.events.push(L("🎬 Victoria con APXGP: la remontada digna de Hollywood.","🎬 A win with APXGP: a comeback worthy of Hollywood.",{pt:"🎬 Vitória com a APXGP: a recuperação digna de Hollywood."}));
-  if(pos===1){ S.lastChampName=null; S.titles.f1++; track("title_won", {team: myTeam, age: S.age, era: S.era||"2026"}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️",{pt:"🏆 CAMPEÃO MUNDIAL!! …e o título se decidiu por uma decisão da FIA a seu favor. 🏛️"}):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!",{pt:"🏆 CAMPEÃO MUNDIAL DE FÓRMULA 1!!"})); }
+  if(pos===1){ S.lastChampName=null; S.titles.f1++;
+    /* 📊 SOLO EL PRIMER TÍTULO. Medido en el panel el 4-sep: 594 personas y 3.600 eventos, unos seis
+       por cabeza — una carrera de leyenda mandaba el mismo evento siete veces y se pagaban las siete.
+       Lo que interesa es a qué edad y con qué equipo se gana EL PRIMERO; el resto ya viaja en
+       `career_ended`, que lleva el total de títulos. */
+    if(S.titles.f1===1) track("title_won", {team: myTeam, age: S.age, era: S.era||"2026"}); row.events.push(row.fiaTitle?L("🏆 ¡¡CAMPEÓN DEL MUNDO!! …y el título se decidió por un fallo de la FIA a tu favor. 🏛️","🏆 WORLD CHAMPION!! …and the title was decided by an FIA ruling in your favour. 🏛️",{pt:"🏆 CAMPEÃO MUNDIAL!! …e o título se decidiu por uma decisão da FIA a seu favor. 🏛️"}):L("🏆 ¡¡CAMPEÓN DEL MUNDO DE FÓRMULA 1!!","🏆 FORMULA 1 WORLD CHAMPION!!",{pt:"🏆 CAMPEÃO MUNDIAL DE FÓRMULA 1!!"})); }
   else {
     const champ=standings[0];
     S.lastChampName=champ.name;                    // 👑 para que nadie eche al campeón vigente
@@ -11310,7 +11323,7 @@ function initTPCard(){
   c.style.cursor="pointer";
   c.onclick=startTPFlow;
 }
-function startTPFlow(){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA="2026"; track("mode_selected",{era:"tp"}); showIdentity(); }
+function startTPFlow(){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA="2026"; showIdentity(); }   /* 📊 el modo lo dice `career_started` */
 
 /* ═══════════ 🔧 EL REPARTO DEL COCHE (fase 1: solo vive, todavía no afecta a nada) ═══════════
    El coche de cada equipo sigue valiendo lo que dice `f1perf`. Lo nuevo es DE QUÉ ESTÁ HECHO ese
@@ -11835,7 +11848,11 @@ function tpSignTeam(t, how){
   tpFirmarContrato(S.tpTeam);
   tpCrearProbador(true);        // 🧢 y cada etapa trae su probador
   if(how==="start"){
-    track("career_started",{mode:"tp", team:S.tpTeam, lang:LANG, era:"2026"});
+    /* 📊 este SUSTITUYE al `career_started` genérico de la ficha: de jefe la partida no empieza de
+       verdad hasta que eliges escudería, y hasta entonces no hay equipo ni CEO que contar.
+       ⚠️ El campo `ceo` se había añadido el 3-sep y se perdió en el trasplante de la beta del 4-sep,
+       donde solo se reinyectaron seis piezas y ésta no estaba. Vuelve aquí. */
+    track("career_started",{mode:"tp", team:S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?", lang:LANG, era:"2026"});
     S.pendingEvents.push(L(`🧑‍💼 ${S.tpTeam} te presenta como su nuevo Team Principal. ${S.tpOwner.intro()}`,
       `🧑‍💼 ${S.tpTeam} unveils you as their new Team Principal. ${S.tpOwner.intro()}`,
       {pt:`🧑‍💼 A ${S.tpTeam} te apresenta como novo Team Principal. ${S.tpOwner.intro()}`}));
