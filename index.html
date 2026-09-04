@@ -4287,6 +4287,12 @@ function homeBuffOne(d){ if(S.homeBuff && d && d.flag===sel.flag){ d.skill=Math.
 function arrTeamNow(pref){ if(!pref) return null;
   const c=(S.lineage||[]).find(x=>x.key===pref); const nm=c?c.cur:pref;
   return F1_TEAMS.some(t=>t.name===nm)?nm:null; }
+/* 🎓 HASTA QUÉ EDAD ES «CANTERA». 23 es la última edad de debut normal de un canterano de verdad
+   —Hülkenberg y Bottas debutaron con 23, Hamilton con 22, Piastri y Russell con 21—; de 24 en
+   adelante ya no lo es, y era justo la banda que chirriaba. Medido antes de fijarlo: el 92% de los
+   canteranos que genera el juego ya tienen entre 18 y 21, así que cortar aquí cuesta un 4% de
+   candidatos y nunca deja el bote vacío. Bajarlo a 21 empezaría a excluir debuts legítimos. */
+let EDAD_CANTERA=23;
 function mkRookie(noCross, forTeam){
   // 🎬 llegadas históricas (retro): los pilotos reales debutan ~cuando lo hicieron en la realidad.
   // Si el asiento libre es el de SU equipo real → casi seguro entra ahí; si llevan 2+ años esperando,
@@ -4294,7 +4300,15 @@ function mkRookie(noCross, forTeam){
   if(!S._forceRookie && S.arrivals && S.arrivals.length){
     const yr=yearNow();
     S.arrivals=S.arrivals.filter(a=>!S.dpool.some(d=>d.name===a.n)); // sin duplicados (p.ej. entró como crossover)
-    const due=S.arrivals.filter(a=>a.y<=yr);
+    /* 🎓 UNA APUESTA DE CANTERA ES UN JOVEN, TAMBIÉN AQUÍ (4-sep-2026, queja de un jugador: «me pasó
+       bastantes veces que la inversión de la cantera fuera alguien de +30 años»). El `noCross` ya
+       bloqueaba los crossovers, pero ESTA rama —las llegadas históricas— se resuelve ANTES y devuelve
+       al piloto con su EDAD REAL: por eso salían de cantera Damon Hill con 33, Cristiano da Matta con
+       31 o el Alonso de 40 del regreso de 2021. Medido: 1-2% de las veces en las eras retro, 0% en
+       2026, que es donde no hay llegadas históricas pendientes.
+       Cuando se pide cantera expresamente, las llegadas de más de 26 no entran en el sorteo; siguen
+       esperando su hueco y llegarán por cualquier otra vía, que es donde sí tienen sentido. */
+    const due=S.arrivals.filter(a=>a.y<=yr && !(noCross && (yr-a.b)>EDAD_CANTERA));
     if(due.length){
       let pick=null;
       if(forTeam){ const m=due.filter(a=>arrTeamNow(a.pref)===forTeam); if(m.length && ch(.85)) pick=m[0]; }
@@ -4354,7 +4368,7 @@ function mkRookie(noCross, forTeam){
        bote podía «debutar» en Racing Bulls con 30+ — era el agujero que dejaba treintañeros en la
        cantera pese a la salida invernal (medido: hasta 34 años). Si ningún nombre del bote cumple,
        cae al debutante generado, que nace con 18-21. */
-    if(noCross && r[3] && (_yr-r[3])>26) return false;
+    if(noCross && r[3] && (_yr-r[3])>EDAD_CANTERA) return false;   // 🎓 mismo tope que las llegadas
     return true;
   });
   /* 🔭 la bolsa señala con el dedo: si el jefe eligió una promesa concreta, es ESA (salta los
