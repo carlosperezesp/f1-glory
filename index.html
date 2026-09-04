@@ -8851,6 +8851,13 @@ function alphaClash(row){
     const dest = posibles.find(t=>S.seats[t.name].filter(d=>isElite(d)).length<=1) || posibles[0];
     if(!dest) return;
     const ds=S.seats[dest.name];
+    /* 🛟 UN ASIENTO VACÍO NO PUEDE TUMBAR LA TEMPORADA (4-sep-2026, primer día del modo jefe:
+       cuatro `season_error` en producción y esta línea en la traza). Esto daba por hecho que los dos
+       asientos del equipo de destino estaban ocupados; si uno era `null`, `ds[0].skill` lanzaba y se
+       llevaba por delante la temporada entera y la partida del jugador.
+       Se prefiere PERDER este movimiento —un fichaje entre dos equipos ajenos que ni se narra— antes
+       que arriesgar la partida. El hueco lo rellena el cierre del mercado, como cualquier otro. */
+    if(!ds[0] || !ds[1]) return;
     let swapIdx = ds[0]==="PLAYER"?1 : ds[1]==="PLAYER"?0 : (((ds[0].skill||0)<=(ds[1].skill||0))?0:1);
     const back=ds[swapIdx]; if(!back || back==="PLAYER" || mktMoved(back)) return;
     ds[swapIdx]=leaver; slots[goIdx]=back;   // intercambio
