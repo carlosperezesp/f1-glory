@@ -8743,7 +8743,13 @@ function poachStar(tn, row){
 function alphaClash(row){
   S.alphaYears = S.alphaYears || {};
   Object.keys(S.seats).forEach(tn=>{
+    /* 🛟 LOS DOS ASIENTOS, OCUPADOS (segundo agujero de la misma función, 4-sep-2026). El parche de
+       las 12:50 tapó los asientos del equipo de DESTINO, pero `st()` unas líneas más abajo lee los
+       del equipo de ORIGEN y también lanzaba con un `null`. Los avisos siguieron subiendo después de
+       aquel arreglo y esto era por qué. La premisa del dilema son DOS gallos en el corral: sin dos
+       pilotos no hay nada que resolver, así que se sale antes de tocar nada. */
     const slots=S.seats[tn]; if(!slots || slots.length<2) return;
+    if(!slots[0] || !slots[1]) return;
     // 🧑‍💼 tus dos gallos no se resuelven la guerra solos (guarda de la cala): en Fase 2 será un dilema
     if(tpManaged(tn)) return;
     // 🔒 este equipo (o alguno de sus pilotos) ya se ha movido este invierno: no se toca otra vez, o el
@@ -8764,7 +8770,7 @@ function alphaClash(row){
     // ¿QUIÉN se va? En la vida real NO siempre es el más flojo — hay cuatro guiones típicos:
     const st=(x,k)=> x==="PLAYER"
       ? ({skill:S.ovr, age:S.age, titles:S.titles.f1||0})[k]
-      : ({skill:x.skill||0, age:x.age||0, titles:x.titles||0})[k];
+      : ({skill:(x&&x.skill)||0, age:(x&&x.age)||0, titles:(x&&x.titles)||0})[k];   // 🛟 a prueba de null
     const r=Math.random();
     const modo = r<.38 ? "peor"      // el equipo construye sobre su verdadero Nº1 (Alonso se fue, no Hamilton)
                : r<.58 ? "mejor"     // el que va mejor anuncia que se marcha a otro proyecto
