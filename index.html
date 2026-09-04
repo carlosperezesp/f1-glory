@@ -7926,7 +7926,19 @@ function renderDilemma(dl, repintar){
     b.onclick=()=>{
       S._curDilemma=null;              // ya decidido: deja de repintarse al cambiar de idioma
       const _fmAntes=!!S.forceMove;
-      const txt=opt.r();
+      /* 🛟 UNA OPCIÓN QUE FALLA NO DEJA EL DILEMA COLGADO (4-sep-2026). Esto no tenía red: si `r()`
+         lanzaba, el jugador se quedaba con el dilema en pantalla, sin botones y sin salida — «se me
+         quedó bugeado». Es la misma familia que el cuelgue de la temporada que se arregló hoy, y la
+         misma solución: no congelar, y AVISAR con el id del dilema para poder ir a por la causa. */
+      let txt;
+      try{ txt=opt.r(); }
+      catch(e){
+        try{ track("dilema_error", {id:dl&&dl.id||"?", op:i, msg:String((e&&e.message)||e).slice(0,70),
+                                    cat:S.cat||"?", era:S.era||"?"}); }catch(_){ }
+        txt=L("El asunto se queda en nada y la temporada sigue su curso.",
+              "The matter comes to nothing and the season carries on.",
+              {pt:"O assunto fica em nada e a temporada segue o seu curso."});
+      }
       if(txt && typeof txt==="object" && Array.isArray(txt.opts)){
         setDecision("⚡ "+ttl, typeof txt.q==="function"?txt.q():txt.q);
         pintaOpciones(txt.opts);
