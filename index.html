@@ -12934,9 +12934,9 @@ function tpSignDriver(i,c){
               `❌ ${surname(d.name)} walks out of the talks: he won't re-sign for ${c._anios} ${c._anios===1?"year":"years"}.`,
               {pt:`❌ ${surname(d.name)} rompe a negociação: não renova por ${c._anios} ${c._anios===1?"ano":"anos"}.`});
         const _dest=tpColocaYa(d);   // ✍️ un campeón/top firma YA con otro; el resto, a la bolsa
-        if(_dest){ _txtNo+="<br>"+L(`✍️ Y no tarda ni dos semanas: ${surname(d.name)} firma con ${_dest} y correrá esta temporada.`,
-            `✍️ And it takes him barely two weeks: ${surname(d.name)} signs with ${_dest} and will race this season.`,
-            {pt:`✍️ E não demora nem duas semanas: ${surname(d.name)} assina com a ${_dest} e vai correr esta temporada.`}); }
+        if(_dest){ _txtNo+="<br>"+L(`✍️ ${surname(d.name)} firma con ${_dest}.`,
+            `✍️ ${surname(d.name)} signs with ${_dest}.`,
+            {pt:`✍️ ${surname(d.name)} assina com a ${_dest}.`}); }
         else { S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d); }
         tpNoRenuevaScreen(d, _txtNo); return;
       }
@@ -12950,9 +12950,9 @@ function tpSignDriver(i,c){
         `❌ ${surname(d.name)} walks out of the talks: he won't re-sign to be anyone's wingman. He leaves.`,
         {pt:`❌ ${surname(d.name)} rompe a negociação: não renova para ser escudeiro de ninguém. Vai embora.`});
       const _dest=tpColocaYa(d);
-      if(_dest){ _txtNo+="<br>"+L(`✍️ Y no tarda ni dos semanas: ${surname(d.name)} firma con ${_dest} y correrá esta temporada.`,
-          `✍️ And it takes him barely two weeks: ${surname(d.name)} signs with ${_dest} and will race this season.`,
-          {pt:`✍️ E não demora nem duas semanas: ${surname(d.name)} assina com a ${_dest} e vai correr esta temporada.`}); }
+      if(_dest){ _txtNo+="<br>"+L(`✍️ ${surname(d.name)} firma con ${_dest}.`,
+          `✍️ ${surname(d.name)} signs with ${_dest}.`,
+          {pt:`✍️ ${surname(d.name)} assina com a ${_dest}.`}); }
       else { S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d); }
       tpNoRenuevaScreen(d, _txtNo); return;
     }
