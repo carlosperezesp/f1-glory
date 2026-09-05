@@ -4533,6 +4533,26 @@ function npcSeason(row){
       }
     });
   });
+  /* 🎂 LOS QUE NO TIENEN ASIENTO TAMBIÉN CUMPLEN AÑOS (5-sep-2026, aviso de un jugador: «algunos
+     pilotos se quedan estancados en una edad durante dos décadas, Ricciardo en los 35, Lawson en los
+     26»). Tenía razón y la causa estaba justo arriba: `d.age++` vive DENTRO del bucle que recorre los
+     asientos, así que solo envejecía quien estaba en la parrilla. El que se quedaba sin volante
+     —agente libre, o esperando en el bote— se congelaba en su edad para siempre, y como los filtros
+     de fichaje miran la edad, seguía apareciendo como opción década tras década.
+     ⚠️ NO se toca `S.retiredPool`: ésos no envejecen a propósito, su edad se calcula al volver
+     (`back.age = r.age + fuera`), y sumarles aquí los contaría dos veces. El probador tampoco: ya
+     cumple años en su propia función. */
+  {
+    const _conAsiento=new Set();
+    Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d && d!=="PLAYER") _conAsiento.add(d); }));
+    if(S.tpReserva) _conAsiento.add(S.tpReserva);
+    const _ya=new Set();
+    [].concat(S.dpool||[], S.freeAgents||[]).forEach(d=>{
+      if(!d || d==="PLAYER" || d.beast || d.age==null) return;
+      if(_conAsiento.has(d) || _ya.has(d)) return;
+      _ya.add(d); d.age++;
+    });
+  }
   if(row && row._adioses && row._adioses.length){
     const _a=row._adioses; delete row._adioses;
     row.events.push(_a.length===1
@@ -12877,6 +12897,23 @@ function tpNoRenuevaTxt(d, motivo){
     `❌ His agent has been shopping his folder around the whole paddock, and somebody puts more money on the table than you. ${n} won't re-sign.`,
     {pt:`❌ O empresário dele andou mostrando a pasta pelo paddock inteiro, e alguém põe mais dinheiro na mesa que você. ${n} não renova.`});
 }
+/* 🚪 UN PORTAZO A LA RENOVACIÓN MERECE PANTALLA (feedback de un jugador, 5-sep: «a veces renuevo
+   un piloto y al empezar la temporada me aparece que no lo tengo»). El juego SÍ avisaba, pero el
+   aviso era un renglón del subtítulo del mercado, encima de una lista de pilotos: se leía como
+   ruido y se perdía. Ahora se para, como ya hacían la contraoferta y la insistencia. */
+function tpNoRenuevaScreen(d, html){
+  setDecision("❌ "+(d.flag||"🏁")+" "+d.name, "");
+  /* el cuerpo ya empieza por «❌ Apellido…»: la ❌ del titular basta, se le quita la del texto */
+  try{ const p=$("decSub"); if(p) p.innerHTML=String(html).replace(/^❌\s*/,""); }catch(e){}
+  try{ $("decRecap").style.display="none"; }catch(e){}
+  const box=$("offerList"); box.innerHTML="";
+  const ok=document.createElement("button"); ok.className="offer";
+  ok.innerHTML=`<span class="team-dot dot" style="background:#3a3a3a">🚪</span>
+    <span class="info"><span class="name">${L("Al mercado","To the market",{pt:"Ao mercado"})}</span></span>`;
+  ok.onclick=()=>tpMercado();
+  box.appendChild(ok);
+  scrollToDecision();
+}
 function tpSignDriver(i,c){
   const tn=S.tpTeam, sl=S.seats[tn], yN=yearNow();
   let d;
@@ -12892,16 +12929,16 @@ function tpSignDriver(i,c){
       if(_pR<1 && !ch(_pR)){
         const sl0=S.seats[tn]; sl0[c.i]=null;
         S._tpNo=S._tpNo||{}; S._tpNo[d.name]=yN;
-        S._tpNoTxt=_ro.motivo ? tpNoRenuevaTxt(d,_ro.motivo)
+        let _txtNo=_ro.motivo ? tpNoRenuevaTxt(d,_ro.motivo)
           : L(`❌ ${surname(d.name)} rompe la negociación: no renueva por ${c._anios} ${c._anios===1?"año":"años"}.`,
               `❌ ${surname(d.name)} walks out of the talks: he won't re-sign for ${c._anios} ${c._anios===1?"year":"years"}.`,
               {pt:`❌ ${surname(d.name)} rompe a negociação: não renova por ${c._anios} ${c._anios===1?"ano":"anos"}.`});
         const _dest=tpColocaYa(d);   // ✍️ un campeón/top firma YA con otro; el resto, a la bolsa
-        if(_dest){ S._tpNoTxt+="<br>"+L(`✍️ Y no tarda ni dos semanas: ${surname(d.name)} firma con ${_dest} y correrá esta temporada.`,
+        if(_dest){ _txtNo+="<br>"+L(`✍️ Y no tarda ni dos semanas: ${surname(d.name)} firma con ${_dest} y correrá esta temporada.`,
             `✍️ And it takes him barely two weeks: ${surname(d.name)} signs with ${_dest} and will race this season.`,
             {pt:`✍️ E não demora nem duas semanas: ${surname(d.name)} assina com a ${_dest} e vai correr esta temporada.`}); }
         else { S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d); }
-        tpMercado(); return;
+        tpNoRenuevaScreen(d, _txtNo); return;
       }
     }
     /* 👇 …«y quizá me dice que sí o que no» (Carlos): renovarle QUITÁNDOLE el asiento 1 es una
@@ -12909,15 +12946,15 @@ function tpSignDriver(i,c){
     if(i===1 && c.i===0 && ch(.30)){
       const sl0=S.seats[tn]; sl0[c.i]=null;
       S._tpNo=S._tpNo||{}; S._tpNo[d.name]=yN;
-      S._tpNoTxt=L(`❌ ${surname(d.name)} rompe la negociación: no renueva para ser el escudero de nadie. Se va.`,
+      let _txtNo=L(`❌ ${surname(d.name)} rompe la negociación: no renueva para ser el escudero de nadie. Se va.`,
         `❌ ${surname(d.name)} walks out of the talks: he won't re-sign to be anyone's wingman. He leaves.`,
         {pt:`❌ ${surname(d.name)} rompe a negociação: não renova para ser escudeiro de ninguém. Vai embora.`});
       const _dest=tpColocaYa(d);
-      if(_dest){ S._tpNoTxt+="<br>"+L(`✍️ Y no tarda ni dos semanas: ${surname(d.name)} firma con ${_dest} y correrá esta temporada.`,
+      if(_dest){ _txtNo+="<br>"+L(`✍️ Y no tarda ni dos semanas: ${surname(d.name)} firma con ${_dest} y correrá esta temporada.`,
           `✍️ And it takes him barely two weeks: ${surname(d.name)} signs with ${_dest} and will race this season.`,
           {pt:`✍️ E não demora nem duas semanas: ${surname(d.name)} assina com a ${_dest} e vai correr esta temporada.`}); }
       else { S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d); }
-      tpMercado(); return;
+      tpNoRenuevaScreen(d, _txtNo); return;
     }
     if(i!==c.i){ S.seats[tn][c.i]=null; }   // cambia de asiento: el suyo queda abierto para el mercado
     d.tpc=c._anios||((d.age>=34)?1:2);
