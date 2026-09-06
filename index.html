@@ -1947,6 +1947,40 @@ const GRID2007 = {
    pero un reto puede empezar SIETE años más tarde: en 2007 el récord lo tenía Schumacher con 7 desde
    2004 y el juego seguía diciendo que era Fangio con 5. El cuarto campo es el primer año en que
    cuenta como leyenda retirada, y el segundo, los títulos que tenía ENTONCES. */
+/* 🏁 LA PARRILLA DE 2009, para el reto de Senna Jr. Diez equipos, veinte coches. El Brawn sale
+   arriba porque ahí SALIÓ arriba: el coche que ganó los dos Mundiales del año que el equipo se
+   compró por una libra. Los niveles son los del año, no los de la leyenda: el McLaren de 2009
+   empezó siendo un desastre aunque llevara al campeón vigente dentro. */
+const TEAMS_2009 = [
+  {name:"Brawn",        abbr:"BGP", color:"#C6E600", color2:"#111111", perf:92},
+  {name:"Red Bull",     abbr:"RBR", color:"#0A1E5E", color2:"#D4001A", perf:90},
+  {name:"Ferrari",      abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:83},
+  {name:"Toyota",       abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:82},
+  {name:"McLaren",      abbr:"MCL", color:"#C0C0C8", color2:"#DD1E2F", perf:80},
+  {name:"Williams",     abbr:"WIL", color:"#1A3D7C", color2:"#7FB2E6", perf:79},
+  {name:"BMW Sauber",   abbr:"BMW", color:"#0A4EA2", color2:"#C00000", perf:79},
+  {name:"Renault",      abbr:"REN", color:"#F5D800", color2:"#0A2E6E", perf:78},
+  {name:"Force India",  abbr:"FI",  color:"#E87511", color2:"#245A2A", perf:74},
+  {name:"Toro Rosso",   abbr:"STR", color:"#153A72", color2:"#D00000", perf:70},
+];
+/* [nombre, edad en 2009, nivel, techo, títulos(antes de 2009), bandera]
+   🦋 DOS CAMBIOS RESPECTO A LA REALIDAD, y los dos salen del mismo sitio: el asiento del Brawn es
+   TUYO. Barrichello se va a Williams un año antes que en la vida real —allí acabó en 2010— y el
+   que se queda sin volante es Nakajima, que tampoco volvió a correr después de 2009 (decisión de
+   Carlos: que desaparezca el que desapareció). El Brawn lista SOLO a Button: la otra butaca la
+   ocupas tú al empezar. */
+const GRID2009 = {
+  "Brawn":       [["J. Button",29,86,89,0,"🇬🇧"]],
+  "Red Bull":    [["S. Vettel",22,88,95,0,"🇩🇪"],["M. Webber",33,84,87,0,"🇦🇺"]],
+  "Ferrari":     [["K. Räikkönen",29,90,94,1,"🇫🇮"],["F. Massa",28,88,90,0,"🇧🇷"]],
+  "Toyota":      [["J. Trulli",35,81,84,0,"🇮🇹"],["T. Glock",27,80,84,0,"🇩🇪"]],
+  "McLaren":     [["L. Hamilton",24,92,96,1,"🇬🇧"],["H. Kovalainen",27,80,85,0,"🇫🇮"]],
+  "Williams":    [["N. Rosberg",24,85,90,0,"🇩🇪"],["R. Barrichello",37,83,85,0,"🇧🇷"]],
+  "BMW Sauber":  [["R. Kubica",24,86,91,0,"🇵🇱"],["N. Heidfeld",32,83,85,0,"🇩🇪"]],
+  "Renault":     [["F. Alonso",27,94,95,2,"🇪🇸"],["N. Piquet Jr.",24,74,80,0,"🇧🇷"]],
+  "Force India": [["A. Sutil",26,79,84,0,"🇩🇪"],["G. Fisichella",36,80,82,0,"🇮🇹"]],
+  "Toro Rosso":  [["S. Buemi",20,76,82,0,"🇨🇭"],["S. Bourdais",30,76,80,0,"🇫🇷"]],
+};
 const LEGENDS_TARDIAS = {
   "2000": [["M. Schumacher",7,"🇩🇪",2007],["M. Häkkinen",2,"🇫🇮",2002],["J. Villeneuve",1,"🇨🇦",2007]],
   "2010": [["M. Schumacher",7,"🇩🇪",2013]],
@@ -2930,7 +2964,7 @@ const CHALLENGES = {
     persona:"PECHITO",
     at:"2026-08-24T10:00:00Z",
   },
-  /* 🚧 RETO III · HUECO RESERVADO (Kubica o Bruno Senna: decisión pendiente). No está construido y no
+  /* 🚧 HUECO RESERVADO (Kubica; Bruno Senna ya se construyó como Reto V). No está construido y no
      se puede jugar — vive aquí SOLO para que Valentino salga de IV desde el primer día. Motivo: el
      número de un reto es su posición en este registro, y Pechito y Valentino son los dos debutantes
      tardíos, así que no pueden ir seguidos (decisión de Carlos, 10-ago-2026).
@@ -3007,6 +3041,40 @@ const CHALLENGES = {
     // ⏸️ GUARDADA (decisión de Carlos, 10-ago): Valentino le quita el sitio de Reto II y La Bestia
     //    espera. Fecha lejana a propósito para que NO se dispare sola; se le pone la buena al sacarla.
     at:"2026-09-07T10:00:00Z",
+  },
+  /* 🇧🇷 RETO V · EL APELLIDO (idea de Carlos, 6-sep-2026). Lo de aquí pasó: en noviembre de 2008
+     Bruno Senna probó con Honda en Barcelona y quedó como candidato al asiento. En diciembre Honda
+     se retiró de la F1, en marzo Ross Brawn compró el equipo por una libra y la butaca se la dieron
+     a Barrichello. Ese coche ganó los dos Mundiales del año.
+     ⚠️ LO QUE EL TEXTO NO AFIRMA: que el asiento lo tuviera hecho. Hasta dónde llegó su candidatura
+        no está documentado con la precisión que haría falta para escribirlo, así que se dice lo que
+        se sostiene —probó, y estaban decidiendo—. Misma regla de siempre: un reto no inventa.
+     🦋 EL EFECTO MARIPOSA VA EN LA PARRILLA, no en código: ver GRID2009.
+     🧬 Y EL LINAJE SIGUE VIVO SOLO: Brawn→Mercedes está en LINEAGE_2000 con ventana 2010-2013 al
+        80%, y `setupChallenge` re-ancla las cadenas en vez de borrarlas. O sea que en unas partidas
+        te conviertes en Mercedes y en otras sigues siendo Brawn, sin tocar una línea.
+     🎯 SIN COMPARATIVA (como Valentino y La Bestia): el Bruno real hizo 46 carreras sin un podio, y
+        medirte contra eso no es un reto, es un insulto. El listón va en el texto y es el de dentro
+        de tu propio garaje. */
+  sennajr: {
+    id:"sennajr", era:"2000", year:2009, team:"Brawn", role:"2", secret:true,
+    teams: TEAMS_2009, grid: GRID2009,
+    drop:["B. Senna"],   // ⚠️ está en las LLEGADAS de la era 2000 (debuta en 2010 con HRT)
+    /* 🎚️ OVR 78, TECHO 88: llegas sin acreditar y con Button de compañero, o sea de Nº2 claro — que
+       es exactamente el sitio desde el que Barrichello estuvo a punto de ganarlo. El techo alto deja
+       que la carrera larga sea tuya. Números a medir con tandas, como se hizo con Pechito. */
+    /* 📅 `age` y no `born`: el año es fijo, y 2009−1983 daría 26 cuando en la parrilla de aquel marzo
+       tenía 25 (cumplía en octubre). Con año fijo, la edad escrita a mano es la buena. */
+    who:{ age:25, ovr:78, ceil:88, flag:"🇧🇷", country:"Brasil", style:"consistente", num:"21" },
+    t:["El apellido","The name","O sobrenome"],
+    sub:["El asiento que no le dieron · 2009 · 25 años",
+         "The seat he never got · 2009 · aged 25",
+         "O assento que não lhe deram · 2009 · 25 anos"],
+    d:["En noviembre de 2008 probaste con Honda y te dijeron que estaban decidiendo. Un mes después el equipo se retiró de la Fórmula 1, y en marzo lo compró su propio director por una libra. El coche que salió de aquella fábrica era el mejor de la parrilla, y el asiento se lo dieron a otro. Aquí es tuyo. Llevas el apellido más pesado de este deporte y un coche capaz de ganarlo todo desde la primera carrera: ya no hay excusas ni hay dónde esconderse.",
+       "In November 2008 you tested for Honda and were told they were still deciding. A month later the team pulled out of Formula 1, and in March its own boss bought it for one pound. The car that came out of that factory was the best on the grid, and they gave the seat to somebody else. Here it's yours. You carry the heaviest surname in this sport and a car that can win from race one: no excuses left, and nowhere to hide.",
+       "Em novembro de 2008 você testou pela Honda e ouviu que ainda estavam decidindo. Um mês depois a equipe se retirou da Fórmula 1 e, em março, o próprio chefe a comprou por uma libra. O carro que saiu daquela fábrica era o melhor do grid, e o assento foi para outro. Aqui é seu. Você carrega o sobrenome mais pesado deste esporte e um carro capaz de ganhar tudo desde a primeira corrida: sem desculpas e sem onde se esconder."],
+    persona:"SENNA JR",
+    at:"2026-09-14T10:00:00Z",
   },
   /* 🅿️ EL SITIO GUARDADO, AL FINAL A PROPÓSITO (Carlos, 24-ago: «Valentino es el III, el IV todavía
      no está 100% decidido»). Estaba entre Pechito y Valentino y se comía el III aunque no exista.
@@ -3451,7 +3519,14 @@ function setupChallenge(CH){
     Object.entries(CH.grid).forEach(([team,list])=>{
       S.seats[team]=list.filter(d=>!_drop.includes(d[0])).map(([name,age,skill,ceil,titles,flag])=>{
         const d={name,age,skill,ceil,titles,flag}; S.dpool.push(d); return d; });
-      while(S.seats[team].length<2) S.seats[team].push(mkRookie(false, team));
+    });
+    /* 🪑 LOS HUECOS SE RELLENAN AL FINAL, CON LA PARRILLA ENTERA YA SEMBRADA (6-sep-2026). Antes se
+       rellenaba dentro del mismo bucle, o sea con media parrilla sin crear: `mkRookie` mira `S.dpool`
+       para no repetir a nadie, y al primer equipo de la lista le sacaba un piloto que estaba escrito
+       en un equipo de MÁS ABAJO. Cazado montando la parrilla de 2009: el segundo Brawn salía siendo
+       Bourdais, que estaba a la vez en Toro Rosso. */
+    Object.keys(CH.grid).forEach(team=>{
+      while((S.seats[team]||[]).length<2) S.seats[team].push(mkRookie(false, team));
     });
     palmSeed(_ano);            // 🏆 el palmarés de EQUIPOS, recortado al año del reto
     S.legends=legendsHasta(S.era, _ano);   // 🏆 …y el de PILOTOS, que se quedaba en el año base
