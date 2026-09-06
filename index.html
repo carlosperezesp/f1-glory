@@ -2917,6 +2917,7 @@ const CHALLENGES = {
        "Nineteen years old, the worst car on the grid and a seat nobody envies. Nobody knows who you are yet and nobody would bet a penny on you. You have his talent and his starting point: what you do with them is no longer his business. Do you think you can win more than 2 titles?",
        "Dezenove anos, o pior carro do grid e uma vaga que ninguém inveja. Ninguém ainda sabe quem você é e ninguém aposta um centavo em você. Você tem o talento dele e o ponto de partida dele: o que fizer com isso já não é problema dele. Acha que consegue ganhar mais de 2 Mundiais?"],
     // palmarés REAL de Alonso, para el veredicto
+    champ:"M. Schumacher",   // 👑 campeón del mundo de 2000
     persona:"ALONSO",   // en el ranking y la tarjeta saldrás como ALONSO (TU APODO)
     // par [es,en]: L() aquí se resolvería al CARGAR la página, no al mostrarla
     bench:{ titles:2, wins:32, poles:22, podiums:106 }, benchName:["El Alonso real","The real Alonso","O Alonso de verdade"],
@@ -2965,6 +2966,7 @@ const CHALLENGES = {
     d:["Enero de 2010: te presentan como piloto de USF1, el primer equipo americano en treinta años, y el Gobierno argentino pone 2 de los 8 millones. En la realidad, en marzo el equipo se deshizo sin haber montado un coche y te quedaste sin volante, sin dinero y sin F1. Aquí no: USF1 llega a tiempo a Bahréin y te sube a un coche que nace de cero, en el fondo de la parrilla, con 27 años. Argentina no ve un piloto suyo en la F1 desde Mazzacane y no gana un Mundial desde Fangio. ¿Lo traes tú?",
        "January 2010: you are unveiled as a USF1 driver, the first American team in thirty years, and the Argentine government puts up 2 of the 8 million. In reality, by March the team had collapsed without ever building a car and you were left with no seat, no money and no F1. Not here: USF1 makes it to Bahrain and puts you in a car built from nothing, at the back of the grid, aged 27. Argentina hasn't had a driver in F1 since Mazzacane and hasn't won a title since Fangio. Are you the one who brings it home?",
        "Janeiro de 2010: você é apresentado como piloto da USF1, a primeira equipe americana em trinta anos, e o governo argentino põe 2 dos 8 milhões. Na realidade, em março a equipe se desfez sem ter montado um carro e você ficou sem vaga, sem dinheiro e sem F1. Aqui não: a USF1 chega a tempo ao Bahrein e coloca você num carro que nasce do zero, no fundo do grid, aos 27 anos. A Argentina não vê um piloto seu na F1 desde Mazzacane e não ganha um Mundial desde Fangio. É você quem traz?"],
+    champ:"J. Button",   // 👑 campeón del mundo de 2009
     persona:"PECHITO",
     at:"2026-08-24T10:00:00Z",
   },
@@ -3027,6 +3029,7 @@ const CHALLENGES = {
        porque el techo son las ~5 temporadas que le quedan, no el nivel. Con uno, y con OVR 80, lo
        consigue el 6% — exactamente lo que cuesta El Nano con SU listón. Y el texto gana: nadie ha
        empezado tan tarde y ha ganado nada, así que levantar uno solo ya responde la pregunta. */
+    champ:"F. Alonso",   // 👑 campeón del mundo de 2006
     persona:"VALENTINO",
     // ⏳ El 24-ago es de Pechito y el 31 del Reto III. Valentino cierra el mes: si para entonces está
     //    la traducción al italiano, su lanzamiento y el del idioma se refuerzan solos.
@@ -3077,6 +3080,7 @@ const CHALLENGES = {
     d:["En noviembre de 2008 probaste con Honda y te dijeron que estaban decidiendo. Un mes después el equipo se retiró de la Fórmula 1, y en marzo lo compró su propio director por una libra. El coche que salió de aquella fábrica era el mejor de la parrilla, y el asiento se lo dieron a otro. Aquí es tuyo. Llevas el apellido más pesado de este deporte y un coche capaz de ganarlo todo desde la primera carrera: ya no hay excusas ni hay dónde esconderse.",
        "In November 2008 you tested for Honda and were told they were still deciding. A month later the team pulled out of Formula 1, and in March its own boss bought it for one pound. The car that came out of that factory was the best on the grid, and they gave the seat to somebody else. Here it's yours. You carry the heaviest surname in this sport and a car that can win from race one: no excuses left, and nowhere to hide.",
        "Em novembro de 2008 você testou pela Honda e ouviu que ainda estavam decidindo. Um mês depois a equipe se retirou da Fórmula 1 e, em março, o próprio chefe a comprou por uma libra. O carro que saiu daquela fábrica era o melhor do grid, e o assento foi para outro. Aqui é seu. Você carrega o sobrenome mais pesado deste esporte e um carro capaz de ganhar tudo desde a primeira corrida: sem desculpas e sem onde se esconder."],
+    champ:"L. Hamilton",   // 👑 campeón del mundo de 2008
     persona:"SENNA JR",
     at:"2026-09-14T10:00:00Z",
   },
@@ -3534,7 +3538,26 @@ function setupChallenge(CH){
     });
     palmSeed(_ano);            // 🏆 el palmarés de EQUIPOS, recortado al año del reto
     S.legends=legendsHasta(S.era, _ano);   // 🏆 …y el de PILOTOS, que se quedaba en el año base
-    try{ if(typeof retiredSeed==="function") retiredSeed(S.baseYear); }catch(e){}
+    /* 👋 EL BOLSILLO DE LEYENDAS, CON LOS QUE YA SE HABÍAN RETIRADO EN EL AÑO DEL RETO (7-sep-2026,
+       repasando la parrilla de 2009 con Carlos: «el palmarés actualizado hasta esa época»).
+       `retiredSeed` busca la lista por AÑO BASE… y en un reto el año base ES el del reto, así que
+       pedía `LEYENDAS_RETIRADAS[2009]`, que no existe: el bolsillo se quedaba VACÍO y en ningún reto
+       podía darse el regreso de un mito. Le pasaba igual a Valentino y al Nano.
+       Ahora se recorren todas las listas y entran los que se habían retirado ANTES del año del reto
+       y no hace tanto (ocho años). En 2009 eso es Schumacher, Häkkinen, Montoya, Coulthard,
+       Villeneuve, Irvine y Ralf: exactamente quien podía volver. Al que sigue corriendo lo quita el
+       filtro de la línea siguiente (Fisichella está en la parrilla de 2009). */
+    try{
+      Object.keys(LEYENDAS_RETIRADAS).forEach(k=>{
+        (LEYENDAS_RETIRADAS[k]||[]).forEach(L6=>{
+          const _y=L6[5];
+          if(_y==null || _y>=_ano || (_ano-_y)>8) return;
+          if(S.retiredPool.some(r=>r && r.name===L6[0])) return;
+          S.retiredPool.push({name:L6[0], flag:L6[1], skill:L6[2], age:L6[3], titles:L6[4],
+                              retiredYear:_y, sembrado:true, excepcion:!!L6[6]});
+        });
+      });
+    }catch(e){}
     S.retiredPool=(S.retiredPool||[]).filter(r=>r && !S.dpool.some(d=>d.name===r.name));
     const _hay = n => F1_TEAMS.some(t=>t.name===n);
     /* 🧬 LINAJES re-anclados: la marca que exista HOY en la parrilla marca por dónde va la cadena;
@@ -3575,6 +3598,12 @@ function setupChallenge(CH){
     S.arrivals=(S.arrivals||[]).filter(a=>!S.dpool.some(d=>d.name===a.n));
     S.arrivals.forEach(a=>{ if(a.y<=_ano) a.y=_ano+irnd(0,2); });
   }
+  /* 👑 EL CAMPEÓN VIGENTE DEL AÑO DEL RETO. Sin esto salía uno AL AZAR —medido: en dos arranques
+     seguidos de 2009 el juego creía que el campeón vigente era Ralf Schumacher, y luego Button—, y
+     esa etiqueta no es decorativa: protege de que te echen de tu propio garaje, manda en la
+     jerarquía del equipo y la mira `alphaClash`. Va fuera del bloque de la parrilla propia, que así
+     vale también para los retos que no traen la suya. */
+  if(CH.champ) S.lastChampName = CH.champ;
   // 3) tu ficha. Si el reto trae año de nacimiento, la edad SALE DEL AÑO que haya tocado: con una
   //    ventana de años, tener la edad escrita a mano haría que en 2006 y en 2007 tuvieras la misma.
   const _edad = CH.who.born ? (_ano - CH.who.born) : CH.who.age;
