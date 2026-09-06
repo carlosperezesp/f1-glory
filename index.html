@@ -5194,6 +5194,13 @@ function respectBuild(){ if(S._incRival){ S.respects=S.respects||[]; if(!S.respe
 /* versiones para tu COMPAÑERO (feudBurn/respectBuild trabajan sobre el rival de un toque).
    Un enemigo DENTRO de tu garaje es mucho peor: convive contigo y acelera la ruptura del equipo. */
 function mateNow(){ return (S.team && S.seats[S.team.name]) ? teammateOf(S.team.name) : null; }
+/* 🐲 A LA BESTIA NO SE LE GANA UN PULSO INTERNO (Carlos, 6-sep-2026: «debería ganar todos los debates
+   y dilemas internos con sus compañeros… es el mejor del juego, debería estar a tope»). Solo se
+   activa cuando tu compañero de garaje ES ella, o sea solo dentro de su reto: en el resto del juego
+   no existe y esto no cambia absolutamente nada. No se le quitan los galones, no se la echa del
+   equipo y no pierde ninguna guerra de garaje. Lo que sí puede hacer el jugador es adelantarla en
+   pista: eso lo decide el cronómetro, no una sala de reuniones. */
+function mateBestia(){ const m=mateNow(); return !!(m && m.beast); }
 function feudMate(){ const m=mateNow(); if(!m||!m.name) return;
   S.feuds=S.feuds||[]; if(!S.feuds.some(f=>f.name===m.name)) S.feuds.push({name:m.name, year:yearNow(), mate:true}); }
 function respectMate(){ const m=mateNow(); if(!m||!m.name) return;
@@ -5447,7 +5454,7 @@ function roleLocked(teamName){
 function lockRole(teamName, years){ S.roleLock={team:teamName, until:yearNow()+(years||3)}; }
 /* si te GANAS los galones (plantándote, o pasándole por encima en pista), el castigo se levanta: el
    bloqueo solo impide el ascenso AUTOMÁTICO por tener más OVR, no que te los ganes tú. */
-function darGalones(){ S.role="1"; S.roleLock=null; }
+function darGalones(){ if(mateBestia()) return; S.role="1"; S.roleLock=null; }   // 🐲 con la Bestia al lado no hay galones que dar
 /* 👑 ¿QUÉ PROBABILIDAD HAY DE QUE TE QUITEN LOS GALONES? Depende de tu PESO en el equipo (matiz de
    Carlos: «es difícil que a Schumacher le llevaran la contraria»). Nunca llega a cero a propósito,
    porque el caso Alonso-McLaren 2007 existió: campeón vigente y el equipo no le respaldó.
@@ -5481,6 +5488,7 @@ function quitarGalones(prefijo){
 function echarMateTocado(){
   const tn=S.team&&S.team.name, sl=tn&&S.seats[tn];
   if(!Array.isArray(sl)) return "";
+  if(mateBestia()) return "";   // 🐲 a la Bestia no la echa un vídeo de a bordo
   const i=sl.findIndex(d=>d&&d!=="PLAYER");
   const m=i>=0?sl[i]:null;
   if(!m) return "";
@@ -5499,6 +5507,7 @@ function echarMateTocado(){
 }
 function roleFor(teamName){
   const mate=mateIfJoin(teamName);
+  if(mate && mate.beast) return "2";   // 🐲 nadie llega de Nº1 al garaje de la Bestia
   const last=S.seasons.length?S.seasons.at(-1).pos:null;
   const lp=last==null?99:last;
   // ser campeón o venir en gran forma te da estatus de Nº1
@@ -6196,7 +6205,7 @@ const DILEMAS=[
        ? L("En redes te llaman soso. Fama -5%","They call you dull online. Fame -5%",{pt:"Nas redes te chamam de sem graça. Fama -5%"})
        : L("En el paddock te llaman soso. Fama -5%","The paddock calls you dull. Fame -5%",{pt:"No paddock te chamam de sem graça. Fama -5%"}))])}]},
  {id:"jerarquia",stage:"f1",t:()=>L("Guerra por el Nº1","Fight for No.1",{pt:"Guerra pelo N.º1"}),d:()=>L("Tu compañero exige al equipo ser el piloto Nº1. Los ingenieros esperan tu reacción.","Your teammate demands to be No.1 driver. The engineers await your reaction.",{pt:"O seu companheiro exige da equipe ser o piloto Nº1. Os engenheiros esperam a sua reação."}),opts:[
-   {l:()=>L("Plantarte: «el Nº1 soy yo»","Stand firm: «I'm the No.1»",{pt:"Bater o pé: «o Nº1 sou eu»"}),r:()=>ch(.5)?(darGalones(),S.oustMate=true,L("El equipo te respalda como Nº1. Tu compañero, humillado, no lo acepta y hará las maletas.","The team backs you as No.1. Your teammate, humiliated, won't accept it and will pack his bags.",{pt:"A equipe te apoia como Nº1. O seu companheiro, humilhado, não aceita e vai fazer as malas."})):(CAR(-1),L("La guerra interna pasa factura al desarrollo. -1 coche","The internal war takes its toll on development. -1 car",{pt:"A guerra interna cobra o preço no desenvolvimento. -1 carro"}))},
+   {l:()=>L("Plantarte: «el Nº1 soy yo»","Stand firm: «I'm the No.1»",{pt:"Bater o pé: «o Nº1 sou eu»"}),r:()=>(!mateBestia() && ch(.5))?(darGalones(),S.oustMate=true,L("El equipo te respalda como Nº1. Tu compañero, humillado, no lo acepta y hará las maletas.","The team backs you as No.1. Your teammate, humiliated, won't accept it and will pack his bags.",{pt:"A equipe te apoia como Nº1. O seu companheiro, humilhado, não aceita e vai fazer as malas."})):(CAR(-1),L("La guerra interna pasa factura al desarrollo. -1 coche","The internal war takes its toll on development. -1 car",{pt:"A guerra interna cobra o preço no desenvolvimento. -1 carro"}))},
    {l:()=>L("Ceder el estatus","Concede the status",{pt:"Ceder o status"}),r:()=>{S.role="2";return ch(.6)?(VAL(1.1),L("Juegas en equipo y tu fama crece. +10% fama","You play as a team and your fame grows. +10% fame",{pt:"Você joga em equipe e a sua fama cresce. +10% fama"})):(OVR(-1),L("Ver sus piezas nuevas cada carrera te quema. -1 OVR","Watching his new parts every race eats at you. -1 OVR",{pt:"Ver as peças novas dele a cada corrida te consome. -1 OVR"}));}}]},
  {id:"novato",stage:"vet",t:()=>L("El novato prodigio","The wonderkid rookie",{pt:"O novato prodígio"}),d:()=>L("Tu nuevo compañero tiene 19 años, es rapidísimo y quiere tu corona. El equipo os deja pelear.","Your new teammate is 19, blindingly fast and wants your crown. The team lets you fight it out.",{pt:"O seu novo companheiro tem 19 anos, é rapidíssimo e quer a sua coroa. A equipe deixa vocês brigarem."}),opts:[
    {l:()=>L("Ser su mentor","Be his mentor",{pt:"Ser o mentor dele"}),r:()=>roll(
@@ -6283,9 +6292,9 @@ const DILEMAS=[
   d:()=>{ const m=surname(teammateOf(S.team.name).name);
     return L(`Tu compañero ${m} y tú peleáis por todo y ya os habéis tocado en pista. El equipo amenaza con separaros con órdenes si volvéis a chocar.`,`Your teammate ${m} and you fight over everything and have already touched on track. The team threatens to separate you with orders if you clash again.`,{pt:`Você e o seu companheiro ${m} brigam por tudo e já se tocaram na pista. A equipe ameaça separar vocês com ordens se baterem de novo.`}); },opts:[
    {l:()=>L("No ceder ni un milímetro","Don't give an inch",{pt:"Não ceder um milímetro"}),r:()=>roll(
-     [4,()=>(OVR(1),L("Le ganas la partida psicológica. Eres el gallo del gallinero. +1 OVR","You win the mind games. You're the top dog. +1 OVR",{pt:"Você ganha o duelo psicológico. Manda no galinheiro. +1 OVR"}))],
+     [mateBestia()?0:4,()=>(OVR(1),L("Le ganas la partida psicológica. Eres el gallo del gallinero. +1 OVR","You win the mind games. You're the top dog. +1 OVR",{pt:"Você ganha o duelo psicológico. Manda no galinheiro. +1 OVR"}))],
      [3,()=>(CAR(-1),L("Otro toque: el equipo os castiga a los dos. -1 coche","Another clash: the team punishes you both. -1 car",{pt:"Outro toque: a equipe castiga os dois. -1 carro"}))],
-     [3,()=>(darGalones(),L("El equipo se cansa de él y te nombra líder.","The team tires of him and names you the leader.",{pt:"A equipe se cansa dele e te nomeia líder."}))])},
+     [mateBestia()?0:3,()=>(darGalones(),L("El equipo se cansa de él y te nombra líder.","The team tires of him and names you the leader.",{pt:"A equipe se cansa dele e te nomeia líder."}))])},
    {l:()=>L("Rebajar la tensión","Ease the tension",{pt:"Baixar a tensão"}),r:()=>roll(
      [4,()=>(VAL(1.1),CAR(.5),L("El equipo rema unido de nuevo. +fama, +0.5 coche","The team pulls together again. +fame, +0.5 car",{pt:"A equipe volta a remar unida. +fama, +0,5 carro"}))],
      [3,()=>L("Frágil paz técnica. Sin cambios.","A fragile technical peace. No change.",{pt:"Paz técnica frágil. Sem mudanças."})],
@@ -6365,8 +6374,8 @@ const DILEMAS=[
  {id:"cuentas",stage:"f1",cond:()=>S.team&&S.seats[S.team.name]&&(S.yearsAtTeam||1)>=3,t:()=>L("Cuentas pendientes","Unfinished business",{pt:"Contas por saldar"}),
   d:()=>{const m=teammateOf(S.team.name);return L(`Llevas años picándote con ${surname(m.name)} en el mismo garaje. El equipo os deja claro: quien acabe por delante manda la próxima temporada. Se decide en la pista.`,`Years of needling ${surname(m.name)} in the same garage. The team is clear: whoever finishes ahead calls the shots next season. Settle it on track.`,{pt:`Faz anos que você se pica com ${surname(m.name)} na mesma garagem. A equipe deixa claro: quem terminar na frente manda na próxima temporada. Decide-se na pista.`});},opts:[
    {l:()=>L("Guerra abierta","All-out war",{pt:"Guerra aberta"}),r:()=>roll(
-     [4,()=>(OVR(1),darGalones(),L("Le pasas por encima toda la temporada. Nº1 indiscutible. +1 OVR","You dominate him all season. Undisputed No.1. +1 OVR",{pt:"Você passa por cima dele a temporada toda. Nº1 indiscutível. +1 OVR"}))],
-     [3,()=>L("Os matáis, pero acabáis empatados. La guerra sigue.","You go at it, but finish level. The war continues.",{pt:"Vocês se matam, mas terminam empatados. A guerra continua."})],
+     [mateBestia()?0:4,()=>(OVR(1),darGalones(),L("Le pasas por encima toda la temporada. Nº1 indiscutible. +1 OVR","You dominate him all season. Undisputed No.1. +1 OVR",{pt:"Você passa por cima dele a temporada toda. Nº1 indiscutível. +1 OVR"}))],
+     [mateBestia()?0:3,()=>L("Os matáis, pero acabáis empatados. La guerra sigue.","You go at it, but finish level. The war continues.",{pt:"Vocês se matam, mas terminam empatados. A guerra continua."})],
      [3,()=>(OVR(-1),S.role="2",L("Él saca lo mejor de sí y te gana el pulso. −1 OVR","He raises his game and beats you. −1 OVR",{pt:"Ele tira o melhor de si e ganha o braço de ferro. −1 OVR"}))])},
    {l:()=>L("Bajar el pistón, foco en el título","Ease off, focus on the title",{pt:"Baixar a bola, foco no título"}),r:()=>roll(
      [5,()=>(CAR(1),L("Sin desgaste interno, el equipo rinde mejor. +1 coche","No internal wear, the team performs better. +1 car",{pt:"Sem desgaste interno, a equipe rende mais. +1 carro"}))],
@@ -7222,7 +7231,7 @@ const DILEMAS=[
       [20,()=>{ VAL(1.15); const salio=echarMateTocado();
         return L(`El vídeo de a bordo te da la razón y el equipo lo asume. +fama${salio?" "+salio:""}`,`The onboard footage proves you right and the team accepts it. +fame${salio?" "+salio:""}`,{pt:`O vídeo de bordo te dá razão e a equipe assume. +fama${salio?" "+salio:""}`}); }]); }},
    {l:()=>L("Al despacho: que no me frenen","To the office: don't hold me back",{pt:"Ir à sala do chefe: que não me segurem"}),r:()=>roll(
-     [30,()=>{ darGalones();
+     [mateBestia()?0:30,()=>{ darGalones();
        return L("Entras, pones las cartas sobre la mesa y sales con lo que querías: libertad para pelear y los galones de Nº1.","You walk in, lay it all out and come out with what you wanted: freedom to race and No.1 status.",{pt:"Você entra, põe as cartas na mesa e sai com o que queria: liberdade para brigar e os galões de Nº1."}); }],
      [40,()=>L("Salís los dos con unas normas de convivencia bajo el brazo. Ni ganas ni pierdes, pero la sangre no llega al río.","You both leave with a set of ground rules. You neither win nor lose, but it doesn't boil over.",{pt:"Vocês dois saem com umas regras de convivência debaixo do braço. Nem ganha nem perde, mas o sangue não chega ao rio."})],
      [30,()=>{ CAR(-1); return quitarGalones(L("Te ven como un problema y deciden zanjarlo por la vía rápida: órdenes de equipo el resto del año. −1 coche. ","They see you as a problem and settle it the quick way: team orders for the rest of the year. −1 car. ",{pt:"Passam a te ver como um problema e resolvem pela via rápida: ordens de equipe o resto do ano. −1 carro. "})); }])}]},
@@ -8228,6 +8237,10 @@ function simSeason(){
      (`crashRace!=null`) evita además encadenarte dos lesiones el mismo año. */
   maybeAccidenteEra(row);
   maybeInjury(row); // lesión grave rara (1 año fuera, asiento en peligro) antes de simular la temporada
+  /* 🐲 ANTES DE CORRER EL AÑO, NO DESPUÉS. La jerarquía se recalcula al cerrar la temporada, así que
+     el año en que la Bestia aterrizaba en tu equipo lo corrías todavía de Nº1 (medido: 2 de 20
+     temporadas compartiendo garaje). En su garaje el Nº1 es suyo desde el primer test. */
+  if(S.cat==="F1" && typeof mateBestia==="function" && mateBestia()) S.role="2";
   let result;
   if(S.cat==="F1") result = simF1(row,st);
   else if(S.cat==="TP") result = simTP(row);   // 🧑‍💼 tu equipo corre con dos NPC; simTP llama a bgF1Season
@@ -8238,6 +8251,10 @@ function simSeason(){
   if(S.cat==="F1" && S.team && S.seats[S.team.name]){
     const mate=teammateOf(S.team.name);
     S.roleMate=mate.name; S.roleTeam=S.team.name;
+    /* 🐲 CON LA BESTIA AL LADO, LA JERARQUÍA NO SE DISCUTE. El rol se recalcula aquí cada año por la
+       brecha de nivel, y un jugador con 95 de OVR y cinco Mundiales llegaba a superarla en el papel:
+       medido, 1 de cada 6 temporadas compartiendo garaje con ella. El Nº1 de ese equipo es suyo. */
+    if(mate && mate.beast) S.role="2";
     if(S.oustMate){
       // ganaste el pulso de poder: el compañero se larga (no te degradamos a Nº2 bajo él)
       oustTeammate(row); S.oustMate=false;
@@ -8253,7 +8270,7 @@ function simSeason(){
       }
       // 🔒 si te quitaron los galones por DISCIPLINA, el ascenso automático no vale durante 3 años:
       //    sin esto, al año siguiente el mismo equipo te devolvía lo que acababa de quitarte.
-      else if(S.role==="2" && gap>4 && !mateCampeon && !roleLocked(S.team.name)){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".",{pt:"⬆️ Você conquista o status de piloto Nº1 sobre "+surname(mate.name)+"."})); }
+      else if(S.role==="2" && gap>4 && !(mate&&mate.beast) && !mateCampeon && !roleLocked(S.team.name)){ S.role="1"; row.events.push(L("⬆️ Te ganas el estatus de piloto Nº1 sobre "+surname(mate.name)+".","⬆️ You earn No.1 driver status over "+surname(mate.name)+".",{pt:"⬆️ Você conquista o status de piloto Nº1 sobre "+surname(mate.name)+"."})); }
       else if(S.role==="1" && gap<-4){ S.role="2"; row.events.push(L("⬇️ "+surname(mate.name)+" te arrebata el estatus de piloto Nº1.","⬇️ "+surname(mate.name)+" takes the No.1 driver status from you.",{pt:"⬇️ "+surname(mate.name)+" te tira o status de piloto Nº1."})); }
       // 🏆 REDENCIÓN: ganas el Mundial con los galones quitados. Ganar ABRE la puerta, no la cruza por ti
       // (matiz de Carlos: Alonso acabó a un punto del título en 2007 y se fue igual). Quién decide es
@@ -8325,6 +8342,9 @@ function simSeason(){
      movimiento posterior podía dejarla en un coche malo y no había quien lo deshiciera hasta el
      invierno siguiente — un año entero del reto tirado. Va al final del mercado, a propósito. */
   beastKeepTop(row);      // 🐲 el reto la promete siempre arriba
+  /* 🐲 …y si acaba de aterrizar en TU garaje, los galones cambian de dueño en el acto, no cuando
+     termine la temporada siguiente: el invierno entero se leía «Nº1» con ella al otro lado del box. */
+  if(S.cat==="F1" && typeof mateBestia==="function" && mateBestia()) S.role="2";
   // pico de carrera: mejor OVR alcanzado y a qué edad (define cuándo empieza tu declive)
   if(S.ovr > (S.peakOvr||0)){ S.peakOvr=S.ovr; S.peakAge=S.age; }
   // crecimiento con rendimientos decrecientes: cuanto más alto, más cuesta.
@@ -8787,12 +8807,6 @@ function alphaClash(row){
        pilotos no hay nada que resolver, así que se sale antes de tocar nada. */
     const slots=S.seats[tn]; if(!slots || slots.length<2) return;
     if(!slots[0] || !slots[1]) return;
-    /* 🐲 LA BESTIA NO JUEGA A ESTO (medido el 6-sep-2026, la víspera de sacar el reto: en 5 de 93
-       temporadas acababa en un coche de fondo de parrilla un año entero). Es elite por definición, y
-       como tiene 20 años PARA SIEMPRE, el guion «apostamos por el veterano» la señalaba a ella y se
-       la llevaba a otro equipo. El reto promete un muro en uno de los mejores coches cada domingo:
-       a la Bestia no la traspasa nadie. */
-    if(slots.some(d=>d && d.beast)) return;
     // 🧑‍💼 tus dos gallos no se resuelven la guerra solos (guarda de la cala): en Fase 2 será un dilema
     if(tpManaged(tn)) return;
     // 🔒 este equipo (o alguno de sus pilotos) ya se ha movido este invierno: no se toca otra vez, o el
@@ -8848,6 +8862,11 @@ function alphaClash(row){
       if(slots[goIdx]==="PLAYER" && ch(.25)) rupturaCampeon=true;
       else goIdx = 1-goIdx;
     }
+    /* 🐲 EN EL GARAJE DE LA BESTIA, EL QUE SALE ES EL OTRO. Medido la víspera del reto: como es elite
+       por definición y tiene 20 años PARA SIEMPRE, el guion «apostamos por el veterano» la señalaba a
+       ella y se la llevaba a otro equipo — a un coche de cola una temporada entera. La guerra de dos
+       gallos se resuelve igual que siempre; lo único que cambia es que ella nunca es la que se va. */
+    if(slots[goIdx] && slots[goIdx].beast) goIdx = 1-goIdx;
     const leaver=slots[goIdx], stays=slots[1-goIdx];
     const stayName = stays==="PLAYER" ? L("TÚ","YOU",{pt:"TU"}) : surname(stays.name);
     // 🫵 SI EL QUE SOBRA ERES TÚ: no te movemos a la fuerza de equipo, pero el asiento se acaba y
