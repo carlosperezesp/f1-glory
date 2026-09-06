@@ -10637,6 +10637,48 @@ function regResetOffers(){
    dejar más claro cuándo la temporada es un fracaso o no»). En vez de perderse entre los eventos del
    año, sale destacado con su color: verde cumplido, dorado si un título de pilotos lo rescató, ámbar
    si te compraste un año de aire, rojo si fallaste. */
+/* 🧠 LA MEMORIA DEL CONSEJO (queja de un jugador, 5-sep-2026: «acabé 2º, 2º, y por estar un puesto
+   por debajo el tercer año no me han renovado»). Hasta ahora el consejo miraba UN SOLO BIT, el
+   último año (`S.tpLastMet`), y con eso decidía tanto la renovación como el despido. Medido sobre
+   22 finales de contrato: de los 6 que fallaron el último año, a 4 no les ofrecían renovar… y 4 de
+   esos 6 tenían MAYORÍA de años cumplidos, tres de ellos fallando por UN SOLO PUESTO. El despido a
+   mitad de contrato era igual de ciego: en la misma medición había jefes con 16 años y un 88% de
+   años cumplidos destituidos tan rápido como un recién llegado.
+   Lo que hay ahora es una media ponderada en la que los años recientes pesan mucho más —Carlos:
+   «que pesen más esos dos últimos años de fallo respecto a los dos primeros de objetivo cumplido»—
+   y en la que CADA DUEÑO OLVIDA A SU RITMO: el paciente casi no olvida, el showman solo se acuerda
+   de la última portada. Es DELIBERADAMENTE INVISIBLE (Carlos: «debería ser secreto»): no hay chip,
+   ni número, ni barra. Se nota en si te renuevan y en si te aguantan un segundo año malo.
+   Con w = cuánto pesa el año anterior respecto al actual:
+     paciente .85 · fábrica .75 · ambicioso .68 · cortoplacista .45 · showman .40
+   dos buenos y luego dos malos sale negativo con cualquiera de ellos (que es lo que pidió Carlos),
+   pero «2º, 2º y un puesto por debajo» lo salvan el paciente y el de fábrica, y no el showman. */
+const TP_OLVIDO={ young:.85, brand:.75, win:.68, cut:.45, show:.40 };
+function tpMemoriaW(){ const k=(S.tpOwner&&S.tpOwner.k)||"win"; return TP_OLVIDO[k]!=null?TP_OLVIDO[k]:.6; }
+function tpValorAnio(r){
+  if(!r) return 0;
+  if(r.tpDQ) return -1.5;                       // el año de la descalificación pesa el doble
+  if(r.tpVerdict==="titulo" || r.constrPos===1) return 1.5;   // un título —de pilotos o de constructores— compra paciencia
+  if(r.tpVerdict==="ok") return 1;
+  /* 📏 y CUÁNTO fallaste importa: quedarte un puesto por debajo del listón es ruido de una
+     temporada, quedarte cuatro es un desastre. «Gracia» cuenta como fallo — el listón no se
+     cumplió, lo único que hizo la gracia fue evitarte la puerta ese año. */
+  const _d=(r.tpPos!=null && r.tpTarget!=null) ? Math.max(1, r.tpPos-r.tpTarget) : 1;
+  return -Math.min(2, 1 + (_d-1)*.25);
+}
+/* `hoy` es la fila del año recién jugado, que todavía no está en S.seasons; en el mercado de
+   contratos ya está dentro y entonces se llama sin argumento. */
+function tpConfianza(hoy){
+  const tn=S.tpTeam, w=tpMemoriaW();
+  let sc = hoy ? tpValorAnio(hoy) : 0, k = hoy ? 1 : 0;
+  const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
+  for(let i=filas.length-1; i>=0; i--){
+    const r=filas[i];
+    if(r.tpTeam && r.tpTeam!==tn) break;        // lo que hiciste en otro equipo no lo firma este consejo
+    sc += Math.pow(w,k) * tpValorAnio(r); k++;
+  }
+  return sc;
+}
 function tpVerdictLine(r){
   const objetivo=r.tpGoalTxt||"";
   const cumple=(r.constrPos===1?"1º":(r.constrPos||"?")+"º");
@@ -10651,7 +10693,9 @@ function tpVerdictLine(r){
     case "titulo": return L(`🎯 Objetivo: ${objetivo} → 🏆 rescatado por el título de pilotos`,`🎯 Target: ${objetivo} → 🏆 saved by the drivers' title`,{pt:`🎯 Meta: ${objetivo} → 🏆 salvo pelo título de pilotos`});
     case "ok":     return L(`🎯 Objetivo: ${objetivo} → ✅ cumplido`,`🎯 Target: ${objetivo} → ✅ met`,{pt:`🎯 Meta: ${objetivo} → ✅ cumprida`});
     case "gracia": return L(`🎯 Objetivo: ${objetivo} → 🛡️ fallado, pero te compras un año`,`🎯 Target: ${objetivo} → 🛡️ missed, but you buy a year`,{pt:`🎯 Meta: ${objetivo} → 🛡️ falhada, mas você compra um ano`});
-    case "fuera":  return L(`🎯 Objetivo: ${objetivo} → 🚪 fallado por segundo año: destituido`,`🎯 Target: ${objetivo} → 🚪 missed a second year: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada pelo segundo ano: demitido`});
+    /* 🚪 ya no siempre es «el segundo año»: con el consejo con memoria puedes caer al tercero o al
+       cuarto si tu historial te ha ido comprando indultos. La línea dice lo que es verdad siempre. */
+    case "fuera":  return L(`🎯 Objetivo: ${objetivo} → 🚪 fallado otra vez: destituido`,`🎯 Target: ${objetivo} → 🚪 missed again: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada de novo: demitido`});
     default:       return L(`🎯 Objetivo: ${objetivo} → ❌ no cumplido, el consejo aprieta`,`🎯 Target: ${objetivo} → ❌ missed, the board tightens`,{pt:`🎯 Meta: ${objetivo} → ❌ não cumprida, o conselho aperta`});
   }
 }
@@ -11544,7 +11588,7 @@ function initTPState(){
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
-  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */   // lo que prometiste allí no viaja contigo
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S.tpIndultos=0; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */   // lo que prometiste allí no viaja contigo
   S.tpFired=false; S.tpFiredBy=null; S.tpTemptY=null;
   S.tpOverSum=0; S.tpBestPos=99; S.tpStints=[];
   S.deathsOn=false;
@@ -11889,7 +11933,7 @@ function tpSignTeam(t, how){
   const _po=tpOwnersPosibles(S.tpTeam,false);
   S.tpOwner=_po[irnd(0,_po.length-1)]; S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0;   // 🏢 el de fábrica solo de inicio en equipos-marca
   tpAmigoNuevo();   // 🤝 y su agenda, si es el showman
-  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
+  S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S.tpIndultos=0; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
      equipo, no solo al empezar de cero, así que limpiarlo aquí borraba el rastro al cambiar de muro —
      y el rastro te sigue a TI, no al equipo: la orden la diste tú. (Ojo al contraste con «El sobre»,
@@ -13794,7 +13838,7 @@ function simTP(row){
   const delta=(G.exp-cPos);
   S.tpOverSum=(S.tpOverSum||0)+delta;
   S.tpBestPos=Math.min(S.tpBestPos||99, cPos);
-  row.tpVerdict = met ? (rescataTitulo && cPos>G.target ? "titulo" : "ok") : (S.tpGrace ? "gracia" : (S.tpMissStreak>=1 ? "fuera" : "fallo"));
+  row.tpVerdict = met ? (rescataTitulo && cPos>G.target ? "titulo" : "ok") : (S.tpGrace ? "gracia" : "fallo");   // 🧠 «fuera» se decide abajo, cuando se sepa si el consejo te aguanta
   /* 🧠 los NÚMEROS del año, no solo el veredicto: el consejo los relee al fijar el listón siguiente.
      `tpGoalTxt` ya guardaba esto, pero como frase escrita, y de una frase no se saca una media. */
   row.tpTeam=tn; row.tpPos=cPos; row.tpTarget=G.target;
@@ -13808,7 +13852,7 @@ function simTP(row){
     : L(`${G.target}º de constructores o mejor`,`P${G.target} constructors or better`,{pt:`${G.target}º de construtores ou melhor`});
   if(!met) S._histFallo={target:G.target, pos:cPos, year:row.year};   // 📰 el titular necesita los DOS números
   if(met){
-    S.tpMissStreak=0; S.tpLastMet=true;
+    S.tpMissStreak=0; S.tpLastMet=true; S.tpIndultos=0;   // 🧠 cumplir limpia la cuenta de indultos gastados
     row.events.push(delta>=2
       ? L(`✅ Sobre-rendimiento: el coche era el ${G.exp}º de la parrilla y acabáis ${cPos===1?"campeones":cPos+"º"}. Tu nombre suena en todo el paddock.`,
           `✅ Overachievement: the car was the grid's ${G.exp}th best and you finish ${cPos===1?"champions":"P"+cPos}. Your name echoes through the paddock.`,
@@ -13852,8 +13896,20 @@ function simTP(row){
           {pt:`💸 Mais um ano abaixo da meta, e o dono é você: ninguém te demite, mas o rombo sai do seu bolso. Mais um ano assim e não haverá equipe para salvar. −fama · −cachê`}));
       }
     } else if(S.tpMissStreak>=2){
-      S.tpFired=true; S.tpFiredBy=tn;
-      /* 🧹 el chip ya dice «fallado por segundo año: destituido» */
+      /* 🧠 EL SEGUNDO FALLO YA NO ES AUTOMÁTICAMENTE LA PUERTA. Si el balance de tu etapa aguanta
+         —y aguanta según lo que olvide ESTE dueño—, te dan otro año. Cada indulto encarece el
+         siguiente (0,6 más de balance por cada uno gastado), así que la cuerda no es infinita: un
+         jefe con una década buena sobrevive a dos o tres años malos, no a cinco. */
+      const _conf=tpConfianza(row), _liston=(S.tpIndultos||0)*.6;
+      if(_conf > _liston){
+        S.tpIndultos=(S.tpIndultos||0)+1;
+        TPRE(-2);
+        row.events.push(L(`🧠 Segundo año por debajo del listón, y en cualquier otro sitio esto sería la puerta. Pero en esa sala se acuerdan de lo que has hecho aquí, y te dan otro año. No habrá muchos más. −fama`,
+          `🧠 A second year below the bar, and anywhere else that would be the door. But in that room they remember what you have done here, and they give you another year. There won't be many more. −fame`,
+          {pt:`🧠 Segundo ano abaixo da meta, e em qualquer outro lugar isso seria a porta. Mas naquela sala lembram do que você fez aqui, e te dão mais um ano. Não haverá muitos mais. −fama`}));
+      } else {
+        S.tpFired=true; S.tpFiredBy=tn; row.tpVerdict="fuera";
+      }
     } else {
       /* 🧹 el chip ya dice «no cumplido, el consejo aprieta» */
     }
@@ -14022,7 +14078,11 @@ function tpContratoScreen(){
   if(S.retired) return;
   const tn=S.tpTeam, ultimaEtapa=S.tpUltimo;
   if(ultimaEtapa){ tpFinDeCarrera(); return; }            // el contrato final se cumplió: se acabó
-  const cumpliste=S.tpLastMet!==false;
+  /* 🧠 el consejo mira el MANDATO, no solo el último año (ver tpConfianza). El último año sigue
+     pesando más que ninguno; lo que cambia es que dejó de ser lo único que existe. */
+  const _conf=tpConfianza(null);
+  const cumpliste = S.tpLastMet!==false || _conf>0;
+  const _salvadoPorHistorial = S.tpLastMet===false && cumpliste;
   const myPerf=S.f1perf[tn]??75;
   const orden=[...F1_TEAMS].filter(t=>t.name!==tn)
     .sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70));
@@ -14042,9 +14102,9 @@ function tpContratoScreen(){
     }
   }
   setDecision(L(`📄 Se acaba tu contrato con ${tn}`,`📄 Your contract with ${tn} is up`,{pt:`📄 Acaba o seu contrato com a ${tn}`}),
-    L(`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} al mando y el papel se acaba. ${cumpliste?"Cumpliste, y eso se sabe en el paddock.":"No cumpliste, y eso también se sabe."} Decide dónde sigues.`,
-      `${S.tpContractTotal} season${S.tpContractTotal===1?"":"s"} in charge and the paper runs out. ${cumpliste?"You delivered, and the paddock knows it.":"You didn't deliver, and the paddock knows that too."} Decide where you go next.`,
-      {pt:`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} no comando e o papel acaba. ${cumpliste?"Você cumpriu, e isso se sabe no paddock.":"Você não cumpriu, e isso também se sabe."} Decida onde continua.`}));
+    L(`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} al mando y el papel se acaba. ${_salvadoPorHistorial?"El último año no salió, pero tu etapa entera pesa más que un mal diciembre.":cumpliste?"Cumpliste, y eso se sabe en el paddock.":"No cumpliste, y eso también se sabe."} Decide dónde sigues.`,
+      `${S.tpContractTotal} season${S.tpContractTotal===1?"":"s"} in charge and the paper runs out. ${_salvadoPorHistorial?"The last year didn't work out, but your whole spell weighs more than one bad December.":cumpliste?"You delivered, and the paddock knows it.":"You didn't deliver, and the paddock knows that too."} Decide where you go next.`,
+      {pt:`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} no comando e o papel acaba. ${_salvadoPorHistorial?"O último ano não saiu, mas a sua passagem inteira pesa mais que um dezembro ruim.":cumpliste?"Você cumpriu, e isso se sabe no paddock.":"Você não cumpriu, e isso também se sabe."} Decida onde continua.`}));
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
