@@ -4818,7 +4818,7 @@ function beastKeepTop(row){
     mktMark(tn, suyo[0], bes, sale);
     sl[wi]=bes; S.seats[suyo[0]][i0]=sale;                 // intercambio: la parrilla no cambia
     bes.yrs=0; sale.yrs=0;
-    row.events.push(L(`🐲 ${tn} ficha a ${bes.name} para ${nextY(row)}: nadie deja un talento así en un coche que no gana. ${surname(sale.name)} hará el camino inverso.`,
+    if(row) row.events.push(L(`🐲 ${tn} ficha a ${bes.name} para ${nextY(row)}: nadie deja un talento así en un coche que no gana. ${surname(sale.name)} hará el camino inverso.`,
                       `🐲 ${tn} sign ${bes.name} for ${nextY(row)}: nobody leaves that kind of talent in a car that can't win. ${surname(sale.name)} goes the other way.`,{pt:`🐲 A ${tn} contrata ${bes.name} para ${nextY(row)}: ninguém deixa um talento desses num carro que não ganha. ${surname(sale.name)} fará o caminho inverso.`}));
     return;
   }
@@ -5051,7 +5051,7 @@ function maybeComeback(row){
   row.events.push(L(`🔙 BOMBAZO: ${r.name} vuelve del retiro a los ${back.age} años y correrá con ${t.name} en ${nextY(row)}.`,
                     `🔙 SHOCK: ${r.name} comes out of retirement at ${back.age} and will race for ${t.name} in ${nextY(row)}.`,{pt:`🔙 BOMBA: ${r.name} volta da aposentadoria aos ${back.age} anos e vai correr pela ${t.name} em ${nextY(row)}.`}));
 }
-/* 🐲 RETO II · LA BESTIA. Un piloto de 99 que debuta contigo y ya no se va nunca: no envejece, no baja
+/* 🐲 RETO IV · LA BESTIA. Un piloto de 99 que debuta contigo y ya no se va nunca: no envejece, no baja
    de nivel y no se retira. Entra en uno de los mejores coches (es un galáctico: el caché ya lo empuja
    ahí solo) desplazando al más flojo. No toca nada más del motor — compite como cualquier NPC. */
 function spawnBeast(row){
@@ -8319,9 +8319,12 @@ function simSeason(){
   npcRescateTalento(row); // 🆘 un pilotazo no puede pudrirse años en un coche de cola
   rbCanteraInvernal(row); // 🐂 el filial promociona o suelta a los que dejan de ser promesa
   segundoCoche(row);      // 🚗² un equipo de un coche que sobrevive y mejora puede montar el segundo
-  beastKeepTop(row);      // 🐲 y la Bestia, menos aún: el reto la promete siempre arriba
   maybeComeback(row); // 🔙 ¿vuelve un retirado notable? (máx. 1 por partida)
   alphaClash(row); // 🥊 dos gallos no caben en el mismo corral
+  /* 🐲 LA BESTIA, LA ÚLTIMA: corría ANTES de maybeComeback y alphaClash, así que cualquier
+     movimiento posterior podía dejarla en un coche malo y no había quien lo deshiciera hasta el
+     invierno siguiente — un año entero del reto tirado. Va al final del mercado, a propósito. */
+  beastKeepTop(row);      // 🐲 el reto la promete siempre arriba
   // pico de carrera: mejor OVR alcanzado y a qué edad (define cuándo empieza tu declive)
   if(S.ovr > (S.peakOvr||0)){ S.peakOvr=S.ovr; S.peakAge=S.age; }
   // crecimiento con rendimientos decrecientes: cuanto más alto, más cuesta.
@@ -8784,6 +8787,12 @@ function alphaClash(row){
        pilotos no hay nada que resolver, así que se sale antes de tocar nada. */
     const slots=S.seats[tn]; if(!slots || slots.length<2) return;
     if(!slots[0] || !slots[1]) return;
+    /* 🐲 LA BESTIA NO JUEGA A ESTO (medido el 6-sep-2026, la víspera de sacar el reto: en 5 de 93
+       temporadas acababa en un coche de fondo de parrilla un año entero). Es elite por definición, y
+       como tiene 20 años PARA SIEMPRE, el guion «apostamos por el veterano» la señalaba a ella y se
+       la llevaba a otro equipo. El reto promete un muro en uno de los mejores coches cada domingo:
+       a la Bestia no la traspasa nadie. */
+    if(slots.some(d=>d && d.beast)) return;
     // 🧑‍💼 tus dos gallos no se resuelven la guerra solos (guarda de la cala): en Fase 2 será un dilema
     if(tpManaged(tn)) return;
     // 🔒 este equipo (o alguno de sus pilotos) ya se ha movido este invierno: no se toca otra vez, o el
@@ -10603,6 +10612,13 @@ function regReset(){
   S.regReg = yearNow() + irnd(REG_CADA[0], REG_CADA[1]);
   S.regReveal={brawn:brawn.name, rumor:rumor.name, rumorTrue, year:yearNow(),
                bet:S.regBet||null, grade:S.regBetGrade||null, refused:S.regBetRefused||null};
+  /* 🐲 …Y LA BESTIA SE RECOLOCA (medido el 6-sep-2026, la víspera del reto: su coche caía UNA
+     temporada al 9º-12º, y era siempre la misma — la de la revolución). `beastKeepTop` hace su
+     trabajo al cerrar la temporada, pero esto rebaraja la parrilla ENTERA después, en el invierno
+     del jugador, y ya no volvía a mirar nadie: el reto promete un muro en uno de los mejores coches
+     y entregaba un año de Bestia en un coche de cola. Se comprueba aquí, el único sitio por el que
+     pasan las tres vías de la revolución. Sin fila donde narrarlo: el reseteo ya tiene su historia. */
+  try{ beastKeepTop(null); }catch(e){}
   return {brawn, rumor, rumorTrue};
 }
 function regResetOffers(){
