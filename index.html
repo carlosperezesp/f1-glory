@@ -4823,7 +4823,17 @@ let RB_MARGEN=2;    // cuánto hay que superar al peor de la casa madre para que
 let RB_MINIMO=80;   // suelo absoluto. Era 84 y desde un coche topado a 83 no se alcanzaba
 function rbCanteraInvernal(row){
   Object.keys(S.seats).forEach(tn=>{
-    if(!isRBJr(tn) || tpManaged(tn)) return;
+    if(!isRBJr(tn)) return;
+    /* 🐂 …Y TAMBIÉN CUANDO EL FILIAL LO DIRIGES TÚ (7-sep-2026, aviso de un jugador: «con Racing Bulls,
+       a los 3-4 años no puedo renovar a mi mejor piloto, y si tiene cinco estrellas desaparece de la
+       parrilla»). Tenía razón por partida doble: la regla del filial impide renovar al que cumple 28,
+       y esta función —la que sube a los buenos a la casa madre— se saltaba tu equipo, así que tu
+       chaval no ascendía a ninguna parte: se caía del mundo. Medido antes: 7 de los 24 mejores que
+       pasaban por el garaje acababan sin asiento, sin bolsa y sin retirarse.
+       Corregido por Carlos: ascender NO es decisión tuya —«la casa madre manda»—, así que esto le
+       PASA al jugador, no lo elige. Formar para Red Bull es el encargo del filial, y por eso suma
+       prestigio. El asiento queda ABIERTO: lo cubres tú en tu mercado, no un novato de oficio. */
+    const _tuyo = tpManaged(tn);
     const sl=S.seats[tn]; if(!Array.isArray(sl)) return;
     const madre=JUNIOR_OF[tn];
     sl.forEach((d,i)=>{
@@ -4848,16 +4858,31 @@ function rbCanteraInvernal(row){
       const _asciende = wi>=0 && (d.skill||0)>=ws+RB_MARGEN && (d.skill||0)>=RB_MINIMO;
       if(!_asciende && !_veterano && !_campeon) return;   // ni sube ni le toca salir: otro año en el filial
       if(_asciende){
-        const fuera=ms[wi]; ms[wi]=d; sl[i]=mkRookie(true, tn);
+        const fuera=ms[wi]; ms[wi]=d; sl[i]= _tuyo ? null : mkRookie(true, tn);
+        if(S.cat==="TP") d.tpc=2;
         if(fuera && fuera!=="PLAYER"){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(fuera); }
         mktMark(d, fuera, tn, madre);
+        if(_tuyo){
+          TPRE(2);   // 🏆 formar para la casa madre ES el encargo del filial: por fin puntúa
+          row.events.push(L(`🐂 ${madre} se lleva a ${surname(d.name)}: la casa madre no pide permiso, y para esto está el filial. Te deja el asiento libre, y el paddock toma nota. +fama`,
+            `🐂 ${madre} take ${surname(d.name)}: the senior team doesn't ask, and this is what the junior team is for. You're left with an open seat, and the paddock takes note. +fame`,
+            {pt:`🐂 A ${madre} leva ${surname(d.name)}: a equipe principal não pede licença, e é para isso que serve a base. Você fica com a vaga aberta, e o paddock anota. +fama`}));
+          return;
+        }
         if(noticiaRelevante([tn,madre],[d.name])) row.events.push(L(`✍️ ${surname(d.name)} asciende de ${tn} a ${madre}; debuta ${sl[i].name}.`,
           `✍️ ${surname(d.name)} moves up from ${tn} to ${madre}; ${sl[i].name} debuts.`,
           {pt:`✍️ ${surname(d.name)} sobe da ${tn} para a ${madre}; estreia ${sl[i].name}.`}));
       } else {
         S.freeAgents=S.freeAgents||[]; S.freeAgents.push(d);
-        sl[i]=mkRookie(true, tn);
+        if(_tuyo) d._exTuyo=yearNow();   // 🚪 su salida se cuenta: no se evapora en silencio
+        sl[i]= _tuyo ? null : mkRookie(true, tn);
         mktMark(d, tn);
+        if(_tuyo){
+          row.events.push(L(`🐂 ${surname(d.name)} se hace mayor para una cantera: ${madre} no lo reclama y el filial no puede retenerlo. Sale del equipo y el asiento queda libre.`,
+            `🐂 ${surname(d.name)} outgrows an academy: ${madre} don't call him up and the junior team can't keep him. He leaves and the seat is open.`,
+            {pt:`🐂 ${surname(d.name)} fica velho demais para uma base: a ${madre} não o chama e a equipe B não pode segurá-lo. Sai do time e a vaga fica livre.`}));
+          return;
+        }
         if(noticiaRelevante([tn],[d.name])) row.events.push(L(`✍️ ${surname(d.name)} deja ${tn}; debuta ${sl[i].name}.`,
           `✍️ ${surname(d.name)} leaves ${tn}; ${sl[i].name} debuts.`,
           {pt:`✍️ ${surname(d.name)} deixa a ${tn}; estreia ${sl[i].name}.`}));
@@ -5068,6 +5093,25 @@ function mktRellenar(row, huecos, bolsa, cerrar){
   const _quedan=bolsa.filter(d=>(d.skill||0)>=82 && (d.age||0)<=35)
     .sort((a,b)=>(b.skill||0)-(a.skill||0));
   S.freeAgents = _quedan.slice(0,4);
+  /* 🚪 EL QUE SALE DE TU GARAJE NO SE EVAPORA (7-sep-2026). La nevera se queda con cuatro y el resto se
+     borraba SIN UNA PALABRA: el 30-ago quitamos la línea de «Sin volante: Sainz · Gasly · Ocon…» porque
+     eran cinco nombres ajenos ahogando tus noticias, y con ella se fue también el caso en que el que se
+     evapora es TU piloto, que sí te importa. Vuelve SOLO ese caso: se le busca equipo de verdad y, si
+     nadie lo quiere, se despide con UNA línea. Nunca la lista de desconocidos. */
+  try{
+    const _guardados=new Set(S.freeAgents);
+    bolsa.forEach(d=>{
+      if(!d || _guardados.has(d) || d._exTuyo!==yearNow()) return;
+      const _dest = (typeof tpColocaYa==="function") ? tpColocaYa(d) : null;
+      if(row) row.events.push(_dest
+        ? L(`✍️ ${surname(d.name)} no tarda en encontrar sitio: firma con ${_dest}.`,
+            `✍️ ${surname(d.name)} doesn't take long to find a seat: he signs with ${_dest}.`,
+            {pt:`✍️ ${surname(d.name)} não demora a achar lugar: assina com a ${_dest}.`})
+        : L(`🚪 ${surname(d.name)} se queda sin volante y sale del paddock. Pasó por tu garaje.`,
+            `🚪 ${surname(d.name)} is left without a drive and leaves the paddock. He came through your garage.`,
+            {pt:`🚪 ${surname(d.name)} fica sem volante e sai do paddock. Passou pela sua garagem.`}));
+    });
+  }catch(e){}
   /* 👑 y si el CAMPEÓN VIGENTE acabó en la nevera (su equipo lo soltó y no quedaban huecos), se le
      coloca con la misma regla que a los tuyos: un campeón no espera (1 caso en 120 temporadas, pero
      la regla es la regla). */
@@ -13257,7 +13301,7 @@ function tpSignDriver(i,c){
       }
     }
     if(!_colocado){
-      S.freeAgents=S.freeAgents||[]; S.freeAgents.push(_prev);
+      S.freeAgents=S.freeAgents||[]; _prev._exTuyo=yearNow(); S.freeAgents.push(_prev);
       S.pendingEvents.push(L(`🚪 ${surname(_prev.name)} se queda sin asiento: nadie renovó su contrato.`,
         `🚪 ${surname(_prev.name)} is left without a seat: nobody renewed his contract.`,
         {pt:`🚪 ${surname(_prev.name)} fica sem assento: ninguém renovou o contrato.`}));
