@@ -12423,6 +12423,26 @@ function tpMercado(){
       : L("Un hueco por cubrir. El mercado es tuyo: cada nombre lleva su probabilidad de decirte que sí.",
           "One seat to fill. The market is yours: every name carries his odds of saying yes.",
           {pt:"Uma vaga para cobrir. O mercado é seu: cada nome traz a probabilidade de dizer sim."})); }catch(e){}
+  /* 🐂 POR QUÉ NO PUEDES RENOVARLE (7-sep-2026, del mismo aviso del jugador de Racing Bulls: «a los
+     3-4 años no puedo renovar a mi mejor piloto»). La regla existe —una cantera no retiene veteranos,
+     solo forma— pero se aplicaba en silencio: el botón de renovar simplemente no estaba, y eso se lee
+     como un fallo, no como una regla. Solo aparece cuando de verdad te está pasando: hay un contrato
+     vencido y es la EDAD la que te impide renovarlo. */
+  try{
+    if(isRBJr(S.tpTeam)){
+      const _viejos=(S.seats[S.tpTeam]||[]).filter(d=>d && d!=="PLAYER" && (d.tpc||0)<=0
+        && !(S._tpRenovados||{})[d.name] && (d.age||0)>=RB_SALIDA-1);
+      if(_viejos.length){
+        const _n=_viejos.map(d=>surname(d.name)).join(" · ");
+        const _madre=JUNIOR_OF[S.tpTeam]||"la casa madre";
+        const _d2=$("decSub");
+        if(_d2) _d2.innerHTML = `<span class="aviso-consejo">🐂 `+L(
+          `${_n} ya no cabe en una cantera: ${_madre} no deja al filial retener a nadie de esa edad. O se lo llevan ellos, o sale.`,
+          `${_n} has outgrown an academy: ${_madre} won't let the junior team keep anyone that age. Either they call him up, or he leaves.`,
+          {pt:`${_n} já não cabe numa base: a ${_madre} não deixa a equipe B segurar ninguém dessa idade. Ou o chamam, ou ele sai.`})+`</span><br>`+_d2.innerHTML;
+      }
+    }
+  }catch(e){}
   try{ const _da=$("decSub"); const _av=tpAvisoHTML(); if(_da&&_av) _da.innerHTML=_av+_da.innerHTML; }catch(e){}
   if(S._tpNoTxt){ try{ const _d=$("decSub")||document.querySelector("#decision .sub"); if(_d) _d.innerHTML=S._tpNoTxt+"<br>"+_d.innerHTML; }catch(e){} S._tpNoTxt=null; }
   /* ✍️ …y la FIRMA también se ve (playtest de Carlos: «no se ve cuando un piloto acepta una oferta;
