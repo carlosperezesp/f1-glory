@@ -17870,7 +17870,16 @@ function endTPCareer(){
   const _gloria={};
   (S.seasons||[]).filter(r=>r.cat==="TP" && Array.isArray(r.tpDrv)).forEach(r=>{
     r.tpDrv.filter(d=>d && d.pos===1).forEach(d=>{
-      const g=_gloria[d.n]||(_gloria[d.n]={fl:d.fl||"🏁", years:[], teams:[]});
+      /* 🏳️ LA CLAVE ES APELLIDO + BANDERA, NO SOLO EL APELLIDO (8-sep-2026, captura de Carlos: en la
+         pantalla final salía «🇵🇹 Lindblad» y Lindblad es británico; en otra partida salía bien). Aquí se
+         agrupaba SOLO por apellido y la bandera se quedaba con la del PRIMER año en que ese apellido
+         ganó: si en veinte temporadas dos pilotos distintos compartían apellido —cosa que pasaba,
+         porque el bote de apellidos genéricos tenía 26 y no había memoria de los usados—, sus títulos
+         se fundían en una línea y uno se quedaba con la bandera del otro. Con la clave compuesta, dos
+         personas distintas ya no se mezclan aunque se apelliden igual. El bote ampliado de ayer quita
+         la causa; esto quita el efecto, y arregla también las partidas viejas al abrir su pantalla. */
+      const _k=(d.n||"")+"|"+(d.fl||"");
+      const g=_gloria[_k]||(_gloria[_k]={n:d.n, fl:d.fl||"🏁", years:[], teams:[]});
       g.years.push(r.year);
       const st=(S.tpStints||[]).find(x=>r.year>=x.y0 && r.year<=x.y1);
       if(st && g.teams.indexOf(st.team)<0) g.teams.push(st.team);
@@ -17880,7 +17889,7 @@ function endTPCareer(){
   if(_campeones.length){
     $("hallFame").innerHTML += "<h4 style=\"margin-top:14px\">"
       + L("🏆 A quién llevaste a la gloria","🏆 Who you took to glory",{pt:"🏆 Quem você levou à glória"})+"</h4>"
-      + _campeones.map(([n,g])=>{
+      + _campeones.map(([,g])=>{ const n=g.n;
           const _t=g.teams.join(" · ");
           /* 📅 cinco años seguidos escritos uno a uno —«2026, 2027, 2028, 2029, 2030»— no cabe en
              un móvil, que es donde se juega. Los consecutivos se comprimen en rango. */
