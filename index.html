@@ -8630,6 +8630,18 @@ let TP_DUENO_MIN = 3;    // años mínimos con el mismo dueño antes de que pued
 let TP_DUENO_P = .16;    // probabilidad anual de relevo a partir de ahí (~1 cada 6-7 años)
 let REG_MEZCLA = .40;    // cuánto tira el objetivo hacia la media de la parrilla (0 = como antes)
 let REG_CADA = [10,14];  // cada cuántos años vuelve la revolución técnica
+/* 🧑‍💼 EN EL MURO, MÁS A MENUDO — Y ES LO REALISTA (8-sep-2026). La queja de un jugador era que en el
+   modo jefe «no hay cambios de reglamento, y así siempre ganan los mismos». Medido: los hay, pero
+   con el primero en el año 8-14 y el siguiente 10-14 años después, en una partida REAL —donde te
+   pueden echar y la carrera media dura 7-8 temporadas— solo 2 de cada 12 llegan a ver uno. El 83%
+   de los jugadores no ve NINGUNO: por eso concluyen que no existen.
+   Y la realidad da la razón al jugador. Revoluciones técnicas de verdad entre 1990 y 2026 (fuente:
+   Motor Sport Magazine): 1994 (fuera las ayudas electrónicas), 1998 (coches estrechos y neumáticos
+   ranurados), 2009 (aerodinámica nueva, KERS y slicks), 2014 (híbridos V6), 2017 (coches anchos),
+   2022 (efecto suelo) y 2026 (unidades nuevas). Siete en treinta y siete años: una cada CINCO. El
+   juego iba a una cada doce.
+   Solo en el modo jefe: el clásico conserva sus números, que tienen su propia calibración. */
+let REG_CADA_TP = [6,9], REG_PRIM_TP = [4,7];
 let REG_MEMORIA = .50;   /* cuánto pesa la grandeza (caché) en el sorteo del reseteo. Medido a 20
                             temporadas: con 0 la parrilla queda INVERTIDA (Haas 46% en el top 4,
                             McLaren 35%); con 0,3 queda plana; con 0,5 hay jerarquía sin candado
@@ -10845,7 +10857,7 @@ function regReset(){
   /* 🔁 Y SE VUELVE A PROGRAMAR. Antes era una sola por partida (`regDone` la cerraba para siempre).
      `regDone` se queda como estaba —«ya ha habido al menos una», que es lo que miran los dilemas— y
      el calendario pasa a `regReg`. */
-  S.regReg = yearNow() + irnd(REG_CADA[0], REG_CADA[1]);
+  S.regReg = yearNow() + (S.cat==="TP" ? irnd(REG_CADA_TP[0], REG_CADA_TP[1]) : irnd(REG_CADA[0], REG_CADA[1]));
   S.regReveal={brawn:brawn.name, rumor:rumor.name, rumorTrue, year:yearNow(),
                bet:S.regBet||null, grade:S.regBetGrade||null, refused:S.regBetRefused||null};
   /* 🐲 …Y LA BESTIA SE RECOLOCA (medido el 6-sep-2026, la víspera del reto: su coche caía UNA
@@ -11820,6 +11832,10 @@ function ejePuesto(tn, eje){
 }
 function initTPState(){
   S.cat="TP";
+  /* 🏁 LA PRIMERA REVOLUCIÓN, DENTRO DE TU MANDATO. Venía del año base +8..14, o sea después de la
+     carrera media de un jefe (7-8 temporadas): la mayoría no llegaba a verla. Ahora cae en el 4º-7º
+     año, que es cuando todavía estás en el puesto para sufrirla y aprovecharla. */
+  S.regReg = S.baseYear + irnd(REG_PRIM_TP[0], REG_PRIM_TP[1]);
   initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
   /* 🎲 OVR VARIABLE POR PARTIDA (idea de Carlos, 18-ago). El nivel de los titulares venía FIJO del
      dato de la era (solo el techo se sorteaba); en el modo jefe eso hacía cada partida demasiado
