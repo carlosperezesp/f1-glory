@@ -1495,11 +1495,53 @@ const SUPPORTERS = [
   {n:"Aaron Grixti", f:"🇲🇹", t:2, driver:"A. Grixti"},   // 🇲🇹 el primer maltés de la parrilla
   {n:"cl0vahh", f:"🇬🇧", t:2, driver:"F. Pyle"},
 ];
-const GEN_NAMES = [["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
+/* 🪪 EL BOTE DE APELLIDOS GENÉRICOS (ampliado el 8-sep-2026 por un aviso de un jugador: «cuando se
+   generan nuevas promesas hay muchas que repiten nombres: dos o tres mexicanos llamados Salazar,
+   japoneses Okada y Nakamura, españoles Vega, daneses Sørensen»). Tenía razón, y la causa era de
+   manual: el bote eran VEINTISÉIS apellidos, y una carrera larga genera bastantes más pilotos que
+   eso. El filtro anti-duplicados de abajo solo evitaba dos nombres IDÉNTICOS a la vez, así que
+   «A. Salazar» y «M. Salazar» con tres años de diferencia pasaban limpios.
+   Ahora son 120, por los países que tienen cantera de verdad, y —esto es lo que arregla la queja— un
+   apellido usado no vuelve a salir en esa partida. */
+const GEN_NAMES = [
+  ["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
   ["Lefèvre","🇫🇷"],["Fischer","🇩🇪"],["Andersen","🇩🇰"],["Salazar","🇲🇽"],["Sørensen","🇩🇰"],["Nakamura","🇯🇵"],
   ["Oliveira","🇧🇷"],["Vidal","🇪🇸"],["Brandt","🇩🇪"],["Escobar","🇨🇴"],["Larsen","🇩🇰"],["Romano","🇮🇹"],["Vega","🇪🇸"],
-  ["Pereyra","🇦🇷"],["Benedetti","🇦🇷"]];
+  ["Pereyra","🇦🇷"],["Benedetti","🇦🇷"],
+  ["Ferrer","🇪🇸"],["Gallardo","🇪🇸"],["Bermejo","🇪🇸"],["Roldán","🇪🇸"],["Iriarte","🇪🇸"],["Cuesta","🇪🇸"],
+  ["Fontana","🇮🇹"],["Greco","🇮🇹"],["Rizzo","🇮🇹"],["Bellini","🇮🇹"],["Conti","🇮🇹"],["Sartori","🇮🇹"],
+  ["Marchand","🇫🇷"],["Gauthier","🇫🇷"],["Rousseau","🇫🇷"],["Perrin","🇫🇷"],["Chevalier","🇫🇷"],["Thibault","🇫🇷"],
+  ["Keller","🇩🇪"],["Wagner","🇩🇪"],["Neumann","🇩🇪"],["Bergmann","🇩🇪"],["Reuter","🇩🇪"],["Lindner","🇩🇪"],
+  ["Whitfield","🇬🇧"],["Ashby","🇬🇧"],["Hargreaves","🇬🇧"],["Kingsley","🇬🇧"],["Marsden","🇬🇧"],["Thorne","🇬🇧"],
+  ["Ellery","🇬🇧"],["Kilburn","🇬🇧"],
+  ["Ribeiro","🇧🇷"],["Azevedo","🇧🇷"],["Nogueira","🇧🇷"],["Tavares","🇧🇷"],["Mendonça","🇧🇷"],["Bastos","🇧🇷"],
+  ["Quiroga","🇦🇷"],["Sosa","🇦🇷"],["Ferreyra","🇦🇷"],["Bonelli","🇦🇷"],
+  ["Zamora","🇲🇽"],["Treviño","🇲🇽"],["Ibarra","🇲🇽"],["Cortés","🇲🇽"],
+  ["Kurosawa","🇯🇵"],["Ishikawa","🇯🇵"],["Fujii","🇯🇵"],["Morita","🇯🇵"],["Sakamoto","🇯🇵"],
+  ["Kjær","🇩🇰"],["Holm","🇩🇰"],
+  ["Ekström","🇸🇪"],["Norberg","🇸🇪"],["Sandell","🇸🇪"],
+  ["Berg","🇳🇴"],["Solheim","🇳🇴"],
+  ["Virtanen","🇫🇮"],["Laine","🇫🇮"],["Nieminen","🇫🇮"],["Koskela","🇫🇮"],
+  ["Van Dijk","🇳🇱"],["Bakker","🇳🇱"],["Visser","🇳🇱"],["Hoekstra","🇳🇱"],
+  ["Zieliński","🇵🇱"],["Wójcik","🇵🇱"],["Nowicki","🇵🇱"],
+  ["Dvořák","🇨🇿"],["Procházka","🇨🇿"],
+  ["Faria","🇵🇹"],["Machado","🇵🇹"],
+  ["Cárdenas","🇨🇴"],["Restrepo","🇨🇴"],
+  ["Carraway","🇺🇸"],["Whitaker","🇺🇸"],["Brennan","🇺🇸"],["Shelton","🇺🇸"],
+  ["Callahan","🇦🇺"],["Whitmore","🇦🇺"],["Doyle","🇦🇺"],
+  ["Tremblay","🇨🇦"],["Gagnon","🇨🇦"],["Beaulieu","🇨🇦"],
+  ["Fankhauser","🇨🇭"],["Zimmerli","🇨🇭"],
+  ["Steinbacher","🇦🇹"],["Gruber","🇦🇹"],
+  ["Vandenberg","🇧🇪"],["Claes","🇧🇪"],
+  ["O'Sullivan","🇮🇪"],["Doherty","🇮🇪"],
+  ["Van Wyk","🇿🇦"],["Botha","🇿🇦"],
+  ["Chandran","🇮🇳"],["Malhotra","🇮🇳"],
+  ["Chen","🇨🇳"],["Liu","🇨🇳"],
+  ["Seo","🇰🇷"],["Wijaya","🇮🇩"],
+  ["Yılmaz","🇹🇷"],["Demir","🇹🇷"],
+  ["Papadakis","🇬🇷"],["Kovács","🇭🇺"],["Szabó","🇭🇺"],["Ionescu","🇷🇴"],
+  ["Píriz","🇺🇾"],["Fuenzalida","🇨🇱"],["Kirkpatrick","🇳🇿"],["Al Marri","🇦🇪"]];
 // 🏆 estrellas reales de OTRAS categorías (IndyCar/WEC/FE) que pueden CRUZAR a la F1 a su EDAD REAL:
 // año de nacimiento → edad según el año de la partida, nivel de veterano (base) que decae con la edad.
 /* 🏆 CROSSOVERS DE LOS 90. Los de la lista general nacieron del 79 en adelante, así que en una partida
@@ -4505,9 +4547,19 @@ function mkRookie(noCross, forTeam){
      uno sentado en dos sitios. Se reintenta con otro apellido y otra inicial hasta que el nombre esté
      libre; si tras doce intentos sigue chocando, se acepta el último antes que quedarse sin novato. */
   else { let g, _n, _i2=0;
+    /* 🪪 NI EL MISMO APELLIDO DOS VECES EN LA MISMA PARTIDA (8-sep-2026). Antes solo se comparaba el
+       nombre COMPLETO contra los que corren AHORA, así que dos Salazar separados por tres años —o uno
+       mientras el otro esperaba en la bolsa— pasaban el filtro limpios. Ahora el apellido se apunta al
+       usarse y no vuelve a salir, y además se compara contra los apellidos de la parrilla, que es de
+       donde venían los choques con los pilotos reales. Si tras 24 intentos no queda ninguno libre (bote
+       agotado en una partida larguísima) se acepta el último: mejor repetir que quedarse sin novato,
+       que es justo lo que ya hacía la versión anterior. */
+    const _ap = S._genApe = S._genApe || {};
+    const _libre = ap => !_ap[ap] && !S.dpool.some(d=>d && d.name && surname(d.name)===ap);
     do{ g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)];
         _n = /\.\s/.test(g[0]) ? g[0] : GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0];
-    } while(++_i2<12 && S.dpool.some(d=>d && d.name===_n));
+    } while(++_i2<24 && (S.dpool.some(d=>d && d.name===_n) || !_libre(g[0])));
+    _ap[g[0]]=true;
     name=_n; flag=g[1]; }
   // 🌟 talento generacional: cada cierto tiempo emerge un FENÓMENO (ya fuerte de novato, techo altísimo) que
   // reemplaza a los Verstappen que se retiran → cada época conserva sus estrellas y el top no se hunde con los años.
@@ -8150,7 +8202,15 @@ function renderDilemma(dl, repintar){
       // caracteres: los desenlaces largos se iban a media frase y unos dilemas parecían rápidos y otros
       // lentos sin motivo (lo cazó Carlos). Ahora el tiempo sale de lo que hay que leer, con suelo de
       // 3 s y techo de 7,5 s… y un botón para seguir ya, que quien lee rápido no tiene por qué esperar.
-      const espera=Math.min(7500, Math.max(3000, 1400+String(txt).length*28));
+      /* ⏱️ 45 ms POR CARÁCTER Y TECHO DE 14 s (7-sep-2026, aviso de un jugador: «hay veces que el texto
+         es bastante largo y no da tiempo a leerlo»). Los números viejos —28 ms y techo de 7,5 s— salían
+         de una calibración anterior y se quedaban cortos justo donde importa: medidos los 571 textos
+         largos del juego, la mediana son 134 caracteres (bien) pero 1 de cada 10 pasa de 261, y un
+         texto de 261 caracteres son unas 45 palabras: leerlas cómodo son doce o trece segundos, no
+         siete y medio. A 45 ms/carácter (≈22 caracteres por segundo, ritmo de lectura tranquilo) la
+         mediana pasa a 7,4 s y los largos a 13-14. El botón «Continuar» sigue ahí para quien lea
+         rápido: esto es el suelo de quien no lo pulsa, no una espera obligatoria. */
+      const espera=Math.min(14000, Math.max(3500, 1200+String(txt).length*45));
       let ido=false, tmr=0;
       const seguir=()=>{ if(ido) return; ido=true; clearTimeout(tmr); startSeasonRun(); };
       tmr=setTimeout(seguir, espera);
