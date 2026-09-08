@@ -17979,6 +17979,25 @@ function endTPCareer(){
    en obras: cada idioma sale del candado cuando esté entero, no antes y no todos a la vez. */
 LANGS.push("pt");
 if(PREVIEW) LANGS.push("pl","fr");   // en obras: solo visibles en modo pruebas
+/* 🌐 PRIMERA VISITA: EL IDIOMA DEL NAVEGADOR (8-sep-2026). El juego arrancaba SIEMPRE en español y no
+   miraba de dónde entrabas, así que un jugador de Brasil veía el juego en español, no descubría el
+   selector 🌐… y dejaba que Chrome le tradujera la página por encima. Se destapó con una captura suya:
+   ponía «20 ESTAÇÕES», «SEUS PALCOS NA PAREDE» y «Lótus» — nada de eso está en el código, y nuestro
+   portugués dice «temporadas». O sea, teníamos 1.300 frases escritas a mano en portugués y esa persona
+   estaba leyendo una traducción automática mala del español.
+   Ahora, SOLO si no hay idioma guardado, se coge el del navegador entre los que están ABIERTOS
+   (`LANGS`, ya resuelto arriba: es · en · pt). No se guarda a propósito: lo guardado es la elección
+   EXPRESA del jugador, que manda siempre; y si alguien cambia el idioma de su móvil, el juego le
+   sigue. `applyLang` pone además el `lang` del documento, que es lo que hace que el navegador deje de
+   ofrecer la traducción. */
+try{
+  if(!localStorage.getItem("f1lang")){
+    const _nav=(navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language||""])
+      .map(x=>String(x||"").slice(0,2).toLowerCase());
+    const _hit=_nav.find(x=>LANGS.indexOf(x)>=0);
+    if(_hit) LANG=_hit;
+  }
+}catch(e){}
 /* 🔒 LA ÚNICA PUERTA. Si el idioma guardado todavía no está abierto al público, se vuelve al español
    Y SE BORRA lo guardado: si no, el día que se abra el polaco, a quien lo probara en el preview se le
    pondría el juego en polaco sin haberlo pedido. */
