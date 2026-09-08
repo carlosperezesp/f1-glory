@@ -4428,7 +4428,11 @@ const GEN_INITIALS="ADEFGHJKLMNOPRSTV";
    Así que se sortea aparte: AL EMPEZAR la partida, con probabilidad P_SUP, uno de los mecenas «tiene
    ficha» para esa carrera y debuta como un novato más en algún momento. Uno por carrera como mucho:
    es un guiño, no una invasión. */
-let P_SUP=.10;
+/* 📈 .13 Y NO .10 DESDE EL 8-sep-2026: la ficha se sortea ENTRE los mecenas, así que cada uno nuevo
+   diluye a los anteriores. Con tres, a cada uno le tocaba el 3,3% de las partidas; al entrar el cuarto
+   habría bajado al 2,5%. Con .13 vuelven a ~3,3% cada uno y sigue saliendo como mucho uno por carrera.
+   ⚠️ No es una constante: si entra un quinto hay que volver a subirlo (~.16) o asumir la dilución. */
+let P_SUP=.13;
 const SUP_DRIVERS=SUPPORTERS.filter(s=>(s.t||0)>=2 && s.pool!==false).map(s=>[s.driver||s.n, s.f||"🏁"]);
 SUP_DRIVERS.forEach(d=>{ if(!GEN_NAMES.some(g=>g[0]===d[0])) GEN_NAMES.push([d[0], d[1]]); }); // y además, en el bote
 function pickSupDriver(){ return (SUP_DRIVERS.length && ch(P_SUP)) ? SUP_DRIVERS[irnd(0,SUP_DRIVERS.length-1)] : null; }
