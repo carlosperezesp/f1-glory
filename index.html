@@ -17994,8 +17994,15 @@ try{
   if(!localStorage.getItem("f1lang")){
     const _nav=(navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language||""])
       .map(x=>String(x||"").slice(0,2).toLowerCase());
-    const _hit=_nav.find(x=>LANGS.indexOf(x)>=0);
-    if(_hit) LANG=_hit;
+    /* 🗺️ LA REGLA, EN PALABRAS DE CARLOS (8-sep-2026): «español a España, portugués a portugués, el
+       resto a inglés». Cualquier variante del español —es-MX, es-AR, es-419— cuenta como español; el
+       inglés es la puerta de todos los demás, incluidos francés, polaco, italiano o alemán, porque un
+       lector de esos idiomas entiende antes el inglés que el español (es la misma decisión que ya
+       estaba tomada en FALLBACK para las frases sin traducir). */
+    const _pref=_nav[0]||"";
+    LANG = (_pref==="es") ? "es"
+         : (_pref==="pt" && LANGS.indexOf("pt")>=0) ? "pt"
+         : "en";
   }
 }catch(e){}
 /* 🔒 LA ÚNICA PUERTA. Si el idioma guardado todavía no está abierto al público, se vuelve al español
