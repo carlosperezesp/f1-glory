@@ -12336,6 +12336,26 @@ function tpYearStart(){
   /* 🚑 «el lesionado vuelve entero» ya no necesita código: nunca se le toca el nivel. Se pierde
      N carreras, no puntúa en ellas, y al año siguiente corre las suyas como cualquiera. */
   tpCosechar();          // 🌾 primero lo sembrado hace años: llega pase lo que pase
+  /* 🔧 «MEJORO Y NO SE VE» (9-sep-2026, dos jugadores distintos: «sigo sin entender cómo funcionan las
+     opciones de mejorar el coche» y «metería más opciones o lo explicaría mejor»). Medido: desde un
+     coche de cola, continuidad sube +1,4 al año… con la media de la parrilla en 76. O sea que el
+     coche SÍ mejora, pero el jugador mira las estrellas —que son un PUESTO, no una nota— y el puesto
+     no se mueve, así que concluye que su decisión no ha servido de nada.
+     Esto no explica la mecánica: cuenta lo que ha pasado, en el idioma del paddock y sin un solo
+     número. Y solo salta en el caso exacto de la queja —el coche mejora de verdad y aun así no
+     adelantas a nadie—, nunca dos inviernos seguidos, para que no se vuelva ruido de fondo. */
+  {
+    const _p = S.f1perf[S.tpTeam] || 0;
+    const _ord = [...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+    const _pos = _ord.indexOf(S.tpTeam) + 1;
+    if(S._perfPrev != null && (_p - S._perfPrev) >= 1 && _pos >= S._posPrev && S._avisoMejoraY !== yearNow()-1){
+      S._avisoMejoraY = yearNow();
+      tpAviso(L("🔧 De la fábrica sale un coche mejor que el del año pasado. En la parrilla todavía no se nota: los de delante también han apretado.",
+                "🔧 The factory turns out a better car than last year's. It doesn't show on the grid yet: the ones ahead have pushed too.",
+                {pt:"🔧 Da fábrica sai um carro melhor que o do ano passado. No grid ainda não se nota: os da frente também apertaram."}));
+    }
+    S._perfPrev = _p; S._posPrev = _pos;
+  }
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   tpVenganzaCheck(); tpSabbaticalCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
