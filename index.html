@@ -13688,6 +13688,16 @@ function tpRumboScreen(){
   if(_arriba){ penProyecto+=1.5; avisoProyecto+="<br><span class=\"aviso-consejo\">⚠️ "+L("Tienes un coche ganador: si aun así sacrificas el año, el consejo se enfada y pierdes prestigio","You have a winning car: sacrifice the year anyway and the board sours — you lose prestige",{pt:"Você tem um carro vencedor: se ainda assim sacrificar o ano, o conselho se irrita e você perde prestígio"})+"</span>"; }
   if(_fin){ penProyecto+=1; avisoProyecto+="<br><span class=\"aviso-consejo\">💼 "+L("Tu dueño no espera dos años: elegir esto también te cuesta prestigio","Your owner won't wait two years: choosing this costs prestige too",{pt:"O seu dono não espera dois anos: escolher isto também custa prestígio"})+"</span>"; }
   if(_abajo && !avisoProyecto) avisoProyecto="<br><span class=\"aviso-ok\">✅ "+L("Con este coche, el consejo te deja construir en paz","With this car, the board lets you build in peace",{pt:"Com este carro, o conselho te deixa construir em paz"})+"</span>";
+  /* 🏗️ ¿EL CONSEJO TE DEJA CONSTRUIR? La línea de arriba se lo PROMETE al jugador cuando su coche es
+     de los dos últimos… y era mentira: el listón del año se fija ANTES de que elijas rumbo
+     (`S.tpGoal`, en `tpYearStart`), así que el proyecto te baja el coche, fallas el objetivo que ya
+     te habían puesto y a los dos años te echan. Medido desde el peor coche con despido activo: solo
+     el 20% de las partidas llegaba a la 5ª temporada eligiendo proyecto, contra el 67% exprimiendo.
+     Es la queja que llegó por Twitter: «siempre me echan cuando intento un proyecto a largo plazo
+     con los coches de baja tabla». Con esta marca, elegirlo enciende `tpGrace` —la pieza que ya
+     existía: fallas, pero ese año no cuenta para el despido— y la promesa se cumple. Con un coche
+     bueno no hay gracia: ahí sacrificar el año sigue costando prestigio, como avisa la otra línea. */
+  S._proyectoEnPaz = !!(_abajo && !penProyecto);
   S._penProyecto=penProyecto;
   const mk=(dot,nm,sub,fn)=>{
     const b=document.createElement("button"); b.className="offer dilemma";
@@ -13731,6 +13741,7 @@ function tpRumboScreen(){
     ()=>{ // la decisión no otorga el resultado: 1 de cada 4 proyectos grandes se atasca en el túnel de viento
       S.tpSinExprimir=(S.tpSinExprimir||0)+1;
       if(S._penProyecto) TPRE(-S._penProyecto);   // el precio de sacrificar el presente, avisado antes
+      if(S._proyectoEnPaz) S.tpGrace=true;        // 🏗️ el consejo firma el proyecto: este año no cuenta
       S.f1perf[tn]=Math.max(60,(S.f1perf[tn]||75)-rnd(RB_PR_YA[0],RB_PR_YA[1]));   // el peaje de hoy
       S.tpTopYears=0;                                   // 🌪️ un coche nuevo de cero reinicia el ciclo
       tpSembrar(1, rnd(RB_PR_A1[0],RB_PR_A1[1]));       // el año que viene, un pelillo por encima
