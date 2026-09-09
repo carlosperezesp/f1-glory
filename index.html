@@ -2543,7 +2543,9 @@ const LEYENDAS_RETIRADAS = {
 };
 function retiredSeed(baseYear){
   (LEYENDAS_RETIRADAS[baseYear]||[]).forEach(function(L6){
-    S.retiredPool.push({name:L6[0], flag:L6[1], skill:L6[2], age:L6[3], titles:L6[4],
+    /* 🎂 la edad del dato es la que TENÍA AL RETIRARSE; el bolsillo la quiere a día de hoy */
+    S.retiredPool.push({name:L6[0], flag:L6[1], skill:L6[2],
+                        age:L6[3] + Math.max(0, baseYear - (L6[5]||baseYear)), titles:L6[4],
                         retiredYear:L6[5], sembrado:true, excepcion:!!L6[6]});
   });
 }
@@ -3596,7 +3598,8 @@ function setupChallenge(CH){
           const _y=L6[5];
           if(_y==null || _y>=_ano || (_ano-_y)>8) return;
           if(S.retiredPool.some(r=>r && r.name===L6[0])) return;
-          S.retiredPool.push({name:L6[0], flag:L6[1], skill:L6[2], age:L6[3], titles:L6[4],
+          S.retiredPool.push({name:L6[0], flag:L6[1], skill:L6[2],
+                              age:L6[3] + Math.max(0, _ano - _y), titles:L6[4],
                               retiredYear:_y, sembrado:true, excepcion:!!L6[6]});
         });
       });
@@ -4689,8 +4692,8 @@ function npcSeason(row){
            notables, el tope tiraba el 46% —y justo el 46% con los nombres más gordos, porque quien
            aguanta hasta los 40 en la F1 suele ser un fuera de serie: 21 de 40-41 años, 17 de 42-43 y
            18 de 44+—. El comeback NO se descontrola porque lleva su propio guardián aparte
-           (`r.age+fuera>42`): un tipo que cuelga el casco a los 45 entra al bolsillo pero nunca
-           volverá a tiempo completo. Un bolsillo, dos filtros. */
+           (`r.age>42`, con la edad ya al día): un tipo que cuelga el casco a los 45 entra al bolsillo
+           pero nunca volverá a tiempo completo. Un bolsillo, dos filtros. */
         if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||0)>=27
            && !(S.retiredPool||[]).some(r=>r && r.name===d.name))   // 🧍 nunca dos veces en el bolsillo
           (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
@@ -4704,9 +4707,13 @@ function npcSeason(row){
      asientos, así que solo envejecía quien estaba en la parrilla. El que se quedaba sin volante
      —agente libre, o esperando en el bote— se congelaba en su edad para siempre, y como los filtros
      de fichaje miran la edad, seguía apareciendo como opción década tras década.
-     ⚠️ NO se toca `S.retiredPool`: ésos no envejecen a propósito, su edad se calcula al volver
-     (`back.age = r.age + fuera`), y sumarles aquí los contaría dos veces. El probador tampoco: ya
-     cumple años en su propia función. */
+     🏁 Y EL BOLSILLO DE RETIRADOS, TAMBIÉN (decisión de Carlos, 9-sep-2026, tras otro aviso del
+     mismo jugador: «un Vettel de 37 años en 2039; no puede pasar, tiene que envejecer como todo el
+     mundo»). Antes su edad se congelaba y cada consumidor la descongelaba por su cuenta sumándole
+     los años fuera —dos lo hacían y uno se olvidó—. Ahora cumplen años aquí, una sola vez y en un
+     solo sitio, y los tres filtros leen la edad tal cual. Al que acaba de colgar el casco no se le
+     suma: ya cumplió años arriba, en el bucle de los asientos. El probador tampoco: cumple en su
+     propia función. */
   {
     const _conAsiento=new Set();
     Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d && d!=="PLAYER") _conAsiento.add(d); }));
@@ -4716,6 +4723,11 @@ function npcSeason(row){
       if(!d || d==="PLAYER" || d.beast || d.age==null) return;
       if(_conAsiento.has(d) || _ya.has(d)) return;
       _ya.add(d); d.age++;
+    });
+    (S.retiredPool||[]).forEach(r=>{
+      if(!r || r.age==null || _ya.has(r)) return;
+      if((r.retiredYear||0) >= yearNow()) return;   // se ha retirado este mismo año: ya cumplió arriba
+      _ya.add(r); r.age++;
     });
   }
   if(row && row._adioses && row._adioses.length){
@@ -5232,7 +5244,7 @@ function maybeComeback(row){
   const cands=S.retiredPool.filter(r=>{
     const fuera=yr-r.retiredYear;
     if(fuera<2 || fuera>4) return false;
-    if(r.age+fuera>42) return false;
+    if(r.age>42) return false;   // 🎂 la edad del bolsillo ya viene al día; antes había que sumarle `fuera`
     if(NO_TAUNT[r.name]!=null && yr>=NO_TAUNT[r.name]) return false; // respeto (ver nota de NO_TAUNT)
     return true;
   });
@@ -5252,7 +5264,7 @@ function maybeComeback(row){
   if(wi<0) return;
   const org=S.dpool.find(d=>d.name===r.name);
   const back = org || {name:r.name, flag:r.flag, titles:r.titles};
-  back.age=r.age+fuera; back.skill=skill; back.ceil=Math.max(back.ceil||0, skill+1); back.yrs=0;
+  back.age=r.age; back.skill=skill;   // 🎂 la edad del bolsillo ya está al día: sumarle `fuera` la contaría dos veces back.ceil=Math.max(back.ceil||0, skill+1); back.yrs=0;
   if(!org) S.dpool.push(back);
   sl[wi]=back;
   S.retiredPool=S.retiredPool.filter(x=>x!==r);
@@ -8814,6 +8826,19 @@ function rebrandTeam(oldName, to, row){
     if(!(PALM_HEREDA[oldName]===nn || PALM_HEREDA[nn]===oldName)) p.h=null;
     if(p.h || (p.j && (p.j.nc||p.j.nd))) S.palm[nn]=p;
   }
+  /* 🧑‍💼 …Y EL MURO. Este bloque NO EXISTÍA: `rebrandTeam` es más viejo que el modo jefe, así que
+     cuando tu equipo cambiaba de nombre (Alpine→Renault) `S.tpTeam` se quedaba con el nombre viejo y
+     a partir de ahí nada de lo tuyo se encontraba. Lo contó un jugador el 9-sep-2026 con dos
+     síntomas que son el mismo fallo: `S.rankC[tuEquipo]` daba undefined y caía al `|| nT` del final,
+     así que un 2º de constructores se leía como ÚLTIMO y el consejo te lo apuntaba como año fallado;
+     y `S.seats[tuEquipo]` daba vacío, así que en el panel no salía ninguno de tus pilotos, solo el
+     probador —que vive en `S.tpReserva` y por eso sí aparecía—. */
+  if(S.tpTeam===oldName) S.tpTeam=nn;
+  if(S.tpFiredBy===oldName) S.tpFiredBy=nn;
+  if(S.tpVentaForzosa===oldName) S.tpVentaForzosa=nn;
+  if(S.tpFiaDQ && S.tpFiaDQ.team===oldName) S.tpFiaDQ.team=nn;
+  (S.tpStints||[]).forEach(st=>{ if(st && st.team===oldName) st.team=nn; });
+  (S.tpSaleQ||[]).forEach(q=>{ if(q && q.to===oldName) q.to=nn; });
   if(S.gigTeam===oldName) S.gigTeam=nn;
   if(S.gigResucitado===oldName) S.gigResucitado=nn;
   if(S.roleTeam===oldName) S.roleTeam=nn;
@@ -14849,10 +14874,21 @@ function tpNombrarNumeroUno(i){
 function tpEtiquetaNumeroUno(i){
   const a=tpDrvs(); const d=a[i], o=a[1-i];
   if(!d) return "";
-  const masRapido = o && (d.skill||0) > (o.skill||0);
-  const marca = !o ? "" : masRapido
+  /* ⚖️ CUATRO ESTADOS, NO DOS (aviso de un jugador, 9-sep-2026: le salieron los DOS pilotos marcados
+     como «el más lento»). La comparación era estricta, así que con dos pilotos del mismo nivel
+     ninguno era «el más rápido» y los dos caían en el otro lado. Y el empate no es un caso raro:
+     este dilema salta justamente cuando los dos están a nada el uno del otro.
+     🎯 Y la forma de arreglarlo la decidió Carlos: cuando la diferencia existe pero es pequeña se
+     dice «ligeramente», y cuando están IGUALADOS DE VERDAD no se dice nada — no es que falte el
+     dato, es que no hay dato: elijas al que elijas, es el mismo piloto. */
+  const dif = !o ? 0 : (d.skill||0) - (o.skill||0);
+  const marca = !o || dif===0 ? "" : dif>2
     ? L(" · el más rápido"," · the faster one",{pt:" · o mais rápido"})
-    : L(" · el más lento"," · the slower one",{pt:" · o mais lento"});
+    : dif>0
+    ? L(" · ligeramente más rápido"," · slightly faster",{pt:" · ligeiramente mais rápido"})
+    : dif<-2
+    ? L(" · el más lento"," · the slower one",{pt:" · o mais lento"})
+    : L(" · ligeramente más lento"," · slightly slower",{pt:" · ligeiramente mais lento"});
   return L(`Nº1 para ${surname(d.name)}${marca}`,`No.1 to ${surname(d.name)}${marca}`,{pt:`Nº1 para ${surname(d.name)}${marca}`});
 }
 /* 📈 CUANDO YA NO CABE MÁS NIVEL, SUBE EL TECHO (decisión de Carlos, 26-ago-2026).
@@ -17286,7 +17322,7 @@ const TP_DILEMAS=[
          Alonso, que retirándose en 2026 con 45 aparecería con 47. Con 45 lo perdíamos.
          🎬 Hayes es la excepción declarada: el juego YA lo sienta con 50 años por diseño (es el
          personaje de la película, y ser un fósil es literalmente su historia). */
-      if(!v.excepcion && ((v.age||0)+fuera) > 47) return false;
+      if(!v.excepcion && (v.age||0) > 47) return false;   // 🎂 ídem: la edad ya viene al día
       return true; });
     if(!cands.length) return false;
     /* 🎲 NO SIEMPRE EL MEJOR. Coger siempre al de más nivel hacía dos daños: el dilema salía
