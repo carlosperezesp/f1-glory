@@ -8642,6 +8642,11 @@ let REG_CADA = [10,14];  // cada cuántos años vuelve la revolución técnica
    juego iba a una cada doce.
    Solo en el modo jefe: el clásico conserva sus números, que tienen su propia calibración. */
 let REG_CADA_TP = [6,9], REG_PRIM_TP = [4,7];
+/* 🌬️ EL REPARTO DE TÚNEL AL REVÉS. Existe de verdad desde 2021: cuanto peor acabas el mundial de
+   constructores, más horas de túnel de viento te dan al año siguiente. Nadie sabe cuánto va a durar,
+   así que el juego tampoco: cada partida sortea un final invisible dentro de esta horquilla. */
+const TUNEL_DESDE = 2021, TUNEL_FIN = [2033, 2043];
+function tunelVivo(){ return yearNow()>=TUNEL_DESDE && yearNow()<=(S.regTunelFin||0); }
 let REG_MEMORIA = .50;   /* cuánto pesa la grandeza (caché) en el sorteo del reseteo. Medido a 20
                             temporadas: con 0 la parrilla queda INVERTIDA (Haas 46% en el top 4,
                             McLaren 35%); con 0,3 queda plana; con 0,5 hay jerarquía sin candado
@@ -11836,6 +11841,7 @@ function initTPState(){
      carrera media de un jefe (7-8 temporadas): la mayoría no llegaba a verla. Ahora cae en el 4º-7º
      año, que es cuando todavía estás en el puesto para sufrirla y aprovecharla. */
   S.regReg = S.baseYear + irnd(REG_PRIM_TP[0], REG_PRIM_TP[1]);
+  S.regTunelFin = irnd(TUNEL_FIN[0], TUNEL_FIN[1]);   // 🌬️ y cuándo se acaba el reparto al revés: invisible
   initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
   /* 🎲 OVR VARIABLE POR PARTIDA (idea de Carlos, 18-ago). El nivel de los titulares venía FIJO del
      dato de la era (solo el techo se sorteaba); en el modo jefe eso hacía cada partida demasiado
@@ -12355,6 +12361,14 @@ function tpYearStart(){
                 {pt:"🔧 Da fábrica sai um carro melhor que o do ano passado. No grid ainda não se nota: os da frente também apertaram."}));
     }
     S._perfPrev = _p; S._posPrev = _pos;
+  }
+  /* 📋 …y el día que se acaba el reparto al revés. Solo se cuenta a quien ha llegado a jugarlo: si
+     `tpTunel` no ha salido nunca en esta partida, esta noticia no significa nada. */
+  if(S.regTunelFin && yearNow()===S.regTunelFin+1 && !S._avisoTunelFin && S.usedDilemmas && S.usedDilemmas.tpTunel!=null){
+    S._avisoTunelFin=true;
+    tpAviso(L("📋 Cambio en el reglamento: se acaba el reparto de horas de túnel de viento por puesto. A partir de ahora todos los equipos tienen las mismas.",
+              "📋 Rule change: the sliding scale of wind-tunnel hours by championship position is over. From now on every team gets the same.",
+              {pt:"📋 Mudança no regulamento: acaba a distribuição de horas de túnel de vento por posição. A partir de agora todas as equipes têm as mesmas."}));
   }
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   tpVenganzaCheck(); tpSabbaticalCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
@@ -14048,6 +14062,16 @@ function simTP(row){
      último: es que no estás. Por eso nT+1, un escalón por debajo del último equipo que sí existe —
      si no, quedabas EMPATADO con el colista, que no es lo mismo ni de lejos. */
   const _dqYo = !!(S.tpFiaDQ && S.tpFiaDQ.team===tn && S.tpFiaDQ.year===row.year);
+  /* 🌬️ EL PUESTO QUE CEDISTE (`tpTunel`). Si en la última carrera decidiste no pelear ese puesto, aquí
+     es donde pasa de verdad: cambias el sitio con el equipo que tenías justo detrás. Va ANTES de `cPos`
+     a propósito, porque el consejo tiene que leer el resultado con el puesto ya cedido: si el listón
+     era ese, lo has fallado tú, y eso es exactamente el dilema. */
+  if(S._tunelBajar){
+    S._tunelBajar=false;
+    const _mio=S.rankC[tn], _nAll=Object.keys(S.rankC).length;
+    const _otro=Object.keys(S.rankC).find(t=>S.rankC[t]===_mio+1);
+    if(_mio && _otro && _mio<_nAll){ S.rankC[tn]=_mio+1; S.rankC[_otro]=_mio; }
+  }
   const cPos = _dqYo ? nT+1 : (S.rankC[tn]||nT);
   const myDrv=(S.seats[tn]||[]).filter(d=>d&&d!=="PLAYER");
   // números narrativos de tus dos pilotos, derivados de su puesto REAL en el mundial de ese año
@@ -17701,6 +17725,101 @@ const TP_DILEMAS=[
          return L(`Se lo dices, y en vez de encogerse se yergue. «Ya. Yo conducía. Y tú lo pediste.» No hay más conversación: da media vuelta y se va andando deprisa, que es como anda la gente que acaba de decidir algo.`,
                   `You say it, and instead of shrinking he straightens up. «Right. I was driving. And you asked for it.» There's no more conversation: he turns around and walks off fast, which is how people walk when they've just decided something.`,
                   {pt:`Você diz, e em vez de se encolher ele se endireita. «Pois é. Eu dirigia. E você pediu.» Não há mais conversa: dá meia-volta e sai andando rápido, que é como anda quem acabou de decidir alguma coisa.`}); }]); }}]},
+ /* 🌬️ EL PREMIO DE ACABAR ÚLTIMO (idea de Carlos, 9-sep-2026). La escala móvil de túnel de viento
+    es lo único en este deporte que premia ir mal: cuanto peor acabas el mundial de constructores, más
+    horas te dan al año siguiente. El dilema es el punto de inflexión del año — la última carrera —
+    contado por adelantado, como «El lesionado de agosto».
+    ⚖️ LO QUE LO SALVA DE SER GRATIS: ceder el puesto lo cede DE VERDAD (`S._tunelBajar`, que `simTP`
+    aplica antes de que el consejo lea el resultado). Si el listón era ese puesto, lo has fallado tú
+    a propósito y te pueden echar por ello. Por eso la rama del consejo es distinta: si lo firman
+    ellos, encienden `tpGrace` y el año no cuenta en tu contra.
+    🔗 Y tiene reloj: nace en 2021 y muere en un año sorteado entre 2033 y 2043, invisible. */
+ {id:"tpTunel",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if(!tunelVivo()) return false;
+    const nT=Object.keys(S.rankC||{}).length; if(nT<6) return false;
+    const pos=(S.rankC||{})[S.tpTeam];
+    /* ni arriba ni el último: arriba un puesto vale mucho más que unas horas, y el colista ya tiene
+       todas las horas que hay, así que no tiene nada que ceder */
+    if(!pos || pos>=nT || pos<=Math.ceil(nT/2)) return false;
+    const riv=Object.keys(S.rankC).find(t=>S.rankC[t]===pos+1); if(!riv) return false;
+    const ds=tpDrvs(); if(!ds.length) return false;
+    // el que pelea ese puesto: tu mejor colocado del año pasado y, si ése ya no está, el de más nivel
+    const pil=ds.slice().sort((a,b)=>(((S.rankD||{})[a.name]||99)-((S.rankD||{})[b.name]||99)) || ((b.skill||0)-(a.skill||0)))[0];
+    S._tun={pos:pos, riv:riv, pil:pil.name, liston:(S.tpGoal||{}).target||null};
+    return true; },
+  t:()=>L("El premio de acabar último","The prize for finishing last",{pt:"O prêmio de acabar último"}),
+  d:()=>{ const c=S._tun||{}, p=c.pos||9, riv=c.riv||"", enJuego=c.liston===p;
+    const liston = enJuego
+      ? L(" Y es exactamente lo que nos pidió el consejo."," And it's exactly what the board asked us for.",{pt:" E é exatamente o que o conselho nos pediu."})
+      : "";
+    return L(`Última carrera del año. Peleáis con ${riv} por el ${p}º puesto del mundial de constructores. Tu director técnico te lo dice delante de todo el muro, que es su manera de dejarlo por escrito: «Si acabamos ${p+1}º, el año que viene nos dan más horas de túnel de viento que si acabamos ${p}º. El reparto va al revés: cuanto peor acabas, más te dan. Y esas horas son las piezas de marzo. Ese puesto de hoy es dinero.${liston} Tú dirás.»`,
+             `Last race of the year. You're fighting ${riv} for P${p} in the constructors' championship. Your technical director says it in front of the whole pit wall, which is his way of putting it on the record: «If we finish P${p+1}, next year they give us more wind-tunnel hours than if we finish P${p}. The allocation runs backwards: the worse you finish, the more you get. And those hours are the March parts. Today's position is money.${liston} Your call.»`,
+             {pt:`Última corrida do ano. Vocês brigam com ${riv} pelo ${p}º lugar do mundial de construtores. O seu diretor técnico diz na frente de todo o muro, que é o jeito dele de deixar por escrito: «Se acabarmos em ${p+1}º, no ano que vem nos dão mais horas de túnel de vento do que se acabarmos em ${p}º. A distribuição é ao contrário: quanto pior você acaba, mais te dão. E essas horas são as peças de março. Essa posição de hoje é dinheiro.${liston} Você decide.»`}); },
+  opts:[
+   /* A · competir. No es la opción segura: es la única que renuncia a algo */
+   {l:()=>L("«Se corre. Cada punto es un punto»","«We race. A point is a point»",{pt:"«Corre-se. Cada ponto é um ponto»"}),
+    r:()=>roll(
+     [7,()=>(TPRE(1),L("En el garaje se agradece más de lo que esperabas: el domingo por la mañana no hay nada que explicarle a nadie. Acabáis donde acabéis, y el túnel del año que viene es el que es. +fama",
+                       "The garage takes it better than you expected: on Sunday morning there's nothing to explain to anybody. You finish where you finish, and next year's tunnel is what it is. +fame",
+                       {pt:"Na garagem agradecem mais do que você esperava: no domingo de manhã não há nada para explicar a ninguém. Vocês acabam onde acabarem, e o túnel do ano que vem é o que é. +fama"}))],
+     [3,()=>(TPRE(1),TPTGT(-1),L("Se corre. Él lo acata, y luego se pasa el invierno diciendo, sin decirlo, que el coche de marzo podía haber sido otro. +fama, −proyecto leve",
+                                 "You race. He accepts it, and then spends the winter saying, without saying it, that the March car could have been another car. +fame, slight −project",
+                                 {pt:"Corre-se. Ele acata, e depois passa o inverno dizendo, sem dizer, que o carro de março poderia ter sido outro. +fama, −projeto leve"}))])},
+   /* B · ceder el puesto. Primero el QUÉ; el QUIÉN LO DICE es la pregunta encadenada */
+   {l:()=>L("«Ese puesto no lo peleamos»","«We're not fighting for that place»",{pt:"«Essa posição a gente não disputa»"}),
+    r:()=>{ const c=S._tun||{}, pil=c.pil||"";
+      return {
+       q:L(`Asiente y espera de pie, sin sentarse. Queda lo otro, que es lo que de verdad has venido a decidir: quién lo dice.`,
+           `He nods and waits on his feet, without sitting down. What's left is the other thing, the one you actually came here to decide: who says it.`,
+           {pt:`Ele concorda e espera de pé, sem sentar. Falta a outra parte, que é o que você veio de fato decidir: quem diz.`}),
+       opts:[
+        {l:()=>L("«La orden la doy yo»","«I'll give the order myself»",{pt:"«A ordem dou eu»"}),
+         r:()=>{ const c=S._tun||{}, pil=c.pil||"";
+           return roll(
+            [45,()=>{ S._tunelBajar=true; tpSembrar(1,2);
+              return L("Se da la orden, se cumple y no sale de ahí. En marzo llegan las horas de más y se ven en las piezas. +coche el año que viene",
+                       "The order is given, it's carried out and it goes no further. In March the extra hours arrive and you can see them in the parts. +car next year",
+                       {pt:"A ordem é dada, é cumprida e não sai dali. Em março chegam as horas a mais e se veem nas peças. +carro no ano que vem"}); }],
+            [25,()=>{ S._tunelBajar=true; tpSembrar(1,2); tpDrvSkill(pil,-1);
+              return L(`${surname(pil)} lo hace. Y no vuelve a mirarte igual. +coche el año que viene, −piloto`,
+                       `${surname(pil)} does it. And he never looks at you the same way again. +car next year, −driver`,
+                       {pt:`${surname(pil)} faz. E nunca mais te olha do mesmo jeito. +carro no ano que vem, −piloto`}); }],
+            [15,()=>{ S._tunelBajar=true; tpSembrar(1,2); TPRE(-2);
+              return L("Alguien lo cuenta. La prensa lo llama por su nombre, y no es un nombre bonito. Las horas llegan igual, y con ellas la etiqueta. +coche el año que viene, −−fama",
+                       "Somebody talks. The press calls it by its name, and it isn't a pretty name. The hours arrive anyway, and the label with them. +car next year, −−fame",
+                       {pt:"Alguém conta. A imprensa chama pelo nome, e não é um nome bonito. As horas chegam do mesmo jeito, e com elas o rótulo. +carro no ano que vem, −−fama"}); }],
+            [15,()=>{ tpDrvSkill(pil,-1);
+              return L(`Levantáis el pie y acabáis en el mismo sitio de todas formas: al de detrás se le rompió el motor en la penúltima. Ni horas ni puesto. Solo la cara de ${surname(pil)}. −piloto`,
+                       `You lift and end up in the same place anyway: the car behind blew its engine at the second-to-last race. No hours, no position. Just ${surname(pil)}'s face. −driver`,
+                       {pt:`Vocês tiram o pé e acabam no mesmo lugar de qualquer forma: o de trás quebrou o motor na penúltima. Nem horas nem posição. Só a cara de ${surname(pil)}. −piloto`}); }]); }},
+        {l:()=>L(`«Le enseño la hoja y me callo»`,`«I show him the sheet and say nothing»`,{pt:`«Mostro a folha e fico calado»`}),
+         r:()=>{ const c=S._tun||{}, pil=c.pil||"";
+           return roll(
+            [40,()=>{ TPRE(1); tpDrvSkill(pil,1);
+              return L(`La mira treinta segundos, te la devuelve y sale a correr como si no la hubiera visto. El lunes te dice una sola frase: «la próxima vez no me preguntes, decídelo tú». Te has ganado un piloto y has perdido las horas. +fama, +piloto`,
+                       `He looks at it for thirty seconds, hands it back and goes racing as if he'd never seen it. On Monday he says one sentence: «next time don't ask me, decide it yourself». You've earned a driver and lost the hours. +fame, +driver`,
+                       {pt:`Ele olha trinta segundos, devolve e vai correr como se não tivesse visto. Na segunda diz uma frase só: «da próxima vez não me pergunte, decida você». Você ganhou um piloto e perdeu as horas. +fama, +piloto`}); }],
+            [40,()=>{ S._tunelBajar=true; tpSembrar(1,2);
+              return L("No hubo orden, no hubo radio, no hubo nada que contar. Y ahora los dos sabéis que no hizo falta decirlo. +coche el año que viene",
+                       "There was no order, no radio call, nothing to report. And now you both know it didn't need saying. +car next year",
+                       {pt:"Não houve ordem, não houve rádio, não houve nada para contar. E agora os dois sabem que não foi preciso dizer. +carro no ano que vem"}); }],
+            [20,()=>{ TPRE(-2); tpDrvSkill(pil,-1);
+              return L("Se lleva la hoja a la rueda de prensa y la enseña. Dice que a él no se la enseñaron por casualidad. −−fama, −piloto",
+                       "He takes the sheet to the press conference and holds it up. He says nobody showed it to him by accident. −−fame, −driver",
+                       {pt:"Ele leva a folha para a coletiva e mostra. Diz que não a mostraram a ele por acaso. −−fama, −piloto"}); }]); }},
+        {l:()=>L("«Que lo decida el consejo»","«Let the board decide»",{pt:"«Que o conselho decida»"}),
+         r:()=>roll(
+          [50,()=>(TPRE(-1),L("Contestan en dos líneas: «se compite». Y en el garaje se sabe que preguntaste, que es lo único que te queda de todo esto. −fama",
+                              "They answer in two lines: «we race». And the garage knows you asked, which is the only thing you take away from all this. −fame",
+                              {pt:"Respondem em duas linhas: «compete-se». E na garagem sabem que você perguntou, que é a única coisa que sobra disso tudo. −fama"}))],
+          [35,()=>{ S._tunelBajar=true; tpSembrar(1,2); S.tpGrace=true;
+            return L("Contestan que el coche del año que viene importa más. Lo firman ellos, así que el resultado de este año no se te cuenta en contra. +coche el año que viene, y el año no cuenta",
+                     "They answer that next year's car matters more. It's their signature, so this year's result isn't held against you. +car next year, and the year doesn't count",
+                     {pt:"Respondem que o carro do ano que vem importa mais. Quem assina são eles, então o resultado deste ano não conta contra você. +carro no ano que vem, e o ano não conta"}); }],
+          [15,()=>(TPRE(-2),L("Lo leen como lo que temías que leyeran: que la decisión era tuya y la has subido. −−fama",
+                              "They read it as what you were afraid they'd read: that the decision was yours and you passed it upstairs. −−fame",
+                              {pt:"Leem como você temia que lessem: que a decisão era sua e você subiu. −−fama"}))])}]}; }}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
