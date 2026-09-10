@@ -5604,7 +5604,201 @@ function mateIfJoin(teamName){
    48/52 en los tres sitios donde se calcula un resultado. Cuanto más atrás, más mandaba el hombre:
    menos electrónica, más diferencias de talento y coches que se rompían solos.
    Pensado para estirarse hacia atrás: los 80 y los 50 irán por encima del 58%. */
+/* ══════════════════════════════════════════════════════════════════════════
+   🔮 LAS ERAS DE REGLAMENTO DEL FUTURO (diseño de Carlos, 9 y 10-sep-2026)
+   La F1 de 2056 no puede ser la de 2026 con otros pilotos. Estos son PELDAÑOS
+   ordenados por cuánto pesa el piloto, y una revolución técnica mueve UNO o DOS,
+   nunca más: «si estamos en .48 no podemos pasar de golpe a .60» (Carlos). Así la
+   gradualidad no es una regla que haya que vigilar, es imposible de romper.
+   Los escenarios salen del documento `What-ifs F1 Glory.md` que él preparó.
+   🔒 SOLO EN EL MURO DE 2026: el clásico y el retro se quedan con la tabla
+   histórica de abajo (decisión suya, 10-sep). */
+const ERA_TEC = [
+ {w:.38, sp:16, n:["Libertad técnica","Open technical rules","Liberdade técnica"],
+        q:["la FIA se queda con cuatro límites físicos y todo lo demás es cosa tuya",
+           "the FIA keeps four physical limits and everything else is up to you",
+           "a FIA fica com quatro limites físicos e o resto é problema seu"]},
+ {w:.41, sp:14, n:["Guerra de fabricantes","Manufacturer war","Guerra de fabricantes"],
+        q:["gana quien tenga la mejor tecnología del mundo, y se sabe quién es",
+           "whoever has the best technology in the world wins, and everyone knows who that is",
+           "ganha quem tiver a melhor tecnologia do mundo, e sabe-se quem é"]},
+ {w:.44, sp:12, n:["Ajedrez tecnológico","Technological chess","Xadrez tecnológico"],
+        q:["el piloto sigue dentro, pero la carrera la juegan los sistemas",
+           "the driver is still in there, but the systems are the ones racing",
+           "o piloto continua lá dentro, mas quem corre são os sistemas"]},
+ {w:.46, sp:11, n:["La era de los materiales","The materials era","A era dos materiais"],
+        q:["el salto no está en el motor: está en lo que pesa cada pieza",
+           "the leap isn't in the engine: it's in what every part weighs",
+           "o salto não está no motor: está no que pesa cada peça"]},
+ {w:.48, sp:10, n:["Híbrido extremo","Extreme hybrid","Híbrido extremo"],
+        q:["mitad térmico y mitad eléctrico, y el combustible ya no contamina",
+           "half combustion and half electric, and the fuel no longer pollutes",
+           "metade térmico e metade elétrico, e o combustível já não polui"]},
+ {w:.51, sp:9, n:["Eléctrica madura","Mature electric","Elétrica madura"],
+        q:["las baterías por fin pesan poco y los coches vuelven a ser ligeros",
+           "batteries finally weigh little and the cars are light again",
+           "as baterias enfim pesam pouco e os carros voltam a ser leves"]},
+ {w:.54, sp:7, n:["Simplificación","Simplification","Simplificação"],
+        q:["fuera modos, fuera asistencias, fuera media hoja del reglamento",
+           "no more modes, no more aids, half the rulebook gone",
+           "fora modos, fora assistências, fora meia folha do regulamento"]},
+ {w:.57, sp:6, n:["Back to Racing","Back to Racing","Back to Racing"],
+        q:["coche ligero, aerodinámica sencilla y el piloto otra vez al límite",
+           "light car, simple aero and the driver on the edge again",
+           "carro leve, aerodinâmica simples e o piloto outra vez no limite"]},
+ {w:.61, sp:4, n:["Coches gemelos","Twin cars","Carros gêmeos"],
+        q:["los coches se parecen tanto que ya solo queda mirar quién conduce",
+           "the cars are so alike there's nothing left to look at but who's driving",
+           "os carros são tão parecidos que só resta olhar quem dirige"]},
+];
+const ERA_BASE = 4;                 // el peldaño de 2026 (.48)
+const ERA_UMBRAL = [3,5];           // años de dominio que hacen reaccionar a la FIA
+const ERA_PLAZO  = [3,5];           // con cuánta antelación se PUBLICA un reglamento nuevo
+const ERA_REACC  = [3,5];           // …y cada cuánto llega el siguiente cuando la FIA va asustada
+                                    // (sin susto manda REG_CADA_TP, o sea 6-9 años)
+const ERA_GORDA_MIN = 8;            // 💥 años mínimos entre dos «momentos Brawn»
+const ERA_GORDA_P   = .60;          // …y probabilidad de que la siguiente lo sea, pasado ese plazo
+/* 🏛️ CUÁNTO MANDA EL DADO EN UN RESETEO NORMAL, frente a lo que ya eras. En 1 el reglamento
+   nuevo te reinventa (es lo que hacía, y lo que sigue haciendo el modo clásico y las gordas); en 0
+   no cambiaría nada. Medido el 10-sep: con el dado al mando, el 96% de los ascensos del tercio de
+   cola al top 2 los daba un reseteo y solo el 4% se escalaba año a año — o sea que el juego no sabía
+   contar la historia de Red Bull 2005-2010 ni la de McLaren 2013-2025, solo sabía rifar. */
+const REG_SACUDIDA = .35;
+function eraActual(){ return (S.cat==="TP" && S.era==="2026" && S.eraIdx!=null) ? ERA_TEC[S.eraIdx] : null; }
+/* 📋 PROGRAMAR EL SIGUIENTE — y aquí está la regla que lo ordena todo (Carlos, 10-sep):
+   **UN REGLAMENTO PUBLICADO NO SE TOCA.** Ni la fecha ni la dirección. La FIA no adelanta el de 2033
+   porque Ferrari lleve cinco años ganando: lo que hace es que el SIGUIENTE llegue antes de lo normal
+   y en la dirección que corrige ese dominio. Su ejemplo, literal: en 2028 se publica el de 2033
+   pro-piloto; en 2031 Ferrari lleva cinco; el de 2033 entra igual; y en 2034 se anuncia otro para
+   2037 que favorece todavía más al piloto. Sin susto, en 2038 se anuncia el de 2043 y puede ir
+   hacia donde quiera.
+   La dirección natural sigue el arco del documento de Carlos: hasta los 2040 la técnica se come al
+   piloto y a partir de ahí llega la corrección. Los topes de la escalera mandan sobre el arco. */
+function eraProgramar(){
+  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  const susto = S.domPend || 0;                 // 👑 lo que dejó pedido un dominio, si lo hubo
+  let dir = susto ? susto : (ch(yearNow()<2045 ? .30 : .70) ? 1 : -1);
+  if(S.eraIdx<=0) dir=1;
+  if(S.eraIdx>=ERA_TEC.length-1) dir=-1;
+  S.regDir = dir;
+  S.regSaltos = ch(susto ? .35 : .25) ? 2 : 1;
+  S.regReg = yearNow() + (susto ? irnd(ERA_REACC[0], ERA_REACC[1])
+                                : irnd(REG_CADA_TP[0], REG_CADA_TP[1]));
+  S.regAviso = Math.max(yearNow()+1, S.regReg - irnd(ERA_PLAZO[0], ERA_PLAZO[1]));
+  S.regAvisado = false; S.regRecordado = false; S.domPend = 0;
+  /* 💥 ¿y ésta será de las gordas? Solo si han pasado años desde la última: sin ese respiro
+     saldrían dos seguidas y dejaría de ser un acontecimiento. Con estos números cae una cada diez
+     años y pico, que es lo que pidió Carlos. */
+  const _desde = yearNow() - (S.regGordaY || S.baseYear || yearNow());
+  S.regGorda = (_desde >= ERA_GORDA_MIN) && ch(ERA_GORDA_P);
+}
+/* 🏁 …Y APLICARLA cuando llega la revolución: se mueve el peldaño y se nombra la era nueva. */
+function eraSaltar(){
+  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  const dir = S.regDir || (ch(.5)?1:-1), n = S.regSaltos || 1;
+  S.eraIdx = Math.max(0, Math.min(ERA_TEC.length-1, S.eraIdx + dir*n));
+  const e = ERA_TEC[S.eraIdx];
+  let _cuerpo = L(`${LA(e.q).charAt(0).toUpperCase()+LA(e.q).slice(1)}.`,
+                  `${LA(e.q).charAt(0).toUpperCase()+LA(e.q).slice(1)}.`,
+                  {pt:`${LA(e.q).charAt(0).toUpperCase()+LA(e.q).slice(1)}.`});
+  if(S.regGorda){
+    S.regGordaY = yearNow();
+    /* 💥 y esto SÍ se dice, porque se ve: no es un aviso previo, es la cara que se te queda al
+       mirar los tiempos del primer test. */
+    const _ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0));
+    const _pri=_ord[0] && _ord[0].name;
+    _cuerpo += L(` Y no es un reglamento cualquiera: la parrilla ha saltado por los aires. En los primeros test manda ${_pri}, y nadie lo tenía en la porra.`,
+                 ` And this is no ordinary rule change: the pecking order has been blown apart. ${_pri} tops the first test, and nobody had them in the pool.`,
+                 {pt:` E não é um regulamento qualquer: o grid saltou pelos ares. Nos primeiros testes manda a ${_pri}, e ninguém apostava nisso.`});
+  }
+  tpRegCola(L(`📋 Reglamento nuevo: ${LA(e.n)}`,`📋 New regulations: ${LA(e.n)}`,{pt:`📋 Regulamento novo: ${LA(e.n)}`}), _cuerpo);
+  eraProgramar();
+}
+/* 👁️ EL AVISO. Los equipos saben lo que viene con años (Carlos: «sí que hay que avisarlo, para
+   que el jugador sepa que si en cuatro años el reglamento favorece al piloto, más vale fichar bien»).
+   ⚠️ DICE LA DIRECCIÓN, JAMÁS LA CAUSA: el jugador no tiene que saber si el cambio llega porque
+   tocaba o porque alguien lleva cinco años ganando. Los dos casos se ven exactamente igual. */
+/* 📰 LAS NOTICIAS DEL REGLAMENTO SON PANTALLA, NO LÍNEA (Carlos, 10-sep-2026: «me falta ser más
+   consciente de lo del reglamento; quizá pueden aparecer como dilemas en los que solo hay una opción,
+   Continuar, así aseguras que el jugador lo ha leído»). Tiene razón: entre que se publica y que entra
+   pueden pasar cinco años, y un renglón en el invierno se pierde. Van en cola porque en un mismo
+   invierno nunca coinciden dos, pero si algún día coincidieran se enseñan una detrás de otra. */
+function tpRegCola(t, d){ (S._regCola = S._regCola || []).push({t:t, d:d}); }
+function tpRegPantalla(fin){
+  const cola = S._regCola || [];
+  if(!cola.length){ fin(); return; }
+  const n = cola.shift();
+  setDecision("⚡ "+n.t, n.d);
+  try{ $("decRecap").style.display="none"; }catch(e){}
+  const box=$("offerList"); box.innerHTML="";
+  const b=document.createElement("button"); b.className="offer dilemma";
+  b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3f8f4f,#256030);font-size:20px;line-height:1;text-indent:2px">▶</span>
+    <span class="info"><span class="name">${L("Continuar","Continue",{pt:"Continuar"})}</span></span>`;
+  b.onclick=()=>tpRegPantalla(fin);
+  box.appendChild(b);
+  try{ scrollToDecision(); }catch(e){}
+}
+function eraDireccionTxt(){
+  return (S.regDir>0)
+    ? L("premiará al piloto: las diferencias entre coches van a ser más pequeñas",
+        "will reward the driver: the gaps between cars are going to shrink",
+        {pt:"vai premiar o piloto: as diferenças entre carros vão ser menores"})
+    : L("premiará al coche: quien acierte con el concepto se va a ir solo",
+        "will reward the car: whoever gets the concept right is going to walk away with it",
+        {pt:"vai premiar o carro: quem acertar no conceito vai embora sozinho"});
+}
+/* 🔔 …Y EL RECORDATORIO DEL ÚLTIMO INVIERNO (pega de Carlos: «por si se te olvida»). Entre que
+   se publica y que entra pueden pasar cinco años, que en una partida son cinco pantallas de mercado:
+   la última temporada con el reglamento viejo hay que decirlo otra vez. */
+function eraRecordar(){
+  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(!S.regReg || S.regRecordado || yearNow()!==S.regReg-1) return;
+  S.regRecordado = true;
+  tpRegCola(L(`🔔 Última temporada con este reglamento`,`🔔 Last season under these rules`,{pt:`🔔 Última temporada com este regulamento`}),
+            L(`El año que viene entra el reglamento de ${S.regReg}, el que ${eraDireccionTxt()}. Es el último invierno para llegar preparado.`,
+              `Next year the ${S.regReg} regulations come in, the ones that ${eraDireccionTxt()}. This is the last winter to get ready.`,
+              {pt:`No ano que vem entra o regulamento de ${S.regReg}, o que ${eraDireccionTxt()}. É o último inverno para chegar preparado.`}));
+}
+function eraAvisar(){
+  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(!S.regAviso || S.regAvisado || yearNow()<S.regAviso) return;
+  if(!S.regReg || S.regReg<=yearNow()) return;
+  S.regAvisado = true;
+  const hacia = eraDireccionTxt();
+  tpRegCola(L(`📋 La FIA publica el reglamento de ${S.regReg}`,`📋 The FIA publishes the ${S.regReg} regulations`,{pt:`📋 A FIA publica o regulamento de ${S.regReg}`}),
+            L(`Faltan ${S.regReg-yearNow()} años y en el paddock solo se habla de una cosa: el coche que viene ${hacia}. A partir de hoy, todo lo que decidas en esta fábrica se decide sabiéndolo.`,
+              `It's ${S.regReg-yearNow()} years away and the paddock is talking about one thing only: the car that's coming ${hacia}. From today, everything you decide in this factory is decided knowing that.`,
+              {pt:`Faltam ${S.regReg-yearNow()} anos e no paddock só se fala de uma coisa: o carro que vem ${hacia}. A partir de hoje, tudo o que você decidir nesta fábrica se decide sabendo disso.`}));
+}
+/* 👑 EL DOMINIO. La FIA no reacciona a que alguien gane: reacciona a QUÉ le está haciendo ganar
+   (idea de Carlos). Un equipo que encadena títulos demuestra que manda la máquina → se empuja hacia
+   el piloto. Un piloto que los encadena CON EQUIPOS DISTINTOS demuestra que manda el hombre → se
+   empuja hacia el coche. El caso ambiguo se resuelve solo: cinco títulos con el mismo equipo cuentan
+   como equipo, porque nadie sabe si es él o el coche.
+   🤝 Y no se pisa con las revoluciones naturales: un dominio ADELANTA la que ya estaba
+   programada, nunca añade una nueva. */
+function eraDominio(){
+  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(!(S.seasons||[]).some(r=>r.cat==="TP")) return;
+  const cT = Object.keys(S.rankC||{}).find(t=>S.rankC[t]===1) || null;
+  const dN = Object.keys(S.rankD||{}).find(n=>S.rankD[n]===1) || null;
+  const dT = dN ? (S.rankDTeam||{})[dN] : null;
+  // el equipo: cuenta el año si ganó CUALQUIERA de los dos campeonatos
+  const eq = S.domEq = S.domEq || {name:null, n:0};
+  if(eq.name && (eq.name===cT || eq.name===dT)) eq.n++;
+  else { eq.name = cT || dT || null; eq.n = eq.name ? 1 : 0; }
+  // el piloto: solo cuenta si va cambiando de equipo
+  const pi = S.domPil = S.domPil || {name:null, n:0, eqs:[]};
+  if(dN && pi.name===dN){ pi.n++; if(dT && pi.eqs.indexOf(dT)<0) pi.eqs.push(dT); }
+  else { pi.name = dN || null; pi.n = dN?1:0; pi.eqs = dT?[dT]:[]; }
+  /* 😱 EL SUSTO SE APUNTA, NO SE EJECUTA. Lo que ya está publicado sigue su curso; esto es lo
+     que la FIA hará con el SIGUIENTE, cuando le toque legislar. */
+  const umbral = S.domUmbral || 4;
+  if(pi.n>=umbral && pi.eqs.length>=2){ S.domPend=-1; pi.n=0; }
+  else if(eq.n>=umbral){ S.domPend=1; eq.n=0; }
+}
 function drvW(y){
+  const _e = eraActual(); if(_e) return _e.w;   // 🔮 la era de ESTA partida manda sobre la tabla
   const yr = y || yearNow();
   if(yr>=2009) return .48;
   if(yr>=1998) return .50;
@@ -8678,8 +8872,29 @@ function evolveF1(row){
        toda la partida (8 de 11 no lideraban jamás). En la F1 real, comparando el top 4 de constructores
        con 20 años de diferencia, sobreviven 1 o 2. REG_MEZCLA es perilla: subirlo revuelve más. */
     if(!tpManaged(t.name) && Math.random()<.17){
-      const ancla = S.f1perf[t.name]*(1-REG_MEZCLA) + mediaParrilla*REG_MEZCLA;
-      S.f1target[t.name]=Math.max(61,Math.min(95, ancla+rnd(-17,17)));
+      /* 🔮 LA ERA MANDA TAMBIÉN AQUÍ, no solo en el reseteo. Medido el 10-sep en tres pasos:
+         (1) mover solo el peso piloto/coche no cambiaba NADA de quién gana —el campeón salía de un
+         top-3 el 99% de las veces con .38 y con .61—, porque el mercado ya mete a los mejores pilotos
+         en los mejores coches; (2) apretando la parrilla solo al llegar el reglamento nuevo, la
+         evolución anual la volvía a abrir en tres o cuatro años; (3) hacía falta además que el tirón
+         hacia el pelotón fuera más fuerte cuanto más apretada sea la era, porque el ancla es el nivel
+         PROPIO de cada equipo y sin eso nadie converge. Con `sp` 10 salen el ±17 y el .20 de siempre. */
+      const _e=eraActual(), _sp=(_e&&_e.sp ? _e.sp : 10);
+      const _r=_sp*1.7, _mz=Math.max(.15, Math.min(.70, REG_MEZCLA*10/_sp));
+      const ancla = S.f1perf[t.name]*(1-_mz) + mediaParrilla*_mz;
+      /* 🏗️ EL PROYECTO DE VARIOS AÑOS (10-sep-2026). Medido: el 96% de los ascensos del tercio de
+         cola al top 2 los daba un reseteo y solo el 4% se escalaba. La causa era estructural: el
+         objetivo se sorteaba alrededor de TU nivel, así que un equipo de 63 podía aspirar como mucho
+         a 80 — nunca a la cabeza— y necesitaba dos sorteos afortunados seguidos que ningún reglamento
+         le dejaba encadenar. Ahora, de vez en cuando, un equipo decide construir algo grande y apunta
+         a la cabeza esté donde esté: es Red Bull entre 2005 y 2010, y Stewart entre el 97 y el 99.
+         Y su reverso, porque también pasa: el que se deja ir. La deriva de .28 tarda cuatro o cinco
+         años en llegar, que es exactamente lo que tardaron ellos. */
+      let _tgt;
+      if(_e && ch(.08))      _tgt = rnd(76+_sp*.55, 76+_sp*1.15);
+      else if(_e && ch(.06)) _tgt = rnd(76-_sp*1.15, 76-_sp*.55);
+      else                   _tgt = ancla + rnd(-_r,_r);
+      S.f1target[t.name]=Math.max(61,Math.min(95, _tgt));
     }
     const cur=S.f1perf[t.name], tgt=S.f1target[t.name];
     // deriva (0.28) y poco ruido (±1) → la parrilla se reordena y ningún coche domina eternamente
@@ -10831,23 +11046,68 @@ function regReset(){
   const order=[...F1_TEAMS].sort((a,b)=>S.f1perf[a.name]-S.f1perf[b.name]); // peor→mejor (antes del reset)
   // rbOk: RB no ficha veteranos NI consagrados · isJrTeam: un filial nunca puede ser el cochazo
   const badTeams=order.filter(t=>rbOk(t) && !isJrTeam(t.name)).slice(0,REG_POZO);
+  /* 🎰 EL PELOTAZO PUEDE TOCARLE A CUALQUIERA (Carlos, 10-sep-2026: «¿y si todos los equipos
+     tuvieran acceso? Los de arriba menos probabilidad, pero ¿y si sí?»). Antes se sorteaba solo entre
+     los cuatro peores: estando 9º de 11 tenías 1 entre 4, y estando 3º no tenías ninguna. Ahora entran
+     todos con el peso inclinado hacia abajo —el último es tantas veces más probable como equipos haya—
+     así que a la Red Bull de 2022 también le puede tocar, y raras veces.
+     🚫 El filial se queda fuera: no puede ser el mejor coche de la parrilla, y eso lo apaga solo
+     `isJrTeam`, que mira si la casa madre sigue viva. El día que Racing Bulls muera y otro ocupe su
+     hueco, ese otro entra en el sorteo como todos. */
+  const _pool = order.filter(t=>rbOk(t) && !isJrTeam(t.name));   // order va de peor a mejor
+  let _tot=0; const _pes=_pool.map((t,i)=>{ const w=_pool.length-i; _tot+=w; return w; });
   /* 🏛️ EL RESETEO CONSERVA ALGO DE MEMORIA. Sorteando a los 11 a ciegas entre 66 y 86, una revolución
      que ahora se repite cada 10-14 años borraba la identidad de la parrilla: medido, a 20 temporadas
      Haas y Cadillac salían en el top 4 el 45% y McLaren el 32% — no descongelada, INVERTIDA. El caché
      (la «grandeza», que ya decae despacio) inclina el sorteo sin decidirlo: Ferrari sale algo mejor
      parada que Haas, pero el dado sigue mandando. REG_MEMORIA=0 vuelve al sorteo ciego. */
+  /* 🔮 CUÁNTO SE PARECEN LOS COCHES lo decide la era (10-sep-2026). Medido: mover solo el peso
+     piloto/coche NO cambiaba quién gana —el campeón salía de un top-3 el 99% de las veces con .38 y
+     con .61—, porque el mercado ya mete a los mejores pilotos en los mejores coches y las dos cosas
+     van correlacionadas. Lo que de verdad separa una era de otra es la HORQUILLA de la parrilla: en
+     «coches gemelos» todos caen dentro de ocho puntos y solo queda mirar quién conduce; en «libertad
+     técnica» hay treinta y dos de diferencia entre el primero y el último. `sp` es la mitad de esa
+     horquilla, y 10 es lo que había hasta hoy (66-86). */
+  const _sp = (eraActual() && eraActual().sp) || 10, _c0 = 76;
+  /* 💥 EL MOMENTO BRAWN (Carlos, 10-sep-2026): «cada diez años más o menos, un reseteo más bestia
+     que pille a todo el mundo descontrolado». Los porcentajes de la era no se tocan —la horquilla y
+     el peso siguen siendo los suyos—; lo que salta por los aires es el ORDEN. Aquí la grandeza deja
+     de proteger a nadie (memoria 0, sorteo ciego), los dos de arriba se hunden SIEMPRE y el pelotazo
+     es más gordo. Ferrari llevaba cinco años con el mejor coche y sale séptima; el octavo, primero.
+     🤫 Y NO SE AVISA: el aviso del reglamento dice la dirección como siempre y nada más. Que pille
+     descontrolado era literalmente la petición. */
+  const _gorda = !!S.regGorda;
+  const _mem = _gorda ? 0 : REG_MEMORIA;
+  /* 🏛️ …y cuánto de tu coche viejo sobrevive al reglamento nuevo. Solo en el muro de 2026: el
+     clásico conserva su reinvención de siempre (`_k` 1), y las gordas también, que para eso lo son. */
+  const _k = (eraActual() && !_gorda) ? REG_SACUDIDA : 1;
   F1_TEAMS.forEach(t=>{
     const grandeza=(S.cache[t.name] ?? 70);
-    const v=Math.round(Math.max(62,Math.min(90, rnd(66,86) + (grandeza-70)*REG_MEMORIA)));
+    const dado = rnd(_c0-_sp, _c0+_sp) + (grandeza-70)*_mem;
+    const base = S.f1perf[t.name] ?? _c0;
+    const v=Math.round(Math.max(62,Math.min(90, base*(1-_k) + dado*_k)));
     S.f1perf[t.name]=v; S.f1target[t.name]=v; });
   // reglamento nuevo = conceptos de coche nuevos: TAMBIÉN se rebaraja el CARÁCTER de cada coche.
   // Sin esto, un cambio radical de reglas no podría dejar de encajar con tu pilotaje (el caso Vettel'14).
   F1_TEAMS.forEach(t=>{ S.f1char[t.name]=CHARS[irnd(0,2)]; });
   // el "Brawn": un equipo malo que pega el pelotazo
   let brawn=badTeams[irnd(0,badTeams.length-1)];
-  const bv=Math.round(rnd(90,94)); S.f1perf[brawn.name]=bv; S.f1target[brawn.name]=bv;
-  // uno o dos ex-grandes se hunden… salvo el que llegó PREPARADO (dilema de la apuesta, opción C)
-  order.slice(-2).forEach(t=>{ if(t.name!==S.regPrepared && ch(.6)){ const v=Math.round(rnd(63,70)); S.f1perf[t.name]=v; S.f1target[t.name]=v; } });
+  if(_pool.length){ let _r2=rnd(0,_tot); for(let i=0;i<_pes.length;i++){ _r2-=_pes[i]; if(_r2<=0){ brawn=_pool[i]; break; } } }
+  /* …y la sorpresa se mide con la misma vara: un Brawn de 92 en una era de coches gemelos sería
+     justamente lo que esa era dice que no puede pasar. Con `sp` 10 salen los 90-94 de siempre. */
+  /* 📈 EL QUE PEGA EL SALTO. En una GORDA es el Brawn de 2009: del fondo a mandar. En un reseteo
+     normal es **Williams 2014** —el caso que trajo Carlos—: 9º a 3º en un año porque el reglamento
+     nuevo le vino al pelo. Sube a la cabeza, no necesariamente a la primera plaza. */
+  const bv=Math.round(_gorda ? rnd(_c0+_sp*1.7, _c0+_sp*2.1) : rnd(_c0+_sp*.55, _c0+_sp*1.0));
+  S.f1perf[brawn.name]=bv; S.f1target[brawn.name]=bv;
+  /* 📉 …y el que se cae. En una gorda los dos de arriba se van al fondo, sin dado. En un reseteo
+     normal el que dominaba BAJA UN ESCALÓN y se queda ahí años sin ser una basura: es la Ferrari de
+     después de 2008, no la Honda de 2008 (pega de Carlos: «no ha sido una basura, pero tampoco ha
+     tenido un coche ganador desde hace años»). */
+  order.slice(-2).forEach(t=>{ if(t.name!==S.regPrepared && (_gorda || ch(.6))){
+    const v = _gorda ? rnd(_c0-_sp, _c0-_sp*.45)
+                     : (eraActual() ? (S.f1perf[t.name]||_c0) - rnd(_sp*.35, _sp*.8) : rnd(63,70));
+    S.f1perf[t.name]=Math.max(60,Math.round(v)); S.f1target[t.name]=S.f1perf[t.name]; } });
   // 🛡️ EL SEGURO: tu fábrica se volcó en el reglamento dos años antes, así que el reseteo no la pilla
   // en pañales. No es el pelotazo (eso es el "brawn", 90-94): es no hundirte.
   if(S.regPrepared && F1_TEAMS.some(t=>t.name===S.regPrepared) && S.regPrepared!==brawn.name){
@@ -10986,7 +11246,7 @@ function tpVerdictLine(r){
   switch(r.tpVerdict){
     case "titulo": return L(`🎯 Objetivo: ${objetivo} → 🏆 rescatado por el título de pilotos`,`🎯 Target: ${objetivo} → 🏆 saved by the drivers' title`,{pt:`🎯 Meta: ${objetivo} → 🏆 salvo pelo título de pilotos`});
     case "ok":     return L(`🎯 Objetivo: ${objetivo} → ✅ cumplido`,`🎯 Target: ${objetivo} → ✅ met`,{pt:`🎯 Meta: ${objetivo} → ✅ cumprida`});
-    case "gracia": return L(`🎯 Objetivo: ${objetivo} → 🛡️ fallado, pero te compras un año`,`🎯 Target: ${objetivo} → 🛡️ missed, but you buy a year`,{pt:`🎯 Meta: ${objetivo} → 🛡️ falhada, mas você compra um ano`});
+    case "gracia": return L(`🎯 Objetivo: ${objetivo} → 🛡️ fallado, pero el consejo te da un año más`,`🎯 Target: ${objetivo} → 🛡️ missed, but the board gives you one more year`,{pt:`🎯 Objetivo: ${objetivo} → 🛡️ falhado, mas o conselho te dá mais um ano`});
     /* 🚪 ya no siempre es «el segundo año»: con el consejo con memoria puedes caer al tercero o al
        cuarto si tu historial te ha ido comprando indultos. La línea dice lo que es verdad siempre. */
     case "fuera":  return L(`🎯 Objetivo: ${objetivo} → 🚪 fallado otra vez: destituido`,`🎯 Target: ${objetivo} → 🚪 missed again: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada de novo: demitido`});
@@ -11867,6 +12127,10 @@ function initTPState(){
      año, que es cuando todavía estás en el puesto para sufrirla y aprovecharla. */
   S.regReg = S.baseYear + irnd(REG_PRIM_TP[0], REG_PRIM_TP[1]);
   S.regTunelFin = irnd(TUNEL_FIN[0], TUNEL_FIN[1]);   // 🌬️ y cuándo se acaba el reparto al revés: invisible
+  S.eraIdx = ERA_BASE;                                  // 🔮 2026 arranca en el híbrido extremo (.48)
+  S.domUmbral = irnd(ERA_UMBRAL[0], ERA_UMBRAL[1]);     // …y cuánta paciencia tiene la FIA en ESTA partida
+  S.domEq=null; S.domPil=null; S.regGorda=false; S.regGordaY=S.baseYear; S._regCola=[];
+  eraProgramar();
   initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
   /* 🎲 OVR VARIABLE POR PARTIDA (idea de Carlos, 18-ago). El nivel de los titulares venía FIJO del
      dato de la era (solo el techo se sorteaba); en el modo jefe eso hacía cada partida demasiado
@@ -12270,12 +12534,14 @@ function tpSignTeam(t, how){
 /* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
 function tpYearStart(){
   if(S.retired) return;
+  eraDominio();          // 👑 ¿alguien lleva demasiados años ganando? (va ANTES de la revolución)
   /* 🏁 LA REVOLUCIÓN TÉCNICA, TAMBIÉN EN EL MURO. El disparador vivía en `nextOffers()`, que arranca
      con `if(S.cat==="TP"){ tpWinter(); return; }` — o sea que en el modo jefe NO SALTABA NUNCA. Y era
      lo único que rebarajaba la parrilla de verdad. */
   if(yearNow()>=S.regReg){
     const antes=Math.round(S.f1perf[S.tpTeam]||75);
     regReset();
+    eraSaltar();          // 🔮 …y con el reglamento nuevo, la era nueva
     S.regUnknown=false;   // el ❓ de las estrellas lo limpia nextOffers(), por donde el jefe no pasa
     const ahora=Math.round(S.f1perf[S.tpTeam]||75), d=ahora-antes;
     /* 🧻 BORRÓN Y CUENTA NUEVA SI EL RESETEO TE HUNDE (Carlos, 29-ago: «me dan ultimátum pero me
@@ -12395,6 +12661,8 @@ function tpYearStart(){
               "📋 Rule change: the sliding scale of wind-tunnel hours by championship position is over. From now on every team gets the same.",
               {pt:"📋 Mudança no regulamento: acaba a distribuição de horas de túnel de vento por posição. A partir de agora todas as equipes têm as mesmas."}));
   }
+  eraAvisar();           // 📋 y si el reglamento que viene ya está publicado, el paddock lo cuenta
+  eraRecordar();         // 🔔 …y el último invierno antes de que entre, se recuerda
   evolveCarProfiles();   // 🔧 los rivales mueven su reparto antes de que decidas el tuyo
   tpVenganzaCheck(); tpSabbaticalCheck();     // 🧲 la venganza pendiente de «Se va a Ferrari» se cobra este invierno
   tpProbadorInvierno();  // 🧢 el probador se oxida en el banquillo (o cuelga el mono)
@@ -14070,7 +14338,7 @@ function tpAnnounce(){
   const b=document.createElement("button"); b.className="offer dilemma";
   b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
     <span class="info"><span class="name">${L("Empezar la temporada","Start the season",{pt:"Começar a temporada"})}</span></span>`;
-  b.onclick=()=>{ const dl=pickTPDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); };
+  b.onclick=()=>{ tpRegPantalla(()=>{ const dl=pickTPDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); }); };
   box.appendChild(b);
   scrollToDecision();
 }
@@ -14239,7 +14507,7 @@ function simTP(row){
     }
   } else if(S.tpGrace && !_promesaRota){
     S.tpGrace=false; S.tpLastMet=false;
-    /* 🧹 el chip ya dice «fallado, pero te compras un año» */
+    /* 🧹 el chip ya dice «fallado, pero el consejo te da un año más» */
   } else {
     S.tpMissStreak=(S.tpMissStreak||0)+1; S.tpLastMet=false;
     if(_promesaRota) row.events.push(L(
@@ -15825,9 +16093,18 @@ const TP_DILEMAS=[
       S._compra={marca:n0, tipo:(revive?"mito":"marca"),
         to:{name:n0, abbr:dd.abbr, color:dd.color, color2:dd.color2}};
     } else {
-      const F=["Grupo Vantor","Meridian Capital","Aurora Industries"];
+      /* 🔎 NOMBRES VERIFICADOS (10-sep-2026). Los tres de antes existían de verdad: Vantor es una
+         empresa de inteligencia satelital, Meridian Capital Group es una financiera inmobiliaria
+         estadounidense y Aurora Innovation hace conducción autónoma. Éstos se buscaron uno por uno
+         antes de escribirlos, como los apellidos de los patrocinadores. */
+      const F=["Grupo Keldrassa","Virnalta Capital","Zarvenko","Fondo Brastenor","Oskravia Partners"];
       S._compra={marca:F[irnd(0,F.length-1)], to:null};
     }
+    /* 🏛️ ¿ES UNO DE LOS INTOCABLES? (pega de Carlos, 10-sep: le salió con Ferrari y el texto
+       hablaba de «un presupuesto menor que los grandes y una fábrica que no es la más puntera»).
+       El dilema sí vale para ellos —McLaren vendió un tercio del equipo a un fondo en 2020— pero la
+       historia del underdog no: a un grande no le compran la escudería, le compran un pedazo. */
+    S._compra.gigante = LOCK.indexOf(S.tpTeam)>=0;
     return true; },
   t:()=>L("Te quieren comprar después de ganar","They want to buy you after you won",{pt:"Querem te comprar depois de vencer"}),
   d:()=>{ const c=S._compra||{}, esMarca=!!c.to;
@@ -15847,9 +16124,16 @@ const TP_DILEMAS=[
       : esMarca
       ? L("con nuestro escudo detrás","with our badge behind it",{pt:"com o nosso escudo atrás"})
       : L("con nuestro dinero detrás","with our money behind it",{pt:"com o nosso dinheiro atrás"});
-    return L(`Ganasteis. Con un presupuesto menor que los grandes y una fábrica que no es la más puntera, ganasteis. Y ahora están aquí. ${quien} te pone delante una cifra que asegura el futuro de todos los que trabajan aquí, para siempre. «No queremos cambiar nada. Solo queremos que lo que habéis hecho lo hagáis ${escudo}.» Nadie dice en voz alta lo evidente: si esa frase fuera verdad, no harían falta abogados.`,
-      `You won. With a smaller budget than the big teams and a factory that isn't the sharpest, you won. And now they're here. ${quien} puts a figure in front of you that secures the future of everyone who works here, forever. "We don't want to change anything. We just want what you've built to run ${escudo}." Nobody says out loud what's obvious: if that sentence were true, there'd be no need for lawyers.`,
-      {pt:`Vocês venceram. Com um orçamento menor que o dos grandes e uma fábrica que não é a mais avançada, venceram. E agora eles estão aqui. ${quien} põe na sua frente um número que garante o futuro de todos que trabalham aqui, para sempre. «Não queremos mudar nada. Só queremos que o que vocês construíram corra ${escudo}.» Ninguém diz em voz alta o óbvio: se essa frase fosse verdade, não seriam necessários advogados.`}); },
+    const abre = c.gigante
+      ? L(`Ganasteis. Con el nombre que lleváis encima y con media parrilla esperando que fallarais, ganasteis. Y ahora están aquí. ${quien} sabe que la escudería no está en venta y no la pide: quiere un tercio de ella, y pone delante una cifra que asegura el futuro de todos los que trabajan aquí.`,
+          `You won. Carrying the name you carry, with half the grid waiting for you to fail, you won. And now they're here. ${quien} knows the team isn't for sale and doesn't ask for it: they want a third of it, and put a figure in front of you that secures the future of everyone who works here.`,
+          {pt:`Vocês venceram. Com o nome que carregam e com meio grid esperando que falhassem, venceram. E agora eles estão aqui. ${quien} sabe que a equipe não está à venda e não a pede: quer um terço dela, e põe na sua frente um número que garante o futuro de todos que trabalham aqui.`})
+      : L(`Ganasteis. Con un presupuesto menor que los grandes y una fábrica que no es la más puntera, ganasteis. Y ahora están aquí. ${quien} te pone delante una cifra que asegura el futuro de todos los que trabajan aquí, para siempre.`,
+          `You won. With a smaller budget than the big teams and a factory that isn't the sharpest, you won. And now they're here. ${quien} puts a figure in front of you that secures the future of everyone who works here, forever.`,
+          {pt:`Vocês venceram. Com um orçamento menor que o dos grandes e uma fábrica que não é a mais avançada, venceram. E agora eles estão aqui. ${quien} põe na sua frente um número que garante o futuro de todos que trabalham aqui, para sempre.`});
+    return L(`${abre} «No queremos cambiar nada. Solo queremos que lo que habéis hecho lo hagáis ${escudo}.» Nadie dice en voz alta lo evidente: si esa frase fuera verdad, no harían falta abogados.`,
+      `${abre} "We don't want to change anything. We just want what you've built to run ${escudo}." Nobody says out loud what's obvious: if that sentence were true, there'd be no need for lawyers.`,
+      {pt:`${abre} «Não queremos mudar nada. Só queremos que o que vocês construíram corra ${escudo}.» Ninguém diz em voz alta o óbvio: se essa frase fosse verdade, não seriam necessários advogados.`}); },
   opts:[
    {l:()=>L("Vender: asegurar el futuro de todos","Sell: secure everyone's future",{pt:"Vender: garantir o futuro de todos"}),
     r:()=>{ const c=S._compra||{}, viejo=S.tpTeam;
@@ -15883,9 +16167,9 @@ const TP_DILEMAS=[
                   `You sign, and the transition is smoother than you feared: the money arrives, the tunnel you'd begged for arrives, and your people keep their desks. The only thing that truly changes is the owner — and he has won at everything he's touched and doesn't understand how anyone here could finish second. +prestige of the team · +project`,
                   {pt:`Você assina, e a transição é mais suave do que temia: chega o dinheiro, chega o túnel que você pedia há anos, e a sua gente segue no lugar. A única coisa que muda de verdade é o dono — e esse ganhou em tudo em que tocou e não entende que aqui se possa terminar em segundo. +cachê · +projeto`}); }],
        [30,()=>{ TPTGT(rnd(2,4)); TPRE(-2);
-         return L(`Firmas, y la primera decisión que toman es una que no les pediste. La segunda tampoco. El dinero es real y la fábrica también, pero cada semana hay una reunión nueva con alguien que no sabe de qué color es el neumático blando. La transición se come medio año. −fama`,
-                  `You sign, and the first decision they make is one you didn't ask for. So is the second. The money is real and so is the factory, but every week brings a new meeting with someone who doesn't know what colour the soft tyre is. The transition eats half a season. −fame`,
-                  {pt:`Você assina, e a primeira decisão que eles tomam é uma que você não pediu. A segunda também. O dinheiro é real e a fábrica também, mas cada semana traz uma reunião nova com alguém que não sabe de que cor é o pneu macio. A transição come meio ano. −fama`}); }]); }},
+         return L(`Firmas, y las primeras decisiones que toman no te gustan. El dinero es real y la fábrica también, pero cada semana hay una reunión nueva con alguien que no sabe de qué color es el neumático blando. La transición se come medio año. −fama`,
+                  `You sign, and you don't like the first decisions they make. The money is real and so is the factory, but every week brings a new meeting with someone who doesn't know what colour the soft tyre is. The transition eats half a season. −fame`,
+                  {pt:`Você assina, e as primeiras decisões que eles tomam não te agradam. O dinheiro é real e a fábrica também, mas cada semana traz uma reunião nova com alguém que não sabe de que cor é o pneu macio. A transição come meio ano. −fama`}); }]); }},
    {l:()=>L("Seguir siendo independientes","Stay independent",{pt:"Seguir independentes"}),
     r:()=>{ const tn=S.tpTeam;
       TPTGT(-rnd(3,5));
