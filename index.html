@@ -1650,19 +1650,38 @@ const LINEAGE_2026 = [
 ];
 const EXPANSION = [
   {range:[2032,2040], team:{name:"Hyundai", abbr:"HYU", color:"#002C5F", color2:"#00AAD2", perf:65, cat:"F1"},
-    drivers:null, dieAfter:{w:[3,7], p:.35}}, // el gigante coreano entra con talento joven del mercado
+    drivers:null, prob:.34, dieAfter:{w:[3,7], p:.35}}, // el gigante coreano entra con talento joven del mercado
   {range:[2030,2039], team:{name:"Lotus", abbr:"LOT", color:"#00543d", color2:"#c9a227", perf:64, cat:"F1"},
-    drivers:null, dieAfter:{w:[3,8], p:.40}}, // renace el mito británico verde y oro
+    drivers:null, prob:.34, dieAfter:{w:[3,8], p:.40}}, // renace el mito británico verde y oro
   {range:[2031,2041], team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:66, cat:"F1"},
-    drivers:null, dieAfter:{w:[4,9], p:.25}}, // el eterno «casi» por fin da el paso
+    drivers:null, prob:.34, dieAfter:{w:[4,9], p:.25}}, // el eterno «casi» por fin da el paso
   {range:[2030,2040], team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:65, cat:"F1"},
-    drivers:null, dieAfter:{w:[4,9], p:.25}}, // el gigante japonés vuelve tras su marcha de 2009
+    drivers:null, prob:.34, dieAfter:{w:[4,9], p:.25}}, // el gigante japonés vuelve tras su marcha de 2009
   /* 🔱 MASERATI. Campeona del mundo de PILOTOS en 1954 y 1957 con Fangio, y desaparecida como
      constructor desde el 58. Vuelve como marca, no como heredera: igual que el Lotus de la expansión,
      NO lleva palmarés (decisión de Carlos con el gigante dormido: una resurrección comercial no hereda
      lo que ganó otro equipo con el mismo nombre). Azul marino del tridente + rojo italiano. */
   {range:[2030,2040], team:{name:"Maserati", abbr:"MSR", color:"#003A5D", color2:"#C8102E", perf:64, cat:"F1"},
-    drivers:null, dieAfter:{w:[3,8], p:.35}},
+    drivers:null, prob:.34, dieAfter:{w:[3,8], p:.35}},
+  /* 🔮 EL TRAMO 2042-2056 (10-sep-2026). Hasta hoy, en una partida de 2026 entraba EXACTAMENTE
+     UNA escudería nueva en toda la carrera —sorteada entre las cinco de arriba, entre 2030 y 2041— y
+     después no podía aparecer nadie nunca más. Con las eras llegando a 2056 eso dejaba catorce años
+     de parrilla congelada: medido, 1,8 entradas en treinta temporadas.
+     Ahora cada entrada lleva SU probabilidad y son independientes (la rama que ya usaba el retro), y
+     estas tres cubren los años 40 y 50. Son marcas inventadas, con los nombres buscados uno por uno
+     antes de escribirlos — de doce candidatos, nueve colisionaban con empresas reales. */
+  {range:[2042,2050], team:{name:"KHARVEX", abbr:"KHX", color:"#1B4DFF", color2:"#0B1E3A", perf:66, cat:"F1"},
+    drivers:null, prob:.40, dieAfter:{w:[4,9], p:.30}},
+  {range:[2044,2053], team:{name:"HALVERNE", abbr:"HLV", color:"#14342B", color2:"#C8CDD2", perf:64, cat:"F1"},
+    drivers:null, prob:.38, dieAfter:{w:[4,9], p:.35}},
+  {range:[2046,2056], team:{name:"TALVREN", abbr:"TLV", color:"#20242A", color2:"#C6FF3D", perf:65, cat:"F1"},
+    drivers:null, prob:.38, dieAfter:{w:[4,9], p:.35}},
+  {range:[2043,2052], team:{name:"KHOSVETH", abbr:"KHV", color:"#3B0764", color2:"#F2D98B", perf:64, cat:"F1"},
+    drivers:null, prob:.36, dieAfter:{w:[4,9], p:.35}},
+  {range:[2045,2054], team:{name:"ZANDRUX", abbr:"ZDX", color:"#050A18", color2:"#4DE1FF", perf:65, cat:"F1"},
+    drivers:null, prob:.36, dieAfter:{w:[4,9], p:.35}},
+  {range:[2048,2056], team:{name:"OLVRENN", abbr:"OLV", color:"#E02020", color2:"#FFE45C", perf:64, cat:"F1"},
+    drivers:null, prob:.34, dieAfter:{w:[4,9], p:.35}},
 ];
 
 /* ============================================================
@@ -2800,7 +2819,10 @@ function tallaEquipo(n){ const c=(S.cache&&S.cache[n])!=null?S.cache[n]:70; retu
    el equipo que se queda.** Un colista puede llamarse cualquier cosa; una fábrica campeona solo puede
    rebautizarse con un nombre grande. Y si no hay mito a mano, un fabricante o una marca nueva, que es
    lo que hace la F1 real cuando cae un gigante. */
-const MARCAS_NUEVAS=[{n:"KHARVEX", l:"K", abbr:"KHX"},{n:"HALVERNE", l:"H", abbr:"HLV"}];
+/* 🔠 la letra es el monograma. KHOSVETH lleva X en vez de K para que no coincida con KHARVEX
+   si algún año coinciden los dos en la parrilla. */
+const MARCAS_NUEVAS=[{n:"KHARVEX", l:"K", abbr:"KHX"},{n:"HALVERNE", l:"H", abbr:"HLV"},{n:"TALVREN", l:"T", abbr:"TLV"},
+ {n:"KHOSVETH", l:"X", abbr:"KHV"},{n:"ZANDRUX", l:"Z", abbr:"ZDX"},{n:"OLVRENN", l:"O", abbr:"OLV"}];
 function nombreParaVenta(equipo){
   const t=tallaEquipo(equipo);
   const hay=n=>F1_TEAMS.some(x=>x.name===n||x.name.indexOf(n)===0);
@@ -2831,6 +2853,18 @@ function eligePaleta(lista, salvo){
 function ponEscudo(nombre){
   const e=ESCUDOS_RESU[nombre];
   const pri=x=>{ const m=String(x||"").match(/#([0-9a-fA-F]{6})/); return m?m[0]:null; };
+  /* 🆕 LAS MARCAS NUEVAS no tienen escudo dibujado: llevan su inicial sobre una de las paletas
+     modernas, y la paleta se elige con la misma regla de variedad —familia que no esté ya en la
+     parrilla— para que no salgan dos azules a la vez. */
+  const mn=MARCAS_NUEVAS.find(m=>m.n===nombre);
+  if(mn){
+    const p=eligePaleta(PALETAS, nombre); if(!p) return null;
+    SPONSOR_BADGE[nombre]={c1:p.c1, c2:p.c2, sil:"mono_"+mn.l.toLowerCase()+".png"};
+    delete TEAM_LOGOS[nombre];
+    const t0=F1_TEAMS.find(x=>x.name===nombre);
+    if(t0){ t0.color=pri(p.c1)||t0.color; t0.color2=pri(p.c2)||t0.color2; }
+    return p;
+  }
   if(e){
     // si tiene escudo terminado Y silueta, se sortea cuál sale en esta partida
     if(e.img && e.img.length && (!e.sil || !e.sil.length || ch(.5))){
@@ -9186,6 +9220,7 @@ function processEntries(row){
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
     palmSeedTeam(e.team.name, S.baseYear);   // 🏆 si la marca tiene palmarés propio, llega con él puesto
     (S.llegadaExp=S.llegadaExp||{})[e.team.name]=yearNow();   // 🛌 y desde cuándo lleva aquí (ver gigCandidatos)
+    if(S.era==="2026"){ try{ ponEscudo(e.team.name); }catch(_e){} }   // 🎨 la marca nueva estrena escudo
     /* 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento.
        ⚖️ NO en el equipo que un reto obliga a entrar: el reto es TU asiento y todos los jugadores
           compiten en la misma tabla, así que ese 3% le regalaba a uno de cada treinta un coche
