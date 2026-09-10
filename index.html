@@ -12785,6 +12785,12 @@ function tpSignTeam(t, how){
 /* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
 function tpYearStart(){
   if(S.retired) return;
+  /* 📸 la foto del coche con la que el consejo va a fijar el listón: se toma AHORA, antes del
+     mercado y del rumbo, para que nada de lo que hagas este invierno mueva la vara de este año. */
+  if(S.tpTeam){
+    const _o=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+    S._pListon=_o.indexOf(S.tpTeam)+1; S._pListonY=yearNow();
+  }
   eraDominio();          // 👑 ¿alguien lleva demasiados años ganando? (va ANTES de la revolución)
   /* 🏁 LA REVOLUCIÓN TÉCNICA, TAMBIÉN EN EL MURO. El disparador vivía en `nextOffers()`, que arranca
      con `if(S.cat==="TP"){ tpWinter(); return; }` — o sea que en el modo jefe NO SALTABA NUNCA. Y era
@@ -14295,7 +14301,7 @@ function tpRumboScreen(){
         salta +11..15 (3 de cada 4; si no, se atasca) → medido con la deriva .28: si sale bien,
         −1 / +2,4 / +5,0 / +6,9 — el doble que continuidad en el año 2, a cambio del 25% de bache */
   mk("⚡",L("Exprimir el coche ESTE año","Squeeze the car THIS year",{pt:"Espremer o carro ESTE ano"}),
-    L("Mejora rápida ya, pero hipotecas el año siguiente.<br>Para dar un golpe cuando estás cerca.","Fast gains now, but you mortgage next year.<br>To strike when you're close.",{pt:"Melhora rápida já, mas hipoteca o próximo ano.<br>Para dar o bote quando está perto."}),
+    L("Mejora rápida ya, pero hipotecas los dos años siguientes.<br>Y el consejo lo ve: te subirá el listón el año que viene.","Fast gains now, but you mortgage the next two years.<br>And the board sees it: they'll raise the bar next year.",{pt:"Melhoria rápida já, mas você hipoteca os dois anos seguintes.<br>E o conselho vê: vai subir a meta no ano que vem."}),
     ()=>{ S.tpSinExprimir=0; S._ganarYaFirme=null;   // 📊 exprimiste: el contador vuelve a cero (y si te habías plantado, ya no cuenta)
       const _f=tpSubirCoche(tn, rnd(RB_EX_YA[0],RB_EX_YA[1]));   // solo se hipoteca lo que se gastó
       S.tpTopYears=(S.tpTopYears||0)+1;                 // 🌪️ y el ciclo se quema más deprisa
@@ -14522,7 +14528,15 @@ function tpCaprichoTxt(c){
 }
 function tpGoalFor(){
   const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
-  const n=ord.length, p=ord.indexOf(S.tpTeam)+1;
+  const n=ord.length;
+  /* 🎯 EL LISTÓN SE FIJA CON EL COCHE QUE TENÍAS, NO CON EL QUE ACABAS DE PAGAR (decisión de
+     Carlos, 10-sep-2026). `tpAnnounce` recalcula el listón DESPUÉS de la pantalla del rumbo, así que
+     exprimir se disparaba en el pie: medido, el listón se endurecía ese mismo año el 93% de las veces
+     y dos o tres puestos —de 10º a 7º—, o sea que el golpe se lo llevaba el consejo antes de rodar
+     una vuelta. Eso no es una decisión difícil, es una decisión trucada. Ahora `S._pListon` guarda tu
+     puesto de coche al empezar el invierno, ANTES de gastar: lo que consigas mejorándolo es tuyo esta
+     temporada, y la vara sube al año siguiente, cuando el coche nuevo ya está a la vista de todos. */
+  const p = (S._pListon!=null && S._pListonY===yearNow()) ? S._pListon : (ord.indexOf(S.tpTeam)+1);
   let target;
   if(p<=3) target=2;                                  // grande: pelea el título
   else if(p>=n-2) target=n-1;                         // colista: no seáis últimos
