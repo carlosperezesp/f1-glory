@@ -298,6 +298,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
      le pega a las pastillas de siglas — la insignia debe verse como sus PNG, limpia */
   border:none !important; box-shadow:none !important; text-shadow:none}
 .spbadge i{display:block;width:82%;height:82%}
+.spbadge img{display:block;width:82%;height:82%;object-fit:contain;border:none;box-shadow:none}
 .spbadge.mb{width:20px;height:20px}
 #teamDot.haslogo{background-size:cover;background-position:center;border:none !important;box-shadow:none}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
@@ -2969,6 +2970,11 @@ function spBadgeDot(d, sb){
 }
 function spBadgeHTML(sb, cls){
   const m=`center/contain no-repeat`;
+  /* 🏷️ CON LOGO PROPIO. Cuando la marca se pone DELANTE del nombre, la identidad pasa a ser suya
+     y el escudo también: su logo sobre su color (decisión de Carlos, 10-sep-2026 — «Zurvok Haas daría
+     logo Zurvok pero Haas Zurvok no»). Si va detrás, se sigue usando la silueta del equipo tintada,
+     que es lo de siempre: el equipo sigue siendo el equipo. */
+  if(sb.img) return `<span class="spbadge ${cls}" style="background:${sb.c1}"><img src="${sb.img}" alt=""></span>`;
   return `<span class="spbadge ${cls}" style="background:${sb.c1}"><i style="background:${sb.c2};-webkit-mask:url(${sb.sil}) ${m};mask:url(${sb.sil}) ${m}"></i></span>`;
 }
 function logoFor(name, year){
@@ -12395,16 +12401,16 @@ const OWNER_SELF={k:"self",
    igual que hacen los COMPRADORES con `desde`. Si el equipo firma el paquete entero, la marca se pone
    DELANTE del nombre (Zurvok Haas) con el escudo de siempre y los colores del patrocinador. */
 const PATROCINADORES=[
-  {n:"Zurvok",        color:"#E8590C", color2:"#141414", desde:1990},   // bebida energética
-  {n:"Bravasca",      color:"#C1121F", color2:"#F7E8C9", desde:1990},   // refresco
-  {n:"Orbanet",       color:"#0F4C81", color2:"#8FD0EA", desde:1990},   // telecomunicaciones
-  {n:"Telzur",        color:"#5A2A82", color2:"#EDEDED", desde:1990},   // telecomunicaciones
-  {n:"Banco Orvadal", color:"#0B3D2E", color2:"#C9A227", desde:1990},   // banca
-  {n:"Aerdana",       color:"#B22234", color2:"#F5F5F5", desde:1990},   // aerolínea
-  {n:"Vientara",      color:"#0E7490", color2:"#FDE68A", desde:1990},   // aerolínea
-  {n:"Zelnark",       color:"#101826", color2:"#22D3EE", desde:2017},   // cripto
-  {n:"Koinarth",      color:"#F7931A", color2:"#232323", desde:2017},   // cripto
-  {n:"Nurath",        color:"#3B0764", color2:"#B79CF5", desde:2023},   // inteligencia artificial
+  {n:"Zurvok", logo:"pat_zurvok.png",        color:"#E8590C", color2:"#141414", desde:1990},   // bebida energética
+  {n:"Bravasca", logo:"pat_bravasca.png",      color:"#C1121F", color2:"#F7E8C9", desde:1990},   // refresco
+  {n:"Orbanet", logo:"pat_orbanet.png",       color:"#0F4C81", color2:"#8FD0EA", desde:1990},   // telecomunicaciones
+  {n:"Telzur", logo:"pat_telzur.png",        color:"#5A2A82", color2:"#EDEDED", desde:1990},   // telecomunicaciones
+  {n:"Banco Orvadal", logo:"pat_banco_orvadal.png", color:"#0B3D2E", color2:"#C9A227", desde:1990},   // banca
+  {n:"Aerdana", logo:"pat_aerdana.png",       color:"#B22234", color2:"#F5F5F5", desde:1990},   // aerolínea
+  {n:"Vientara", logo:"pat_vientara.png",      color:"#0E7490", color2:"#FDE68A", desde:1990},   // aerolínea
+  {n:"Zelnark", logo:"pat_zelnark.png",       color:"#101826", color2:"#22D3EE", desde:2017},   // cripto
+  {n:"Koinarth", logo:"pat_koinarth.png",      color:"#F7931A", color2:"#232323", desde:2017},   // cripto
+  {n:"Nurath", logo:"pat_nurath.png",        color:"#3B0764", color2:"#B79CF5", desde:2023},   // inteligencia artificial
 ];
 const COMPRADORES={
   Porsche:{abbr:"POR",color:"#D5001C",color2:"#191F22", desde:2026},
@@ -16705,32 +16711,43 @@ const TP_DILEMAS=[
  {id:"tpUltimoDinero",
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
     const tn=S.tpTeam;
-    if(PATROCINADORES.some(p=>tn.indexOf(p.n+" ")===0)) return false;   // ya lleva una marca delante
+    // ya lleva una marca pegada, delante o detrás: no se encadenan dos
+    if(PATROCINADORES.some(p=>tn.indexOf(p.n+" ")===0 || tn.lastIndexOf(" "+p.n)===tn.length-p.n.length-1)) return false;
     const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
     if(ord.indexOf(tn) < Math.floor(ord.length*2/3)) return false;      // tercio de cola
     const pool=PATROCINADORES.filter(p=>yearNow()>=p.desde && !F1_TEAMS.some(t=>t.name.indexOf(p.n)===0));
     if(!pool.length) return false;
-    if(!S._ud) S._ud=pool[irnd(0,pool.length-1)];
+    if(!S._ud){ S._ud=pool[irnd(0,pool.length-1)]; S._udDelante=ch(.55); }
     return true; },
   t:()=>L("El patrocinador llega la víspera","The sponsor arrives on the eve",{pt:"O patrocinador chega na véspera"}),
   d:()=>{ const sp=S._ud||{n:"—"};
-    return L(`Faltan tres semanas para el primer Gran Premio y las cuentas no cuadran. ${sp.n} aparece con el dinero encima de la mesa y las condiciones debajo: quieren el coche entero de su color y su nombre delante del vuestro en la inscripción.`,
+    const _sitio = S._udDelante
+      ? L("su nombre delante del vuestro en la inscripción","their name in front of yours on the entry list",{pt:"o nome deles na frente do seu na inscrição"})
+      : L("su nombre pegado al vuestro en la inscripción, detrás","their name stuck to yours on the entry list, behind it",{pt:"o nome deles colado ao seu na inscrição, atrás"});
+    return L(`Faltan tres semanas para el primer Gran Premio y las cuentas no cuadran. ${sp.n} aparece con el dinero encima de la mesa y las condiciones debajo: quieren el coche entero de su color y ${_sitio}.`,
              `Three weeks to the first Grand Prix and the numbers don't add up. ${sp.n} turns up with the money on the table and the conditions underneath: they want the whole car in their colours and their name in front of yours on the entry list.`,
              {pt:`Faltam três semanas para o primeiro GP e as contas não fecham. A ${sp.n} aparece com o dinheiro na mesa e as condições embaixo: querem o carro inteiro na cor deles e o nome deles na frente do seu na inscrição.`}); },
   opts:[
    /* A · firmarlo todo: el renombrado ocurre SIEMPRE (es lo que han comprado); el dado decide cómo
       aterriza. El escudo de siempre queda registrado como alias del nombre nuevo. */
    {l:()=>L("Firmarlo todo y salir a competir","Sign it all and go racing",{pt:"Assinar tudo e ir correr"}),
-    r:()=>{ const sp=S._ud||PATROCINADORES[0], viejo=S.tpTeam, nn=sp.n+" "+viejo;
+    r:()=>{ const sp=S._ud||PATROCINADORES[0], viejo=S.tpTeam;
+      /* 🏷️ DÓNDE VA EL NOMBRE DECIDE DE QUIÉN ES EL ESCUDO (Carlos, 10-sep-2026). Con la marca
+         DELANTE la identidad pasa a ser suya y se ve su logo sobre su color; con la marca DETRÁS el
+         equipo sigue siendo el equipo y conserva su escudo, tintado. «Zurvok Haas daría logo Zurvok
+         pero Haas Zurvok no.» */
+      const delante = !!S._udDelante;
+      const nn = delante ? (sp.n+" "+viejo) : (viejo+" "+sp.n);
       if(!F1_TEAMS.some(t=>t.name===nn)){
         const src=logoFor(viejo);
         if(S.f1prof && S.f1prof[viejo]){ S.f1prof[nn]=S.f1prof[viejo]; delete S.f1prof[viejo]; }
         const fila={events:[]};
         rebrandTeam(viejo, {name:nn, color:sp.color, color2:sp.color2}, fila);
-        if(src) TEAM_LOGOS[nn]=src;                          // el escudo de siempre bajo el nombre nuevo
+        if(delante && sp.logo){ SPONSOR_BADGE[nn]={c1:sp.color, img:sp.logo}; delete TEAM_LOGOS[nn]; }
+        else if(src) TEAM_LOGOS[nn]=src;                     // el escudo de siempre bajo el nombre nuevo
         /* 🎨 y si Carlos dibujó la silueta de este equipo, la insignia pasa a ser el círculo de la
            marca con la silueta tintada — el «saborcito». Sin silueta, se queda el escudo original. */
-        if(TEAM_SILUETAS[viejo]) SPONSOR_BADGE[nn]={c1:sp.color, c2:sp.color2, sil:TEAM_SILUETAS[viejo]};
+        if(!delante && TEAM_SILUETAS[viejo]) SPONSOR_BADGE[nn]={c1:sp.color, c2:sp.color2, sil:TEAM_SILUETAS[viejo]};
         S.tpTeam=nn;
         const st=(S.tpStints||[]).at(-1);
         if(st && st.y0<yearNow()){ st.y1=yearNow()-1; S.tpStints.push({team:nn, y0:yearNow(), y1:yearNow(), constr:0, drv:0}); }
