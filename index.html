@@ -2663,6 +2663,125 @@ function isRBJr(name){ return JUNIOR_OF[name]==="Red Bull" && jrParentAlive(name
 // siguiente el tope lo devolvería a mitad de tabla. Un equipo B no adelanta a su casa madre.
 function isJrTeam(name){ return jrParentAlive(name); }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   🎨 LOS ESCUDOS DE LOS QUE APARECEN DE LA NADA (10-sep-2026)
+   Resurrecciones y marcas nuevas eligen escudo POR PARTIDA: «déjalos todos como
+   opciones válidas, que cada partida sea diferente» (Carlos). Con una regla:
+   «si entra un equipo con la letra A en azul, no vayas a meter otro de esos en
+   azul» — así que cada paleta lleva su FAMILIA y se sortea entre las que no
+   estén ya en la parrilla, mirando también el color de los equipos reales.
+   🚫 Los equipos que YA existen no entran aquí: no cambian de color por sorteo.
+   Su librea solo cambia cuando pasa algo que lo justifique (te compran, te
+   patrocinan), que es lo que `rebrandTeam` ya hace. */
+function familiaColor(c){
+  const m=String(c||"").match(/#([0-9a-fA-F]{6})/); if(!m) return "neutro";
+  const n=parseInt(m[1],16), r=(n>>16)/255, g=((n>>8)&255)/255, b=(n&255)/255;
+  const mx=Math.max(r,g,b), mn=Math.min(r,g,b), d=mx-mn;
+  if(d<.10) return "neutro";
+  let h=0;
+  if(mx===r) h=60*(((g-b)/d)%6); else if(mx===g) h=60*((b-r)/d+2); else h=60*((r-g)/d+4);
+  if(h<0) h+=360;
+  if(h<15||h>=345) return "rojo";
+  if(h<40)  return "naranja";
+  if(h<66)  return "amarillo";
+  if(h<95)  return "lima";
+  if(h<165) return "verde";
+  if(h<200) return "cian";
+  if(h<255) return "azul";
+  if(h<292) return "purpura";
+  return "magenta";
+}
+/* las 22 paletas modernas del selector `logos.html`, para las MARCAS NUEVAS */
+const PALETAS=[
+ {f:"azul",     c1:"linear-gradient(145deg,#1B4DFF,#0B1E3A)", c2:"linear-gradient(140deg,#BFD8FF,#FFFFFF)"},
+ {f:"cian",     c1:"linear-gradient(160deg,#050A18,#12294D)", c2:"linear-gradient(140deg,#4DE1FF,#B8F4FF)"},
+ {f:"lima",     c1:"linear-gradient(150deg,#20242A,#0B0D10)", c2:"linear-gradient(140deg,#C6FF3D,#7BC400)"},
+ {f:"magenta",  c1:"linear-gradient(145deg,#7A1BFF,#FF2D9B)", c2:"linear-gradient(140deg,#FFFFFF,#FFD6EF)"},
+ {f:"naranja",  c1:"linear-gradient(150deg,#2A2E33,#101317)", c2:"linear-gradient(140deg,#F0A96B,#B4571A)"},
+ {f:"verde",    c1:"linear-gradient(145deg,#1B4436,#0A1E17)", c2:"linear-gradient(140deg,#E8EDF0,#A9B6BF)"},
+ {f:"neutro",   c1:"linear-gradient(145deg,#F5F3ED,#DAD6C9)", c2:"linear-gradient(140deg,#1B4DFF,#0B1E3A)"},
+ {f:"amarillo", c1:"linear-gradient(150deg,#1A1A1A,#000000)", c2:"linear-gradient(140deg,#FFC53D,#E07B00)"},
+ {f:"azul",     c1:"linear-gradient(140deg,#BFD8FF,#FFFFFF)", c2:"linear-gradient(145deg,#1B4DFF,#0B1E3A)"},
+ {f:"cian",     c1:"linear-gradient(140deg,#4DE1FF,#B8F4FF)", c2:"linear-gradient(160deg,#050A18,#12294D)"},
+ {f:"lima",     c1:"linear-gradient(140deg,#C6FF3D,#7BC400)", c2:"linear-gradient(150deg,#20242A,#0B0D10)"},
+ {f:"naranja",  c1:"linear-gradient(140deg,#F0A96B,#B4571A)", c2:"linear-gradient(150deg,#2A2E33,#101317)"},
+ {f:"neutro",   c1:"linear-gradient(140deg,#E8EDF0,#A9B6BF)", c2:"linear-gradient(145deg,#1B4436,#0A1E17)"},
+ {f:"amarillo", c1:"linear-gradient(140deg,#FFC53D,#E07B00)", c2:"linear-gradient(150deg,#1A1A1A,#000000)"},
+ {f:"amarillo", c1:"linear-gradient(145deg,#FFD100,#F0A500)", c2:"linear-gradient(140deg,#E02020,#8C0000)"},
+ {f:"rojo",     c1:"linear-gradient(145deg,#E02020,#8C0000)", c2:"linear-gradient(140deg,#FFE45C,#F0B400)"},
+ {f:"purpura",  c1:"linear-gradient(150deg,#3B0764,#6B21A8)", c2:"linear-gradient(140deg,#F2D98B,#B8891F)"},
+ {f:"amarillo", c1:"linear-gradient(145deg,#F2D98B,#B8891F)", c2:"linear-gradient(150deg,#3B0764,#6B21A8)"},
+ {f:"amarillo", c1:"linear-gradient(145deg,#FFD100,#F0A500)", c2:"linear-gradient(140deg,#1B4DFF,#0B1E3A)"},
+ {f:"azul",     c1:"linear-gradient(140deg,#0B1E3A,#1B4DFF)", c2:"linear-gradient(145deg,#FFD100,#F0A500)"}
+];
+/* …y los MITOS, que van casi siempre de su color (Jordan amarillo, Minardi negro,
+   Lotus verde y oro o negro y oro). `img` = escudo terminado, como el redbull.png
+   de siempre; `sil` = silueta que se pinta con la paleta de al lado. */
+const ESCUDOS_RESU={
+ "Jordan":{sil:["resurrections/Jordan_new.png"], pal:[
+   {f:"amarillo",c1:"#FFD100",c2:"#101010"},
+   {f:"amarillo",c1:"linear-gradient(140deg,#FFE45C,#F0B400)",c2:"#101010"},
+   {f:"amarillo",c1:"#101010",c2:"linear-gradient(140deg,#FFE45C,#F0B400)"},
+   {f:"verde",   c1:"linear-gradient(140deg,#0B3D2E,#009A44)",c2:"#FFD100"}]},
+ "Minardi":{img:["resurrections/minardi_new2.png"], sil:["resurrections/Minardi_new.png"], pal:[
+   {f:"neutro",c1:"#0A0A0A",c2:"#F5D800"},
+   {f:"neutro",c1:"linear-gradient(150deg,#232323,#000000)",c2:"linear-gradient(140deg,#FFE45C,#E0B400)"},
+   {f:"neutro",c1:"#0A0A0A",c2:"linear-gradient(140deg,#FFFFFF,#B8B8B8)"}]},
+ "Lotus":{sil:["resurrections/Lotus_new1.png","resurrections/Lotus_new2.png"], pal:[
+   {f:"verde",c1:"#00543D",c2:"#C9A227"},
+   {f:"verde",c1:"linear-gradient(145deg,#0A7A57,#00382A)",c2:"linear-gradient(140deg,#F2D98B,#B8891F)"},
+   {f:"neutro",c1:"linear-gradient(150deg,#1C1C1C,#000000)",c2:"linear-gradient(140deg,#F2D98B,#B8891F)"}]},
+ "Brabham":{sil:["resurrections/Brabham_new.png"], pal:[
+   {f:"azul",c1:"#35578A",c2:"#F2F2F2"},
+   {f:"azul",c1:"linear-gradient(145deg,#4A73B0,#1E3660)",c2:"linear-gradient(140deg,#FFFFFF,#C9D6E4)"},
+   {f:"azul",c1:"linear-gradient(150deg,#12294D,#050D1C)",c2:"linear-gradient(140deg,#F2D98B,#B8891F)"}]},
+ "Tyrrell":{sil:["resurrections/Tyrrell.png"], pal:[
+   {f:"azul",c1:"#0A1A6B",c2:"#F2F2F2"},
+   {f:"azul",c1:"linear-gradient(145deg,#1B32A8,#060F45)",c2:"linear-gradient(140deg,#FFFFFF,#BFD2FF)"},
+   {f:"azul",c1:"linear-gradient(140deg,#5FA8FF,#0A1A6B)",c2:"#FFFFFF"}]},
+ "Arrows":{img:["resurrections/arrows_new.png"], sil:["resurrections/arrows_new2.png"], pal:[
+   {f:"naranja",c1:"#FF6600",c2:"#101010"},
+   {f:"naranja",c1:"linear-gradient(145deg,#FF8A3D,#E04E00)",c2:"#101010"},
+   {f:"naranja",c1:"linear-gradient(150deg,#1C1C1C,#000000)",c2:"linear-gradient(140deg,#FF8A3D,#E04E00)"}]},
+ "March":{sil:["resurrections/March_new2.png"], pal:[
+   {f:"neutro",c1:"#8AA0B0",c2:"#33414D"},
+   {f:"rojo",  c1:"#E02020",c2:"#F2F2F2"},
+   {f:"azul",  c1:"linear-gradient(145deg,#1B4DFF,#0B1E3A)",c2:"linear-gradient(140deg,#BFD8FF,#FFFFFF)"},
+   {f:"cian",  c1:"linear-gradient(145deg,#4DE1FF,#1B4DFF)",c2:"linear-gradient(150deg,#08122B,#16305C)"},
+   {f:"azul",  c1:"linear-gradient(160deg,#050A18,#12294D)",c2:"linear-gradient(140deg,#5FA8FF,#C8E4FF)"}]}
+};
+function familiasEnUso(salvo){
+  const u=new Set();
+  F1_TEAMS.forEach(t=>{ if(t && t.name!==salvo) u.add(familiaColor(t.color)); });
+  return u;
+}
+function eligePaleta(lista, salvo){
+  if(!lista || !lista.length) return null;
+  const u=familiasEnUso(salvo);
+  const libres=lista.filter(p=>!u.has(p.f));
+  const pool=libres.length?libres:lista;         // si no queda ninguna libre, se repite
+  return pool[irnd(0,pool.length-1)];
+}
+/* pone el escudo de un equipo recién aparecido y devuelve la paleta usada (o null
+   si el escudo ya venía terminado y no hay colores que elegir) */
+function ponEscudo(nombre){
+  const e=ESCUDOS_RESU[nombre];
+  const pri=x=>{ const m=String(x||"").match(/#([0-9a-fA-F]{6})/); return m?m[0]:null; };
+  if(e){
+    // si tiene escudo terminado Y silueta, se sortea cuál sale en esta partida
+    if(e.img && e.img.length && (!e.sil || !e.sil.length || ch(.5))){
+      TEAM_LOGOS[nombre]=e.img[irnd(0,e.img.length-1)]; delete SPONSOR_BADGE[nombre]; return null;
+    }
+    const p=eligePaleta(e.pal, nombre); if(!p) return null;
+    SPONSOR_BADGE[nombre]={c1:p.c1, c2:p.c2, sil:e.sil[irnd(0,e.sil.length-1)]};
+    delete TEAM_LOGOS[nombre];
+    const t=F1_TEAMS.find(x=>x.name===nombre);
+    if(t){ t.color=pri(p.c1)||t.color; t.color2=pri(p.c2)||t.color2; }
+    return p;
+  }
+  return null;
+}
+
 const STYLES = {
   agresivo:{label:"🔥 Agresivo", varza:5.5, dnf:.06, growth:.25, wet:0},
   tecnico:{label:"🧠 Técnico", varza:4.5, dnf:.06, growth:.3, wet:.5},
@@ -16148,6 +16267,7 @@ const TP_DILEMAS=[
         if(S.f1prof && S.f1prof[viejo]){ S.f1prof[c.to.name]=S.f1prof[viejo]; delete S.f1prof[viejo]; }
         const fila={events:[]};
         rebrandTeam(viejo, c.to, fila);
+        try{ ponEscudo(c.to.name); }catch(e){}   // 🎨 el mito estrena escudo, distinto en cada partida
         S.tpTeam=c.to.name;
         /* 📖 el capítulo se parte SOLO si el anterior empezó antes: vendiendo el mismo año en que
            llegaste salía «Haas 2040-2039», al revés (lo cazó el escenario de prueba). */

@@ -20,3 +20,9 @@ mapa-tp.html
 
 # censo interactivo de pilotos: documento interno, se regenera desde index.html
 base-pilotos.html
+
+# selector de escudos: documento interno
+logos.html
+
+# documento de trabajo de los escenarios futuros
+What-ifs F1 Glory.md
