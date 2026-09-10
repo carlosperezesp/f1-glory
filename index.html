@@ -1613,6 +1613,39 @@ const LINEAGE_2026 = [
     Y el palmarés viaja con él —`PALM_HEREDA` cubre los dos sentidos—: si Renault-Alpine se hunde
     quince años, el gigante dormido lo llamará por el nombre que lleve en ese momento. */
  {key:"Alpine", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2030,2040], p:.22}]},
+ /* ═══ EL MAPA DE 2030 A 2056 (diseño de Carlos, 10-sep-2026) ═══════════════════════════════════
+    El principio: la F1 casi nunca mata equipos, los RENOMBRA. De 1990 a 2026 murieron seis y se
+    renombraron muchísimos más — Brackley lleva desde 1970 y ha sido Tyrrell, BAR, Honda, Brawn y
+    Mercedes. Por eso aquí solo Haas puede cerrar: es el único sin fabricante ni marca grande detrás.
+    Todo lo demás son cambios de manos, y el nombre nuevo se decide EN EL MOMENTO con la regla de
+    talla. `siFondo` exige que al equipo le vaya mal de verdad, y si ese año va bien no se descarta:
+    se reintenta al siguiente. Así «varios años malos» sale solo. */
+ /* 🐮 LA CADENA DE RED BULL, que es idea suya y la mejor del mapa: primero se vende el filial
+    —y deja de ser filial de nadie, así que puede fichar veteranos y entra en el sorteo del pelotazo
+    del reglamento, del que el filial está excluido— y SOLO ENTONCES la casa madre se vuelve
+    vendible. Realista: Red Bull es una marca de bebidas, no un fabricante. */
+ {key:"Racing Bulls", steps:[{w:[2040,2052], p:.60, siFondoDe:"Red Bull", to:function(cur){
+    const d=nombreParaVenta(cur); if(!d) return null;
+    S.rbVendioFilial=true;
+    delete JUNIOR_OF[cur];                    // 🔓 deja de ser filial: ya no le limita la casa madre
+    return d; }}]},
+ {key:"Red Bull", steps:[{w:[2043,2056], p:.50, siFondo:true, siFlag:"rbVendioFilial",
+    to:function(cur){ return nombreParaVenta(cur); }}]},
+ /* 🏭 LOS FABRICANTES SE RETIRAN Y EL EQUIPO SOBREVIVE: BMW dejó Sauber en 2009, Honda dejó lo
+    que acabó siendo Brawn, Renault dejó Lotus. Audi vuelve a su nombre de siempre; los demás pasan a
+    quien toque. */
+ {key:"Audi", steps:[{to:{name:"Sauber",abbr:"SAU",color:"#00E701",color2:"#0A0A0A"}, w:[2038,2050], p:.28, siFondo:true}]},
+ {key:"Cadillac", steps:[{w:[2036,2050], p:.30, siFondo:true, to:function(cur){ return nombreParaVenta(cur); }}]},
+ /* 🎭 Y el mejor desenlace que puede dar el mapa: la entidad que hoy es Mercedes EMPEZÓ siendo
+    Tyrrell —BAR compró el equipo de Ken Tyrrell en 1999—, así que si el dado saca Tyrrell no es una
+    ocurrencia: es el equipo recuperando su nombre original sesenta años después. */
+ {key:"Mercedes", steps:[{w:[2045,2056], p:.22, siFondo:true, to:function(cur){ return nombreParaVenta(cur); }}]},
+ {key:"Aston Martin", steps:[{w:[2035,2050], p:.25, siFondo:true, to:function(cur){ return nombreParaVenta(cur); }}]},
+ /* 🟠 McLaren es el más difícil de todos: en 2020 vendieron un tercio del equipo a un fondo y en
+    los 80 sobrevivieron por una fusión, pero el nombre nunca se ha caído del morro. Tarde y raro. */
+ {key:"McLaren", steps:[{w:[2048,2056], p:.10, siFondo:true, to:function(cur){
+    const d=nombreParaVenta(cur); if(!d) return null;
+    return {name:"McLaren-"+d.name, abbr:"MCL", color:"#FF8000", color2:"#101010"}; }}]},
 ];
 const EXPANSION = [
   {range:[2032,2040], team:{name:"Hyundai", abbr:"HYU", color:"#002C5F", color2:"#00AAD2", perf:65, cat:"F1"},
@@ -2718,38 +2751,68 @@ const PALETAS=[
    Lotus verde y oro o negro y oro). `img` = escudo terminado, como el redbull.png
    de siempre; `sil` = silueta que se pinta con la paleta de al lado. */
 const ESCUDOS_RESU={
- "Jordan":{sil:["resurrections/Jordan_new.png"], pal:[
+ "Jordan":{talla:2, /* 4 victorias y un 3º de constructores en 1999 */ sil:["resurrections/Jordan_new.png"], pal:[
    {f:"amarillo",c1:"#FFD100",c2:"#101010"},
    {f:"amarillo",c1:"linear-gradient(140deg,#FFE45C,#F0B400)",c2:"#101010"},
    {f:"amarillo",c1:"#101010",c2:"linear-gradient(140deg,#FFE45C,#F0B400)"},
    {f:"verde",   c1:"linear-gradient(140deg,#0B3D2E,#009A44)",c2:"#FFD100"}]},
- "Minardi":{img:["resurrections/minardi_new2.png"], sil:["resurrections/Minardi_new.png"], pal:[
+ "Minardi":{talla:1, /* 0 podios en 340 salidas */ img:["resurrections/minardi_new2.png"], sil:["resurrections/Minardi_new.png"], pal:[
    {f:"neutro",c1:"#0A0A0A",c2:"#F5D800"},
    {f:"neutro",c1:"linear-gradient(150deg,#232323,#000000)",c2:"linear-gradient(140deg,#FFE45C,#E0B400)"},
    {f:"neutro",c1:"#0A0A0A",c2:"linear-gradient(140deg,#FFFFFF,#B8B8B8)"}]},
- "Lotus":{sil:["resurrections/Lotus_new1.png","resurrections/Lotus_new2.png"], pal:[
+ "Lotus":{talla:3, /* 7 títulos de constructores y 6 de pilotos */ sil:["resurrections/Lotus_new1.png","resurrections/Lotus_new2.png"], pal:[
    {f:"verde",c1:"#00543D",c2:"#C9A227"},
    {f:"verde",c1:"linear-gradient(145deg,#0A7A57,#00382A)",c2:"linear-gradient(140deg,#F2D98B,#B8891F)"},
    {f:"neutro",c1:"linear-gradient(150deg,#1C1C1C,#000000)",c2:"linear-gradient(140deg,#F2D98B,#B8891F)"}]},
- "Brabham":{sil:["resurrections/Brabham_new.png"], pal:[
+ "Brabham":{talla:3, /* 2 de constructores y 4 de pilotos */ sil:["resurrections/Brabham_new.png"], pal:[
    {f:"azul",c1:"#35578A",c2:"#F2F2F2"},
    {f:"azul",c1:"linear-gradient(145deg,#4A73B0,#1E3660)",c2:"linear-gradient(140deg,#FFFFFF,#C9D6E4)"},
    {f:"azul",c1:"linear-gradient(150deg,#12294D,#050D1C)",c2:"linear-gradient(140deg,#F2D98B,#B8891F)"}]},
- "Tyrrell":{sil:["resurrections/Tyrrell.png"], pal:[
+ "Tyrrell":{talla:3, /* 1 de constructores y 2 de pilotos — el de 1969 es de Matra */ sil:["resurrections/Tyrrell.png"], pal:[
    {f:"azul",c1:"#0A1A6B",c2:"#F2F2F2"},
    {f:"azul",c1:"linear-gradient(145deg,#1B32A8,#060F45)",c2:"linear-gradient(140deg,#FFFFFF,#BFD2FF)"},
    {f:"azul",c1:"linear-gradient(140deg,#5FA8FF,#0A1A6B)",c2:"#FFFFFF"}]},
- "Arrows":{img:["resurrections/arrows_new.png"], sil:["resurrections/arrows_new2.png"], pal:[
+ "Arrows":{talla:1, /* 0 victorias en 382 salidas */ img:["resurrections/arrows_new.png"], sil:["resurrections/arrows_new2.png"], pal:[
    {f:"naranja",c1:"#FF6600",c2:"#101010"},
    {f:"naranja",c1:"linear-gradient(145deg,#FF8A3D,#E04E00)",c2:"#101010"},
    {f:"naranja",c1:"linear-gradient(150deg,#1C1C1C,#000000)",c2:"linear-gradient(140deg,#FF8A3D,#E04E00)"}]},
- "March":{sil:["resurrections/March_new2.png"], pal:[
+ "Renault":{talla:3, /* solo se le pinta al renombrar en una partida de 2026 */ sil:["Renault_new.png"], pal:[
+   {f:"amarillo",c1:"#FFD100",c2:"#101010"},
+   {f:"amarillo",c1:"linear-gradient(145deg,#FFE45C,#F0B400)",c2:"#101010"},
+   {f:"amarillo",c1:"#E8FF00",c2:"#101010"},
+   {f:"amarillo",c1:"linear-gradient(145deg,#E8FF00,#B7D400)",c2:"#0A0A0A"},
+   {f:"amarillo",c1:"#101010",c2:"#E8FF00"}]},
+ "March":{talla:2, /* 3 como constructor pero solo 2 del equipo oficial */ sil:["resurrections/March_new2.png"], pal:[
    {f:"neutro",c1:"#8AA0B0",c2:"#33414D"},
    {f:"rojo",  c1:"#E02020",c2:"#F2F2F2"},
    {f:"azul",  c1:"linear-gradient(145deg,#1B4DFF,#0B1E3A)",c2:"linear-gradient(140deg,#BFD8FF,#FFFFFF)"},
    {f:"cian",  c1:"linear-gradient(145deg,#4DE1FF,#1B4DFF)",c2:"linear-gradient(150deg,#08122B,#16305C)"},
    {f:"azul",  c1:"linear-gradient(160deg,#050A18,#12294D)",c2:"linear-gradient(140deg,#5FA8FF,#C8E4FF)"}]}
 };
+/* 🏛️ LA TALLA DEL EQUIPO sale de `S.cache` —la grandeza acumulada, que ya existe y decae
+   despacio—, así que se adapta a lo que haya pasado en TU partida: si tu Haas lleva quince años
+   ganando, deja de ser candidato a llamarse Minardi. */
+function tallaEquipo(n){ const c=(S.cache&&S.cache[n])!=null?S.cache[n]:70; return c>=85?3:(c>=72?2:1); }
+/* 🎭 QUIÉN SE QUEDA CON UN EQUIPO QUE CAMBIA DE MANOS (pega de Carlos, 10-sep: «¿tiene sentido
+   que Mercedes pase a ser March?»). No lo tiene: Brackley ha sido Tyrrell, BAR, Honda, Brawn y
+   Mercedes, y March hizo 3 victorias en 197 carreras. **El mito tiene que ser igual o MÁS grande que
+   el equipo que se queda.** Un colista puede llamarse cualquier cosa; una fábrica campeona solo puede
+   rebautizarse con un nombre grande. Y si no hay mito a mano, un fabricante o una marca nueva, que es
+   lo que hace la F1 real cuando cae un gigante. */
+const MARCAS_NUEVAS=[{n:"KHARVEX", l:"K", abbr:"KHX"},{n:"HALVERNE", l:"H", abbr:"HLV"}];
+function nombreParaVenta(equipo){
+  const t=tallaEquipo(equipo);
+  const hay=n=>F1_TEAMS.some(x=>x.name===n||x.name.indexOf(n)===0);
+  const cand=[];
+  Object.keys(ESCUDOS_RESU).forEach(m=>{ if((ESCUDOS_RESU[m].talla||1)>=t && !hay(m)) cand.push({tipo:"mito", n:m}); });
+  Object.keys(COMPRADORES).forEach(m=>{ if(!hay(m) && yearNow()>=(COMPRADORES[m].desde||0)) cand.push({tipo:"marca", n:m, d:COMPRADORES[m]}); });
+  MARCAS_NUEVAS.forEach(m=>{ if(!hay(m.n)) cand.push({tipo:"nueva", n:m.n, d:m}); });
+  if(!cand.length) return null;
+  const c=cand[irnd(0,cand.length-1)];
+  if(c.tipo==="marca") return {name:c.n, abbr:c.d.abbr, color:c.d.color, color2:c.d.color2};
+  const _ab=(c.n.slice(0,3)).toUpperCase();
+  return {name:c.n, abbr:(c.d&&c.d.abbr)||_ab, color:"#6f7078", color2:"#2a2c33"};  // el color lo pone `ponEscudo`
+}
 function familiasEnUso(salvo){
   const u=new Set();
   F1_TEAMS.forEach(t=>{ if(t && t.name!==salvo) u.add(familiaColor(t.color)); });
@@ -4300,7 +4363,13 @@ function startCareer(){
   // 🧬 filial de época + plan de linaje sorteado POR PARTIDA (cada transformación: ¿ocurre? ¿qué año?)
   JUNIOR_OF = {...ERA.juniorOf};
   S.lineage = (ERA.lineage||[]).map(c=>({key:c.key, cur:c.key,
-    steps:c.steps.map(st=>({to:st.to, die:st.die, needs:st.needs, from:st.from, year:irnd(st.w[0],st.w[1]), go:ch(st.p), done:false}))}));
+    /* 🐞 LA LISTA BLANCA SE DEJABA CAMPOS FUERA (10-sep-2026). `siFondo` —«este paso solo ocurre
+       si al equipo le va mal»— se escribió el 24-ago para que Marussia solo se convirtiera en Manor
+       estando en la cola… y NUNCA se copiaba aquí, así que llevaba desde entonces sin hacer nada. Se
+       destapó al medir el mapa nuevo: Mercedes se vendía yendo octava. Van los tres. */
+    steps:c.steps.map(st=>({to:st.to, die:st.die, needs:st.needs, from:st.from,
+      siFondo:st.siFondo, siFondoDe:st.siFondoDe, siFlag:st.siFlag,
+      year:irnd(st.w[0],st.w[1]), go:ch(st.p), done:false}))}));
   // 🎬 llegadas históricas con jitter ±1 año (Antonelli puede llegar en 2024, 2025 o 2026…)
   S.arrivals = (ERA.arrivals||[]).map(a=>({...a, y:a.y+irnd(-1,1)}));
   // 🏗️ RECONSTRUIR la parrilla F1 desde la era elegida (contenido reemplazado IN SITU → todas las
@@ -9248,6 +9317,25 @@ function processLineage(row){
         const _ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).map(x=>x.name);
         if(_ord.indexOf(chn.cur) < Math.ceil(_ord.length*2/3)){ st.year=yearNow()+1; return; }
       }
+      /* 🐮 …Y EL MISMO FILTRO PERO MIRANDO A OTRO EQUIPO (10-sep-2026). Red Bull no vende el filial
+         porque al filial le vaya mal: lo vende porque le va mal a ELLA. Igual que `siFondo`, si ese
+         año la casa madre va bien no se descarta: se reintenta al siguiente. */
+      if(st.siFondoDe){
+        if(!F1_TEAMS.some(x=>x.name===st.siFondoDe)){ st.done=true; return; }
+        const _o2=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]??70)-(S.f1perf[a.name]??70)).map(x=>x.name);
+        if(_o2.indexOf(st.siFondoDe) < Math.ceil(_o2.length*2/3)){ st.year=yearNow()+1; return; }
+      }
+      // 🔗 y un paso que espera a que haya pasado otra cosa antes (vender la casa madre exige
+      //    haber vendido el filial). Si aún no ha pasado, se reintenta, no se descarta.
+      if(st.siFlag && !S[st.siFlag]){ st.year=yearNow()+1; return; }
+      /* 🎭 EL DESTINO PUEDE DECIDIRSE EN EL MOMENTO. `to` puede ser una función: así el nombre
+         nuevo se elige cuando la venta ocurre —con la parrilla que haya entonces y con la regla de
+         talla— en vez de estar escrito de antemano. Si devuelve null, la venta no ocurre. */
+      if(typeof st.to==="function"){
+        const _r=st.to(chn.cur);
+        if(!_r){ st.year=yearNow()+1; return; }
+        st.to=_r;
+      }
       const t=F1_TEAMS.find(x=>x.name===chn.cur);
       if(!t){ st.done=true; return; } // el equipo ya no existe (murió antes)
       // 📜 el padrino te prometió pagarte la escalera: no puede hundirse mientras la subes
@@ -9290,6 +9378,9 @@ function processLineage(row){
         killTeam(chn.cur, row); st.done=true; return;
       }
       rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true; yaCambio=true;
+      /* 🎨 el nombre nuevo estrena escudo, distinto en cada partida. Solo en la era actual: en el
+         retro los escudos son los históricos y no se tocan. */
+      if(S.era==="2026"){ try{ ponEscudo(chn.cur); }catch(e){} }
     });
   });
 }
