@@ -14779,7 +14779,15 @@ function simTP(row){
       `🎤 Y no es solo el resultado: en pretemporada prometiste en alto un salto que no ha llegado. El consejo lo tenía apuntado, y ya no queda margen que gastar. −fama`,
       `🎤 And it isn't just the result: in pre-season you publicly promised a step that never came. The board had it written down, and there's no room left to spend. −fame`,
       {pt:`🎤 E não é só o resultado: na pré-temporada você prometeu em alto e bom som um salto que não veio. O conselho tinha anotado, e já não sobra margem. −fama`}));
-    if(S.tpMissStreak>=2 && S.tpOwner && S.tpOwner.k==="self"){
+    /* 🪑 CON HEREDERO, UN SOLO FALLO (`tpHeredero`). El consejo ya tiene a quién sentar en tu silla,
+       así que no espera el segundo año ni mira tu historial: es la trampa de lo generoso. Al dueño que
+       eres tú no le aplica — nadie te sustituye en tu propia empresa. */
+    if(S.tpHeredero && S.tpMissStreak>=1 && !(S.tpOwner && S.tpOwner.k==="self")){
+      S.tpFired=true; S.tpFiredBy=tn; row.tpVerdict="fuera";
+      row.events.push(L(`🪑 Un año por debajo del listón, y esta vez no hay segundo. El consejo no tiene que buscar a nadie: lo tiene sentado en la oficina técnica desde que tú lo preparaste.`,
+        `🪑 One year below the bar, and this time there's no second one. The board doesn't have to look for anyone: he's been sitting in the technical office since you groomed him.`,
+        {pt:`🪑 Um ano abaixo da meta, e desta vez não há segundo. O conselho não precisa procurar ninguém: ele está sentado no escritório técnico desde que você o preparou.`}));
+    } else if(S.tpMissStreak>=2 && S.tpOwner && S.tpOwner.k==="self"){
       /* 🧑‍✈️ al dueño no lo despide nadie… pero el agujero lo paga él (Carlos: «¿habría que ver si te
          pueden despedir o no?» — no: la presión pasa de la silla al bolsillo). Y si insiste en fallar,
          la respuesta a su segunda pregunta («¿el equipo puede quebrar?») es que SÍ: tres años malos
@@ -18417,6 +18425,64 @@ const TP_DILEMAS=[
           [15,()=>(TPRE(-2),L("Lo leen como lo que temías que leyeran: que la decisión era tuya y la has subido. −−fama",
                               "They read it as what you were afraid they'd read: that the decision was yours and you passed it upstairs. −−fame",
                               {pt:"Leem como você temia que lessem: que a decisão era sua e você subiu. −−fama"}))])}]}; }}]}
+ ,
+ /* 🪑 «EL HEREDERO» — el primer dilema de jefe VETERANO (diseño de Carlos, 11-sep-2026). Salió de
+    medir que a partir de la temporada 20 solo quedaban cinco dilemas esperando turno, y ninguno a la
+    30: los 50 que había piden situaciones de primeros años. Éste exige lo contrario — llevar mucho.
+    📚 La historia real detrás: Ron Dennis preparó a su mano derecha, Martin Whitmarsh, para sucederle
+    en McLaren en 2009; en 2014 volvió y lo echó, y en 2016 lo echaron a él. Preparar un sucesor es la
+    decisión más generosa y la más peligrosa que puede tomar un jefe.
+    🌲 EVERGREEN: no nombra año, era ni equipo. Vale igual en 2026 que en un muro retro.
+    🔒 Sale UNA vez, desde la temporada 16 y con 8 o más en ese mismo equipo (tiene que haber crecido
+    CONTIGO). Y va empujado en `pickTPDilemma` para que casi seguro llegue antes del final. */
+ {id:"tpHeredero",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || S.tpHeredero || S.tpUltimo) return false;
+    const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
+    if(filas.length<16) return false;
+    let aqui=0; for(let i=filas.length-1;i>=0;i--){ if(filas[i].tpTeam===S.tpTeam) aqui++; else break; }
+    if(aqui<8) return false;
+    S._herA=aqui; return true; },
+  t:()=>L("El heredero","The heir",{pt:"O herdeiro"}),
+  /* ✍️ El texto de entrada es de Carlos. El número de años es el de VERDAD (decía «doce» y la
+     condición deja verlo con ocho: habría mentido), y va con letra porque abre la frase. */
+  d:()=>{ const n=S._herA||12;
+    const es=["","Un","Dos","Tres","Cuatro","Cinco","Seis","Siete","Ocho","Nueve","Diez","Once","Doce","Trece","Catorce","Quince","Dieciséis","Diecisiete","Dieciocho","Diecinueve","Veinte","Veintiún","Veintidós","Veintitrés","Veinticuatro","Veinticinco","Veintiséis","Veintisiete","Veintiocho","Veintinueve","Treinta"];
+    const en=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen","Twenty","Twenty-one","Twenty-two","Twenty-three","Twenty-four","Twenty-five","Twenty-six","Twenty-seven","Twenty-eight","Twenty-nine","Thirty"];
+    const pt=["","Um","Dois","Três","Quatro","Cinco","Seis","Sete","Oito","Nove","Dez","Onze","Doze","Treze","Catorze","Quinze","Dezesseis","Dezessete","Dezoito","Dezenove","Vinte","Vinte e um","Vinte e dois","Vinte e três","Vinte e quatro","Vinte e cinco","Vinte e seis","Vinte e sete","Vinte e oito","Vinte e nove","Trinta"];
+    const k=Math.min(30,Math.max(1,n));
+    return L(`Un miembro de tu equipo te cita para un café. Entró de becario. ${es[k]} años después dirige la oficina técnica, y en el paddock ya se dice en voz baja lo que nadie te dice a la cara: que está preparado para sucederte. El consejo también lo sabe. Quiere charlar contigo.`,
+             `A member of your team asks you out for a coffee. He came in as an intern. ${en[k]} years later he runs the technical office, and the paddock is already saying quietly what nobody says to your face: that he's ready to succeed you. The board knows it too. He wants to talk.`,
+             {pt:`Um membro da sua equipe te chama para um café. Entrou como estagiário. ${pt[k]} anos depois dirige o escritório técnico, e no paddock já se diz baixinho o que ninguém te diz na cara: que ele está pronto para te suceder. O conselho também sabe. Ele quer conversar.`}); },
+  opts:[
+   /* A · lo generoso, y lo peligroso: el consejo ya tiene recambio */
+   {l:()=>L("«Le preparo para sucederme»","«I'll groom him to succeed me»",{pt:"«Vou prepará-lo para me suceder»"}),
+    r:()=>{ TPTGT(3); TPRE(1); S.tpHeredero={desde:yearNow()};
+      return L("Se lo dices tú, antes que el consejo. Esa misma tarde la oficina técnica trabaja de otra manera: ya no es la de un jefe que se va, es la del que viene. El consejo lo agradece, y toma nota de algo más: ya tiene a quién sentar en tu silla el día que falles. +proyecto, +fama, y el consejo ya no espera dos años",
+               "You tell him yourself, before the board does. That same afternoon the technical office works differently: it's no longer the office of a boss on his way out, it's the office of the one coming in. The board appreciates it, and notes something else: it now has someone to sit in your chair the day you fail. +project, +fame, and the board no longer waits two years",
+               {pt:"Você mesmo diz a ele, antes do conselho. Nessa mesma tarde o escritório técnico trabalha de outro jeito: já não é o de um chefe que está de saída, é o de quem vem. O conselho agradece, e anota outra coisa: já tem quem sentar na sua cadeira no dia em que você falhar. +projeto, +fama, e o conselho já não espera dois anos"}); }},
+   /* B · tu silla a salvo… de momento */
+   {l:()=>L("«Le corto las alas»","«I clip his wings»",{pt:"«Corto as asas dele»"}),
+    r:()=>roll(
+     [5,()=>(TPTGT(-3),L("Lo entiende a la primera. En primavera firma por un rival, y en su primer día allí ya hay tres de tus ingenieros preguntando si hay sitio. −proyecto",
+                         "He gets it straight away. In spring he signs for a rival, and on his first day there three of your engineers are already asking if there's room. −project",
+                         {pt:"Ele entende de primeira. Na primavera assina com um rival, e no primeiro dia lá já há três engenheiros seus perguntando se tem vaga. −projeto"}))],
+     [3,()=>L("Le dices que todavía no, y lo acepta sin drama. Ha esperado todo este tiempo; puede esperar alguno más. Todo sigue como estaba.",
+              "You tell him not yet, and he takes it without drama. He's waited all this time; he can wait a bit longer. Everything stays as it was.",
+              {pt:"Você diz que ainda não, e ele aceita sem drama. Esperou todo esse tempo; pode esperar mais um pouco. Tudo fica como estava."})],
+     [2,()=>{ TPRE(-1.5); S.tpMissStreak=(S.tpMissStreak||0)+1;
+       return L("Él se queda. Pero el consejo se entera de la conversación por boca de otro, y la lee como lo que parece: miedo. Esa semana, alguien del consejo come con otro jefe de equipo. −fama, y el consejo te aprieta",
+                "He stays. But the board hears about the conversation from someone else, and reads it as what it looks like: fear. That week, someone on the board has lunch with another team boss. −fame, and the board tightens its grip",
+                {pt:"Ele fica. Mas o conselho fica sabendo da conversa pela boca de outro, e lê como o que parece: medo. Nessa semana, alguém do conselho almoça com outro chefe de equipe. −fama, e o conselho aperta"}); }])},
+   /* C · que lo demuestre: un año con el desarrollo en sus manos */
+   {l:()=>L("«Que se gane la silla»","«Let him earn the chair»",{pt:"«Que ele conquiste a cadeira»"}),
+    r:()=>roll(
+     [6,()=>{ tpSembrar(1, rnd(2,3)); S.tpHeredero={desde:yearNow()};
+       return L("Le das un año entero con el desarrollo en sus manos, y lo borda. El coche del año que viene sale de su mesa, y en la fábrica ya nadie duda de quién viene detrás de ti. +coche el año que viene, y el consejo ya no espera dos años",
+                "You give him a whole year with development in his hands, and he nails it. Next year's car comes off his desk, and in the factory nobody doubts any more who comes after you. +car next year, and the board no longer waits two years",
+                {pt:"Você dá a ele um ano inteiro com o desenvolvimento nas mãos, e ele acerta em cheio. O carro do ano que vem sai da mesa dele, e na fábrica ninguém mais duvida de quem vem depois de você. +carro no ano que vem, e o conselho já não espera dois anos"}); }],
+     [4,()=>(TPTGT(-1.5),L("Le das el año, y se le hace grande. En otoño él mismo te pide volver a su sitio, y en Navidad ya ha aceptado una oferta de fuera. Nadie te culpa. −proyecto leve",
+                           "You give him the year, and it's too big for him. In autumn he asks to go back to his old job himself, and by Christmas he's accepted an offer elsewhere. Nobody blames you. slight −project",
+                           {pt:"Você dá o ano, e fica grande demais para ele. No outono ele mesmo pede para voltar ao lugar dele, e no Natal já aceitou uma oferta de fora. Ninguém te culpa. −projeto leve"}))])}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
@@ -18499,6 +18565,12 @@ function pickTPDilemma(){
     if(d && (!d.cond || d.cond())) return d;
   }
   // 👑 la exigencia de galones no espera al sorteo: si tu Nº2 te iguala, esa conversación ocurre
+  /* 🪑 el heredero tampoco espera al sorteo (Carlos: «forzar la entrada hacia el final»): cuando
+     se cumple su condición, entra la mitad de los inviernos. Con cinco inviernos de ventana, casi seguro. */
+  if(!S.usedDilemmas.tpHeredero){
+    const dH=TP_DILEMAS.find(x=>x&&x.id==="tpHeredero");
+    if(dH && dH.cond() && ch(.5)) return dH;
+  }
   if(!S.usedDilemmas.tpExige){
     const dEx=TP_DILEMAS.find(x=>x.id==="tpExige");
     if(dEx && dEx.cond() && ch(.75)) return dEx;
