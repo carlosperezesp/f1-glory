@@ -18483,6 +18483,43 @@ const TP_DILEMAS=[
      [4,()=>(TPTGT(-1.5),L("Le das el año, y se le hace grande. En otoño él mismo te pide volver a su sitio, y en Navidad ya ha aceptado una oferta de fuera. Nadie te culpa. −proyecto leve",
                            "You give him the year, and it's too big for him. In autumn he asks to go back to his old job himself, and by Christmas he's accepted an offer elsewhere. Nobody blames you. slight −project",
                            {pt:"Você dá o ano, e fica grande demais para ele. No outono ele mesmo pede para voltar ao lugar dele, e no Natal já aceitou uma oferta de fora. Ninguém te culpa. −projeto leve"}))])}]}
+ ,
+ /* 🏛️ «LA FIA TE CONSULTA» — segundo dilema de veterano (diseño del 11-sep-2026). El ÚNICO del muro en
+    el que el jugador toca la dirección del próximo reglamento.
+    🔒 RESPETA LA REGLA DE CARLOS de que un reglamento PUBLICADO no se toca: solo sale mientras el
+    siguiente está programado pero todavía no anunciado (`!S.regAvisado`). La FIA te pregunta antes de
+    escribirlo, no después.
+    🤫 Y el jugador NUNCA sabe si su empuje funcionó: en 6 de cada 10 sí, en las otras no, y el texto
+    le dice que lo verá cuando se publique. Encaja con la regla de que el jugador no sabe por qué
+    cambia el reglamento.
+    🌲 EVERGREEN en el texto; en la mecánica depende de la escalera de eras, así que fuera del muro de
+    2026 su condición simplemente no se cumple. Vale para cualquier equipo. */
+ {id:"tpFIAConsulta",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || !eraActual()) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<15) return false;
+    if(!S.regReg || S.regAvisado || S.regReg<=yearNow()) return false;
+    return true; },
+  t:()=>L("La FIA te consulta","The FIA consults you",{pt:"A FIA te consulta"}),
+  noTag:true,
+  d:()=>L("La FIA está redactando el reglamento que vendrá, y esta vez no ha llamado a los ingenieros: ha llamado a los que llevan más tiempo en el paddock. Tú eres uno de ellos. Quieren saber hacia dónde tiene que ir esto.",
+          "The FIA is drafting the next regulations, and this time it hasn't called the engineers: it has called the people who've been in the paddock longest. You're one of them. They want to know which way this should go.",
+          {pt:"A FIA está redigindo o regulamento que vem aí, e desta vez não chamou os engenheiros: chamou os que estão há mais tempo no paddock. Você é um deles. Querem saber para onde isto deve ir."}),
+  opts:[
+   {l:()=>L("«Que el piloto mande más»","«Let the driver matter more»",{pt:"«Que o piloto mande mais»"}),
+    r:()=>{ const ok=ch(.6); if(ok) S.regDir=1; S._fiaConsulta={dir:1, ok:ok, y:yearNow()};
+      return L("Lo dices sin rodeos: que el piloto mande más. El delegado de la FIA lo apunta y no reacciona. Se guarda tu respuesta: verás si te han hecho caso cuando se publique el reglamento.",
+               "You say it straight: let the driver matter more. The FIA delegate writes it down and doesn't react. Your answer is on file: you'll see whether they listened when the regulations are published.",
+               {pt:"Você diz sem rodeios: que o piloto mande mais. O delegado da FIA anota e não reage. A sua resposta fica guardada: você vai ver se te ouviram quando o regulamento for publicado."}); }},
+   {l:()=>L("«Que gane quien mejor construya»","«Let the best builder win»",{pt:"«Que ganhe quem construir melhor»"}),
+    r:()=>{ const ok=ch(.6); if(ok) S.regDir=-1; S._fiaConsulta={dir:-1, ok:ok, y:yearNow()};
+      return L("Lo dices sin rodeos: que gane quien mejor construya. El delegado de la FIA lo apunta y no reacciona. Se guarda tu respuesta: verás si te han hecho caso cuando se publique el reglamento.",
+               "You say it straight: let the best builder win. The FIA delegate writes it down and doesn't react. Your answer is on file: you'll see whether they listened when the regulations are published.",
+               {pt:"Você diz sem rodeios: que ganhe quem construir melhor. O delegado da FIA anota e não reage. A sua resposta fica guardada: você vai ver se te ouviram quando o regulamento for publicado."}); }},
+   {l:()=>L("«No me corresponde a mí decidirlo»","«It isn't my call to make»",{pt:"«Não cabe a mim decidir»"}),
+    r:()=>{ TPRE(1.5); S._fiaConsulta={dir:0, ok:false, y:yearNow()};
+      return L("Se lo dices, y no insiste. Esa misma semana en el paddock ya se sabe quién tenía la mano y no la usó. +fama",
+               "You tell him so, and he doesn't push. That same week the paddock already knows who held the cards and didn't play them. +fame",
+               {pt:"Você diz, e ele não insiste. Nessa mesma semana o paddock já sabe quem tinha a mão e não a usou. +fama"}); }}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
