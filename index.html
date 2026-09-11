@@ -11536,7 +11536,9 @@ function tpVerdictLine(r){
     case "gracia": return L(`🎯 Objetivo: ${objetivo} → 🛡️ fallado, pero el consejo te da un año más`,`🎯 Target: ${objetivo} → 🛡️ missed, but the board gives you one more year`,{pt:`🎯 Objetivo: ${objetivo} → 🛡️ falhado, mas o conselho te dá mais um ano`});
     /* 🚪 ya no siempre es «el segundo año»: con el consejo con memoria puedes caer al tercero o al
        cuarto si tu historial te ha ido comprando indultos. La línea dice lo que es verdad siempre. */
-    case "fuera":  return L(`🎯 Objetivo: ${objetivo} → 🚪 fallado otra vez: destituido`,`🎯 Target: ${objetivo} → 🚪 missed again: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada de novo: demitido`});
+    case "fuera":  return r.tpFallo1
+      ? L(`🎯 Objetivo: ${objetivo} → 🚪 fallado: destituido`,`🎯 Target: ${objetivo} → 🚪 missed: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada: demitido`})
+      : L(`🎯 Objetivo: ${objetivo} → 🚪 fallado otra vez: destituido`,`🎯 Target: ${objetivo} → 🚪 missed again: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada de novo: demitido`});
     default:       return L(`🎯 Objetivo: ${objetivo} → ❌ no cumplido, el consejo aprieta`,`🎯 Target: ${objetivo} → ❌ missed, the board tightens`,{pt:`🎯 Meta: ${objetivo} → ❌ não cumprida, o conselho aperta`});
   }
 }
@@ -12835,6 +12837,16 @@ function tpYearStart(){
     const antes=Math.round(S.f1perf[S.tpTeam]||75);
     regReset();
     eraSaltar();          // 🔮 …y con el reglamento nuevo, la era nueva
+    /* 📸 LA FOTO DEL LISTÓN SE REPITE CON EL COCHE NUEVO (12-sep-2026, lo cazó un amigo de Carlos
+       jugando: Ferrari 91→65 por el reglamento y el consejo le exigió «3º o mejor», el listón del
+       coche VIEJO — y encima con el heredero en la oficina, un fallo era la calle). La foto de
+       arriba se toma antes de este bloque; si el reglamento rebaraja la parrilla, el consejo fija
+       la vara con el coche que existe HOY, no con el del año pasado. Verificado: 25 reseteos con
+       coche puntero, cero listones injustos. */
+    if(S.tpTeam){
+      const _o2=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
+      S._pListon=_o2.indexOf(S.tpTeam)+1;
+    }
     S.regUnknown=false;   // el ❓ de las estrellas lo limpia nextOffers(), por donde el jefe no pasa
     const ahora=Math.round(S.f1perf[S.tpTeam]||75), d=ahora-antes;
     /* 🧻 BORRÓN Y CUENTA NUEVA SI EL RESETEO TE HUNDE (Carlos, 29-ago: «me dan ultimátum pero me
@@ -14855,6 +14867,9 @@ function simTP(row){
        eres tú no le aplica — nadie te sustituye en tu propia empresa. */
     if(S.tpHeredero && S.tpMissStreak>=1 && !(S.tpOwner && S.tpOwner.k==="self")){
       S.tpFired=true; S.tpFiredBy=tn; row.tpVerdict="fuera";
+      /* 🚪 con el heredero puede ser el PRIMER fallo: el chip no puede decir «otra vez» (lo cazó
+         un amigo de Carlos: llevaba todos los años cumplidos y el chip le acusó de reincidente) */
+      if(S.tpMissStreak===1) row.tpFallo1=true;
       row.events.push(L(`🪑 Un año por debajo del listón, y esta vez no hay segundo. El consejo no tiene que buscar a nadie: lo tiene sentado en la oficina técnica desde que tú lo preparaste.`,
         `🪑 One year below the bar, and this time there's no second one. The board doesn't have to look for anyone: he's been sitting in the technical office since you groomed him.`,
         {pt:`🪑 Um ano abaixo da meta, e desta vez não há segundo. O conselho não precisa procurar ninguém: ele está sentado no escritório técnico desde que você o preparou.`}));
