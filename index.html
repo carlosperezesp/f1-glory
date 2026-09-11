@@ -515,8 +515,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .mv.up{color:#0a7d32;background:#d7f5e0}
 .mv.down{color:#c62a2a;background:#fbe6e6}
 .mv.eq{color:#b0b0ba}
-@keyframes climbUp{0%{transform:translateY(10px);background:rgba(16,163,74,.2)}60%{background:rgba(16,163,74,.12)}100%{transform:none;background:transparent}}
-@keyframes dropDown{0%{transform:translateY(-10px);background:rgba(225,6,0,.18)}60%{background:rgba(225,6,0,.1)}100%{transform:none;background:transparent}}
+/* ⚠️ el fotograma final NO fija el fondo: con fill-mode both, el `background:transparent` del 100%
+   se quedaba pegado para siempre y borraba el sombreado rojo de «es mío» en cualquier piloto tuyo
+   que subiera o bajara (lo cazó Carlos: Sala ▲3 sin sombra, Anagnostiadis = con ella). Sin fondo en
+   el 100%, el destello verde/rojo se funde con el fondo real de la fila, sea cual sea. */
+@keyframes climbUp{0%{transform:translateY(10px);background:rgba(16,163,74,.2)}60%{background:rgba(16,163,74,.12)}100%{transform:none}}
+@keyframes dropDown{0%{transform:translateY(-10px);background:rgba(225,6,0,.18)}60%{background:rgba(225,6,0,.1)}100%{transform:none}}
 .f1state .srow.mv-up{animation:climbUp 1.2s ease-out both}
 .f1state .srow.mv-down{animation:dropDown 1.2s ease-out both}
 .hall .hrow .nm .fl{font-size:14px}
@@ -1699,17 +1703,17 @@ const EXPANSION = [
      Ahora cada entrada lleva SU probabilidad y son independientes (la rama que ya usaba el retro), y
      estas tres cubren los años 40 y 50. Son marcas inventadas, con los nombres buscados uno por uno
      antes de escribirlos — de doce candidatos, nueve colisionaban con empresas reales. */
-  {range:[2042,2050], team:{name:"KHARVEX", abbr:"KHX", color:"#1B4DFF", color2:"#0B1E3A", perf:66, cat:"F1"},
+  {range:[2042,2050], team:{name:"Kharvex", abbr:"KHX", color:"#1B4DFF", color2:"#0B1E3A", perf:66, cat:"F1"},
     drivers:null, prob:.40, dieAfter:{w:[4,9], p:.30}},
-  {range:[2044,2053], team:{name:"HALVERNE", abbr:"HLV", color:"#14342B", color2:"#C8CDD2", perf:64, cat:"F1"},
+  {range:[2044,2053], team:{name:"Halverne", abbr:"HLV", color:"#14342B", color2:"#C8CDD2", perf:64, cat:"F1"},
     drivers:null, prob:.38, dieAfter:{w:[4,9], p:.35}},
-  {range:[2046,2056], team:{name:"TALVREN", abbr:"TLV", color:"#20242A", color2:"#C6FF3D", perf:65, cat:"F1"},
+  {range:[2046,2056], team:{name:"Talvren", abbr:"TLV", color:"#20242A", color2:"#C6FF3D", perf:65, cat:"F1"},
     drivers:null, prob:.38, dieAfter:{w:[4,9], p:.35}},
-  {range:[2043,2052], team:{name:"KHOSVETH", abbr:"KHV", color:"#3B0764", color2:"#F2D98B", perf:64, cat:"F1"},
+  {range:[2043,2052], team:{name:"Khosveth", abbr:"KHV", color:"#3B0764", color2:"#F2D98B", perf:64, cat:"F1"},
     drivers:null, prob:.36, dieAfter:{w:[4,9], p:.35}},
-  {range:[2045,2054], team:{name:"ZANDRUX", abbr:"ZDX", color:"#050A18", color2:"#4DE1FF", perf:65, cat:"F1"},
+  {range:[2045,2054], team:{name:"Zandrux", abbr:"ZDX", color:"#050A18", color2:"#4DE1FF", perf:65, cat:"F1"},
     drivers:null, prob:.36, dieAfter:{w:[4,9], p:.35}},
-  {range:[2048,2056], team:{name:"OLVRENN", abbr:"OLV", color:"#E02020", color2:"#FFE45C", perf:64, cat:"F1"},
+  {range:[2048,2056], team:{name:"Olvrenn", abbr:"OLV", color:"#E02020", color2:"#FFE45C", perf:64, cat:"F1"},
     drivers:null, prob:.34, dieAfter:{w:[4,9], p:.35}},
 ];
 
@@ -2850,8 +2854,10 @@ function tallaEquipo(n){ const c=(S.cache&&S.cache[n])!=null?S.cache[n]:70; retu
    lo que hace la F1 real cuando cae un gigante. */
 /* 🔠 la letra es el monograma. KHOSVETH lleva X en vez de K para que no coincida con KHARVEX
    si algún año coinciden los dos en la parrilla. */
-const MARCAS_NUEVAS=[{n:"KHARVEX", l:"K", abbr:"KHX"},{n:"HALVERNE", l:"H", abbr:"HLV"},{n:"TALVREN", l:"T", abbr:"TLV"},
- {n:"KHOSVETH", l:"X", abbr:"KHV"},{n:"ZANDRUX", l:"Z", abbr:"ZDX"},{n:"OLVRENN", l:"O", abbr:"OLV"}];
+/* 🔡 en caja normal, no en mayúsculas (Carlos, 12-sep: «KHARVEX desentona» junto a Ferrari y
+   McLaren en la clasificación). Los nombres son los mismos; solo cambia cómo se escriben. */
+const MARCAS_NUEVAS=[{n:"Kharvex", l:"K", abbr:"KHX"},{n:"Halverne", l:"H", abbr:"HLV"},{n:"Talvren", l:"T", abbr:"TLV"},
+ {n:"Khosveth", l:"X", abbr:"KHV"},{n:"Zandrux", l:"Z", abbr:"ZDX"},{n:"Olvrenn", l:"O", abbr:"OLV"}];
 function nombreParaVenta(equipo){
   const t=tallaEquipo(equipo);
   const hay=n=>F1_TEAMS.some(x=>x.name===n||x.name.indexOf(n)===0);
@@ -2885,7 +2891,8 @@ function ponEscudo(nombre){
   /* 🆕 LAS MARCAS NUEVAS no tienen escudo dibujado: llevan su inicial sobre una de las paletas
      modernas, y la paleta se elige con la misma regla de variedad —familia que no esté ya en la
      parrilla— para que no salgan dos azules a la vez. */
-  const mn=MARCAS_NUEVAS.find(m=>m.n===nombre);
+  /* mayúsculas-tolerante: las partidas guardadas antes del 12-sep llevan «KHARVEX» en caja alta */
+  const mn=MARCAS_NUEVAS.find(m=>m.n.toUpperCase()===String(nombre||"").toUpperCase());
   if(mn){
     const p=eligePaleta(PALETAS, nombre); if(!p) return null;
     SPONSOR_BADGE[nombre]={c1:p.c1, c2:p.c2, sil:"mono_"+mn.l.toLowerCase()+".png"};
@@ -9791,8 +9798,17 @@ function bgF1Season(row){
            ELEGIR ASIENTO al fichar sea una decisión y no estética — y lo que el Nº2 viene a exigirte
            cuando te iguala. */
         const _n1 = (S.cat==="TP" && t.name===S.tpTeam) ? (si===0 ? .75 : -.75) : 0;
-        const coche = S.f1perf[t.name] + (pr ? pr.motor*PROF_K : 0) + _n1;
-        const disp  = 3.4 + (pr ? pr.aero*0.9 : 0);          // aero ensancha, sin desplazar la media
+        /* 🌬️ LA AERO TAMBIÉN EMPUJA (recalibración del 11-sep-2026). Medido antes: un punto de motor
+           valía +1,6 de temporada y uno de aero valía CERO de media — la apuesta nunca pagaba. Ahora
+           la aero suma la mitad que el motor además de ensanchar el año: sigue siendo la opción con
+           varianza, pero con premio esperado. Es lo que dicen los documentos de 2026: la aerodinámica
+           es donde se encuentra «otra décima antes del domingo». */
+        /* 📏 el RITMO usa coeficientes más cortos que las estrellas (2,2 y 1,1 en vez de 3 y 1,5):
+           con los largos, mover el reparto valía ~9 puntos de ritmo entre extremos y recortar
+           fiabilidad era la jugada dominante SIEMPRE (medido: el avaricioso vivía 30 temporadas y
+           ganaba 8 títulos; el blindado, 7 y ninguno). Las estrellas no cambian: son puestos. */
+        const coche = S.f1perf[t.name] + (pr ? pr.motor*2.2 + pr.aero*1.1 : 0) + _n1;
+        const disp  = 3.4 + (pr ? pr.aero*0.9 : 0);          // …y sigue ensanchando el azar del año
         let sc = d.skill*w + coche*(1-w) + gauss()*Math.max(1.2, disp);
         /* 📊 INERCIA DEL RANKING (calibrada contra 2005-2025 reales, 25-ago). Sin ella, la zona media
            —media docena de coches en 3 puntos— la decidía el gauss: un 5% de los pilotos se movía 10+
@@ -9802,10 +9818,10 @@ function bgF1Season(row){
            un Brawn 2009 (Button 18º→1º, real) sigue siendo posible. */
         const _pr=(S.rankD&&S.rankD[d.name])||null;
         if(_pr!=null) sc += (S.cat==="TP"?INERCIA_RANK:INERCIA_CLASICO)*(11-_pr);
-        if(pr){
-          const riesgo = 0.10 - pr.fiab*0.045;               // +2 → 1% · 0 → 10% · −2 → 19%
-          if(ch(Math.max(0, riesgo))) sc -= rnd(4,10);       // el año que se rompe
-        }
+        /* 🛡️ la tirada anual de «el año que se rompe» murió el 11-sep-2026: la fiabilidad pasa a
+           cobrarse carrera a carrera en el bucle de abajo, según la MISMA fuerza que puntúan las
+           estrellas — así lo que enseñan es lo que pasa, y un abandono cuesta los puntos de ese
+           domingo, que es su precio real (Mercedes, Canadá 2026: 25 puntos). */
         rows.push({d, team:t.name, score:sc});
       }
     });
@@ -9829,7 +9845,7 @@ function bgF1Season(row){
     if(_iT>=0){
       rows[_iT].falta=_sus.n;                       // el titular se pierde las N primeras
       const _w=drvW(), _pr=S.f1prof && S.f1prof[S.tpTeam];
-      const _coche=(S.f1perf[S.tpTeam]||75) + (_pr ? _pr.motor*PROF_K : 0) + .75;   // conduce el asiento 1
+      const _coche=(S.f1perf[S.tpTeam]||75) + (_pr ? _pr.motor*2.2 + _pr.aero*1.1 : 0) + .75;   // conduce el asiento 1 (mismos coeficientes cortos del ritmo)
       const _disp=3.4 + (_pr ? _pr.aero*0.9 : 0);
       const _sc=(_sus.sub.skill||75)*_w + _coche*(1-_w) + gauss()*Math.max(1.2,_disp);
       rows.push({d:_sus.sub, team:S.tpTeam, score:_sc, solo:_sus.n});
@@ -9848,6 +9864,42 @@ function bgF1Season(row){
      único que cambia es qué rama se toma. */
   const _corre = (S.cat==="TP");
   const _races=racesIn(row.year), _dnf=dnfRate(row.year);
+  /* 🛡️ TUS ABANDONOS SALEN DE TU FIABILIDAD (recalibración del 11-sep-2026). Antes el abandono era
+     el mismo 10% para todos, invirtiera quien invirtiera. Ahora cada equipo rompe según la fuerza de
+     su eje de fiabilidad —nivel del coche + inclinación, LO MISMO que puntúa su estrella—, centrada
+     en la media de la parrilla para que el total de abandonos del año no cambie. El volcado rompe
+     la mitad; el recortado, casi el doble.
+     🤫 Y LA CRISIS SECRETA: los dos primeros años de cada reglamento nuevo, más averías PARA TODOS
+     (2026 real: las baterías de Mercedes, las vibraciones de Honda-Aston). Sin aviso ni texto —
+     Carlos: «que lo descubra por sí mismo». Quien la viva una vez sabrá blindarse para la siguiente. */
+  const _fbMult={};
+  if(_corre && S.f1prof){
+    /* 📏 CURVA ASIMÉTRICA (5ª calibración, la que aguantó la medición). Las cuatro simétricas
+       fallaron por estructura: con tasas de avería realistas, la fiabilidad nunca gana en puntos
+       contra el ritmo — un abandono cuesta un domingo y el ritmo cobra los 24. Lo realista es la
+       asimetría de la F1 de verdad: mantener la fiabilidad es lo normal, volcarse renta POCO, y
+       RECORTARLA es catastrófico (nadie cambia tres décimas por fiabilidad… por esto).
+       Inclinación → multiplicador: −2→2,4 · −1→1,55 · 0→1 · +1→0,8 · +2→0,65.
+       El nivel del coche solo matiza (±10%): los grandes tienen mejores sistemas, no un escudo. */
+    const _fbCurva={"-2":2.4, "-1":1.55, "0":1, "1":.8, "2":.65};
+    const _ps=F1_TEAMS.map(t=>S.f1perf[t.name]||75);
+    const _pAvg=_ps.reduce((a,b)=>a+b,0)/Math.max(1,_ps.length);
+    F1_TEAMS.forEach(t=>{
+      const _fb=Math.max(-2,Math.min(2,Math.round((((S.f1prof[t.name]||{}).fiab)||0))));
+      _fbMult[t.name]=Math.max(.35, Math.min(2.8,
+        (_fbCurva[String(_fb)]||1) * (1-((S.f1perf[t.name]||75)-_pAvg)*.012) ));
+    });
+  }
+  /* 🤫 la crisis castiga según la INVERSIÓN en fiabilidad, no según el coche (2ª calibración,
+     11-sep). Con el ×1,5 plano, el avaricioso con cochazo ganaba hasta en crisis (medido: 27,9%
+     de títulos contra 12,1% del blindado), porque el nivel del coche ya le daba la fuerza de
+     sobra. Un reglamento nuevo rompe los coches de quien escatimó en validación, sea quien sea:
+     volcado en fiabilidad ×0,8 (casi ni la nota) · normal ×1,5 · recortado ×2,2. */
+  const _esCrisis = !!(_corre && S.regCrisisY && row.year<S.regCrisisY);
+  const _criMult={};
+  if(_esCrisis && S.f1prof) F1_TEAMS.forEach(t=>{
+    _criMult[t.name]=1.5 - (((S.f1prof[t.name]||{}).fiab)||0)*0.35; });
+  S._dnfDbg = _corre ? {y:row.year, crisis:_esCrisis, m:_fbMult, n:{}} : null;   // 🔬 solo para el arnés de medición
   const _ptsD={}, _winD={}, teamScores={};
   rows.forEach(r=>{ _ptsD[r.d.name]=0; _winD[r.d.name]=0;
                     if(r.team!==_dqE) teamScores[r.team]=teamScores[r.team]||0; });
@@ -9857,7 +9909,10 @@ function bgF1Season(row){
       const _r=rows[i];
       if(_r.solo!=null && _gp>=_r.solo) continue;             // 🚑 el sustituto: solo sus N carreras
       if(_r.falta!=null && _gp<_r.falta) continue;            // 🚑 el lesionado: esas se las pierde
-      if(ch(_dnf)) continue;                                  // abandono: ni acaba ni puntúa
+      if(ch(Math.min(.45, _dnf*(_fbMult[_r.team]||1)*(_criMult[_r.team]||1)))){   // abandono: ni acaba ni puntúa (🛡️ según TU fiabilidad; tope 45%: ni el desastre acaba CERO carreras)
+        if(S._dnfDbg) S._dnfDbg.n[_r.team]=(S._dnfDbg.n[_r.team]||0)+1;
+        continue;
+      }
       _orden.push({r:_r, pace: _r.score + gauss()*RACE_SIGMA});
     }
     _orden.sort((a,b)=>b.pace-a.pace);
@@ -12387,7 +12442,12 @@ function ejeFuerza(tn, eje){
 function ejeEstrellas(tn, eje){
   const n=F1_TEAMS.length, p=ejePuesto(tn,eje);
   const q=(p-1)/Math.max(1,n-1);                      // 0 = el mejor · 1 = el último
-  const est = q<=.12 ? 5 : q<=.32 ? 4 : q<=.62 ? 3 : q<=.85 ? 2 : 1;
+  /* ⭐ ÉLITE = SOLO EL MEJOR DE LA PARRILLA (recalibración del 11-sep-2026, pedida por Carlos:
+     «me han tocado varias partidas con 5 estrellas en todo VARIOS AÑOS»). Con élite = los dos
+     primeros, el 56% de las temporadas tenía algún 5★-5★-5★ y una de cada cinco rachas duraba
+     5+ años (medido). Con élite = el primero, cae al 16% y las rachas largas casi desaparecen.
+     Mismo formato de siempre: solo se ha vuelto más caro el escalón de arriba. */
+  const est = p===1 ? 5 : q<=.32 ? 4 : q<=.62 ? 3 : q<=.85 ? 2 : 1;
   const lab = est===5 ? L("élite","elite",{pt:"elite"})
             : est===4 ? L("bueno","strong",{pt:"bom"})
             : est===3 ? L("promedio","average",{pt:"médio"})
@@ -12754,6 +12814,9 @@ function tpEtiqueta(d){
      44 años?»). La estrella azul dice «hasta dónde puede llegar», y a partir de cierta edad ya no
      vas a llegar a ningún sitio nuevo: se enseña solo hasta los 27. El techo sigue existiendo por
      dentro (npcSeason lo usa igual); es solo que la etiqueta deja de prometer futuro a quien no lo tiene. */
+  /* 🎓 la promesa a ciegas no enseña nivel hasta cumplir su primer año de garaje */
+  if(d._ciego===true || (typeof d._ciego==="number" && yearNow()<=d._ciego))
+    return `<span class="st-e">?????</span>`;
   const c=tpStarsN(d.skill||0,false);
   const p=(d.age||99)<=27 ? Math.max(c, tpStarsN(d.ceil||0,true)) : c;
   return `<span class="st-c">${"★".repeat(c)}</span>`
@@ -12823,6 +12886,13 @@ function tpSignTeam(t, how){
 /* ── EL AÑO DE UN TEAM PRINCIPAL = TRES COSAS Y YA: asientos → rumbo → (dilema) → temporada ── */
 function tpYearStart(){
   if(S.retired) return;
+  /* 🎓 la apuesta a ciegas se destapa: un año de garaje y ya sabes lo que tienes */
+  if(S.tpReserva && typeof S.tpReserva._ciego==="number" && yearNow()>S.tpReserva._ciego){
+    delete S.tpReserva._ciego;
+    S.pendingEvents.push(L(`🎓 Un año de garaje destapa a ${S.tpReserva.name}.`,
+      `🎓 A year in the garage reveals ${S.tpReserva.name}.`,
+      {pt:`🎓 Um ano de garagem revela ${S.tpReserva.name}.`}));
+  }
   /* 📸 la foto del coche con la que el consejo va a fijar el listón: se toma AHORA, antes del
      mercado y del rumbo, para que nada de lo que hagas este invierno mueva la vara de este año. */
   if(S.tpTeam){
@@ -12837,12 +12907,15 @@ function tpYearStart(){
     const antes=Math.round(S.f1perf[S.tpTeam]||75);
     regReset();
     eraSaltar();          // 🔮 …y con el reglamento nuevo, la era nueva
+    /* 🤫 LA CRISIS DE FIABILIDAD DEL REGLAMENTO NUEVO (11-sep-2026): dos temporadas de más averías
+       para toda la parrilla — coches recién nacidos, sistemas sin rodar. SECRETA por decisión de
+       Carlos: ni aviso, ni texto, ni explicación. El jugador la descubre viviéndola. */
+    S.regCrisisY = yearNow()+2;
     /* 📸 LA FOTO DEL LISTÓN SE REPITE CON EL COCHE NUEVO (12-sep-2026, lo cazó un amigo de Carlos
        jugando: Ferrari 91→65 por el reglamento y el consejo le exigió «3º o mejor», el listón del
        coche VIEJO — y encima con el heredero en la oficina, un fallo era la calle). La foto de
        arriba se toma antes de este bloque; si el reglamento rebaraja la parrilla, el consejo fija
-       la vara con el coche que existe HOY, no con el del año pasado. Verificado: 25 reseteos con
-       coche puntero, cero listones injustos. */
+       la vara con el coche que existe HOY, no con el del año pasado. */
     if(S.tpTeam){
       const _o2=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name);
       S._pListon=_o2.indexOf(S.tpTeam)+1;
@@ -13399,7 +13472,10 @@ function tpMercadoPool(abiertos){
   if(S.tpAmigo && S.tpOwner && S.tpOwner.k==="show"
      && !(S.seats[S.tpTeam]||[]).some(d=>d&&d!=="PLAYER"&&d.name===S.tpAmigo.name))
     cands.push({kind:"amigo", d:S.tpAmigo, odds:.9});
-  cands.push({kind:"rookie"});
+  /* 🎓 la carta suelta de «Apostar por la cantera» ya NO se ofrece para un asiento titular
+     (Carlos, 12-sep: «para fichar a un 1º o 2º piloto no tiene sentido ese botón» — en la F1 real
+     los debutantes llegan con historial, nunca a ciegas). La apuesta a ciegas vive ahora en el
+     banquillo (tpProbadorHueco) y, para quien la quiera de titular igualmente, en la bolsa. */
   cands.push(...top, ...fuera);
   (S._tpPool=S._tpPool||{})[_clave]=cands;
   /* 🔭 EXPLORAR LA BOLSA (Carlos, 20-ago, segunda vuelta sobre la cantera: «así el juego no elige a
@@ -13528,7 +13604,15 @@ function tpProbadorHueco(){
   if(!S._probCands || S._probCands.y!==yearNow()){
     const n=vet?2:3, list=[];
     for(let i=0;i<n;i++) list.push(mkRookie(true, S.tpTeam));
-    S._probCands={y:yearNow(), list};
+    /* 🎓 LA APUESTA A CIEGAS VIVE AQUÍ (Carlos, 12-sep: «eso tendría más sentido para firmar a un
+       probador»). Antes era una carta del mercado de TITULARES, y un desconocido total sentado en
+       el primer equipo no se sostenía. Como probador sí: te lo metes en el garaje sin saber su
+       nivel, un año de trabajo lo destapa, y entonces decides si lo subes. Trae más varianza que
+       los jóvenes a la vista — puede ser el tesoro o el paquete, que esa es la gracia. */
+    const cg=mkRookie(true, S.tpTeam);
+    cg.skill=irnd(58,86); cg.ceil=Math.max(cg.skill+2, irnd(72,96));
+    cg._ciego=true;
+    S._probCands={y:yearNow(), list, ciego:cg};
   }
   setDecision(L(`🧢 El banquillo está vacío · ${yearNow()}`,`🧢 The bench is empty · ${yearNow()}`,{pt:`🧢 O banco está vazio · ${yearNow()}`})+" · "+S.tpTeam,
     vet
@@ -13550,6 +13634,21 @@ function tpProbadorHueco(){
       tpRumboScreen(); };
     box.appendChild(b1);
   });
+  // 🎓 …y la promesa a ciegas: nombre y edad sí, nivel no — se descubre tras un año de garaje
+  const cg=S._probCands.ciego;
+  if(cg){
+    const b3=document.createElement("button"); b3.className="offer";
+    b3.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">🎓</span>
+      <span class="info"><span class="name">${cg.flag||"🏁"} ${cg.name}</span>
+      <span class="sub" style="display:block">${L("Apostar por la cantera","Bet on the academy",{pt:"Apostar na base"})} · ${cg.age} ${L("años","yo",{pt:"anos"})}</span>
+      <span class="sub" style="display:block">${L("Sin debutar: nivel por descubrir, techo por descubrir","Undebuted: level unknown, ceiling unknown",{pt:"Sem estreia: nível a descobrir, teto a descobrir"})}</span></span>`;
+    b3.onclick=()=>{ cg.probador=true; cg._ciego=yearNow(); S.tpReserva=cg; S._probCands=null;
+      S.pendingEvents.push(L(`🎓 Apuestas a ciegas por ${cg.name}: nadie sabe lo que hay, tú tampoco.`,
+        `🎓 You bet blind on ${cg.name}: nobody knows what's there — you included.`,
+        {pt:`🎓 Você aposta às cegas em ${cg.name}: ninguém sabe o que há, nem você.`}));
+      tpRumboScreen(); };
+    box.appendChild(b3);
+  }
   if(vet){
     const b2=document.createElement("button"); b2.className="offer";
     b2.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#71717c,#3f3f46)">🧢</span>
