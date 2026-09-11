@@ -18642,6 +18642,48 @@ const TP_DILEMAS=[
       return L("El consejo lo escucha y prefiere hacerlo de una vez: si hay que pasar por obras, que sea una sola. −coche estos dos años, +coche después",
                "The board hears it and prefers to do it in one go: if there has to be building work, let it be just once. −car these two years, +car afterwards",
                {pt:"O conselho escuta e prefere fazer de uma vez: se é para ter obra, que seja uma só. −carro estes dois anos, +carro depois"}); }}]}
+ ,
+ /* 🧭 «YA NO RECONOCES EL PADDOCK» — quinto dilema de veterano (11-sep-2026). Engancha con la escalera
+    de eras: sale si el reglamento se ha movido DOS peldaños o más desde el que había cuando llegaste
+    (distancia neta: si subió dos y bajó dos, el deporte vuelve a ser el tuyo y no sale).
+    📏 HORQUILLA EN TODO (Carlos): el mismo desenlace unas veces pega fuerte y otras apenas se nota.
+    🤝 Y fichar a alguien de fuera NO es malo por defecto (también Carlos): tres caras — encaja, es
+    bueno pero choca con tu gente, o no es para este equipo.
+    🌲 EVERGREEN: el nombre de la era sale de tu partida. Vale para cualquier equipo. */
+ {id:"tpOtroPaddock",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || !eraActual()) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<14) return false;
+    return Math.abs(S.eraIdx-ERA_BASE)>=2; },
+  t:()=>L("Ya no reconoces el paddock","You no longer recognise the paddock",{pt:"Você já não reconhece o paddock"}),
+  d:()=>{ const e=LA(eraActual().n);
+    return L(`Desde que entró el reglamento de «${e}», ya no reconoces el deporte en el que empezaste. Tus métodos —los que te trajeron hasta aquí— empiezan a sonar a otra época. En tu propia fábrica hay gente que entiende lo nuevo mejor que tú, y lo saben.`,
+             `Since the «${e}» regulations came in, you no longer recognise the sport you started in. Your methods —the ones that got you here— are starting to sound like another era. In your own factory there are people who understand the new rules better than you do, and they know it.`,
+             {pt:`Desde que entrou o regulamento «${e}», você já não reconhece o esporte em que começou. Os seus métodos —os que te trouxeram até aqui— começam a soar a outra época. Na sua própria fábrica há gente que entende o novo melhor do que você, e eles sabem disso.`}); },
+  opts:[
+   {l:()=>L("«Me pongo al día»","«I'll catch up»",{pt:"«Vou me atualizar»"}),
+    r:()=>{ TPCAR(-rnd(0.8,2.2)); TPTGT(rnd(2,4.5));
+      return L("Te encierras con los ingenieros jóvenes a estudiar el reglamento como si fuera tu primer año. La fábrica nota que tu cabeza está en otra parte, pero lo que aprendes se va a ver en el coche que viene. −coche este año, +proyecto",
+               "You shut yourself away with the young engineers to study the rules as if it were your first year. The factory notices your mind is elsewhere, but what you learn will show in the car that's coming. −car this year, +project",
+               {pt:"Você se tranca com os engenheiros jovens para estudar o regulamento como se fosse o seu primeiro ano. A fábrica nota que a sua cabeça está em outro lugar, mas o que você aprende vai aparecer no carro que vem. −carro este ano, +projeto"}); }},
+   {l:()=>L("«Lo que funciona, funciona»","«If it works, it works»",{pt:"«O que funciona, funciona»"}),
+    r:()=>roll(
+     [5,()=>(TPCAR(rnd(0.8,2.5)),L("Sigues con tus métodos, y resulta que hay cosas que ningún reglamento cambia: saber leer a un piloto, saber cuándo apretar. Este año el coche va mejor de lo que decían los números. +coche este año",
+                                   "You stick with your methods, and it turns out some things no rulebook changes: knowing how to read a driver, knowing when to push. This year the car goes better than the numbers said. +car this year",
+                                   {pt:"Você segue com os seus métodos, e acontece que há coisas que nenhum regulamento muda: saber ler um piloto, saber quando apertar. Este ano o carro anda melhor do que diziam os números. +carro este ano"}))],
+     [5,()=>(TPTGT(-rnd(1.5,4)),L("Sigues con tus métodos, y durante un tiempo nadie se da cuenta. Tampoco tú. Para cuando lo ves, los demás llevan un año de ventaja entendiendo las reglas nuevas. −proyecto",
+                                 "You stick with your methods, and for a while nobody notices. Neither do you. By the time you see it, the others are a year ahead in understanding the new rules. −project",
+                                 {pt:"Você segue com os seus métodos, e por um tempo ninguém percebe. Nem você. Quando se dá conta, os outros já têm um ano de vantagem entendendo as regras novas. −projeto"}))])},
+   {l:()=>L("«Fichar a alguien que ya lo domine»","«Hire someone who already masters it»",{pt:"«Contratar alguém que já domine isso»"}),
+    r:()=>roll(
+     [5,()=>(TPTGT(rnd(2,4)),L("Llega un técnico que viene de ganar con las reglas nuevas, y encaja desde el primer día: tu gente aprende de él en vez de competir con él. +proyecto",
+                               "In comes a technician who has just won under the new rules, and he fits in from day one: your people learn from him instead of competing with him. +project",
+                               {pt:"Chega um técnico que vem de vencer com as regras novas, e encaixa desde o primeiro dia: a sua gente aprende com ele em vez de competir com ele. +projeto"}))],
+     [3,()=>(TPTGT(rnd(2,3.5)),TPCAR(-rnd(0.5,1.5)),L("El técnico que traes sabe lo que hace, pero llega con su manera de trabajar y tu fábrica tarda en hacerse a ella. El proyecto lo nota; este año, el coche también. +proyecto, −coche este año",
+                                                     "The technician you bring in knows what he's doing, but he arrives with his own way of working and your factory takes time to adjust. The project shows it; this year, so does the car. +project, −car this year",
+                                                     {pt:"O técnico que você traz sabe o que faz, mas chega com o jeito dele de trabalhar e a sua fábrica demora a se acostumar. O projeto sente; este ano, o carro também. +projeto, −carro este ano"}))],
+     [2,()=>(TPTGT(rnd(0,1)),L("El técnico que traes es bueno, pero no es para este equipo. En un año se va, y deja poco más que un par de ideas. +proyecto leve",
+                               "The technician you bring in is good, but he isn't right for this team. Within a year he's gone, leaving little more than a couple of ideas. slight +project",
+                               {pt:"O técnico que você traz é bom, mas não é para esta equipe. Em um ano vai embora, e deixa pouco mais que um par de ideias. +projeto leve"}))])}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
