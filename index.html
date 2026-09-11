@@ -11486,6 +11486,7 @@ function tpConfianza(hoy){
   for(let i=filas.length-1; i>=0; i--){
     const r=filas[i];
     if(r.tpTeam && !tpEsMiEquipo(r.tpTeam)) break;   // lo que hiciste en otro equipo no lo firma este consejo (el mismo con otro nombre, sí)
+    if(S.tpMemoriaDesde && r.year!=null && r.year<S.tpMemoriaDesde) break;   // 👴 la propiedad nueva empezó a contar ese año (`tpDuenoSeJubila`)
     sc += Math.pow(w,k) * tpValorAnio(r); k++;
   }
   return sc;
@@ -12742,7 +12743,7 @@ function tpSignTeam(t, how){
      —el fichaje normal y el arranque— y la verificación encontró 20 casos en los que seguía viajando:
      hay más caminos para cambiar de escudería (el rescate tras un despido, entre otros). Aquí, que es
      el embudo por el que pasan TODOS, no se escapa ninguno. Ni te llevas la cosecha ni la deuda. */
-  if(S.tpTeam && S.tpTeam!==t.name){ S.tpCosecha=[]; S.tpAlias=[]; }
+  if(S.tpTeam && S.tpTeam!==t.name){ S.tpCosecha=[]; S.tpAlias=[]; S.tpMemoriaDesde=null; }
   // al dejar un equipo: sus contratos internos se limpian y ningún asiento se queda a null
   if(S.tpTeam && S.tpTeam!==t.name && S.seats[S.tpTeam]){
     const old=S.tpTeam, sl=S.seats[old];
@@ -14175,6 +14176,19 @@ function tpTeHacenCaso(){ return Math.max(.45, Math.min(.9, .65 + ((S.tpPrest||5
 function tpObraSede(tipo){
   if(tipo==="fases"){ TPCAR(-1); tpSembrar(3,1.5); tpSembrar(5,1.5); return; }
   TPCAR(-1.5); tpSembrar(1,-1.5); tpSembrar(3,3); tpSembrar(4,2.5);
+}
+/* 👴 `tpDuenoSeJubila`: quién llega (con mayúscula para abrir frase y sin ella para dentro) y
+   el relevo real. El sustituto de un CEO de fábrica es otro CEO de fábrica; la hija de un particular
+   llega con otra personalidad que la de su padre, sorteada entre los particulares. */
+function tpJubQuien(){ const fab=S._jub&&S._jub.fab;
+  return fab ? {Es:"El nuevo consejero delegado", es:"el nuevo consejero delegado", En:"The new chief executive", en:"the new chief executive", Pt:"O novo diretor-executivo", pt:"o novo diretor-executivo"}
+             : {Es:"Su hija", es:"su hija", En:"His daughter", en:"his daughter", Pt:"A filha dele", pt:"a filha dele"}; }
+function tpJubRelevo(){
+  const fab=S._jub&&S._jub.fab, antes=S.tpOwner&&S.tpOwner.k;
+  const pool = fab ? TP_OWNERS.filter(o=>o.k==="brand")
+                   : TP_OWNERS.filter(o=>o.k!=="brand" && o.k!=="self" && o.k!==antes);
+  const nuevo = pool[irnd(0,pool.length-1)] || S.tpOwner;
+  S.tpOwner=nuevo; S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0; tpAmigoNuevo();
 }
 function tpSembrar(anos, valor){ (S.tpCosecha=S.tpCosecha||[]).push({y:yearNow()+anos, v:valor}); }
 /* 🔝 EL TECHO YA NO SE TRAGA LA MEJORA. `Math.min(96, perf+g)` tiraba a la basura la parte que no
@@ -18688,6 +18702,65 @@ const TP_DILEMAS=[
      [2,()=>(TPTGT(rnd(0,1)),L("El técnico que traes es bueno, pero no es para este equipo. En un año se va, y deja poco más que un par de ideas. +proyecto leve",
                                "The technician you bring in is good, but he isn't right for this team. Within a year he's gone, leaving little more than a couple of ideas. slight +project",
                                {pt:"O técnico que você traz é bom, mas não é para esta equipe. Em um ano vai embora, e deixa pouco mais que um par de ideias. +projeto leve"}))])}]}
+ ,
+ /* 👴 «EL DUEÑO SE JUBILA» — sexto dilema de veterano (11-sep-2026). Iba a ser «muere el dueño» y
+    Carlos lo cambió: «¡muy tétrico!». Se jubila.
+    👥 DOS ENTRADAS, porque no todos los dueños son personas: el particular (gana, cortoplacista,
+    proyectos largos, showman) se jubila y le deja el equipo a su HIJA; el CEO de fábrica («responde
+    ante un constructor») se jubila y el constructor MANDA A OTRO — nadie hereda un puesto en una
+    multinacional.
+    🧠 Lo que lo hace de veterano: diez años de crédito con el consejo que se pueden perder. Ojo, el
+    relevo NORMAL de dueño ya lee tu historial según quién llegue (la memoria pesa con el factor del
+    dueño ACTUAL: a uno de proyectos largos un título de hace cinco años le cuenta casi la mitad, a un
+    showman un 1%). Esto añade encima un borrón EXPLÍCITO (`S.tpMemoriaDesde`) solo en las ramas en
+    las que la propiedad nueva te mira mal.
+    🔒 Diez años o más con ese mismo dueño (`tpOwnerY`, que vuelve a 0 cada vez que fichas: un
+    showman en Haas y otro en Williams no suman). Fuera el filial —la casa madre no cambia la cúpula
+    de su equipo B— y el que es su propio dueño.
+    🌲 EVERGREEN, y vale para cualquier equipo. */
+ {id:"tpDuenoSeJubila",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || !S.tpOwner || S.tpOwner.k==="self" || isRBJr(S.tpTeam)) return false;
+    if((S.tpOwnerY||0)<10) return false;
+    S._jub={fab:S.tpOwner.k==="brand", n:S.tpOwnerY}; return true; },
+  t:()=>L("El dueño se jubila","The owner retires",{pt:"O dono se aposenta"}),
+  d:()=>{ const j=S._jub||{fab:false,n:10};
+    const es=["","un","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce","trece","catorce","quince","dieciséis","diecisiete","dieciocho","diecinueve","veinte"];
+    const en=["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty"];
+    const pt=["","um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","catorze","quinze","dezesseis","dezessete","dezoito","dezenove","vinte"];
+    const k=Math.min(20,Math.max(1,j.n));
+    return j.fab
+      ? L(`El consejero delegado con el que llevas ${es[k]} años se jubila, y el constructor manda a otro en su lugar. No te conoce, llega con su gente y con sus ideas. Todo lo que hiciste con el anterior, él lo pone en entredicho.`,
+          `The chief executive you've worked with for ${en[k]} years is retiring, and the manufacturer is sending someone else to replace him. He doesn't know you, and he arrives with his own people and his own ideas. Everything you did with his predecessor, he calls into question.`,
+          {pt:`O diretor-executivo com quem você trabalha há ${pt[k]} anos se aposenta, e a montadora manda outro no lugar dele. Ele não te conhece, chega com a gente dele e com as ideias dele. Tudo o que você fez com o anterior, ele põe em dúvida.`})
+      : L(`El dueño con el que llevas ${es[k]} años se jubila y le deja el equipo a su hija, que no te conoce, llega con su gente y con sus ideas. Todo lo que hiciste con su padre, ella lo pone en entredicho.`,
+          `The owner you've worked with for ${en[k]} years is retiring and leaving the team to his daughter, who doesn't know you, and who arrives with her own people and her own ideas. Everything you did with her father, she calls into question.`,
+          {pt:`O dono com quem você trabalha há ${pt[k]} anos se aposenta e deixa a equipe para a filha, que não te conhece, chega com a gente dela e com as ideias dela. Tudo o que você fez com o pai dela, ela põe em dúvida.`}); },
+  opts:[
+   {l:()=>L("«Me presento como el que conoce la casa»","«I introduce myself as the one who knows the house»",{pt:"«Me apresento como quem conhece a casa»"}),
+    r:()=>{ const q=tpJubQuien(); tpJubRelevo();
+      if(ch(.6)){ TPRE(rnd(.5,1.5));
+        return L(`Vas a presentarte con tu historial debajo del brazo. ${q.Es} lo lee entero, y al terminar te pide que sigas. Lo que hiciste cuenta. +fama`,
+                 `You go to introduce yourself with your record under your arm. ${q.En} reads it all, and at the end asks you to stay. What you did counts. +fame`,
+                 {pt:`Você vai se apresentar com o seu histórico debaixo do braço. ${q.Pt} lê tudo, e no fim te pede para continuar. O que você fez conta. +fama`}); }
+      TPRE(-rnd(.5,1.5)); S.tpMemoriaDesde=yearNow();
+      return L(`Vas a presentarte con tu historial debajo del brazo, y ${q.es} lo lee como el de alguien del régimen anterior. Para la propiedad nueva empiezas hoy, y con mala sangre. −fama, y el consejo empieza a contar de cero`,
+               `You go to introduce yourself with your record under your arm, and ${q.en} reads it as the record of someone from the old regime. For the new ownership you start today, with bad blood. −fame, and the board starts counting from zero`,
+               {pt:`Você vai se apresentar com o seu histórico debaixo do braço, e ${q.pt} lê como o de alguém do regime anterior. Para a nova direção você começa hoje, e com mal-estar. −fama, e o conselho começa a contar do zero`}); }},
+   {l:()=>L("«Espero a ver qué quiere»","«I wait to see what they want»",{pt:"«Espero para ver o que querem»"}),
+    r:()=>{ const q=tpJubQuien(); tpJubRelevo(); S.tpMemoriaDesde=yearNow();
+      return L(`Le dejas su espacio. ${q.Es} llega, coloca a su gente y no te pide nada. Para la propiedad nueva empiezas hoy, sin prejuicios y sin crédito. El consejo empieza a contar de cero`,
+               `You give them space. ${q.En} arrives, puts their people in place and asks nothing of you. For the new ownership you start today, with no prejudice and no credit. The board starts counting from zero`,
+               {pt:`Você dá espaço. ${q.Pt} chega, põe a sua gente e não te pede nada. Para a nova direção você começa hoje, sem preconceito e sem crédito. O conselho começa a contar do zero`}); }},
+   {l:()=>L("«Pongo mi cargo a su disposición»","«I put my job at their disposal»",{pt:"«Coloco o meu cargo à disposição»"}),
+    r:()=>{ const q=tpJubQuien(); tpJubRelevo();
+      if(ch(.5)){ S.tpGrace=true;
+        return L(`Pones tu cargo a su disposición. ${q.Es} lo rechaza delante de todo el consejo: quiere que sigas, y lo dice en voz alta. Conservas tu crédito y un año de gracia`,
+                 `You put your job at their disposal. ${q.En} turns it down in front of the whole board: they want you to stay, and they say so out loud. You keep your credit and a year of grace`,
+                 {pt:`Você coloca o cargo à disposição. ${q.Pt} recusa diante de todo o conselho: quer que você continue, e diz em voz alta. Você mantém o seu crédito e um ano de graça`}); }
+      S.tpMemoriaDesde=yearNow();
+      return L(`Pones tu cargo a su disposición. ${q.Es} toma nota, te da las gracias y te deja seguir. Para la propiedad nueva empiezas hoy. El consejo empieza a contar de cero`,
+               `You put your job at their disposal. ${q.En} takes note, thanks you and lets you carry on. For the new ownership you start today. The board starts counting from zero`,
+               {pt:`Você coloca o cargo à disposição. ${q.Pt} anota, agradece e deixa você continuar. Para a nova direção você começa hoje. O conselho começa a contar do zero`}); }}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
