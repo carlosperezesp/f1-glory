@@ -9282,6 +9282,12 @@ function rebrandTeam(oldName, to, row){
   if(S.tpVentaForzosa===oldName) S.tpVentaForzosa=nn;
   if(S.tpFiaDQ && S.tpFiaDQ.team===oldName) S.tpFiaDQ.team=nn;
   (S.tpStints||[]).forEach(st=>{ if(st && st.team===oldName) st.team=nn; });
+  /* 🪪 …y los nombres viejos de TU equipo se guardan (11-sep-2026). Las filas de cada temporada
+     conservan el nombre que tenía el equipo ese año —a propósito: la trayectoria tiene que decir
+     «Alpine» en los años de Alpine—, así que contar «cuántos años llevas aquí» por nombre se reiniciaba
+     con cada cambio: un jefe con diez años en Alpine pasaba a tener uno el día que se llamó Renault.
+     Con esto, `tpAniosAqui` sabe que Alpine y Renault son la misma fábrica. */
+  if(S.tpTeam===nn || S.tpTeam===oldName){ (S.tpAlias=S.tpAlias||[]); if(S.tpAlias.indexOf(oldName)<0) S.tpAlias.push(oldName); }
   (S.tpSaleQ||[]).forEach(q=>{ if(q && q.to===oldName) q.to=nn; });
   if(S.gigTeam===oldName) S.gigTeam=nn;
   if(S.gigResucitado===oldName) S.gigResucitado=nn;
@@ -12736,7 +12742,7 @@ function tpSignTeam(t, how){
      —el fichaje normal y el arranque— y la verificación encontró 20 casos en los que seguía viajando:
      hay más caminos para cambiar de escudería (el rescate tras un despido, entre otros). Aquí, que es
      el embudo por el que pasan TODOS, no se escapa ninguno. Ni te llevas la cosecha ni la deuda. */
-  if(S.tpTeam && S.tpTeam!==t.name) S.tpCosecha=[];
+  if(S.tpTeam && S.tpTeam!==t.name){ S.tpCosecha=[]; S.tpAlias=[]; }
   // al dejar un equipo: sus contratos internos se limpian y ningún asiento se queda a null
   if(S.tpTeam && S.tpTeam!==t.name && S.seats[S.tpTeam]){
     const old=S.tpTeam, sl=S.seats[old];
@@ -14148,6 +14154,24 @@ let RB_PR_YA=[0.5,2.0], RB_PR_A1=[0.2,0.9];
 let RB_PR_BIEN=[5.0,8.5], RB_PR_REG=[0.5,2.0], RB_PR_MAL=[-4.0,-1.5];
 let RB_PR_PESOS=[45,30,25];   // bien / regular / el caso Aston Martin
 
+/* 📅 CUÁNTAS TEMPORADAS SEGUIDAS LLEVAS EN ESTE EQUIPO, contando sus nombres anteriores. Lo usan
+   los dilemas de veterano; antes cada uno recorría las filas por nombre y un cambio de nombre les
+   ponía el contador a cero. */
+function tpAniosAqui(){
+  const nombres=[S.tpTeam].concat(S.tpAlias||[]);
+  const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
+  let n=0; for(let i=filas.length-1;i>=0;i--){ if(nombres.indexOf(filas[i].tpTeam)>=0) n++; else break; }
+  return n;
+}
+/* 🗳️ ¿TE HACE CASO EL CONSEJO? Cuando el consejo te consulta en vez de dejarte decidir, tu opinión
+   pesa según tu prestigio: con 50 te siguen 2 de cada 3 veces, con 90 casi siempre, con 20 a medias. */
+function tpTeHacenCaso(){ return Math.max(.45, Math.min(.9, .65 + ((S.tpPrest||50)-50)/200)); }
+/* 🏗️ la obra de la sede: se paga ya y se cobra tarde, y la cosecha se queda en la fábrica aunque
+   tú te vayas (`tpSignTeam` vacía la hucha al cambiar de equipo): justo lo que dice el texto. */
+function tpObraSede(tipo){
+  if(tipo==="fases"){ TPCAR(-1); tpSembrar(3,1.5); tpSembrar(5,1.5); return; }
+  TPCAR(-1.5); tpSembrar(1,-1.5); tpSembrar(3,3); tpSembrar(4,2.5);
+}
 function tpSembrar(anos, valor){ (S.tpCosecha=S.tpCosecha||[]).push({y:yearNow()+anos, v:valor}); }
 /* 🔝 EL TECHO YA NO SE TRAGA LA MEJORA. `Math.min(96, perf+g)` tiraba a la basura la parte que no
    cabía: con el coche a 94, exprimir daba +1,4 en cuatro años en vez de +5, y las tres opciones del
@@ -18440,7 +18464,7 @@ const TP_DILEMAS=[
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || S.tpHeredero || S.tpUltimo) return false;
     const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
     if(filas.length<16) return false;
-    let aqui=0; for(let i=filas.length-1;i>=0;i--){ if(filas[i].tpTeam===S.tpTeam) aqui++; else break; }
+    const aqui=tpAniosAqui();
     if(aqui<8) return false;
     S._herA=aqui; return true; },
   t:()=>L("El heredero","The heir",{pt:"O herdeiro"}),
@@ -18538,7 +18562,7 @@ const TP_DILEMAS=[
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || S._renovoY!==yearNow()) return false;
     const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
     if(filas.length<14) return false;
-    let aqui=0; for(let i=filas.length-1;i>=0;i--){ if(filas[i].tpTeam===S.tpTeam) aqui++; else break; }
+    const aqui=tpAniosAqui();
     return aqui>=3; },
   t:()=>L("La vieja guardia","The old guard",{pt:"A velha guarda"}),
   d:()=>L("Los ingenieros que fichaste cuando llegaste siguen aquí. Son los que te seguían fielmente, los que se quedaban hasta las tres de la mañana. Pero hace tiempo que no se quedan, y los jóvenes que contratas se van al segundo año: dicen que aquí nadie les deja hacer nada.",
@@ -18569,6 +18593,55 @@ const TP_DILEMAS=[
      [4,()=>(TPTGT(-1.5),L("Los viejos lo leen como lo que parece: una jubilación con otro nombre. Dos se van antes de Navidad. −proyecto leve",
                            "The old ones read it for what it looks like: retirement under another name. Two of them leave before Christmas. slight −project",
                            {pt:"Os velhos leem como o que parece: uma aposentadoria com outro nome. Dois vão embora antes do Natal. −projeto leve"}))])}]}
+ ,
+ /* 🏗️ «LA SEDE NUEVA» — cuarto dilema de veterano (diseño de Carlos, 11-sep-2026).
+    🧠 El giro que lo hace de veterano: la ventaja llega cuando tú ya no vas a estar. La opción
+    generosa no te da nada a TI.
+    🗳️ Y TÚ NO DECIDES, RECOMIENDAS (pega de Carlos: «se supone que no, yo soy el Team Principal, me
+    tendrían que consultar»). El consejo casi siempre te hace caso, y más cuanto más prestigio
+    tengas; pero a veces hace lo contrario, y el texto lo dice.
+    ⏳ La condición no mira «temporadas cumplidas» sino LAS QUE TE QUEDAN hasta el tope: así el texto
+    («esa ventaja la va a disfrutar otro») sigue siendo verdad el día que el tope pase de 20 a 30.
+    🔒 Nada de equipos recién llegados: 5+ temporadas en ESTE equipo (contando sus nombres anteriores),
+    y nadie lleva cinco años en un equipo que tiene uno. Fuera también el que es su propio dueño: no
+    hay consejo que le consulte.
+    🌲 EVERGREEN, y vale para cualquier equipo. */
+ {id:"tpSedeNueva",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self")) return false;
+    const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
+    if(TP_TOPE-filas.length > 6) return false;
+    return tpAniosAqui()>=5; },
+  t:()=>L("La sede nueva","The new headquarters",{pt:"A sede nova"}),
+  d:()=>L("El consejo pone un proyecto sobre la mesa: una sede nueva. Dos años de obras y de caos, con la promesa de una década de ventaja gracias a las nuevas instalaciones. Nadie lo dice, pero todos hacen la misma cuenta: con los años que te quedan en el cargo, esa ventaja la va a disfrutar otro.",
+          "The board puts a project on the table: a new headquarters. Two years of building work and chaos, with the promise of a decade of advantage thanks to the new facilities. Nobody says it, but everyone does the same sum: with the years you have left in the job, that advantage will be enjoyed by someone else.",
+          {pt:"O conselho põe um projeto na mesa: uma sede nova. Dois anos de obras e de caos, com a promessa de uma década de vantagem graças às novas instalações. Ninguém diz, mas todos fazem a mesma conta: com os anos que te restam no cargo, essa vantagem vai ser de outro."}),
+  opts:[
+   {l:()=>L("«Que se construya»","«Build it»",{pt:"«Que se construa»"}),
+    r:()=>{ if(ch(tpTeHacenCaso())){ tpObraSede("entera"); TPRE(1);
+        return L("El consejo te hace caso. En primavera ya hay grúas en el aparcamiento, y durante dos años la fábrica trabaja entre polvo y mudanzas. Lo que salga de ahí se verá cuando estén las instalaciones nuevas. −coche estos dos años, +coche después, +fama",
+                 "The board listens to you. By spring there are cranes in the car park, and for two years the factory works among dust and removal boxes. What comes out of it will show once the new facilities are ready. −car these two years, +car afterwards, +fame",
+                 {pt:"O conselho te ouve. Na primavera já há guindastes no estacionamento, e durante dois anos a fábrica trabalha entre poeira e mudanças. O que sair dali vai se ver quando as instalações novas estiverem prontas. −carro estes dois anos, +carro depois, +fama"}); }
+      return L("El consejo te escucha, lo agradece y lo aparca: no es el momento. El proyecto vuelve al cajón del que salió.",
+               "The board hears you out, thanks you and shelves it: this isn't the moment. The project goes back into the drawer it came from.",
+               {pt:"O conselho te escuta, agradece e engaveta: não é o momento. O projeto volta para a gaveta de onde saiu."}); }},
+   {l:()=>L("«Ahora no»","«Not now»",{pt:"«Agora não»"}),
+    r:()=>{ if(ch(tpTeHacenCaso())){ TPRE(-1);
+        return L("El consejo te hace caso y el proyecto se queda en el cajón. Pero en el paddock se lee como lo que parece: un jefe que ya piensa más en su final que en el equipo. −fama",
+                 "The board listens and the project stays in the drawer. But the paddock reads it for what it looks like: a boss already thinking more about his exit than about the team. −fame",
+                 {pt:"O conselho te ouve e o projeto fica na gaveta. Mas no paddock é lido como o que parece: um chefe que já pensa mais no próprio fim do que na equipe. −fama"}); }
+      tpObraSede("entera"); TPRE(-1);
+      return L("El consejo te escucha y decide lo contrario. Las grúas llegan en primavera, y tú quedas como el que votó en contra. −coche estos dos años, +coche después, −fama",
+               "The board hears you out and decides the opposite. The cranes arrive in spring, and you're left as the one who voted against. −car these two years, +car afterwards, −fame",
+               {pt:"O conselho te escuta e decide o contrário. Os guindastes chegam na primavera, e você fica como o que votou contra. −carro estes dois anos, +carro depois, −fama"}); }},
+   {l:()=>L("«Por fases»","«In stages»",{pt:"«Por etapas»"}),
+    r:()=>{ if(ch(Math.max(.85, tpTeHacenCaso()))){ tpObraSede("fases");
+        return L("El consejo compra la idea: una sede que se levanta por partes, sin parar la fábrica. Un año flojo en vez de dos, y una ventaja más pequeña y más tardía. −coche este año, +coche después",
+                 "The board buys the idea: a headquarters built in parts, without stopping the factory. One weak year instead of two, and a smaller, later advantage. −car this year, +car afterwards",
+                 {pt:"O conselho compra a ideia: uma sede que se ergue por partes, sem parar a fábrica. Um ano fraco em vez de dois, e uma vantagem menor e mais tardia. −carro este ano, +carro depois"}); }
+      tpObraSede("entera");
+      return L("El consejo lo escucha y prefiere hacerlo de una vez: si hay que pasar por obras, que sea una sola. −coche estos dos años, +coche después",
+               "The board hears it and prefers to do it in one go: if there has to be building work, let it be just once. −car these two years, +car afterwards",
+               {pt:"O conselho escuta e prefere fazer de uma vez: se é para ter obra, que seja uma só. −carro estes dois anos, +carro depois"}); }}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
