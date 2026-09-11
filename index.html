@@ -15029,6 +15029,7 @@ function tpContratoScreen(){
       ${ultimo?`<span class="sub" style="display:block;color:var(--gold);font-weight:700">${L("⏳ Tu último trabajo en la F1: te retirarás al acabarlo","⏳ Your last job in F1: you'll retire when it ends",{pt:"⏳ O seu último trabalho na F1: vai se aposentar ao terminar"})}</span>`:""}</span>`;
     b.onclick=()=>{
       if(t.name===S.tpTeam){ const a=tpFirmarContrato(t.name);
+        S._renovoY=yearNow();   // 📜 «La vieja guardia» salta justo aquí: al renovar, no al llegar
         S.pendingEvents.push(L(`📄 Renuevas con ${t.name}: ${a} temporada${a===1?"":"s"} más al mando.`,
           `📄 You renew with ${t.name}: ${a} more season${a===1?"":"s"} in charge.`,
           {pt:`📄 Você renova com a ${t.name}: mais ${a} temporada${a===1?"":"s"} no comando.`}));
@@ -18520,6 +18521,54 @@ const TP_DILEMAS=[
       return L("Se lo dices, y no insiste. Esa misma semana en el paddock ya se sabe quién tenía la mano y no la usó. +fama",
                "You tell him so, and he doesn't push. That same week the paddock already knows who held the cards and didn't play them. +fame",
                {pt:"Você diz, e ele não insiste. Nessa mesma semana o paddock já sabe quem tinha a mão e não a usou. +fama"}); }}]}
+ ,
+ /* 👴 «LA VIEJA GUARDIA» — tercer dilema de veterano (diseño de Carlos, 11-sep-2026).
+    ⏱️ NO SE DISPARA POR AÑOS, SINO POR UN MOMENTO: el invierno en que RENUEVAS con el mismo equipo,
+    pasadas las 14 temporadas en el muro. Idea suya: «si con 14 temporadas estás en Alpine, se termina
+    tu contrato y renuevas, ahí es cuando puede saltar; es como tu segundo stint en ese equipo».
+    Por eso lleva prioridad ese invierno: si se lo salta el sorteo, la ocasión no vuelve hasta la
+    siguiente renovación. Y con un suelo de 3 temporadas en el equipo, para que «los que fichaste
+    cuando llegaste» y «los que se quedaban hasta las tres» sean verdad.
+    🎲 Las dos primeras opciones pueden salir AL REVÉS, también idea suya: mantener a los viejos puede
+    matar la moral y sin embargo subir el proyecto («son perros viejos»), y la sangre nueva puede
+    darte coche ya y costarte el de dentro de dos años. La moral de la fábrica no es una variable del
+    juego: se nota en el coche de ESTE año (`TPCAR`), y el proyecto en los siguientes (`TPTGT`).
+    🌲 EVERGREEN, y vale para cualquier equipo. */
+ {id:"tpViejaGuardia",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || S._renovoY!==yearNow()) return false;
+    const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
+    if(filas.length<14) return false;
+    let aqui=0; for(let i=filas.length-1;i>=0;i--){ if(filas[i].tpTeam===S.tpTeam) aqui++; else break; }
+    return aqui>=3; },
+  t:()=>L("La vieja guardia","The old guard",{pt:"A velha guarda"}),
+  d:()=>L("Los ingenieros que fichaste cuando llegaste siguen aquí. Son los que te seguían fielmente, los que se quedaban hasta las tres de la mañana. Pero hace tiempo que no se quedan, y los jóvenes que contratas se van al segundo año: dicen que aquí nadie les deja hacer nada.",
+          "The engineers you hired when you arrived are still here. They're the ones who followed you faithfully, the ones who stayed until three in the morning. But it's been a while since they stayed, and the young people you hire leave in their second year: they say nobody here lets them do anything.",
+          {pt:"Os engenheiros que você contratou quando chegou continuam aqui. São os que te seguiam fielmente, os que ficavam até as três da manhã. Mas faz tempo que não ficam, e os jovens que você contrata vão embora no segundo ano: dizem que aqui ninguém os deixa fazer nada."}),
+  opts:[
+   {l:()=>L("«Mantengo a mi vieja guardia»","«I keep my old guard»",{pt:"«Mantenho a minha velha guarda»"}),
+    r:()=>roll(
+     [55,()=>(TPCAR(1),TPTGT(-2.5),L("Los tuyos lo agradecen y este año la fábrica aprieta como hacía tiempo que no. Pero en verano el chaval más prometedor del túnel de viento firma por un rival. +coche este año, −proyecto",
+                                     "Your people appreciate it and this year the factory pushes like it hasn't in a long time. But in summer the most promising kid in the wind tunnel signs for a rival. +car this year, −project",
+                                     {pt:"Os seus agradecem e este ano a fábrica aperta como fazia tempo que não. Mas no verão o garoto mais promissor do túnel de vento assina com um rival. +carro este ano, −projeto"}))],
+     [45,()=>(TPCAR(-1),TPTGT(2.5),L("Los tuyos se lo toman como una deuda saldada y aflojan: este año la fábrica va a medio gas. Pero los perros viejos saben cosas que no están escritas en ningún sitio, y el coche de dentro de dos años lleva su firma. −coche este año, +proyecto",
+                                     "Your people take it as a debt repaid and ease off: this year the factory runs at half throttle. But the old dogs know things that aren't written down anywhere, and the car two years from now carries their signature. −car this year, +project",
+                                     {pt:"Os seus encaram como uma dívida quitada e afrouxam: este ano a fábrica anda a meio gás. Mas os cães velhos sabem coisas que não estão escritas em lugar nenhum, e o carro de daqui a dois anos leva a assinatura deles. −carro este ano, +projeto"}))])},
+   {l:()=>L("«Hace falta sangre nueva»","«We need new blood»",{pt:"«Precisamos de sangue novo»"}),
+    r:()=>roll(
+     [55,()=>(TPCAR(-1.5),TPTGT(3),TPRE(-1),L("Jubilas a la mitad. Uno de ellos lo cuenta en la prensa con nombres y fechas, y este año la fábrica tarda en recomponerse. Pero la gente nueva llega con hambre, y el proyecto lo nota. −coche este año, +proyecto, −fama",
+                                              "You retire half of them. One of them tells the press, with names and dates, and this year the factory takes time to recover. But the new people arrive hungry, and the project shows it. −car this year, +project, −fame",
+                                              {pt:"Você aposenta metade. Um deles conta à imprensa com nomes e datas, e este ano a fábrica demora a se recompor. Mas a gente nova chega com fome, e o projeto sente. −carro este ano, +projeto, −fama"}))],
+     [45,()=>(TPCAR(1.5),TPTGT(-2.5),L("Jubilas a la mitad, y la gente nueva llega con una energía que la fábrica no veía desde hacía años: este año el coche mejora. Pero con los viejos se ha ido todo lo que no estaba escrito en ningún sitio, y dentro de dos años se va a notar. +coche este año, −proyecto",
+                                       "You retire half of them, and the new people arrive with an energy the factory hadn't seen in years: this year the car improves. But everything that wasn't written down anywhere left with the old ones, and two years from now it's going to show. +car this year, −project",
+                                       {pt:"Você aposenta metade, e a gente nova chega com uma energia que a fábrica não via havia anos: este ano o carro melhora. Mas com os velhos foi embora tudo o que não estava escrito em lugar nenhum, e daqui a dois anos vai se notar. +carro este ano, −projeto"}))])},
+   {l:()=>L("«Que enseñen a los nuevos»","«Let them teach the new ones»",{pt:"«Que ensinem os novos»"}),
+    r:()=>roll(
+     [6,()=>(TPTGT(2),L("Funciona. Los viejos se sienten útiles otra vez, y los jóvenes dejan de irse. +proyecto",
+                        "It works. The old ones feel useful again, and the young ones stop leaving. +project",
+                        {pt:"Funciona. Os velhos se sentem úteis de novo, e os jovens param de ir embora. +projeto"}))],
+     [4,()=>(TPTGT(-1.5),L("Los viejos lo leen como lo que parece: una jubilación con otro nombre. Dos se van antes de Navidad. −proyecto leve",
+                           "The old ones read it for what it looks like: retirement under another name. Two of them leave before Christmas. slight −project",
+                           {pt:"Os velhos leem como o que parece: uma aposentadoria com outro nome. Dois vão embora antes do Natal. −projeto leve"}))])}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
@@ -18604,6 +18653,11 @@ function pickTPDilemma(){
   // 👑 la exigencia de galones no espera al sorteo: si tu Nº2 te iguala, esa conversación ocurre
   /* 🪑 el heredero tampoco espera al sorteo (Carlos: «forzar la entrada hacia el final»): cuando
      se cumple su condición, entra la mitad de los inviernos. Con cinco inviernos de ventana, casi seguro. */
+  // 👴 la vieja guardia solo tiene UN invierno de ventana (el de la renovación): si no, se pierde
+  if(!S.usedDilemmas.tpViejaGuardia){
+    const dV=TP_DILEMAS.find(x=>x&&x.id==="tpViejaGuardia");
+    if(dV && dV.cond() && ch(.7)) return dV;
+  }
   if(!S.usedDilemmas.tpHeredero){
     const dH=TP_DILEMAS.find(x=>x&&x.id==="tpHeredero");
     if(dH && dH.cond() && ch(.5)) return dH;
