@@ -4936,6 +4936,31 @@ function npcSeason(row){
           : .008);
       // al retirarse NO se pone un novato de oficio: el asiento queda LIBRE y lo cubre el mercado
       // (si se retira un piloto de un top, ese volante lo pelea la parrilla; el novato acaba abajo)
+      /* 👋 LA RETIRADA ANUNCIADA (tpSeRetiraContigo, 12-sep-2026): te lo dijo en enero y es
+         VINCULANTE — regla de Carlos: «no puede decir de retirarse y luego seguir un año más»
+         (salvo la opción C, que retrasa `_ultima` un año y fuerza la renovación). Sale por la
+         misma puerta que la retirada natural: bolsillo de retirados y asiento libre. */
+      if(d._ultima!=null && row && row.year>=d._ultima){
+        if(S._adiosSecreto===d.name){ S._adiosSecreto=null;
+          roll(
+           [55,()=>{ TPRE(rnd(.5,1.2));
+             row.events.push(L(`👋 En el podio de su última carrera, ${surname(d.name)} anuncia que lo deja. El paddock, en shock, aplaude la elegancia: ni una décima de circo en todo el año. +fama`,
+               `👋 On the podium of his final race, ${surname(d.name)} announces he's done. The paddock, stunned, applauds the class: not a tenth of circus all year. +fame`,
+               {pt:`👋 No pódio da última corrida, ${surname(d.name)} anuncia que vai parar. O paddock, em choque, aplaude a elegância: nem um décimo de circo o ano todo. +fama`})); }],
+           [45,()=>{ TPRE(-rnd(.3,.8));
+             row.events.push(L(`👋 En la última carrera se sabe que ${surname(d.name)} lo deja, y la afición no pudo despedirle. En su cara se ve lo que le cuesta, y el paddock te afea el secreto. −fama`,
+               `👋 At the final race the word gets out that ${surname(d.name)} is done, and the fans never got to say goodbye. His face shows what it costs him, and the paddock blames you for the secret. −fame`,
+               {pt:`👋 Na última corrida se sabe que ${surname(d.name)} vai parar, e a torcida não pôde se despedir. No rosto dele se vê o que custa, e o paddock te cobra o segredo. −fama`})); }]);
+        } else {
+          row.events.push(L(`👋 La última carrera de ${surname(d.name)}: parrilla, mecánicos y rivales de pie. Se va como anunció en enero — compitiendo.`,
+            `👋 ${surname(d.name)}'s final race: grid, mechanics and rivals on their feet. He leaves the way he announced in January — racing.`,
+            {pt:`👋 A última corrida de ${surname(d.name)}: grid, mecânicos e rivais de pé. Vai embora como anunciou em janeiro — competindo.`}));
+        }
+        if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||0)>=27
+           && !(S.retiredPool||[]).some(r=>r && r.name===d.name))
+          (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
+        slots[i]=null; return;
+      }
       if(mktMoved(d)) return;   // acaba de firmar un traspaso anunciado: no se retira el mismo invierno
       if(ch(pRet)){
         // 👋 un campeón del mundo no desaparece de la parrilla en silencio (lo pidió Carlos al perder
@@ -12855,6 +12880,23 @@ function tpSignTeam(t, how){
      —el fichaje normal y el arranque— y la verificación encontró 20 casos en los que seguía viajando:
      hay más caminos para cambiar de escudería (el rescate tras un despido, entre otros). Aquí, que es
      el embudo por el que pasan TODOS, no se escapa ninguno. Ni te llevas la cosecha ni la deuda. */
+  /* 🪑 EL PLAN DE SUCESIÓN SE COBRA AL IRTE (tpSucesion, 12-sep-2026): la calidad de las manos en
+     que dejas el equipo se sorteó al decidir, y se descubre AHORA — Carlos: «si te terminas yendo
+     del equipo, lo puedes dejar en buenas manos o malas». Si te jubilas sin irte, no se resuelve
+     (queda para la secuela apuntada). El pago va ANTES del borrado de abajo, que limpia el alias. */
+  if(S._sucesion && S.tpTeam && S.tpTeam!==t.name && tpEsMiEquipo(S._sucesion.t)){
+    const _eq=S.tpTeam, _suc=S._sucesion; S._sucesion=null;
+    if(_suc.ok){ TPRE(rnd(.5,1.5));
+      S.pendingEvents.push(L(`🪑 Dejas ${_eq} en las manos que se formaron a tu lado, y se nota pronto: la casa no se cae. En el paddock, eso también se te apunta. +fama`,
+        `🪑 You leave ${_eq} in the hands groomed at your side, and it shows quickly: the house doesn't fall. In the paddock, that goes on your record too. +fame`,
+        {pt:`🪑 Você deixa a ${_eq} nas mãos formadas ao seu lado, e logo se nota: a casa não cai. No paddock, isso também conta para você. +fama`}));
+    } else { TPRE(-rnd(.5,1.5));
+      S.f1target[_eq]=Math.max(61,(S.f1target[_eq]??S.f1perf[_eq]??75)-rnd(2,4));
+      S.pendingEvents.push(L(`🪑 Te vas, y se ve pronto que el plan de sucesión era papel: ${_eq} empieza a deshacer lo que construiste, y el paddock recuerda quién eligió esas manos. −fama`,
+        `🪑 You leave, and it soon shows the succession plan was paper: ${_eq} starts undoing what you built, and the paddock remembers who chose those hands. −fame`,
+        {pt:`🪑 Você vai embora, e logo se vê que o plano de sucessão era papel: a ${_eq} começa a desfazer o que você construiu, e o paddock lembra quem escolheu aquelas mãos. −fama`}));
+    }
+  }
   if(S.tpTeam && S.tpTeam!==t.name){ S.tpCosecha=[]; S.tpAlias=[]; S.tpMemoriaDesde=null; }
   // al dejar un equipo: sus contratos internos se limpian y ningún asiento se queda a null
   if(S.tpTeam && S.tpTeam!==t.name && S.seats[S.tpTeam]){
@@ -14894,6 +14936,21 @@ function simTP(row){
       row.events.push(L(`🏗️ El de delante también evolucionaba. Apurasteis una ventana que se cerró con vosotros dentro: ${cPos}º, y el concepto sigue siendo el mismo.`,
         `🏗️ The team ahead was evolving too. You squeezed a window that shut with you inside it: P${cPos}, and the concept is still the same one.`,
         {pt:`🏗️ Quem estava à frente também evoluía. Vocês espremeram uma janela que fechou com vocês dentro: ${cPos}º, e o conceito continua o mesmo.`}));
+    }
+  }
+  /* ⚙️ LA PROMESA DE LA FÁBRICA (tpFabricaCansada, opción C): «un esfuerzo más, y si ganamos,
+     todos a casa un mes». Mismo patrón que la ventana: el texto no promete nada al elegir; aquí
+     se mira si el título cayó de verdad. */
+  if(S._fabricaPromesa===row.year){
+    S._fabricaPromesa=null;
+    if(constrChamp){ tpSembrar(1, rnd(2,3.5)); TPRE(rnd(1,2));
+      row.events.push(L("⚙️ El título cae y la promesa se cumple: la fábrica cierra un mes entero, por primera vez en años. Vuelve en enero con hambre — y con la lista de bajas rota en la papelera. +proyecto, +fama",
+        "⚙️ The title lands and the promise is kept: the factory shuts for a whole month, for the first time in years. It comes back in January hungry — with the resignation list torn up in the bin. +project, +fame",
+        {pt:"⚙️ O título vem e a promessa se cumpre: a fábrica fecha um mês inteiro, pela primeira vez em anos. Volta em janeiro com fome — e com a lista de baixas rasgada no lixo. +projeto, +fama"}));
+    } else { tpSembrar(1, -rnd(1.5,3)); TPRE(-rnd(1,2));
+      row.events.push(L("⚙️ Prometiste descanso a gente rota si caía el título, y no llegó ninguna de las dos cosas. Las salidas que la promesa frenaba se firman en diciembre. −proyecto, −fama",
+        "⚙️ You promised broken people rest if the title came, and neither thing arrived. The departures the promise was holding back get signed in December. −project, −fame",
+        {pt:"⚙️ Você prometeu descanso a gente esgotada se o título viesse, e nenhuma das duas coisas chegou. As saídas que a promessa segurava se assinam em dezembro. −projeto, −fama"}));
     }
   }
   if(S._ganarYaFirme===row.year){
@@ -18652,6 +18709,9 @@ const TP_DILEMAS=[
     CONTIGO). Y va empujado en `pickTPDilemma` para que casi seguro llegue antes del final. */
  {id:"tpHeredero",
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || S.tpHeredero || S.tpUltimo) return false;
+    /* 🪑 excluyente con «El plan de sucesión» (Carlos, 12-sep): si el consejo ya te pidió plan,
+       el becario no viene a por tu silla — solo uno de los dos por partida. */
+    if(S.usedDilemmas && S.usedDilemmas.tpSucesion) return false;
     const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
     if(filas.length<16) return false;
     const aqui=tpAniosAqui();
@@ -18985,6 +19045,150 @@ const TP_DILEMAS=[
       return L("Propones que el ala lleve el nombre de la casa, no el tuyo, y el gesto vale más que la placa: la fábrica entera entiende de quién es esto. El equipo pesa más en el paddock desde ese día. +caché del equipo",
                "You propose the wing carry the house's name, not yours, and the gesture is worth more than any plaque: the whole factory understands whose this is. The team carries more weight in the paddock from that day on. +team prestige",
                {pt:"Você propõe que a ala leve o nome da casa, não o seu, e o gesto vale mais que a placa: a fábrica inteira entende de quem é isto. A equipe pesa mais no paddock desde esse dia. +cachê da equipe"}); }}]}
+ ,
+ /* ⚙️ «LA FÁBRICA ESTÁ CANSADA» — octavo dilema de veterano (12-sep-2026, del documento de Carlos:
+    #171, inspirado en Horner — el precio del dominio). Condición precisada por Carlos: las últimas
+    CUATRO temporadas acabando en el podio de constructores, más 6 años en el equipo. La opción A
+    también puede salir mal (su revisión: «se relajan: menos proyecto»); la C usa el patrón de la
+    promesa — el texto no afirma nada, el veredicto mira si el título cayó (S._fabricaPromesa).
+    🌲 EVERGREEN. Una vez por partida. */
+ {id:"tpFabricaCansada",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if(tpAniosAqui()<6) return false;
+    const f=(S.seasons||[]).filter(r=>r.cat==="TP").slice(-4);
+    return f.length===4 && f.every(r=>r.pos!=null && r.pos<=3 && tpEsMiEquipo(r.tpTeam)); },
+  t:()=>L("La fábrica está cansada","The factory is running on empty",{pt:"A fábrica está cansada"}),
+  d:()=>L("El jefe de mecánicos te espera un lunes con una lista en la mano: dos ingenieros que se van con un rival, tres bajas en boxes y media fábrica encadenando inviernos sin vacaciones. Lleváis años peleándolo todo, y los resultados son tan buenos que el consejo no quiere ni oír hablar de aflojar. La lista sigue creciendo.",
+          "The chief mechanic is waiting for you one Monday with a list in his hand: two engineers leaving for a rival, three walkouts in the garage, and half the factory stacking winters without a holiday. You've been fighting for everything for years, and the results are so good the board won't hear a word about easing off. The list keeps growing.",
+          {pt:"O chefe dos mecânicos te espera numa segunda-feira com uma lista na mão: dois engenheiros indo para um rival, três baixas no box e meia fábrica emendando invernos sem férias. Vocês brigam por tudo há anos, e os resultados são tão bons que o conselho nem quer ouvir falar em aliviar. A lista continua crescendo."}),
+  opts:[
+   {l:()=>L("«Un invierno humano»","«A human winter»",{pt:"«Um inverno humano»"}),
+    r:()=>{ S.tpTopYears=Math.max(0,(S.tpTopYears||0)-2);
+      return roll(
+       [65,()=>(TPCAR(-rnd(.5,1.5)), tpSembrar(2, rnd(1.5,3)),
+         L("Bajas el ritmo un invierno, y la lista deja de crecer: la gente que iba a irse se queda, y lo que sabe se queda con ella. −coche este año, +proyecto",
+           "You ease off for one winter, and the list stops growing: the people who were leaving stay, and what they know stays with them. −car this year, +project",
+           {pt:"Você alivia por um inverno, e a lista para de crescer: quem ia embora fica, e o que sabem fica junto. −carro este ano, +projeto"}))],
+       [35,()=>(TPCAR(-rnd(.5,1.5)), tpSembrar(2, -rnd(1,2)),
+         L("Bajas el ritmo… y el descanso se vuelve blandura: la urgencia que os hacía grandes no vuelve con las vacaciones. −coche este año, −proyecto",
+           "You ease off… and the rest turns soft: the urgency that made you great doesn't come back with the holidays. −car this year, −project",
+           {pt:"Você alivia… e o descanso vira moleza: a urgência que os fazia grandes não volta com as férias. −carro este ano, −projeto"}))]); }},
+   {l:()=>L("«La presión es el precio de ganar»","«Pressure is the price of winning»",{pt:"«A pressão é o preço de ganhar»"}),
+    r:()=>roll(
+     [60,()=>(TPCAR(rnd(.3,1)),
+       L("La fábrica aprieta los dientes un año más. Nadie sonríe en los pasillos, pero las piezas llegan a tiempo y el coche va fino. +coche leve",
+         "The factory grits its teeth one more year. Nobody smiles in the corridors, but the parts arrive on time and the car runs sweet. slight +car",
+         {pt:"A fábrica cerra os dentes mais um ano. Ninguém sorri nos corredores, mas as peças chegam no prazo e o carro anda fino. +carro leve"}))],
+     [40,()=>{ TPTGT(-rnd(1.5,3)); TPRE(-rnd(.5,1));
+       const _riv=[...F1_TEAMS].filter(x=>x.name!==S.tpTeam).sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70))[0];
+       if(_riv) tpRivalSeLoLleva(_riv.name);
+       return L(`Se rompe por donde más duele: tu jefe de estructuras firma con ${_riv?_riv.name:"un rival"} y en la carta de despedida no hay ni un reproche — solo cansancio. −proyecto, −fama`,
+                `It breaks where it hurts most: your head of structures signs with ${_riv?_riv.name:"a rival"}, and there isn't a single reproach in his farewell letter — just exhaustion. −project, −fame`,
+                {pt:`Quebra onde mais dói: o seu chefe de estruturas assina com a ${_riv?_riv.name:"um rival"} e na carta de despedida não há uma queixa — só cansaço. −projeto, −fama`}); }])},
+   {l:()=>L("«Un esfuerzo más: si ganamos, todos a casa un mes»","«One more push: if we win, everyone home for a month»",{pt:"«Um esforço a mais: se ganharmos, todo mundo um mês em casa»"}),
+    r:()=>{ S._fabricaPromesa=yearNow();
+      return L("Lo dices delante de todos, en el taller, sin micrófonos: un esfuerzo más, y si este año cae el título, la fábrica entera cierra un mes. Nadie aplaude. Todos vuelven a sus puestos.",
+               "You say it in front of everyone, on the shop floor, no microphones: one more push, and if the title lands this year, the whole factory shuts for a month. Nobody claps. Everyone goes back to work.",
+               {pt:"Você diz na frente de todos, na oficina, sem microfones: um esforço a mais, e se o título vier este ano, a fábrica inteira fecha um mês. Ninguém aplaude. Todos voltam aos seus postos."}); }}]}
+ ,
+ /* 🪑 «EL PLAN DE SUCESIÓN» — noveno de veterano (12-sep-2026, del documento de Carlos: #112 de
+    Dennis + #174 de Horner + #17, fundidos). EXCLUYENTE con tpHeredero en los dos sentidos: solo
+    uno por partida (su preocupación: que no choquen). El texto es suyo, con los años del equipo
+    en letra. Su revisión: LAS TRES opciones siembran en secreto la calidad de las manos en que
+    quedará el equipo (S._sucesion.ok — A 70%, C 50%, B 35% y encima puede costar proyecto), y se
+    cobra el día que te vayas (en tpSignTeam). Si te jubilas allí, no se resuelve: secuela apuntada. */
+ {id:"tpSucesion",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self")) return false;
+    if(S.tpHeredero || (S.usedDilemmas && S.usedDilemmas.tpHeredero)) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<15) return false;
+    const a=tpAniosAqui(); if(a<8) return false; S._sucN=a; return true; },
+  t:()=>L("El plan de sucesión","The succession plan",{pt:"O plano de sucessão"}),
+  d:()=>{ const es=["ocho","nueve","diez","once","doce","trece","catorce","quince","dieciséis","diecisiete","dieciocho","diecinueve","veinte","veintiún","veintidós","veintitrés","veinticuatro","veinticinco","veintiséis","veintisiete","veintiocho","veintinueve","treinta"];
+    const en=["eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty","twenty-one","twenty-two","twenty-three","twenty-four","twenty-five","twenty-six","twenty-seven","twenty-eight","twenty-nine","thirty"];
+    const pt=["oito","nove","dez","onze","doze","treze","catorze","quinze","dezesseis","dezessete","dezoito","dezenove","vinte","vinte e um","vinte e dois","vinte e três","vinte e quatro","vinte e cinco","vinte e seis","vinte e sete","vinte e oito","vinte e nove","trinta"];
+    const k=Math.min(30,Math.max(8,S._sucN||8))-8;
+    return L(`El consejo te cita y saca un punto que no esperabas: un plan de sucesión. Nadie quiere que te vayas — insisten —, pero ${es[k]} años son ${es[k]} años, y una casa así no puede colgar de un solo nombre. Te piden un nombre para formarlo a tu lado.`,
+             `The board calls you in and raises a point you weren't expecting: a succession plan. Nobody wants you to leave — they insist — but ${en[k]} years are ${en[k]} years, and a house like this cannot hang from a single name. They ask you for a name, to be groomed at your side.`,
+             {pt:`O conselho te convoca e traz um ponto que você não esperava: um plano de sucessão. Ninguém quer que você vá — insistem —, mas ${pt[k]} anos são ${pt[k]} anos, e uma casa assim não pode depender de um único nome. Pedem um nome, para formar ao seu lado.`}); },
+  opts:[
+   {l:()=>L("«Yo elijo, y yo lo formo»","«I choose, and I groom him»",{pt:"«Eu escolho, e eu formo»"}),
+    r:()=>{ TPRE(rnd(1,2)); S.tpIndultos=Math.max(0,(S.tpIndultos||0)-1);
+      S._sucesion={t:S.tpTeam, ok:ch(.7)};
+      return L("Das un nombre esa misma semana: alguien de la casa, formado a tu manera. El consejo respira — una casa con plan no entra en pánico — y tú sigues mandando. +fama",
+               "You give them a name that same week: someone from the house, shaped your way. The board breathes — a house with a plan doesn't panic — and you stay in charge. +fame",
+               {pt:"Você dá um nome naquela mesma semana: alguém da casa, formado do seu jeito. O conselho respira — uma casa com plano não entra em pânico — e você segue mandando. +fama"}); }},
+   {l:()=>L("«Mi silla no se hereda: se gana»","«My chair isn't inherited: it's earned»",{pt:"«A minha cadeira não se herda: se ganha»"}),
+    r:()=>{ S._sucesion={t:S.tpTeam, ok:ch(.35)};
+      return roll(
+       [60,()=>(TPRE(rnd(.5,1)),
+         L("Les dices que tu silla no se hereda: se gana. En esa sala hay gente que llegó igual que tú, y más de uno asiente. +fama",
+           "You tell them your chair isn't inherited: it's earned. There are people in that room who got there the same way you did, and more than one nods. +fame",
+           {pt:"Você diz que a sua cadeira não se herda: se ganha. Naquela sala há gente que chegou como você, e mais de um assente. +fama"}))],
+       [40,()=>(TPRE(-rnd(1,1.5)), TPTGT(-rnd(1,2)),
+         L("Se lo toman como lo que también es: una negativa. El punto vuelve a cada orden del día, y la oficina técnica trabaja meses con un ojo en la puerta. −fama, −proyecto",
+           "They take it as what it also is: a refusal. The item returns to every agenda, and the technical office spends months working with one eye on the door. −fame, −project",
+           {pt:"Eles entendem como o que também é: uma recusa. O ponto volta a cada pauta, e o escritório técnico passa meses trabalhando com um olho na porta. −fama, −projeto"}))]); }},
+   {l:()=>L("«Elegid vosotros; yo lo formo»","«You choose; I'll groom him»",{pt:"«Vocês escolhem; eu formo»"}),
+    r:()=>{ TPTGT(rnd(1,2)); S._sucesion={t:S.tpTeam, ok:ch(.5)};
+      return L("Que elijan ellos; tú pones la escuela. El elegido llega con ideas nuevas a la oficina técnica, y tú decides cuáles cuajan. +proyecto",
+               "Let them choose; you provide the schooling. The chosen one arrives with fresh ideas for the technical office, and you decide which ones take. +project",
+               {pt:"Que escolham eles; você põe a escola. O escolhido chega com ideias novas ao escritório técnico, e você decide quais vingam. +projeto"}); }}]}
+ ,
+ /* 👋 «EL PILOTO QUE SE RETIRA CONTIGO» — décimo de veterano (12-sep-2026). Revisión completa de
+    Carlos: SOLO campeones del mundo («bombo para Alonso, no para Hulkenberg»), 6+ años seguidos
+    contigo (contados en las filas por apellido), la retirada es VINCULANTE («no puede decir de
+    retirarse y luego seguir un año más») — la ejecuta npcSeason vía d._ultima —, la A también
+    puede salirle mal, la B se llama «Anúncialo al final de temporada» y su moneda se tira en la
+    última carrera, y la C FUERZA la renovación de un año: «te lo tienes que comer». */
+ {id:"tpSeRetiraContigo",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs().filter(d=>d && d.name && (d.titles||0)>=1 && (d.age||0)>=34 && d._ultima==null);
+    if(!a.length) return false;
+    const rs=(S.seasons||[]).filter(r=>r.cat==="TP");
+    const cand=a.map(d=>{ let n=0;
+      for(let i=rs.length-1;i>=0;i--){ const row=rs[i];
+        if(!tpEsMiEquipo(row.tpTeam)) break;
+        if(Array.isArray(row.tpDrv) && row.tpDrv.some(x=>x&&x.n===surname(d.name))) n++; else break; }
+      return {d,n}; }).filter(x=>x.n>=6);
+    if(!cand.length) return false;
+    S._adios=cand.sort((x,y)=>y.n-x.n)[0]; return true; },
+  t:()=>{ const a=S._adios; return L(`${a?surname(a.d.name):"Tu campeón"} se retira contigo`,`${a?surname(a.d.name):"Your champion"} retires with you`,{pt:`${a?surname(a.d.name):"O seu campeão"} se aposenta com você`}); },
+  d:()=>{ const a=S._adios||{}; const sn=a.d?surname(a.d.name):"tu campeón";
+    return L(`En enero, ${sn} te invita a su casa y te lo cuenta antes que a nadie: esta temporada será la última. No quiere ruedas de prensa todavía. Quiere saber cómo quieres tú que sea el final.`,
+             `In January, ${sn} invites you to his home and tells you before anyone else: this season will be his last. He doesn't want press conferences yet. He wants to know how you want the ending to be.`,
+             {pt:`Em janeiro, ${sn} te convida à casa dele e conta antes de qualquer pessoa: esta temporada será a última. Ele ainda não quer coletivas. Quer saber como VOCÊ quer que seja o final.`}); },
+  opts:[
+   {l:()=>L("«Que el mundo lo sepa: gira de despedida»","«Let the world know: a farewell tour»",{pt:"«Que o mundo saiba: turnê de despedida»"}),
+    r:()=>{ const a=S._adios; if(!a) return ""; const sn=surname(a.d.name);
+      a.d._ultima=yearNow();
+      return roll(
+       [60,()=>(tpDrvSkill(a.d.name, 1), TPRE(rnd(1,2)),
+         L(`Se anuncia en marzo y cada circuito le despide a su manera. ${sn} corre liberado, como quien ya no le debe nada a nadie. +fama, +su nivel este año`,
+           `It's announced in March and every circuit says goodbye in its own way. ${sn} drives set free, like a man who owes nothing to anyone any more. +fame, +his level this year`,
+           {pt:`Anuncia-se em março e cada circuito se despede do seu jeito. ${sn} corre liberado, como quem já não deve nada a ninguém. +fama, +o nível dele este ano`}))],
+       [40,()=>(tpDrvSkill(a.d.name, -1), TPRE(rnd(.5,1)),
+         L(`Se anuncia en marzo y el circo se instala en tu garaje: cada fin de semana un homenaje, una alfombra y una pregunta más. A ${sn} el peso de la despedida se le mete en el coche. +fama, −su nivel este año`,
+           `It's announced in March and the circus moves into your garage: every weekend another tribute, another carpet, another question. For ${sn}, the weight of the farewell climbs into the car with him. +fame, −his level this year`,
+           {pt:`Anuncia-se em março e o circo se instala na sua garagem: cada fim de semana uma homenagem, um tapete e mais uma pergunta. Para ${sn}, o peso da despedida entra no carro junto. +fama, −o nível dele este ano`}))]); }},
+   {l:()=>L("«Anúncialo al final de temporada»","«Announce it at the end of the season»",{pt:"«Anuncie no fim da temporada»"}),
+    r:()=>{ const a=S._adios; if(!a) return ""; const sn=surname(a.d.name);
+      a.d._ultima=yearNow(); S._adiosSecreto=a.d.name; TPCAR(rnd(.3,.8));
+      return L(`Ni una palabra hasta diciembre. El equipo trabaja en paz, sin alfombras ni homenajes, y ${sn} corre un año normal — que es lo que él era: normal jamás.`,
+               `Not a word until December. The team works in peace, no carpets, no tributes, and ${sn} races a normal year — which is the one thing he never was: normal.`,
+               {pt:`Nem uma palavra até dezembro. A equipe trabalha em paz, sem tapetes nem homenagens, e ${sn} corre um ano normal — que é o que ele nunca foi: normal.`}); }},
+   {l:()=>L("«¿Y un año más?»","«What about one more year?»",{pt:"«E um ano a mais?»"}),
+    r:()=>{ const a=S._adios; if(!a) return ""; const sn=surname(a.d.name);
+      return roll(
+       [50,()=>{ a.d._ultima=yearNow()+1; a.d.tpc=Math.max(a.d.tpc||0,2);
+         S._tpRenovados=S._tpRenovados||{}; S._tpRenovados[a.d.name]=1;
+         a.d.skill=Math.max(68,(a.d.skill||80)-rnd(1,2));
+         return L(`Le hablas del proyecto, del coche que viene, de acabar más arriba… y acepta. Un año más, el último de verdad — firmado, y te lo quedas hasta el final. El casco pesa un poco más cada enero.`,
+                  `You talk about the project, the car that's coming, finishing higher up… and he accepts. One more year, the truly final one — signed, and he's yours to the end. The helmet weighs a little more every January.`,
+                  {pt:`Você fala do projeto, do carro que vem, de terminar mais acima… e ele aceita. Mais um ano, o último de verdade — assinado, e é seu até o fim. O capacete pesa um pouco mais a cada janeiro.`}); }],
+       [50,()=>{ a.d._ultima=yearNow(); tpDrvSkill(a.d.name, -1);
+         return L(`Te escucha hasta el final, sonríe, y dice que no: cuando uno lo sabe, lo sabe. Y le duele que no lo entendieras a la primera. −su moral este año`,
+                  `He hears you out, smiles, and says no: when a man knows, he knows. And it hurts him that you didn't understand the first time. −his morale this year`,
+                  {pt:`Ele te escuta até o fim, sorri, e diz que não: quando a pessoa sabe, sabe. E dói nele que você não tenha entendido de primeira. −a moral dele este ano`}); }]); }}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
