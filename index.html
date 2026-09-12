@@ -2829,7 +2829,10 @@ const ESCUDOS_RESU={
    {f:"naranja",c1:"#FF6600",c2:"#101010"},
    {f:"naranja",c1:"linear-gradient(145deg,#FF8A3D,#E04E00)",c2:"#101010"},
    {f:"naranja",c1:"linear-gradient(150deg,#1C1C1C,#000000)",c2:"linear-gradient(140deg,#FF8A3D,#E04E00)"}]},
- "Renault":{talla:3, /* solo se le pinta al renombrar en una partida de 2026 */ sil:["Renault_new.png"], pal:[
+ /* ⚠️ la ruta LLEVA CARPETA como todas (12-sep-2026, captura de Carlos: la placa de Renault salía
+    como círculo amarillo pelado — el archivo estaba suelto sin subir y la ruta sin `resurrections/`,
+    o sea 404 y la silueta no se pintaba). */
+ "Renault":{talla:3, /* solo se le pinta al renombrar en una partida de 2026 */ sil:["resurrections/Renault_new.png"], pal:[
    {f:"amarillo",c1:"#FFD100",c2:"#101010"},
    {f:"amarillo",c1:"linear-gradient(145deg,#FFE45C,#F0B400)",c2:"#101010"},
    {f:"amarillo",c1:"#E8FF00",c2:"#101010"},
@@ -9317,7 +9320,12 @@ function rebrandTeam(oldName, to, row){
   if(S.tpFiredBy===oldName) S.tpFiredBy=nn;
   if(S.tpVentaForzosa===oldName) S.tpVentaForzosa=nn;
   if(S.tpFiaDQ && S.tpFiaDQ.team===oldName) S.tpFiaDQ.team=nn;
-  (S.tpStints||[]).forEach(st=>{ if(st && st.team===oldName) st.team=nn; });
+  /* 📖 LOS CAPÍTULOS DEL MURO NO SE REESCRIBEN (12-sep-2026, captura de Carlos: la pantalla final
+     decía «Renault '26-'44 · Renault '45-'45» — este forEach renombraba TODOS los capítulos, también
+     los cerrados, y los años de Alpine desaparecían de la historia). Misma filosofía que las filas
+     de temporada: cada capítulo conserva el nombre que el equipo tenía entonces. El capítulo ABIERTO
+     lo gestiona cada flujo de renombrado (venta, patrocinador, cadena): lo parte o lo renombra según
+     toque. `tpAniosAqui` no se ve afectado: cuenta por S.tpAlias. */
   /* 🪪 …y los nombres viejos de TU equipo se guardan (11-sep-2026). Las filas de cada temporada
      conservan el nombre que tenía el equipo ese año —a propósito: la trayectoria tiene que decir
      «Alpine» en los años de Alpine—, así que contar «cuántos años llevas aquí» por nombre se reiniciaba
@@ -9460,7 +9468,17 @@ function processLineage(row){
         if(F1_TEAMS.length<=10){ st.year=yearNow()+1; return; }
         killTeam(chn.cur, row); st.done=true; return;
       }
+      const _eraMio = S.cat==="TP" && S.tpTeam===chn.cur;   // 📖 antes del rebrand: luego tpTeam ya es el nuevo
       rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true; yaCambio=true;
+      /* 📖 si el renombrado te pilla EN el muro, el capítulo se parte — «Alpine '26-'44 ·
+         Renault '45-» — igual que hacen los flujos de venta. El mismo año de llegar no hay
+         capítulo que partir: se renombra y ya. */
+      if(_eraMio){
+        const _st=(S.tpStints||[]).at(-1);
+        if(_st && _st.y0<yearNow()){ _st.y1=yearNow()-1;
+          S.tpStints.push({team:chn.cur, y0:yearNow(), y1:yearNow(), constr:0, drv:0});
+        } else if(_st) _st.team=chn.cur;
+      }
       /* 🎨 el nombre nuevo estrena escudo, distinto en cada partida. Solo en la era actual: en el
          retro los escudos son los históricos y no se tocan. */
       if(S.era==="2026"){ try{ ponEscudo(chn.cur); }catch(e){} }
@@ -19085,7 +19103,9 @@ function tpReservePool(){
 function endTPCareer(){
   S.retired=true;
   const C=S.titles.constr, D=S.titles.f1, yrs=S.age, best=S.tpBestPos===99?null:S.tpBestPos;
-  const teams=[...new Set((S.tpStints||[]).map(s=>s.team))];
+  /* 📖 Alpine y Renault son la MISMA fábrica: el contador de equipos funde los nombres viejos del
+     equipo actual (S.tpAlias) para no contar dos veces un renombrado. */
+  const teams=[...new Set((S.tpStints||[]).map(s=>((S.tpAlias||[]).indexOf(s.team)>=0 ? S.tpTeam : s.team)))];
   track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
   const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
   const _finTP=paisFin(sel.flag);   // 🕰️ misma regla en el final del jefe
