@@ -6058,9 +6058,11 @@ function eraAvisar(){
   S.regAvisado = true;
   const hacia = eraDireccionTxt();
   tpRegCola(L(`📋 La FIA publica el reglamento de ${S.regReg}`,`📋 The FIA publishes the ${S.regReg} regulations`,{pt:`📋 A FIA publica o regulamento de ${S.regReg}`}),
-            L(`Faltan ${S.regReg-yearNow()} años y en el paddock solo se habla de una cosa: el coche que viene ${hacia}. A partir de hoy, todo lo que decidas en esta fábrica se decide sabiéndolo.`,
-              `It's ${S.regReg-yearNow()} years away and the paddock is talking about one thing only: the car that's coming ${hacia}. From today, everything you decide in this factory is decided knowing that.`,
-              {pt:`Faltam ${S.regReg-yearNow()} anos e no paddock só se fala de uma coisa: o carro que vem ${hacia}. A partir de hoje, tudo o que você decidir nesta fábrica se decide sabendo disso.`}));
+            /* 🗣️ «el REGLAMENTO que viene», no «el coche que viene» (Carlos, 12-sep: con la dirección
+               de coche salía «el coche que viene premiará al coche», un trabalenguas) */
+            L(`Faltan ${S.regReg-yearNow()} años y en el paddock solo se habla de una cosa: el reglamento que viene ${hacia}. A partir de hoy, todo lo que decidas en esta fábrica se decide sabiéndolo.`,
+              `It's ${S.regReg-yearNow()} years away and the paddock is talking about one thing only: the incoming regulations ${hacia}. From today, everything you decide in this factory is decided knowing that.`,
+              {pt:`Faltam ${S.regReg-yearNow()} anos e no paddock só se fala de uma coisa: o regulamento que vem ${hacia}. A partir de hoje, tudo o que você decidir nesta fábrica se decide sabendo disso.`}));
 }
 /* 👑 EL DOMINIO. La FIA no reacciona a que alguien gane: reacciona a QUÉ le está haciendo ganar
    (idea de Carlos). Un equipo que encadena títulos demuestra que manda la máquina → se empuja hacia
@@ -10018,7 +10020,13 @@ function bgF1Season(row){
      real y por época (9-6-4-3-2-1 en 1990, 10-8-6-5-4-3-2-1 en 2003, 25-18-15… desde 2010).
      El orden de PILOTOS no se toca: sigue saliendo de `rows`, que está calibrado contra las
      transiciones reales de 2005-2025. Esto solo cambia cómo se agregan los equipos. */
-  const constrRank=Object.entries(teamScores).sort((a,b)=>b[1]-a[1]);
+  /* ⚖️ EL EMPATE DE CONSTRUCTORES NO ES «PORQUE SÍ» (12-sep-2026, lo cazó Carlos jugando: los dos
+     Audi acababan por delante de sus dos Alpine y aun así Alpine iba 9º y Audi 10º — todos a cero
+     puntos, y el desempate era el ORDEN INTERNO de la lista de equipos). En la F1 real el empate se
+     resuelve por mejores resultados; aquí se aproxima con el mismo criterio que ya usa la tabla de
+     pilotos empatados: el ritmo del año. Así las dos tablas cuentan la misma historia. */
+  const _tscore={}; rows.forEach(r=>{ _tscore[r.team]=(_tscore[r.team]||0)+r.score; });
+  const constrRank=Object.entries(teamScores).sort((a,b)=> (b[1]-a[1]) || ((_tscore[b[0]]||0)-(_tscore[a[0]]||0)));
   // 🌍 desde las categorías junior también se ve el top-3 de la F1 CON ESCUDOS (petición de Carlos):
   // en vez del evento de texto plano, la fila guarda top3d/top3c y la línea de tiempo pinta la tarjeta
   const _snJ=rows.slice(0,3).map(r=>surname(r.d.name));
