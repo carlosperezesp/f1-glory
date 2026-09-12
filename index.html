@@ -9932,6 +9932,12 @@ function bgF1Season(row){
       _fbMult[t.name]=Math.max(.35, Math.min(2.8,
         (_fbCurva[String(_fb)]||1) * (1-((S.f1perf[t.name]||75)-_pAvg)*.012) ));
     });
+    /* 🪶 LA PIEZA FINA (tpAligerar): el año del diseño ligero, TU coche rompe más — la apuesta de
+       Chapman cobrándose en la mecánica de fiabilidad nueva. A ×1,4 (los dos coches), C ×1,18 (solo
+       el del segundo, promediado en el equipo). Caduca sola al año siguiente. */
+    if(S._aligerado && S._aligerado.y!==row.year) S._aligerado=null;
+    if(S._aligerado && S._aligerado.y===row.year && S.tpTeam && _fbMult[S.tpTeam]!=null)
+      _fbMult[S.tpTeam]=Math.min(2.8, _fbMult[S.tpTeam]*S._aligerado.m);
   }
   /* 🤫 la crisis castiga según la INVERSIÓN en fiabilidad, no según el coche (2ª calibración,
      11-sep). Con el ×1,5 plano, el avaricioso con cochazo ganaba hasta en crisis (medido: 27,9%
@@ -19005,7 +19011,7 @@ const TP_DILEMAS=[
     veredicto (S._placa), una sola vez, y solo si sigues en ese equipo.
     🌲 EVERGREEN: sin años ni eras. Una vez por partida. No sale si el dueño eres tú. */
  {id:"tpPuerta",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self")) return false;
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self") || isRBJr(S.tpTeam)) return false;   // 🐂 «tu nombre en la puerta no tiene sentido en el filial» (Carlos, 12-sep)
     if(tpAniosAqui()<8) return false;
     const GIG=["Ferrari","Mercedes","McLaren","Red Bull"];
     if(GIG.indexOf(S.tpTeam)>=0 || (S.tpAlias||[]).some(a=>GIG.indexOf(a)>=0)) return false;
@@ -19098,7 +19104,7 @@ const TP_DILEMAS=[
     quedará el equipo (S._sucesion.ok — A 70%, C 50%, B 35% y encima puede costar proyecto), y se
     cobra el día que te vayas (en tpSignTeam). Si te jubilas allí, no se resuelve: secuela apuntada. */
  {id:"tpSucesion",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self")) return false;
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self") || isRBJr(S.tpTeam)) return false;   // 🐂 la cúpula del filial la pone la casa madre (Carlos, 12-sep)
     if(S.tpHeredero || (S.usedDilemmas && S.usedDilemmas.tpHeredero)) return false;
     if((S.seasons||[]).filter(r=>r.cat==="TP").length<15) return false;
     const a=tpAniosAqui(); if(a<8) return false; S._sucN=a; return true; },
@@ -19141,7 +19147,7 @@ const TP_DILEMAS=[
     puede salirle mal, la B se llama «Anúncialo al final de temporada» y su moneda se tira en la
     última carrera, y la C FUERZA la renovación de un año: «te lo tienes que comer». */
  {id:"tpSeRetiraContigo",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;   // 🐂 la cantera no retiene veteranos: allí este campeón no existe (explícito por limpieza)
     const a=tpDrvs().filter(d=>d && d.name && (d.titles||0)>=1 && (d.age||0)>=34 && d._ultima==null);
     if(!a.length) return false;
     const rs=(S.seasons||[]).filter(r=>r.cat==="TP");
@@ -19189,6 +19195,190 @@ const TP_DILEMAS=[
          return L(`Te escucha hasta el final, sonríe, y dice que no: cuando uno lo sabe, lo sabe. Y le duele que no lo entendieras a la primera. −su moral este año`,
                   `He hears you out, smiles, and says no: when a man knows, he knows. And it hurts him that you didn't understand the first time. −his morale this year`,
                   {pt:`Ele te escuta até o fim, sorri, e diz que não: quando a pessoa sabe, sabe. E dói nele que você não tenha entendido de primeira. −a moral dele este ano`}); }]); }}]}
+ ,
+ /* ═══ CUATRO EVERGREEN UNIVERSALES (12-sep-2026, de la biblioteca de Carlos — «todos los años,
+    todos los equipos, todas las situaciones»). Chapman #71 y #82, Horner #156 y #167. ═══ */
+ /* 🪶 «¿HASTA DÓNDE SE PUEDE RECORTAR?» — atado a la fiabilidad de verdad (revisión de Carlos):
+    la opción A multiplica TUS averías ese año vía S._aligerado, que lee el bucle de _fbMult. */
+ {id:"tpAligerar",
+  cond:()=>S.cat==="TP" && !!S.tpTeam,
+  t:()=>L("¿Hasta dónde se puede recortar?","How far can you shave it?",{pt:"Até onde dá para cortar?"}),
+  d:()=>L("El jefe de diseño te enseña dos piezas iguales: una pesa lo que dice el manual y otra, la mitad. Su equipo lleva meses afinando la ligera y jura que aguanta… sobre el papel. Tu responsable de fiabilidad no firma ese papel: quitarle margen al coche es tiempo por vuelta gratis, hasta el día que deja de serlo.",
+          "The chief designer shows you two identical parts: one weighs what the manual says, the other half of that. His group has spent months refining the light one and swears it holds… on paper. Your head of reliability won't sign that paper: shaving margin off the car is free lap time, right up until the day it isn't.",
+          {pt:"O chefe de design te mostra duas peças iguais: uma pesa o que diz o manual e a outra, a metade. A equipe dele passou meses refinando a leve e jura que aguenta… no papel. O seu responsável de confiabilidade não assina esse papel: tirar margem do carro é tempo de volta de graça, até o dia em que deixa de ser."}),
+  opts:[
+   {l:()=>L("«Arriesgamos. Montamos la pieza fina»","«We take the risk. Fit the light part»",{pt:"«Arriscamos. Montamos a peça fina»"}),
+    r:()=>{ TPCAR(rnd(1,2)); S._aligerado={y:yearNow(), m:1.4};
+      return L("La pieza fina entra en los dos coches y el crono lo nota desde el primer test. Lo que opine la fiabilidad, lo dirá en domingo. +coche este año",
+               "The light part goes on both cars and the stopwatch feels it from the first test. Whatever reliability thinks of it, it will say so on Sundays. +car this year",
+               {pt:"A peça fina entra nos dois carros e o cronômetro sente desde o primeiro teste. O que a confiabilidade achar disso, vai dizer no domingo. +carro este ano"}); }},
+   {l:()=>L("«El manual manda.»","«The manual rules.»",{pt:"«O manual manda.»"}),
+    r:()=>roll(
+     [50,()=>(tpSembrar(2, rnd(.5,1.5)),
+       L("El manual manda, y la disciplina de pesos se queda en la cultura de la fábrica: lo que hoy parece renuncia, mañana es método. +proyecto leve",
+         "The manual rules, and the weight discipline stays in the factory's culture: what looks like a sacrifice today is method tomorrow. slight +project",
+         {pt:"O manual manda, e a disciplina de pesos fica na cultura da fábrica: o que hoje parece renúncia, amanhã é método. +projeto leve"}))],
+     [50,()=>L("El manual manda. La pieza fina se queda en la vitrina, y nunca sabréis lo que valía.",
+               "The manual rules. The light part stays in the display case, and you'll never know what it was worth.",
+               {pt:"O manual manda. A peça fina fica na vitrine, e vocês nunca vão saber o que valia."})])},
+   {l:()=>L("«Solo en el coche del segundo»","«Only on the second car»",{pt:"«Só no carro do segundo»"}),
+    r:()=>{ TPCAR(rnd(.4,1)); S._aligerado={y:yearNow(), m:1.18};
+      const _b=(S.seats[S.tpTeam]||[])[1]; const _sn=(_b&&_b!=="PLAYER"&&_b.name)?surname(_b.name):null;
+      if(_sn) tpDrvSkill(_b.name,-.5);
+      return L(`La pieza fina se monta en un solo garaje.${_sn?` ${_sn} no pregunta qué coche le ha tocado: lo sabe.`:""} La mitad del premio, la mitad del riesgo. +coche leve${_sn?", −su moral":""}`,
+               `The light part goes on one car only.${_sn?` ${_sn} doesn't ask which car he got: he knows.`:""} Half the reward, half the risk. slight +car${_sn?", −his morale":""}`,
+               {pt:`A peça fina entra numa garagem só.${_sn?` ${_sn} não pergunta qual carro pegou: ele sabe.`:""} Metade do prêmio, metade do risco. +carro leve${_sn?", −a moral dele":""}`}); }}]}
+ ,
+ /* 🧠 «EL INGENIERO QUE NADIE SOPORTA» — con nombre y origen (revisión de Carlos): sale de un top-3
+    de la parrilla, y la B nombra al equipo que se lo lleva. La C tiene su punto malo (1 de cada 4
+    se ofende con la correa corta). 🐂 Fuera el filial: esas inversiones las decide la casa madre. */
+ {id:"tpGenio",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+    const ord=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70)).map(t=>t.name).filter(n=>n!==S.tpTeam);
+    if(ord.length<3) return false;
+    const de=ord[irnd(0,Math.min(2,ord.length-1))];
+    const cand=ord.filter(n=>n!==de && !isRBJr(n)).slice(0,Math.ceil(ord.length/2));
+    if(!cand.length) return false;
+    S._genio={de, a:cand[irnd(0,cand.length-1)]}; return true; },
+  t:()=>L("El ingeniero que nadie soporta","The engineer nobody can stand",{pt:"O engenheiro que ninguém suporta"}),
+  d:()=>{ const g=S._genio||{};
+    return L(`Queda libre el diseñador de ${g.de} del que todo el paddock habla en voz baja: un genio, y una personalidad conflictiva. Tu jefe técnico te pide que ni se te ocurra contratarlo. Puede desatar el caos.`,
+             `The ${g.de} designer the whole paddock whispers about is suddenly free: a genius, and a walking conflict. Your technical chief begs you not to even think about hiring him. He can unleash chaos.`,
+             {pt:`Fica livre o projetista da ${g.de} de quem o paddock inteiro fala baixinho: um gênio, e uma personalidade conflituosa. O seu chefe técnico pede que você nem pense em contratá-lo. Ele pode desatar o caos.`}); },
+  opts:[
+   {l:()=>L("«Ficharlo»","«Sign him»",{pt:"«Contratá-lo»"}),
+    r:()=>roll(
+     [40,()=>(TPTGT(rnd(3,5)),
+       L("Llega, cuelga tres normas de la casa en la papelera… y la oficina técnica acaba orbitando a su alrededor. Lo que sale de su mesa vale oro. +proyecto",
+         "He arrives, bins three house rules on day one… and the technical office ends up orbiting him. What comes off his desk is gold. +project",
+         {pt:"Ele chega, joga três normas da casa no lixo… e o escritório técnico acaba orbitando ao redor dele. O que sai da mesa dele vale ouro. +projeto"}))],
+     [35,()=>(TPTGT(rnd(2,3.5)), TPCAR(-rnd(.5,1)),
+       L("Genio y guerra, las dos cosas: lo que diseña vale oro, y lo que rompe alrededor se paga este año — dos bandos en la fábrica y reuniones que son trincheras. +proyecto, −coche este año",
+         "Genius and war, both at once: what he designs is gold, and what he breaks around him is paid for this year — two camps in the factory and meetings like trenches. +project, −car this year",
+         {pt:"Gênio e guerra, as duas coisas: o que ele projeta vale ouro, e o que quebra ao redor se paga este ano — dois lados na fábrica e reuniões que são trincheiras. +projeto, −carro este ano"}))],
+     [25,()=>(TPTGT(-rnd(2,4)), TPRE(-rnd(1,2)),
+       L("Tu jefe técnico cumple su palabra y se va. El genio se aburre sin nadie con quien pelear y se larga al año siguiente. Te quedas sin los dos. −proyecto, −fama",
+         "Your technical chief keeps his word and leaves. The genius gets bored with nobody left to fight and walks out the following year. You end up with neither. −project, −fame",
+         {pt:"O seu chefe técnico cumpre a palavra e vai embora. O gênio se entedia sem ninguém para brigar e cai fora no ano seguinte. Você fica sem os dois. −projeto, −fama"}))])},
+   {l:()=>L("«Proteger la casa»","«Protect the house»",{pt:"«Proteger a casa»"}),
+    r:()=>{ const g=S._genio||{};
+      return roll(
+       [55,()=>L(`${g.a} se lo queda, y desde fuera se ve el humo: dos bandos en tres meses y un jefe técnico dimitido. Tu jefe técnico te da las gracias sin decirlo.`,
+                 `${g.a} takes him, and you can see the smoke from outside: two camps within three months and a resigned technical chief. Your own chief thanks you without saying it.`,
+                 {pt:`A ${g.a} fica com ele, e de fora dá para ver a fumaça: dois lados em três meses e um chefe técnico demitido. O seu chefe técnico te agradece sem dizer.`})],
+       [45,()=>(tpRivalSeLoLleva(g.a),
+         L(`${g.a} se lo queda y les sale bien: su coche del año que viene lleva su firma por todas partes. Ver ganar a otros con tu «no» también es un precio.`,
+           `${g.a} takes him and it works: their car next year carries his signature everywhere. Watching others win with your "no" is a price too.`,
+           {pt:`A ${g.a} fica com ele e dá certo: o carro deles do ano que vem leva a assinatura dele por toda parte. Ver os outros vencerem com o seu «não» também é um preço.`}))]); }},
+   {l:()=>L("«Como consultor, lejos de la fábrica»","«As a consultant, far from the factory»",{pt:"«Como consultor, longe da fábrica»"}),
+    r:()=>{ const g=S._genio||{};
+      return roll(
+       [75,()=>(TPTGT(rnd(1,2)),
+         L("Sus ideas llegan en informes y sus tormentas se quedan en su casa. No es el salto que sería tenerlo dentro, pero nadie sangra. +proyecto leve",
+           "His ideas arrive in reports and his storms stay at his place. Not the leap having him inside would be, but nobody bleeds. slight +project",
+           {pt:"As ideias dele chegam em relatórios e as tempestades ficam na casa dele. Não é o salto que seria tê-lo dentro, mas ninguém sangra. +projeto leve"}))],
+       [25,()=>(tpRivalSeLoLleva(g.a), TPRE(-rnd(.3,.8)),
+         L(`«¿Consultor? Yo no aconsejo: yo mando.» Se ofende con la correa corta y ${g.a} le da la fábrica entera. Lo que tú no quisiste, lo tiene tu rival. −fama leve`,
+           `"Consultant? I don't advise: I run things." He takes offence at the short leash, and ${g.a} hands him the whole factory. What you didn't want, your rival now has. slight −fame`,
+           {pt:`«Consultor? Eu não aconselho: eu mando.» Ele se ofende com a rédea curta e a ${g.a} entrega a fábrica inteira. O que você não quis, o seu rival tem. −fama leve`}))]); }}]}
+ ,
+ /* 🕳️ «EL ENEMIGO ESTÁ DENTRO» — el ladrón se nombra y es un equipo PEGADO a ti en la clasificación
+    y en ascenso (revisión de Carlos). Es el espejo de «El sobre»: allí la tentación es mirar lo del
+    rival; aquí lo tuyo está fuera y el dilema es la caza del topo. Calibración pactada: A 50/50
+    (alto riesgo, alto ruido), B 65/35 (conservadora, con cola), C el documento envenenado.
+    🐂 Fuera el filial: su tecnología es de la casa madre, no hay secreto propio que robar. */
+ {id:"tpTopo",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+    const rk=S.rankC||{}; const mi=rk[S.tpTeam];
+    let cands=F1_TEAMS.filter(t=>t.name!==S.tpTeam && !isRBJr(t.name)
+      && (!mi || !rk[t.name] || Math.abs(rk[t.name]-mi)<=2));
+    const sube=cands.filter(t=>(S.f1target[t.name]??75) > (S.f1perf[t.name]??75)+1);
+    if(sube.length) cands=sube;
+    if(!cands.length) return false;
+    S._topo={riv:cands[irnd(0,cands.length-1)].name}; return true; },
+  t:()=>L("El enemigo está dentro","The enemy is inside",{pt:"O inimigo está dentro"}),
+  d:()=>{ const r=(S._topo||{}).riv||"un rival";
+    return L(`Tu jefe técnico entra sin llamar: una solución vuestra — de las que no salen ni en las fotos — acaba de aparecer en el coche de ${r}, que lleva todo el año recortándote. El documento salió de vuestra fábrica. Doscientas personas tenían acceso.`,
+             `Your technical chief walks in without knocking: one of your solutions — the kind that never even shows in photos — has just appeared on ${r}'s car, and they've been closing on you all year. The document left YOUR factory. Two hundred people had access.`,
+             {pt:`O seu chefe técnico entra sem bater: uma solução de vocês — daquelas que nem saem nas fotos — acaba de aparecer no carro da ${r}, que passou o ano inteiro te alcançando. O documento saiu da SUA fábrica. Duzentas pessoas tinham acesso.`}); },
+  opts:[
+   {l:()=>L("«Caza al topo»","«Hunt the mole»",{pt:"«Caça ao infiltrado»"}),
+    r:()=>roll(
+     [50,()=>(TPRE(rnd(1,2)),
+       L("Tres semanas de registros y una tarde incómoda después, aparece: un nombre, una rencilla vieja y un sobre. Sale por la puerta de atrás y la sangría se corta. La fábrica respira — y aprende que aquí se protege lo nuestro. +fama",
+         "Three weeks of audits and one uncomfortable afternoon later, there he is: a name, an old grudge and an envelope. He leaves by the back door and the bleeding stops. The factory breathes — and learns that here, what's ours gets protected. +fame",
+         {pt:"Três semanas de auditoria e uma tarde desconfortável depois, aparece: um nome, uma mágoa antiga e um envelope. Sai pela porta dos fundos e a sangria para. A fábrica respira — e aprende que aqui o que é nosso se protege. +fama"}))],
+     [50,()=>(TPTGT(-rnd(1.5,3)),
+       L("Registros, entrevistas, ordenadores precintados… y nada. El topo no aparece, y la fábrica trabaja meses mirándose de reojo: nadie comparte una idea sin pensarse con quién. −proyecto",
+         "Audits, interviews, sealed computers… and nothing. The mole never surfaces, and the factory spends months looking sideways at itself: nobody shares an idea without thinking twice about who's listening. −project",
+         {pt:"Auditorias, entrevistas, computadores lacrados… e nada. O infiltrado não aparece, e a fábrica passa meses se olhando de lado: ninguém divide uma ideia sem pensar duas vezes. −projeto"}))])},
+   {l:()=>L("«Cerrar filas en silencio»","«Close ranks quietly»",{pt:"«Fechar fileiras em silêncio»"}),
+    r:()=>{ const rv=(S._topo||{}).riv;
+      return roll(
+       [65,()=>L("Accesos nuevos, documentos por niveles y ni una palabra a la prensa. La sangría se corta sola, y fuera nadie supo nunca que hubo herida.",
+                 "New access controls, tiered documents and not a word to the press. The bleeding stops on its own, and outside nobody ever knew there was a wound.",
+                 {pt:"Acessos novos, documentos por níveis e nem uma palavra à imprensa. A sangria para sozinha, e lá fora ninguém nunca soube que houve ferida."})],
+       [35,()=>(rv&&tpRivalSeLoLleva(rv), TPRE(-rnd(.3,.8)),
+         L(`Los candados nuevos llegan tarde: ${rv||"el rival"} estrena otra solución que te suena demasiado, y en el paddock empieza a saberse quién sangra. −fama leve`,
+           `The new locks come too late: ${rv||"the rival"} debuts another solution that sounds far too familiar, and the paddock starts to learn who's bleeding. slight −fame`,
+           {pt:`Os cadeados novos chegam tarde: a ${rv||"rival"} estreia outra solução que soa familiar demais, e no paddock começa a se saber quem sangra. −fama leve`}))]); }},
+   {l:()=>L("«Dejarle un documento falso a la vista»","«Leave a fake document in plain sight»",{pt:"«Deixar um documento falso à vista»"}),
+    r:()=>{ const rv=(S._topo||{}).riv;
+      return roll(
+       [55,()=>{ if(rv) S.f1target[rv]=Math.max(61,(S.f1target[rv]??75)-rnd(2,4));
+         TPRE(rnd(1,2));
+         return L(`Un concepto precioso, carísimo e inútil, olvidado en la impresora equivocada. ${rv||"El rival"} muerde: medio año persiguiendo un fantasma. La historia acaba contándose sola en el paddock, y se ríen con tu nombre delante. +fama`,
+                  `A beautiful, ruinously expensive, useless concept, forgotten on the wrong printer. ${rv||"The rival"} bites: half a year chasing a ghost. The story ends up telling itself around the paddock, with your name at the front of the laugh. +fame`,
+                  {pt:`Um conceito lindo, caríssimo e inútil, esquecido na impressora errada. A ${rv||"rival"} morde: meio ano perseguindo um fantasma. A história acaba se contando sozinha no paddock, e riem com o seu nome na frente. +fama`}); }],
+       [45,()=>(TPTGT(-rnd(1,2)),
+         L("El documento falso se queda sin leer: el topo huele la trampa, y desde entonces filtra mejor — menos papel, más memoria. −proyecto",
+           "The fake document goes unread: the mole smells the trap, and from then on leaks better — less paper, more memory. −project",
+           {pt:"O documento falso fica sem leitura: o infiltrado fareja a armadilha, e desde então vaza melhor — menos papel, mais memória. −projeto"}))]); }}]}
+ ,
+ /* 📰 «LA ENTREVISTA EQUIVOCADA» — enunciado reescrito por Carlos. Vale para todos, filial incluido. */
+ {id:"tpEntrevista",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    const a=tpDrvs().filter(d=>d&&d.name); if(!a.length) return false;
+    S._entr={n:a[irnd(0,a.length-1)].name}; return true; },
+  t:()=>L("La entrevista equivocada","The wrong interview",{pt:"A entrevista errada"}),
+  d:()=>{ const sn=surname((S._entr||{}).n||"tu piloto");
+    return L(`El lunes se publica una entrevista de ${sn}: cuenta detalles del coche que nunca debieron salir de la fábrica, y hace algunas críticas a la gestión del equipo. Él defiende que solo fue sincero. Tus ingenieros piden una sanción.`,
+             `On Monday an interview with ${sn} is published: he shares details of the car that should never have left the factory, and takes a few shots at how the team is run. He insists he was only being honest. Your engineers want him sanctioned.`,
+             {pt:`Na segunda-feira sai uma entrevista de ${sn}: ele conta detalhes do carro que nunca deviam ter saído da fábrica, e faz algumas críticas à gestão da equipe. Ele defende que só foi sincero. Os seus engenheiros pedem uma sanção.`}); },
+  opts:[
+   {l:()=>L("«Multa pública»","«A public fine»",{pt:"«Multa pública»"}),
+    r:()=>{ const n=(S._entr||{}).n; const sn=n?surname(n):"él";
+      return roll(
+       [55,()=>(TPRE(rnd(.5,1.5)), n&&tpDrvSkill(n,-1),
+         L(`La multa se anuncia un jueves y la fábrica entera la lee como lo que es: aquí nadie está por encima del equipo. ${sn} paga, calla y aprieta los dientes. +fama, −su moral`,
+           `The fine is announced on a Thursday and the whole factory reads it for what it is: nobody here stands above the team. ${sn} pays, goes quiet and grits his teeth. +fame, −his morale`,
+           {pt:`A multa é anunciada numa quinta e a fábrica inteira lê como o que é: aqui ninguém está acima da equipe. ${sn} paga, cala e cerra os dentes. +fama, −a moral dele`}))],
+       [45,()=>(TPRE(-rnd(.5,1.5)), n&&tpDrvSkill(n,-1),
+         L(`${sn} paga la multa… y en la siguiente entrevista va con la lección aprendida: «al menos ahora sabéis que aquí decir la verdad cuesta dinero». El incendio, avivado. −fama, −su moral`,
+           `${sn} pays the fine… and comes to the next interview with the lesson learned: "at least now you know that telling the truth here costs money." The fire, fanned. −fame, −his morale`,
+           {pt:`${sn} paga a multa… e na entrevista seguinte vem com a lição aprendida: «pelo menos agora vocês sabem que aqui dizer a verdade custa dinheiro». O incêndio, atiçado. −fama, −a moral dele`}))]); }},
+   {l:()=>L("«Resolverlo en privado»","«Settle it in private»",{pt:"«Resolver em privado»"}),
+    r:()=>{ const n=(S._entr||{}).n; const sn=n?surname(n):"él";
+      return roll(
+       [60,()=>(n&&tpDrvSkill(n,1),
+         L(`Una hora a puerta cerrada, sin actas ni comunicados. Sale entendiendo dónde estuvo la línea, y agradeciendo que no lo pasearas. Se nota donde importa: en el coche. +su moral`,
+           `An hour behind closed doors, no minutes, no statements. He walks out understanding where the line was, and grateful you didn't parade him. It shows where it matters: in the car. +his morale`,
+           {pt:`Uma hora de portas fechadas, sem atas nem comunicados. Ele sai entendendo onde estava a linha, e agradecido por você não tê-lo exposto. Nota-se onde importa: no carro. +a moral dele`}))],
+       [40,()=>(TPRE(-rnd(.3,.8)), TPCAR(-rnd(.3,.7)),
+         L("Desde fuera parece que no pasó nada, y dentro la oficina técnica toma nota: hablar gratis sale gratis. Ese invierno, alguna respuesta llega un día tarde. −fama leve, −coche leve",
+           "From outside it looks like nothing happened, and inside the technical office takes note: talking for free costs nothing. That winter, some answers arrive a day late. slight −fame, slight −car",
+           {pt:"De fora parece que nada aconteceu, e dentro o escritório técnico anota: falar de graça sai de graça. Naquele inverno, alguma resposta chega um dia atrasada. −fama leve, −carro leve"}))]); }},
+   {l:()=>L("«Responderle tú en rueda de prensa, con humor»","«Answer him yourself in the press room, with humour»",{pt:"«Responder você mesmo na coletiva, com humor»"}),
+    r:()=>{ const n=(S._entr||{}).n; const sn=n?surname(n):"él";
+      return roll(
+       [65,()=>(TPRE(rnd(1,2)),
+         L(`«Si el muro decide con miedo, que alguien avise a ${sn} de que el miedo le firmó el contrato.» La sala se ríe, él el primero, y el incendio muere en titular de un día. +fama`,
+           `"If the pit wall decides out of fear, someone should tell ${sn} that fear signed his contract." The room laughs, him first, and the fire dies as a one-day headline. +fame`,
+           {pt:`«Se o muro decide com medo, alguém avise ${sn} de que foi o medo que assinou o contrato dele.» A sala ri, ele primeiro, e o incêndio morre como manchete de um dia. +fama`}))],
+       [35,()=>(TPRE(-rnd(.5,1)),
+         L("El chiste sale torcido y envejece peor: la prensa lo relee como nerviosismo, y el mote de la semana es para ti. −fama leve",
+           "The joke lands crooked and ages worse: the press rereads it as nerves, and this week's nickname is yours. slight −fame",
+           {pt:"A piada sai torta e envelhece pior: a imprensa relê como nervosismo, e o apelido da semana é seu. −fama leve"}))]); }}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
