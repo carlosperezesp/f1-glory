@@ -15026,6 +15026,17 @@ function simTP(row){
       /* 🧹 el chip ya dice «no cumplido, el consejo aprieta» */
     }
   }
+  /* 🏷️ LA LETRA PEQUEÑA DE LA PLACA (tpPuerta, opción A — no se avisa al elegir, regla de no
+     sobreexplicar): aceptaste el homenaje y el listón se ha fallado con tu nombre en la fachada.
+     La prensa tiene la foto perfecta, y la usa UNA vez. Ventana de dos años tras la placa, y solo
+     si sigues en aquel equipo (tpEsMiEquipo cubre los renombrados). */
+  if(S._placa && row.year>S._placa.y+2) S._placa=null;   // la foto caduca sin usarse
+  if(!met && S._placa && row.year<=S._placa.y+2 && tpEsMiEquipo(S._placa.t)){
+    S._placa=null; TPRE(-rnd(1,2));
+    row.events.push(L(`📰 La foto que abre los diarios: la fábrica lleva tu nombre y el equipo no llega. El homenaje, vuelto munición. −fama`,
+      `📰 The photo on every front page: the factory carries your name and the team falls short. The tribute, turned into ammunition. −fame`,
+      {pt:`📰 A foto que abre os jornais: a fábrica leva o seu nome e a equipe não chega. A homenagem, virada munição. −fama`}));
+  }
   /* 📣 EL CAPRICHO DEL CEO SHOWMAN se juzga aparte del listón del consejo. Un título —de pilotos o
      de constructores— lo cumple SIEMPRE, sea cual sea (Carlos: «si gano el campeonato el showman no
      se enfada»): no hay portada más grande. Cumplir sube el rival del año siguiente; fallar lo baja
@@ -18922,6 +18933,58 @@ const TP_DILEMAS=[
       return L(`Pones tu cargo a su disposición. ${q.Es} toma nota, te da las gracias y te deja seguir. Para la propiedad nueva empiezas hoy. El consejo empieza a contar de cero`,
                `You put your job at their disposal. ${q.En} takes note, thanks you and lets you carry on. For the new ownership you start today. The board starts counting from zero`,
                {pt:`Você coloca o cargo à disposição. ${q.Pt} anota, agradece e deixa você continuar. Para a nova direção você começa hoje. O conselho começa a contar do zero`}); }}]}
+ ,
+ /* 🏷️ «TU NOMBRE EN LA PUERTA» — séptimo dilema de veterano (12-sep-2026). Sale por GESTA, no por
+    antigüedad (revisión de Carlos, dos vueltas): el equipo ganó su primer título CONTIGO. Su segunda
+    pega mató la lista fija de equipos pequeños — «si Audi gana mucho sin ti y luego ganas tú un
+    título, tampoco te lo mereces» — así que la condición mira la partida: ningún título de este
+    equipo en años en los que tú no estabas. Ferrari, Mercedes, McLaren y Red Bull quedan fuera
+    siempre: ya venían servidos de casa.
+    🏷️ La opción A lleva letra pequeña QUE NO SE CUENTA (regla de no sobreexplicar): dos años en los
+    que fallar el listón cuesta fama extra — la prensa tiene la foto perfecta. Se cobra en el
+    veredicto (S._placa), una sola vez, y solo si sigues en ese equipo.
+    🌲 EVERGREEN: sin años ni eras. Una vez por partida. No sale si el dueño eres tú. */
+ {id:"tpPuerta",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self")) return false;
+    if(tpAniosAqui()<8) return false;
+    const GIG=["Ferrari","Mercedes","McLaren","Red Bull"];
+    if(GIG.indexOf(S.tpTeam)>=0 || (S.tpAlias||[]).some(a=>GIG.indexOf(a)>=0)) return false;
+    let contigo=0, sinTi=0;
+    (S.seasons||[]).forEach(r=>{ if(r.cat!=="TP") return;
+      const mio=tpEsMiEquipo(r.tpTeam);
+      if(mio && r.pos===1) contigo++;
+      const champC=r.top3c && r.top3c[0];
+      if(!mio && champC && tpEsMiEquipo(champC)) sinTi++;   // tu equipo de hoy ganó un año en que tú estabas en otro muro
+    });
+    if(!contigo || sinTi) return false;
+    S._puertaN=tpAniosAqui(); return true; },
+  t:()=>L("Tu nombre en la puerta","Your name on the door",{pt:"O seu nome na porta"}),
+  d:()=>{ const es=["ocho","nueve","diez","once","doce","trece","catorce","quince","dieciséis","diecisiete","dieciocho","diecinueve","veinte","veintiún","veintidós","veintitrés","veinticuatro","veinticinco","veintiséis","veintisiete","veintiocho","veintinueve","treinta"];
+    const en=["eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty","twenty-one","twenty-two","twenty-three","twenty-four","twenty-five","twenty-six","twenty-seven","twenty-eight","twenty-nine","thirty"];
+    const pt=["oito","nove","dez","onze","doze","treze","catorze","quinze","dezesseis","dezessete","dezoito","dezenove","vinte","vinte e um","vinte e dois","vinte e três","vinte e quatro","vinte e cinco","vinte e seis","vinte e sete","vinte e oito","vinte e nove","trinta"];
+    const k=Math.min(30,Math.max(8,S._puertaN||8))-8;
+    return L(`El día que se enseñan los planos del ala nueva de la fábrica, la última página trae la sorpresa: quieren que el edificio lleve tu nombre. ${es[k].charAt(0).toUpperCase()+es[k].slice(1)} años aquí y un título que nadie en esta casa había conocido: da para eso. Casi no te lo preguntan — está medio decidido —, pero la placa no se ha fundido todavía y todos te miran.`,
+             `The day the plans for the factory's new wing are shown, the last page holds the surprise: they want the building to carry your name. ${en[k].charAt(0).toUpperCase()+en[k].slice(1)} years here and a title nobody in this house had ever known: that earns it. They barely ask — it's half decided — but the plaque hasn't been cast yet, and everyone is looking at you.`,
+             {pt:`No dia em que os planos da nova ala da fábrica são apresentados, a última página traz a surpresa: querem que o prédio leve o seu nome. ${pt[k].charAt(0).toUpperCase()+pt[k].slice(1)} anos aqui e um título que ninguém nesta casa tinha conhecido: dá para isso. Quase não te perguntam — está meio decidido —, mas a placa ainda não foi fundida e todos olham para você.`}); },
+  opts:[
+   {l:()=>L("«Es un honor»","«It's an honour»",{pt:"«É uma honra»"}),
+    r:()=>{ TPRE(rnd(1,2.5)); S._placa={y:yearNow(), t:S.tpTeam};
+      return L("La placa se descubre un viernes de Gran Premio, con el paddock entero mirando. Tu nombre ya no es solo tuyo: es un edificio. +fama",
+               "The plaque is unveiled on a Grand Prix Friday, with the whole paddock watching. Your name is no longer just yours: it's a building. +fame",
+               {pt:"A placa é descoberta numa sexta-feira de Grande Prêmio, com o paddock inteiro olhando. O seu nome já não é só seu: é um prédio. +fama"}); }},
+   {l:()=>L("«La puerta, todavía no»","«Not the door, not yet»",{pt:"«A porta, ainda não»"}),
+    r:()=>roll(
+     [65,()=>(TPRE(rnd(.5,1.5)),L("Dices que los edificios se bautizan cuando uno ya no está, y la frase corre por el paddock más deprisa que cualquier placa. La humildad también es titular. +fama",
+                                  "You say buildings get christened when a man is gone, and the line travels the paddock faster than any plaque. Humility makes headlines too. +fame",
+                                  {pt:"Você diz que prédios se batizam quando a pessoa já não está, e a frase corre o paddock mais rápido que qualquer placa. A humildade também vira manchete. +fama"}))],
+     [35,()=>L("Dices que todavía no, y nadie insiste. El ala nueva se inaugura con un número en la fachada, y el momento no vuelve.",
+               "You say not yet, and nobody insists. The new wing opens with a number on the front, and the moment never comes back.",
+               {pt:"Você diz que ainda não, e ninguém insiste. A nova ala é inaugurada com um número na fachada, e o momento não volta."})])},
+   {l:()=>L("«El nombre que va en la puerta es el del equipo»","«The name on the door is the team's»",{pt:"«O nome que vai na porta é o da equipe»"}),
+    r:()=>{ S.cache[S.tpTeam]=Math.min(95,(S.cache[S.tpTeam]||60)+rnd(1,2));
+      return L("Propones que el ala lleve el nombre de la casa, no el tuyo, y el gesto vale más que la placa: la fábrica entera entiende de quién es esto. El equipo pesa más en el paddock desde ese día. +caché del equipo",
+               "You propose the wing carry the house's name, not yours, and the gesture is worth more than any plaque: the whole factory understands whose this is. The team carries more weight in the paddock from that day on. +team prestige",
+               {pt:"Você propõe que a ala leve o nome da casa, não o seu, e o gesto vale mais que a placa: a fábrica inteira entende de quem é isto. A equipe pesa mais no paddock desde esse dia. +cachê da equipe"}); }}]}
 ];
 /* 🧲 LA VENGANZA FRÍA, un año después. La anotaste en la agenda; ahora se ejecuta —o no—. Si el
    rival ya no está en la parrilla, la deuda se cierra sola: no se puede saquear a un fantasma. */
