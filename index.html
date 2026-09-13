@@ -14761,7 +14761,7 @@ function tpRumboScreen(){
   const _pR=_ordenR.indexOf(tn)+1, _arriba=_pR<=3, _abajo=_pR>=_ordenR.length-2;
   const _fin=S.tpOwner&&S.tpOwner.k==="cut";
   let penProyecto=0, avisoProyecto="";
-  if(_arriba){ penProyecto+=1.5; avisoProyecto+="<br><span class=\"aviso-consejo\">⚠️ "+L("Tienes un coche ganador: si aun así sacrificas el año, el consejo se enfada y pierdes prestigio","You have a winning car: sacrifice the year anyway and the board sours — you lose prestige",{pt:"Você tem um carro vencedor: se ainda assim sacrificar o ano, o conselho se irrita e você perde prestígio"})+"</span>"; }
+  if(_arriba){ penProyecto+=1.5; avisoProyecto+="<br><span class=\"aviso-consejo\">⚠️ "+L("Tienes uno de los tres mejores coches: si aun así sacrificas el año, el consejo se enfada y pierdes prestigio","You have one of the three best cars: sacrifice the year anyway and the board sours — you lose prestige",{pt:"Você tem um dos três melhores carros: se ainda assim sacrificar o ano, o conselho se irrita e você perde prestígio"})+"</span>"; }
   if(_fin){ penProyecto+=1; avisoProyecto+="<br><span class=\"aviso-consejo\">💼 "+L("Tu dueño no espera dos años: elegir esto también te cuesta prestigio","Your owner won't wait two years: choosing this costs prestige too",{pt:"O seu dono não espera dois anos: escolher isto também custa prestígio"})+"</span>"; }
   if(_abajo && !avisoProyecto) avisoProyecto="<br><span class=\"aviso-ok\">✅ "+L("Con este coche, el consejo te deja construir en paz","With this car, the board lets you build in peace",{pt:"Com este carro, o conselho te deixa construir em paz"})+"</span>";
   /* 🏗️ ¿EL CONSEJO TE DEJA CONSTRUIR? La línea de arriba se lo PROMETE al jugador cuando su coche es
