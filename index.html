@@ -41,10 +41,10 @@
 <meta name="twitter:description" content="Del karting a la gloria. ¿Hasta dónde llegarás? · From karting to glory. How far will you go?">
 <meta name="twitter:image" content="https://f1-glory.com/f1-glory.jpg">
 <link rel="preload" href="TwemojiCountryFlags.woff2" as="font" type="font/woff2" crossorigin>
-<!-- 🎨 LA MUDANZA: las tres familias de los diseños de Carlos (disenos/stitch_*): Anybody para titulares
-     en cursiva, Inter para leer y JetBrains Mono para etiquetas y números. -->
+<!-- 🎨 LA MUDANZA: Anybody para titulares e Inter para todo lo demás, números incluidos. JetBrains Mono
+     salió el 13-sep (Carlos: «no me gusta, tiene un punto dentro del 0»). -->
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:ital,wdth,wght@0,75..150,600..900;1,75..150,600..900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,600..900&family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 /* 🏁 Windows no trae dibujos de banderas: pinta «ES», «BR», «IT» en vez de 🇪🇸 🇧🇷 🇮🇹.
    Esta fuente SOLO contiene los glifos de bandera (76 KB), así que el resto del texto y
@@ -896,11 +896,11 @@ body.conBeta #topBtns{top:44px}
   --bg:#e5e8ea; --panel:#ffffff; --panel2:#f1f2f4; --line:#d8dbe0;
   --text:#1a1a1a; --muted:#5a5e66; --accent:#bb152c; --accent2:#e10600; --gold:#a87700;
   --shadow:0 1px 2px rgba(20,22,28,.05), 0 10px 26px rgba(20,22,28,.07);
-  --team:var(--accent); --team-ink:var(--accent); --team-soft:rgba(187,21,44,.09);
+  --team:var(--accent); --team-ink:var(--accent); --team-soft:rgba(187,21,44,.09); --team-on:#ffffff;
   --r-card:16px; --r-in:10px;
   --f-disp:'Anybody','Twemoji Country Flags',system-ui,sans-serif;
   --f-body:'Twemoji Country Flags','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --f-mono:'JetBrains Mono','Twemoji Country Flags',ui-monospace,Menlo,monospace;
+  --f-mono:'Twemoji Country Flags','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;   /* etiquetas y cifras: Inter, sin el 0 con punto */
 }
 :root[data-theme="dark"]{
   --bg:#13131b; --panel:#1f1f27; --panel2:#292933; --line:rgba(255,255,255,.10);
@@ -909,14 +909,16 @@ body.conBeta #topBtns{top:44px}
 }
 *{font-family:var(--f-body)}
 body,[data-theme="dark"] body{background:var(--bg);-webkit-font-smoothing:antialiased}
-h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-style:italic;font-weight:800;letter-spacing:-.02em}
+h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter-spacing:-.02em}
+*,*::before,*::after{font-style:normal!important}   /* ninguna cursiva, tampoco las que pone el código en línea */
 .stat .k,.tl-head,.f1state h5,.agev .lbl,.card h3,.offer .role,.tag,.trophies .empty,.pt-tier,.mode-txt small{font-family:var(--f-mono);letter-spacing:.08em}
-.stat .v,.ovr-badge .n,.tl-row .num,.agev .a,.f1state .srow .rt2{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.stat .v,.ovr-badge .n,.tl-row .num,.agev .a,.f1state .srow .rt2,.f1state .srow .nm{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.stat .k,.tl-head,.f1state h5,.agev .lbl,.card h3,.offer .role,.tag,.trophies .empty,.pt-tier{font-weight:600;text-transform:uppercase}
 .card,.timeline{border-radius:var(--r-card);border:1px solid var(--line);box-shadow:var(--shadow)}
 .card::before{height:3px;background:var(--team-ink)}
 [data-theme="dark"] .card,[data-theme="dark"] .timeline{background-color:var(--panel)}
 .tag{border-radius:999px;padding:3px 10px;font-size:11px;background:var(--panel2);border-color:var(--line)}
-.tag.red{background:var(--team-ink);border-color:transparent;color:#fff}
+.tag.red{background:var(--team-ink);border-color:transparent;color:var(--team-on)}
 .stat{border-radius:var(--r-in);background:var(--panel2)}
 [data-theme="dark"] .stat{border:1px solid var(--line);background:var(--bg)}
 .stat .k{font-size:9.5px}
@@ -940,43 +942,71 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-style:italic;font
 .tl-row{border-bottom:1px solid var(--line)}
 .tl-row:hover{background:var(--panel2)}
 .tl-body::-webkit-scrollbar-thumb{background:var(--line)}
-.btn{border-radius:999px;background:var(--team-ink);box-shadow:0 8px 22px var(--team-soft);font-family:var(--f-disp);font-style:italic;font-weight:800;letter-spacing:.01em}
+.btn{border-radius:999px;background:var(--team-ink);color:var(--team-on);box-shadow:0 8px 22px var(--team-soft);font-family:var(--f-disp);font-weight:800;letter-spacing:.01em}
 .btn:hover{box-shadow:0 12px 30px var(--team-soft)}
 #intro{background:transparent}
 #intro::before{background:radial-gradient(circle at 35% 35%, var(--team-soft), transparent 70%)}
 #intro h1{font-weight:900;letter-spacing:-.035em}
 #intro h1 span{background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--accent)}
 .mode-card{border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow)}
-.mode-txt b{font-family:var(--f-disp);font-style:italic;font-weight:700;font-size:16px}
+.mode-txt b{font-family:var(--f-disp);font-weight:700;font-size:16px}
 .mode-txt small{font-size:10.5px;text-transform:none;letter-spacing:.02em}
 #themeToggle,#langToggle,[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle{background:var(--panel);border:1px solid var(--line);color:var(--text)}
 
-/* 📱 EL MURO EN PANELES (solo modo jefe, solo móvil): la ficha, la decisión, la trayectoria y el
-   mundial se deslizan de lado, y cada panel tiene su propio scroll vertical. No se mueve HTML: las dos
-   columnas de la rejilla pasan a `display:contents` y sus hijos son los paneles. */
+/* 🖥️ TRES COLUMNAS EN ESCRITORIO (Carlos, 13-sep): tú y la decisión · el resumen de cada año · la
+   clasificación, a la derecha del todo y quieta mientras bajas. La segunda columna del HTML pasa a
+   `display:contents` para que la clasificación y la trayectoria sean columnas por separado. */
+@media (min-width:1180px){
+  #career{max-width:1480px!important;width:100%;margin-left:auto;margin-right:auto}   /* con 1200 la columna central se apretaba y el OVR pisaba los puntos */
+  #career .career-grid{grid-template-columns:390px minmax(0,1fr) 350px;max-width:1480px;margin:0 auto}
+  #career .career-grid>div:first-child{grid-column:1;grid-row:1}
+  #career .career-grid>div:nth-child(2){display:contents}
+  #career .timeline{grid-column:2;grid-row:1}
+  #career #f1state{grid-column:3;grid-row:1;margin:0;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
+  #career .f1state .cols{grid-template-columns:1fr;gap:18px}
+}
+/* 📜 los años anteriores, debajo de la clasificación del año */
+.fs-prev{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.fs-prev h5{margin-bottom:8px}
+.fs-prev .fp{padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.55}
+.fs-prev .fp:last-child{border-bottom:0}
+.fs-prev .fp b{font-variant-numeric:tabular-nums;margin-right:6px}
+
+/* 📱 LOS CUATRO BLOQUES EN MÓVIL (Carlos, 13-sep, en todos los modos): A panel · B dilemas y
+   elecciones · C resumen del año · D clasificación. Se deslizan de lado y C y D bajan hacia los años
+   anteriores. No se mueve HTML: las columnas de la rejilla pasan a `display:contents`. */
 #deckTabs{display:none}
+#deckGo{display:none}
 @media (max-width:980px){
-  body.tp-deck #deckTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:sticky;top:0;z-index:30;
+  body.deck-movil #deckGo{display:flex;position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;align-items:center;gap:8px;
+    border:0;border-radius:999px;padding:12px 26px;background:var(--team-ink);color:var(--team-on);
+    font-family:var(--f-disp);font-weight:800;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+  body.deck-movil #deckGo[hidden]{display:none}
+  body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{padding-bottom:78px}
+}
+@media (max-width:980px){
+  body.deck-movil #deckTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:sticky;top:0;z-index:30;
     background:var(--bg);padding:8px 0 0;margin:0 84px 10px 0}   /* hueco para los botones fijos de idioma y tema */
-  body.tp-deck #deckTabs button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
+  body.deck-movil #deckTabs button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
     font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:3px solid var(--line)}
-  body.tp-deck #deckTabs button.on{color:var(--team-ink);border-bottom-color:var(--team-ink)}
-  body.tp-deck #deckTabs button[hidden]{display:none}
+  body.deck-movil #deckTabs button.on{color:var(--team-ink);border-bottom-color:var(--team-ink)}
+  body.deck-movil #deckTabs button[hidden]{display:none}
   /* ⚠️ `flex-direction:row` A MANO: la regla móvil de siempre apila la rejilla en columna, y sin esto
      los paneles salían uno debajo de otro aunque las pestañas funcionasen */
-  body.tp-deck .career-grid{display:flex;flex-direction:row;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
+  body.deck-movil .career-grid{display:flex;flex-direction:row;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
     scrollbar-width:none;align-items:flex-start}
-  body.tp-deck .career-grid::-webkit-scrollbar{display:none}
-  body.tp-deck .career-grid > div{display:contents}
-  body.tp-deck #driverCard,body.tp-deck #decisionBox,body.tp-deck .timeline,body.tp-deck #f1state{
+  body.deck-movil .career-grid::-webkit-scrollbar{display:none}
+  body.deck-movil .career-grid > div{display:contents}
+  body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{
     flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;
     max-height:calc(100dvh - 118px);overflow-y:auto;overscroll-behavior:contain}
-  body.tp-deck #driverCard{order:1} body.tp-deck #decisionBox{order:2;padding:2px 2px 30px}
-  body.tp-deck .timeline{order:3} body.tp-deck #f1state{order:4}
-  body.tp-deck .tl-body{max-height:none}
-  body.tp-deck .f1state .cols{grid-template-columns:1fr;display:grid;gap:18px}   /* en el panel del móvil, pilotos y constructores uno debajo del otro */
+  body.deck-movil #driverCard{order:1} body.deck-movil #decisionBox{order:2;padding:2px 2px 30px}
+  body.deck-movil .timeline{order:3} body.deck-movil #f1state{order:4}
+  body.deck-movil .tl-body{max-height:none}
+  body.deck-movil .f1state .cols{grid-template-columns:1fr;display:grid;gap:18px}   /* en el panel del móvil, pilotos y constructores uno debajo del otro */
 }
-@media (prefers-reduced-motion: reduce){ body.tp-deck .career-grid{scroll-behavior:auto} }
+@media (prefers-reduced-motion: reduce){ body.deck-movil .career-grid{scroll-behavior:auto} }
 </style>
 </head>
 <body>
@@ -1457,7 +1487,7 @@ function setTheme(t){
    amarillo o el McLaren plateado desaparecían en claro, y el Red Bull azul marino en oscuro. */
 function pintaColorEquipo(t){
   const R=document.documentElement.style;
-  if(!t || !t.color){ ["--team","--team-ink","--team-soft"].forEach(v=>R.removeProperty(v)); return; }
+  if(!t || !t.color){ ["--team","--team-ink","--team-soft","--team-on"].forEach(v=>R.removeProperty(v)); return; }
   const rgb=h=>{ let s=String(h||"").replace("#",""); if(s.length===3) s=s.split("").map(c=>c+c).join("");
     const n=parseInt(s.slice(0,6),16); return isNaN(n)?null:[n>>16&255,n>>8&255,n&255]; };
   const lum=c=>{ const v=c.map(x=>{x/=255; return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4);}); return .2126*v[0]+.7152*v[1]+.0722*v[2]; };
@@ -1471,15 +1501,28 @@ function pintaColorEquipo(t){
   R.setProperty("--team", hex(c1||ink));
   R.setProperty("--team-ink", hex(ink));
   R.setProperty("--team-soft", `rgba(${ink.map(Math.round).join(",")},${oscuro?.16:.11})`);
+  /* ✍️ y el texto que va ENCIMA del color: negro sobre los claros (Renault amarillo), blanco sobre el resto */
+  R.setProperty("--team-on", lum(ink)>.45 ? "#15151e" : "#ffffff");
 }
 /* 📱 EL MURO EN PANELES: pestañas que llevan a cada panel y se encienden al deslizar. */
-const DECK_PANELES=[["driverCard",["Tú","You","Você"]],["decisionBox",["Decidir","Decide","Decidir"]],
-                    ["tlPanel",["Historia","History","História"]],["f1state",["Mundial","Standings","Mundial"]]];
+const DECK_PANELES=[["driverCard",["Panel","Panel","Painel"]],["decisionBox",["Decidir","Decide","Decidir"]],
+                    ["tlPanel",["Resumen","Recap","Resumo"]],["f1state",["Mundial","Standings","Mundial"]]];
 function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
   if(!g||!el) return; g.scrollTo({left:el.offsetLeft-g.offsetLeft, behavior:"smooth"}); }
+function deckPanelActivo(){ const b=document.querySelector("#deckTabs button.on"); return b ? b.dataset.p : "driverCard"; }
+function deckBotones(){ return [...document.querySelectorAll("#offerList button")].filter(b=>!b.disabled); }
+function deckGoPinta(){
+  const go=document.getElementById("deckGo"); if(!go) return;
+  const on=document.body.classList.contains("deck-movil"), bs=deckBotones(), enB=deckPanelActivo()==="decisionBox";
+  go.hidden = !on || !bs.length || (enB && bs.length>1);
+  go.textContent = L("Continuar ▸","Continue ▸",{pt:"Continuar ▸"});
+}
 function deckActualiza(){
-  const on = typeof S!=="undefined" && S && S.cat==="TP" && window.matchMedia("(max-width:980px)").matches;
-  document.body.classList.toggle("tp-deck", !!on);
+  const _car=document.getElementById("career");
+  const on = typeof S!=="undefined" && S && S.cat && _car && getComputedStyle(_car).display!=="none"
+             && window.matchMedia("(max-width:980px)").matches;
+  document.body.classList.toggle("deck-movil", !!on);
+  deckGoPinta();
   const tabs=document.getElementById("deckTabs"); if(!tabs) return;
   [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p);
     b.hidden = !el || getComputedStyle(el).display==="none"; b.textContent=LA(DECK_PANELES.find(x=>x[0]===b.dataset.p)[1]); });
@@ -1497,8 +1540,18 @@ function deckActualiza(){
   g.addEventListener("scroll",()=>{ let mejor=null, d=1e9;
     [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p); if(!el||b.hidden) return;
       const x=Math.abs(el.offsetLeft-g.offsetLeft-g.scrollLeft); if(x<d){ d=x; mejor=b; } });
-    [...tabs.children].forEach(b=>b.classList.toggle("on", b===mejor)); },{passive:true});
+    [...tabs.children].forEach(b=>b.classList.toggle("on", b===mejor)); deckGoPinta(); },{passive:true});
   window.addEventListener("resize", deckActualiza);
+  /* ▶️ EL BOTÓN DE SEGUIR, SIEMPRE ABAJO (Carlos, 13-sep): fuera de «Decidir» te lleva allí; dentro, si
+     solo hay un camino («Empezar la temporada», «Continuar») lo pulsa. Si hay que ELEGIR, se esconde:
+     no se decide nada por el jugador y no tapa las opciones. La lista de ofertas se vigila sola. */
+  const go=document.createElement("button"); go.id="deckGo"; go.type="button"; go.hidden=true;
+  go.onclick=()=>{ const enB=deckPanelActivo()==="decisionBox", bs=deckBotones();
+    if(enB && bs.length===1){ bs[0].click(); return; }
+    deckIr("decisionBox"); };
+  document.body.appendChild(go);
+  const ol=document.getElementById("offerList");
+  if(ol && window.MutationObserver) new MutationObserver(()=>deckGoPinta()).observe(ol,{childList:true});
 }catch(e){} })();
 /* ================= DATOS ================= */
 /* [nombre ES, bandera, nombre EN]. ⚠️ El nombre ESPAÑOL es la CLAVE canónica: `sel.country` guarda
@@ -7331,7 +7384,7 @@ function setDecision(title,sub,pulsing,outcome){
 }
 // en móvil las ofertas viven abajo: al aparecer, las traemos a la vista (con algo de contexto arriba)
 function scrollToDecision(){
-  if(document.body.classList.contains("tp-deck")){ deckIr("decisionBox"); return; }   // 📱 la mudanza
+  if(document.body.classList.contains("deck-movil")){ deckIr("decisionBox"); return; }   // 📱 la mudanza
   if(window.innerWidth>980) return;
   const el=$("decisionBox"); if(!el) return;
   requestAnimationFrame(()=>{
@@ -11253,11 +11306,24 @@ function renderF1State(){
   const cmv=S.lastTop3.cmv||[];
   // en la clasificación mostramos solo el movimiento de posición (▲/▼ vs el año pasado);
   // la tendencia del PROYECTO (coche al alza/declive) va en las ofertas, no aquí (confundía)
-  let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${S.cat==="F1"&&S.team&&x===S.team.name?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}</span>${mvB(cmv[i])}</div>`).join("");
+  let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${(S.cat==="F1"&&S.team&&x===S.team.name)||(S.cat==="TP"&&tpManaged(x))?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}</span>${mvB(cmv[i])}</div>`).join("");
   if(S.lastTop3.myConstr!=null && S.lastTop3.myConstr>3 && S.team)
     cHtml+=`<div class="srow me${mvCls(S.lastTop3.myConstrMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myConstr}º</b> ${teamBadge(S.team.name)} ${S.team.name}</span>${mvB(S.lastTop3.myConstrMv)}</div>`;
   if(FS_OPEN.c) cHtml+=fsResto("c");
   $("fsTeams").innerHTML=cHtml;
+  /* 📜 LOS AÑOS ANTERIORES, debajo (la mudanza, 13-sep: «bajando, ver años anteriores»). Cada fila de
+     temporada guarda el podio de pilotos y de constructores de SU año; se enseña solo el podio, que es
+     lo que el público ya ve en la trayectoria. */
+  try{
+    let pv=document.getElementById("fsPrev");
+    if(!pv){ pv=document.createElement("div"); pv.id="fsPrev"; pv.className="fs-prev"; $("f1state").appendChild(pv); }
+    const nm=x=>typeof x==="string"?x:((x&&(x.n||x.name))||"");
+    const vistos=new Set([S.lastTop3.year]);
+    const filas=(S.seasons||[]).slice().reverse().filter(r=>r && r.top3d && r.top3c && !vistos.has(r.year) && vistos.add(r.year));
+    pv.style.display = filas.length ? "" : "none";
+    pv.innerHTML = filas.length ? `<h5>${L("📜 Años anteriores","📜 Previous seasons",{pt:"📜 Anos anteriores"})}</h5>` + filas.map(r=>
+      `<div class="fp"><b>${r.year}</b>👑 ${r.top3d.map(x=>surname(nm(x))).join(" · ")}<br><span style="color:var(--muted)">🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span></div>`).join("") : "";
+  }catch(e){}
 }
 
 /* 🔽 DESPLEGAR LA CLASIFICACIÓN ENTERA (petición de Carlos, 14-ago). El panel enseñaba el top-3 y tu
