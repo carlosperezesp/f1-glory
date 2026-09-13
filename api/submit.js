@@ -89,11 +89,23 @@ module.exports = async (req, res) => {
           podiums = num("podiums"), poles = num("poles"), subcamp = num("subcamp"), seasons = num("seasons");
     const secs = Math.max(0, Math.floor(Number(body.secs) || 0));
     const ns = Math.max(0, Math.floor(Number(body.ns) || 0));
+    const esTP = String(body.era || "") === "tp";
+    // «rendir por encima del coche» del jefe: puesto de tu coche menos puesto final, sumado año a año
+    const over = Math.max(-9999, Math.min(9999, Math.round(Number(b.over) || 0)));
 
-    // 🛡️ TOPES de cordura. El que MANDA de verdad es el techo de gloria (abajo): estos solo cortan valores
-    // absurdos. Ojo: f1 estaba en 16 y rechazaba carreras legítimas de dios (18 mundiales ≈ 3750 pts, por
-    // debajo del techo) → subido a 20, que con cualquier reparto realista sigue quedando bajo los 4200.
-    if (f1 > 20 || constr > 20 || wins > 240 || podiums > 480 || poles > 320 || subcamp > 20 || seasons > 32) {
+    /* 🧑‍💼 LOS TOPES DE UN COCHE NO VALEN PARA EL JEFE (13-sep-2026). Suma los resultados de los DOS
+       pilotos durante hasta 30 temporadas, y medido con un arnés de carreras enteras, los mejores
+       jefes dan 18 constructores, 232 victorias y 629 podios: con los topes absolutos de abajo, 10 de
+       cada 24 carreras de un jefe dominante eran «valores imposibles». Al jefe se le ata todo a SUS
+       temporadas: ningún título más que años, y el techo por carrera de dos coches de más abajo. */
+    if (esTP) {
+      if (seasons < 1 || seasons > 32 || constr > seasons || f1 > seasons || Math.abs(over) > seasons * 13) {
+        res.status(400).json({ error: "valores imposibles" }); return;
+      }
+    } else if (f1 > 20 || constr > 20 || wins > 240 || podiums > 480 || poles > 320 || subcamp > 20 || seasons > 32) {
+      // 🛡️ TOPES de cordura. El que MANDA de verdad es el techo de gloria (abajo): estos solo cortan valores
+      // absurdos. Ojo: f1 estaba en 16 y rechazaba carreras legítimas de dios (18 mundiales ≈ 3750 pts, por
+      // debajo del techo) → subido a 20, que con cualquier reparto realista sigue quedando bajo los 4200.
       res.status(400).json({ error: "valores imposibles" }); return;
     }
     // 🛡️ COHERENCIA interna: no puedes tener más títulos que temporadas, ni más victorias que podios (toda victoria es podio)
@@ -114,10 +126,15 @@ module.exports = async (req, res) => {
       res.status(400).json({ error: "más resultados que carreras posibles" }); return;
     }
 
-    // misma fórmula que "Puntos de leyenda" del juego
-    const gloria = f1 * 120 + constr * 30 + wins * 3 + podiums + poles + subcamp * 15;
+    // misma fórmula que "Puntos de leyenda" del juego — y la del jefe, la de SU pantalla final
+    // (⚠️ duplicada en `gloriaTPOf` de index.html: si cambia una, cambia la otra)
+    const gloria = esTP
+      ? constr * 150 + f1 * 90 + wins * 2 + Math.round(podiums * 0.5) + Math.max(0, over * 8) + seasons * 3
+      : f1 * 120 + constr * 30 + wins * 3 + podiums + poles + subcamp * 15;
     // 🛡️ TECHO DURO de gloria: el máximo honesto medido ronda 2500-2900; 4200 deja margen de sobra y corta los 6000+
-    if (gloria > 4200) { res.status(400).json({ error: "puntuación imposible" }); return; }
+    // 🧑‍💼 El del jefe va por temporada: medido, el mejor da 217 por año (5.033 en 30); los 400 de propina
+    //    son para las carreras cortas, donde un solo año redondo pesa más.
+    if (gloria > (esTP ? seasons * 300 + 400 : 4200)) { res.status(400).json({ error: "puntuación imposible" }); return; }
 
     /* 🛡️ PLAUSIBILIDAD DE TIEMPO. Una carrera real tarda minutos: cada temporada lleva sus esperas y
        sus clics. Si llega con muchas temporadas en pocos segundos, se editó y se envió al vuelo.
@@ -162,7 +179,7 @@ module.exports = async (req, res) => {
        `st` = stats · `sc` = segundos jugados · `ns` = temporadas totales. Nombres cortos porque esto
        se guarda una vez por jugador y no hay por qué engordarlo. */
     const disp = JSON.stringify({ n: nm, f: fl, c: co, g: gloria, ts: Date.now(), e: era || undefined,
-      st: { f1, constr, wins, podiums, poles, subcamp, seasons }, sc: secs, ns: ns, ch: ch || undefined });
+      st: esTP ? { f1, constr, wins, podiums, seasons, over } : { f1, constr, wins, podiums, poles, subcamp, seasons }, sc: secs, ns: ns, ch: ch || undefined });
     // Tablas: la GLOBAL histórica no se toca (nadie pierde su puesto) y se añaden las de época y reto,
     // que arrancan limpias. Todo en UN pipeline → sigue siendo un solo viaje a la base de datos.
     /* 🧑‍💼 EL MODO JEFE NO ENTRA NI EN LA GLOBAL NI EN LA SEMANAL. Es la misma decisión que ya se
