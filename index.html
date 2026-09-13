@@ -3456,6 +3456,39 @@ const CHALLENGES = {
     persona:"KUBICA",
     at:"2026-09-21T10:00:00Z",
   },
+  /* 🇫🇷 RETO VII · LA SUPERLICENCIA (Carlos eligió a Loeb el 13-sep-2026). Lo de aquí pasó: en
+     noviembre de 2008 probó el Red Bull en Barcelona y fue 8º del día; en octubre de 2009 rodó con un
+     GP2 en Jerez; estuvo «muy cerca» —palabras suyas, en formula1.com— de correr con Toro Rosso la
+     última carrera de 2009 en Abu Dabi, y el 22 de octubre la FIA le negó la superlicencia. Del 23 al
+     25 ganó el Rally de Gales y su sexto Mundial, por un punto sobre Hirvonen. Acabaría con nueve.
+     ⚠️ LO QUE EL TEXTO NO AFIRMA: que firmara con Toro Rosso (unas fuentes lo dicen; Tost dijo que no
+        hubo conversaciones) ni cómo le fue en el GP2 de Jerez (las fuentes no coinciden).
+     🦋 Se sienta en el asiento de Alguersuari, el que las crónicas le daban para Abu Dabi. 2010 y no
+        2009 porque 2009 ya es el año de Bruno Senna, y la parrilla de 2010 es la real del retro.
+     🌟 Como Valentino, llega famoso de otra cosa: fama de salida, y la fama cotiza si rinde. */
+  loeb: {
+    id:"loeb", era:"2010", year:2010, team:"Toro Rosso", role:"2", secret:true, sinCima:true,
+    drop:["J. Alguersuari"],
+    /* 🎚️ OVR 84, TECHO 88 (Carlos, 13-sep). Medido con el robot de botones, 30 carreras por nivel y
+       Valentino de control con la misma vara: con 80 la carrera muere en 2-3 temporadas (a los 36 el
+       nivel cae, la reputación baja de 68 y nadie llama) y solo gana una carrera el 17%; con 84 el
+       77% hace podio, el 60% gana y el 13% se lleva un Mundial — más duro que Valentino (93% gana),
+       pero quien sobrevive a los dos primeros inviernos llega a los 44. Con 88 apenas cambia la
+       supervivencia y se disparan los Mundiales (23%). */
+    who:{ age:36, ovr:84, ceil:88, flag:"🇫🇷", country:"Francia", style:"consistente", num:"17",
+          fameBase:120 },
+    repSobre:true,
+    t:["La superlicencia","The super licence","A superlicença"],
+    sub:["El papel que la FIA no firmó · 2010 · 36 años",
+         "The licence the FIA wouldn't sign · 2010 · aged 36",
+         "A licença que a FIA não assinou · 2010 · 36 anos"],
+    d:["Eres Sébastien Loeb. En noviembre de 2008 te subiste al Red Bull en Barcelona y acabaste octavo del día. Estuviste muy cerca —lo contaste tú mismo— de correr la última carrera de 2009 con Toro Rosso, en Abu Dabi. El 22 de octubre la FIA no te dio la superlicencia; tres días después ganabas en Gales tu sexto Mundial de rallies, por un punto. Aquí la FIA firma. El volante de Toro Rosso es tuyo, tienes 36 años y ni una sola carrera de Fórmula 1 detrás. ¿Hasta dónde llegas antes de que se te acabe el tiempo?",
+       "You are Sébastien Loeb. In November 2008 you drove the Red Bull in Barcelona and finished eighth fastest on the day. You came very close — your own words — to racing the last round of 2009 for Toro Rosso, in Abu Dhabi. On 22 October the FIA refused you the super licence; three days later you won your sixth world rally title in Wales, by a single point. Here the FIA signs. The Toro Rosso seat is yours, you are 36, and you don't have a single Formula 1 race behind you. How far can you go before time runs out?",
+       "Você é Sébastien Loeb. Em novembro de 2008 você andou com a Red Bull em Barcelona e foi o oitavo mais rápido do dia. Esteve muito perto — palavras suas — de correr a última prova de 2009 pela Toro Rosso, em Abu Dhabi. Em 22 de outubro a FIA negou a sua superlicença; três dias depois você ganhava no País de Gales o seu sexto Mundial de rali, por um ponto. Aqui a FIA assina. O volante da Toro Rosso é seu, você tem 36 anos e nem uma única corrida de Fórmula 1 nas costas. Até onde você chega antes que o tempo acabe?"],
+    champ:"J. Button",   // 👑 campeón del mundo de 2009
+    persona:"LOEB",
+    at:"2026-09-28T10:00:00Z",
+  },
 };
 // el nombre del monstruo se fija AL CREARLO, en el idioma de la partida (como los eventos del historial)
 function beastName(){ return L("La Bestia","The Beast",{pt:"A Fera"}); }
@@ -3868,7 +3901,10 @@ function setupChallenge(CH){
     S.arrivals   = (S.arrivals||[]).filter(a=>a.n!==n);
     S.crossovers = (S.crossovers||[]).filter(c=>c.name!==n);
     S.rookies    = (S.rookies||[]).filter(r=>r[0]!==n);
-    Object.values(S.seats).forEach(sl=>{ if(Array.isArray(sl)) sl.forEach((d,i)=>{ if(d&&d!=="PLAYER"&&d.name===n) sl[i]=mkRookie(false, null); }); });
+    /* 🪑 EL HUECO DEL PILOTO REAL QUEDA MARCADO, y al firmar es ESE el que ocupas (13-sep-2026, robot de
+       Loeb: en una de cada dos partidas el jugador apartaba a Buemi y el relleno de Alguersuari se
+       quedaba, porque `displaceIdx` echa al de menos nivel y el relleno a veces salía mejor). */
+    Object.entries(S.seats).forEach(([tn,sl])=>{ if(Array.isArray(sl)) sl.forEach((d,i)=>{ if(d&&d!=="PLAYER"&&d.name===n){ sl[i]=mkRookie(false, null); if(tn===CH.team) sl[i]._huecoReto=true; } }); });
     S.dpool = S.dpool.filter(d=>!(d&&d.name===n));
   });
   // 2) mover el mundo hasta el año del reto. Puede ser un año FIJO o una ventana de años reales
@@ -3902,7 +3938,7 @@ function setupChallenge(CH){
        en un equipo de MÁS ABAJO. Cazado montando la parrilla de 2009: el segundo Brawn salía siendo
        Bourdais, que estaba a la vez en Toro Rosso. */
     Object.keys(CH.grid).forEach(team=>{
-      while((S.seats[team]||[]).length<2) S.seats[team].push(mkRookie(false, team));
+      while((S.seats[team]||[]).length<2){ const _r=mkRookie(false, team); if(team===CH.team) _r._huecoReto=true; S.seats[team].push(_r); }   // 🪑 idem: el hueco que dejó el real
     });
     palmSeed(_ano);            // 🏆 el palmarés de EQUIPOS, recortado al año del reto
     S.legends=legendsHasta(S.era, _ano);   // 🏆 …y el de PILOTOS, que se quedaba en el año base
@@ -5677,6 +5713,7 @@ function occupySeat(teamName){
   if(!yaSentado){
     const wIdx = displaceIdx(slots);
     const displaced=slots[wIdx];
+    if(displaced && displaced._huecoReto) delete displaced._huecoReto;   // 🪑 el hueco del reto ya está ocupado: la marca no viaja con él
     slots[wIdx]="PLAYER";
     if(spots.length){
       const [tn,j]=spots[0];
@@ -5936,6 +5973,10 @@ function displaceIdx(sl){
   if(!sl || sl.length<2) return 0;   // 🚗 equipo de UN coche: el asiento es ese, no un segundo fantasma
   const camp = x => !!(x && x!=="PLAYER" && S.lastChampName && x.name===S.lastChampName);
   const a=sl[0], b=sl[1];
+  // 🪑 en un reto, el asiento es el del piloto real que se quitó (ver setupChallenge), no el del más flojo
+  const hueco = x => !!(x && x!=="PLAYER" && x._huecoReto);
+  if(hueco(a) && !hueco(b)) return 0;
+  if(hueco(b) && !hueco(a)) return 1;
   if(camp(a) && !camp(b)) return 1;
   if(camp(b) && !camp(a)) return 0;
   return ((a&&a.skill||0)<=(b&&b.skill||0))?0:1;
