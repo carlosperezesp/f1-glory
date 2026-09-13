@@ -41,6 +41,10 @@
 <meta name="twitter:description" content="Del karting a la gloria. ¿Hasta dónde llegarás? · From karting to glory. How far will you go?">
 <meta name="twitter:image" content="https://f1-glory.com/f1-glory.jpg">
 <link rel="preload" href="TwemojiCountryFlags.woff2" as="font" type="font/woff2" crossorigin>
+<!-- 🎨 LA MUDANZA: las tres familias de los diseños de Carlos (disenos/stitch_*): Anybody para titulares
+     en cursiva, Inter para leer y JetBrains Mono para etiquetas y números. -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:ital,wdth,wght@0,75..150,600..900;1,75..150,600..900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
 /* 🏁 Windows no trae dibujos de banderas: pinta «ES», «BR», «IT» en vez de 🇪🇸 🇧🇷 🇮🇹.
    Esta fuente SOLO contiene los glifos de bandera (76 KB), así que el resto del texto y
@@ -881,6 +885,98 @@ body.conBeta #topBtns{top:44px}
 [data-theme="dark"] .style-cards button{background:var(--panel2)}
 [data-theme="dark"] .style-cards button.sel{background:linear-gradient(135deg,#e10600,#ff6a1a);border-color:#e10600;color:#fff}
 [data-theme="dark"] .style-cards button .d{color:var(--muted)}
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════
+   🎨 LA MUDANZA (13-sep-2026 · rama `mudanza`, VERSIÓN DE PRUEBA). Una capa encima de la de siempre:
+   se puede quitar entera borrando este bloque. Oscuro = «Racing Modernity», claro = «Kinetic Velocity»
+   (los dos diseños de Stitch de Carlos). El acento deja de ser el rojo fijo y pasa a ser EL COLOR DE
+   TU EQUIPO (`pintaColorEquipo`), elegido para que se lea sobre el fondo del tema.
+   ════════════════════════════════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#e5e8ea; --panel:#ffffff; --panel2:#f1f2f4; --line:#d8dbe0;
+  --text:#1a1a1a; --muted:#5a5e66; --accent:#bb152c; --accent2:#e10600; --gold:#a87700;
+  --shadow:0 1px 2px rgba(20,22,28,.05), 0 10px 26px rgba(20,22,28,.07);
+  --team:var(--accent); --team-ink:var(--accent); --team-soft:rgba(187,21,44,.09);
+  --r-card:16px; --r-in:10px;
+  --f-disp:'Anybody','Twemoji Country Flags',system-ui,sans-serif;
+  --f-body:'Twemoji Country Flags','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'JetBrains Mono','Twemoji Country Flags',ui-monospace,Menlo,monospace;
+}
+:root[data-theme="dark"]{
+  --bg:#13131b; --panel:#1f1f27; --panel2:#292933; --line:rgba(255,255,255,.10);
+  --text:#e4e1ee; --muted:#9d9aab; --accent:#e10600; --gold:#ffb52e;
+  --shadow:none; --r-card:6px; --r-in:4px; --team-soft:rgba(225,6,0,.12);
+}
+*{font-family:var(--f-body)}
+body,[data-theme="dark"] body{background:var(--bg);-webkit-font-smoothing:antialiased}
+h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-style:italic;font-weight:800;letter-spacing:-.02em}
+.stat .k,.tl-head,.f1state h5,.agev .lbl,.card h3,.offer .role,.tag,.trophies .empty,.pt-tier,.mode-txt small{font-family:var(--f-mono);letter-spacing:.08em}
+.stat .v,.ovr-badge .n,.tl-row .num,.agev .a,.f1state .srow .rt2{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.card,.timeline{border-radius:var(--r-card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.card::before{height:3px;background:var(--team-ink)}
+[data-theme="dark"] .card,[data-theme="dark"] .timeline{background-color:var(--panel)}
+.tag{border-radius:999px;padding:3px 10px;font-size:11px;background:var(--panel2);border-color:var(--line)}
+.tag.red{background:var(--team-ink);border-color:transparent;color:#fff}
+.stat{border-radius:var(--r-in);background:var(--panel2)}
+[data-theme="dark"] .stat{border:1px solid var(--line);background:var(--bg)}
+.stat .k{font-size:9.5px}
+.ovr-badge{border-radius:50%}
+[data-theme="dark"] .ovr-badge{border-radius:8px;box-shadow:0 0 0 1px var(--line),0 0 22px rgba(255,181,46,.10)}
+.trophies .empty{color:var(--muted);opacity:.8;font-size:11px}
+.decision h3{font-size:26px;line-height:1.1}
+.offer,[data-theme="dark"] .offer{background:var(--panel);border-radius:var(--r-card);box-shadow:var(--shadow)}
+[data-theme="dark"] .offer{border-top-color:var(--line)!important;border-right-color:var(--line)!important;border-bottom-color:var(--line)!important;border-width:1px!important;border-left-width:4px!important}
+.offer{border-width:1px!important;border-left-width:5px!important}
+.offer .name{font-family:var(--f-disp);font-weight:700;font-size:17px}
+.offer.dilemma,[data-theme="dark"] .offer.dilemma{background:var(--panel);border-color:var(--line)!important;border-left:4px solid var(--gold)!important}
+.offer.retire,[data-theme="dark"] .offer.retire{background:transparent;border-style:dashed!important}
+.offer:hover{transform:translateY(-1px)}
+#decRecap,[data-theme="dark"] #decRecap{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--team-ink);border-radius:var(--r-in)}
+.decision p.outcome{border-radius:var(--r-in);border-left:3px solid var(--gold)}
+.f1state h5{font-size:10.5px;text-transform:uppercase;color:var(--muted)}
+.f1state .srow{border-radius:var(--r-in)}
+.f1state .srow.me,[data-theme="dark"] .f1state .srow.me{background:var(--team-soft);box-shadow:inset 3px 0 0 var(--team-ink);font-weight:700;color:var(--text)}
+.tl-head{background:var(--panel);font-size:10px}
+.tl-row{border-bottom:1px solid var(--line)}
+.tl-row:hover{background:var(--panel2)}
+.tl-body::-webkit-scrollbar-thumb{background:var(--line)}
+.btn{border-radius:999px;background:var(--team-ink);box-shadow:0 8px 22px var(--team-soft);font-family:var(--f-disp);font-style:italic;font-weight:800;letter-spacing:.01em}
+.btn:hover{box-shadow:0 12px 30px var(--team-soft)}
+#intro{background:transparent}
+#intro::before{background:radial-gradient(circle at 35% 35%, var(--team-soft), transparent 70%)}
+#intro h1{font-weight:900;letter-spacing:-.035em}
+#intro h1 span{background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--accent)}
+.mode-card{border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.mode-txt b{font-family:var(--f-disp);font-style:italic;font-weight:700;font-size:16px}
+.mode-txt small{font-size:10.5px;text-transform:none;letter-spacing:.02em}
+#themeToggle,#langToggle,[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+
+/* 📱 EL MURO EN PANELES (solo modo jefe, solo móvil): la ficha, la decisión, la trayectoria y el
+   mundial se deslizan de lado, y cada panel tiene su propio scroll vertical. No se mueve HTML: las dos
+   columnas de la rejilla pasan a `display:contents` y sus hijos son los paneles. */
+#deckTabs{display:none}
+@media (max-width:980px){
+  body.tp-deck #deckTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:sticky;top:0;z-index:30;
+    background:var(--bg);padding:8px 0 0;margin:0 84px 10px 0}   /* hueco para los botones fijos de idioma y tema */
+  body.tp-deck #deckTabs button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
+    font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:3px solid var(--line)}
+  body.tp-deck #deckTabs button.on{color:var(--team-ink);border-bottom-color:var(--team-ink)}
+  body.tp-deck #deckTabs button[hidden]{display:none}
+  /* ⚠️ `flex-direction:row` A MANO: la regla móvil de siempre apila la rejilla en columna, y sin esto
+     los paneles salían uno debajo de otro aunque las pestañas funcionasen */
+  body.tp-deck .career-grid{display:flex;flex-direction:row;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
+    scrollbar-width:none;align-items:flex-start}
+  body.tp-deck .career-grid::-webkit-scrollbar{display:none}
+  body.tp-deck .career-grid > div{display:contents}
+  body.tp-deck #driverCard,body.tp-deck #decisionBox,body.tp-deck .timeline,body.tp-deck #f1state{
+    flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;
+    max-height:calc(100dvh - 118px);overflow-y:auto;overscroll-behavior:contain}
+  body.tp-deck #driverCard{order:1} body.tp-deck #decisionBox{order:2;padding:2px 2px 30px}
+  body.tp-deck .timeline{order:3} body.tp-deck #f1state{order:4}
+  body.tp-deck .tl-body{max-height:none}
+  body.tp-deck .f1state .cols{grid-template-columns:1fr;display:grid;gap:18px}   /* en el panel del móvil, pilotos y constructores uno debajo del otro */
+}
+@media (prefers-reduced-motion: reduce){ body.tp-deck .career-grid{scroll-behavior:auto} }
 </style>
 </head>
 <body>
@@ -1355,6 +1451,55 @@ function setTheme(t){
   // el fondo del panel/tarjeta se fija por JS con un degradé; re-renderizar para que tome el tema
   try{ if(typeof S!=="undefined" && S){ refreshCard(); } }catch(e){}
 }
+/* 🎨 EL COLOR DE TU EQUIPO (la mudanza, 13-sep-2026). El acento de la interfaz pasa a ser el de tu
+   escudería. De sus dos colores gana el PRIMERO si se lee sobre el fondo del tema (contraste 3:1); si
+   no, el segundo; y si tampoco, el primero aclarado u oscurecido hasta que se lea. Sin esto el Renault
+   amarillo o el McLaren plateado desaparecían en claro, y el Red Bull azul marino en oscuro. */
+function pintaColorEquipo(t){
+  const R=document.documentElement.style;
+  if(!t || !t.color){ ["--team","--team-ink","--team-soft"].forEach(v=>R.removeProperty(v)); return; }
+  const rgb=h=>{ let s=String(h||"").replace("#",""); if(s.length===3) s=s.split("").map(c=>c+c).join("");
+    const n=parseInt(s.slice(0,6),16); return isNaN(n)?null:[n>>16&255,n>>8&255,n&255]; };
+  const lum=c=>{ const v=c.map(x=>{x/=255; return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4);}); return .2126*v[0]+.7152*v[1]+.0722*v[2]; };
+  const oscuro = THEME==="dark", fondo = oscuro ? [31,31,39] : [255,255,255];
+  const ratio=c=>{ const a=lum(c), b=lum(fondo); return (Math.max(a,b)+.05)/(Math.min(a,b)+.05); };
+  const hex=c=>"#"+c.map(x=>Math.round(x).toString(16).padStart(2,"0")).join("");
+  const c1=rgb(t.color), c2=rgb(t.color2);
+  let ink = c1 && ratio(c1)>=3 ? c1 : (c2 && ratio(c2)>=3 ? c2 : null);
+  if(!ink){ ink=(c1||c2||[225,6,0]).slice(); const meta=oscuro?255:0;
+    for(let k=0;k<12 && ratio(ink)<3;k++) ink=ink.map(x=>x+(meta-x)*.18); }
+  R.setProperty("--team", hex(c1||ink));
+  R.setProperty("--team-ink", hex(ink));
+  R.setProperty("--team-soft", `rgba(${ink.map(Math.round).join(",")},${oscuro?.16:.11})`);
+}
+/* 📱 EL MURO EN PANELES: pestañas que llevan a cada panel y se encienden al deslizar. */
+const DECK_PANELES=[["driverCard",["Tú","You","Você"]],["decisionBox",["Decidir","Decide","Decidir"]],
+                    ["tlPanel",["Historia","History","História"]],["f1state",["Mundial","Standings","Mundial"]]];
+function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
+  if(!g||!el) return; g.scrollTo({left:el.offsetLeft-g.offsetLeft, behavior:"smooth"}); }
+function deckActualiza(){
+  const on = typeof S!=="undefined" && S && S.cat==="TP" && window.matchMedia("(max-width:980px)").matches;
+  document.body.classList.toggle("tp-deck", !!on);
+  const tabs=document.getElementById("deckTabs"); if(!tabs) return;
+  [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p);
+    b.hidden = !el || getComputedStyle(el).display==="none"; b.textContent=LA(DECK_PANELES.find(x=>x[0]===b.dataset.p)[1]); });
+}
+(function deckInit(){ try{
+  const g=document.querySelector("#career .career-grid"); if(!g) return;
+  const tl=document.querySelector("#career .timeline"); if(tl && !tl.id) tl.id="tlPanel";
+  // el recap de la temporada vive dentro de la decisión: así es parte del mismo panel
+  const rc=document.getElementById("decRecap"), db=document.getElementById("decisionBox");
+  if(rc && db) db.insertBefore(rc, db.firstChild);
+  const tabs=document.createElement("div"); tabs.id="deckTabs";
+  DECK_PANELES.forEach(([id])=>{ const b=document.createElement("button"); b.type="button"; b.dataset.p=id;
+    b.onclick=()=>deckIr(id); tabs.appendChild(b); });
+  g.parentNode.insertBefore(tabs, g);
+  g.addEventListener("scroll",()=>{ let mejor=null, d=1e9;
+    [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p); if(!el||b.hidden) return;
+      const x=Math.abs(el.offsetLeft-g.offsetLeft-g.scrollLeft); if(x<d){ d=x; mejor=b; } });
+    [...tabs.children].forEach(b=>b.classList.toggle("on", b===mejor)); },{passive:true});
+  window.addEventListener("resize", deckActualiza);
+}catch(e){} })();
 /* ================= DATOS ================= */
 /* [nombre ES, bandera, nombre EN]. ⚠️ El nombre ESPAÑOL es la CLAVE canónica: `sel.country` guarda
    siempre c[0], porque de ahí cuelgan NAT_AFFINITY, el cameo de Alonso y el país del ranking.
@@ -4670,6 +4815,7 @@ function initInstallHint(){
   window.addEventListener("appinstalled", ()=>dismissInstallHint());
 }
 function showIdentity(){
+  try{ pintaColorEquipo(null); }catch(e){}   // 🎨 la mudanza: cada carrera nueva empieza sin el color del equipo anterior
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
   /* 🔎 con 207 países, la lista ya no se recorre a ojo: el buscador pasa a ser la vía normal.
      Se le da el foco SOLO con ratón: en el móvil abriría el teclado de golpe y taparía media
@@ -5174,9 +5320,11 @@ function refreshCard(){
     else if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
+    try{ pintaColorEquipo(S.team); deckActualiza(); }catch(e){}   // 🎨 la mudanza
   } else {
     $("teamName").textContent=L("Agente libre","Free agent",{pt:"Agente livre"}); $("teamRole").textContent=""; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
     $("driverCard").style.background="var(--panel)";
+    try{ pintaColorEquipo(null); deckActualiza(); }catch(e){}
   }
   const tc=$("trophyCase");
   const shelf=[];
@@ -7183,6 +7331,7 @@ function setDecision(title,sub,pulsing,outcome){
 }
 // en móvil las ofertas viven abajo: al aparecer, las traemos a la vista (con algo de contexto arriba)
 function scrollToDecision(){
+  if(document.body.classList.contains("tp-deck")){ deckIr("decisionBox"); return; }   // 📱 la mudanza
   if(window.innerWidth>980) return;
   const el=$("decisionBox"); if(!el) return;
   requestAnimationFrame(()=>{
@@ -11083,7 +11232,10 @@ function renderF1State(){
     const _bd=document.getElementById("fsMoreD"), _bc=document.getElementById("fsMoreC");
     if(_bd) _bd.style.display=_tp?"":"none";
     if(_bc) _bc.style.display=_tp?"":"none";
-    if(!_tp){ FS_OPEN.d=false; FS_OPEN.c=false; } }
+    if(!_tp){ FS_OPEN.d=false; FS_OPEN.c=false; }
+    /* 🎨 la mudanza: en el modo jefe la clasificación va ENTERA siempre (Carlos, 13-sep: «en pc hay que
+       mostrar la clasificación completa, al menos en el modo TP»). El clásico sigue con top 3 + tú. */
+    else { FS_OPEN.d=FS_OPEN.c=true; if(_bd) _bd.style.display="none"; if(_bc) _bc.style.display="none"; } }
   if(!S.lastTop3) return;
   $("f1state").style.display="block";
   $("fsYear").textContent=S.lastTop3.year;
@@ -13705,6 +13857,7 @@ function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
 /* tarjeta del jefe: prestigio en vez de OVR, humor del consejo en vez de fama, dueño en vez de estilo */
 function tpRefreshCard(){
   window._tpUiDirty=true;
+  try{ pintaColorEquipo(F1_TEAMS.find(t=>t.name===S.tpTeam)); deckActualiza(); }catch(e){}   // 🎨 la mudanza
   /* 🚗 LA INSIGNIA REDONDA ES EL COCHE (Carlos, 20-ago: «¿cambiamos la fama por el OVR del coche?»).
      Es el número que de verdad miras cada invierno, y ovrColor le da una escala de color con sentido.
      La fama no desaparece: baja a un chip ⭐, porque sigue moviendo las ofertas que recibes. */
