@@ -6119,12 +6119,158 @@ function eraAvisar(){
   if(!S.regReg || S.regReg<=yearNow()) return;
   S.regAvisado = true;
   const hacia = eraDireccionTxt();
+  /* 🗣️ «el REGLAMENTO que viene», no «el coche que viene» (Carlos, 12-sep: con la dirección de coche
+     salía «el coche que viene premiará al coche», un trabalenguas). Y la muletilla del paddock se
+     sortea entre cinco (también Carlos, 12-sep: «la frase entre comillas se ve mucho» — en una
+     carrera de 30 temporadas este aviso sale 4-6 veces). */
+  const _pad=[
+    L("en el paddock no se habla de otra cosa","the paddock talks about nothing else",{pt:"no paddock não se fala de outra coisa"}),
+    L("los garajes ya piensan más en aquel año que en este","the garages are already thinking more about that year than this one",{pt:"as garagens já pensam mais naquele ano do que neste"}),
+    L("media parrilla ya dibuja en secreto","half the grid is already sketching in secret",{pt:"metade do grid já desenha em segredo"}),
+    L("todas las cenas del paddock acaban en el mismo tema","every paddock dinner ends on the same subject",{pt:"todo jantar do paddock termina no mesmo assunto"}),
+    L("los jefes técnicos ya solo miran hacia allí","the technical chiefs only look that way now",{pt:"os chefes técnicos já só olham para lá"})
+  ][irnd(0,4)];
   tpRegCola(L(`📋 La FIA publica el reglamento de ${S.regReg}`,`📋 The FIA publishes the ${S.regReg} regulations`,{pt:`📋 A FIA publica o regulamento de ${S.regReg}`}),
-            /* 🗣️ «el REGLAMENTO que viene», no «el coche que viene» (Carlos, 12-sep: con la dirección
-               de coche salía «el coche que viene premiará al coche», un trabalenguas) */
-            L(`Faltan ${S.regReg-yearNow()} años y en el paddock solo se habla de una cosa: el reglamento que viene ${hacia}. A partir de hoy, todo lo que decidas en esta fábrica se decide sabiéndolo.`,
-              `It's ${S.regReg-yearNow()} years away and the paddock is talking about one thing only: the incoming regulations ${hacia}. From today, everything you decide in this factory is decided knowing that.`,
-              {pt:`Faltam ${S.regReg-yearNow()} anos e no paddock só se fala de uma coisa: o regulamento que vem ${hacia}. A partir de hoje, tudo o que você decidir nesta fábrica se decide sabendo disso.`}));
+            L(`Faltan ${S.regReg-yearNow()} años y ${_pad}: el reglamento que viene ${hacia}. A partir de hoy, todo lo que decidas en esta fábrica se decide sabiéndolo.`,
+              `It's ${S.regReg-yearNow()} years away and ${_pad}: the incoming regulations ${hacia}. From today, everything you decide in this factory is decided knowing that.`,
+              {pt:`Faltam ${S.regReg-yearNow()} anos e ${_pad}: o regulamento que vem ${hacia}. A partir de hoje, tudo o que você decidir nesta fábrica se decide sabendo disso.`}));
+}
+/* ═══ 🧭 «EL CONCEPTO» — LA DECISIÓN DE CADA REGLAMENTO (Carlos, 12-sep-2026: «qué valor tengo yo
+   a la hora de acertar con el coche?»). NO es un dilema del bote: sale SIEMPRE que la FIA publica
+   un reglamento (4-6 veces en una carrera de 30), justo después del aviso. Por eso necesita
+   variantes —16 entradas que rotan sin repetirse en una partida— aunque la esencia sea siempre la
+   misma: reglamento nuevo, eliges dirección, y a correr (sus palabras).
+   🔤 SIEMPRE EN ESTE ORDEN Y CON ESTE TÍTULO (Carlos, 13-sep: «en algunos no queda claro a qué se
+     refieren»). La escena pone la piel en la frase de debajo; el título dice la dirección sin rodeos.
+   · A «Prioridad hoy» (k:"hoy"): gratis, y el estreno es la lotería de siempre.
+   · B «Balance» (k:"medio"): pellizco pequeño cada año y estreno SIN extremos (la tirada se
+     recorta hacia lo que ya eras: ni pelotazo ni desastre).
+   · C «Prioridad 20XX» (k:"ya"): pagas los años que quedan y el estreno tira CON VENTAJA (+2..5
+     sobre lo sorteado — mejora la tirada, NO garantiza acertar; regla de oro). Con coche top-3 el
+     consejo se enfada (avisado antes, como el proyecto del rumbo).
+   🧳 Si cambias de equipo a mitad de ciclo, TE COMES lo que esa casa decidió antes de llegar tú
+   (herencia sorteada en tpSignTeam). El pago vive en tpYearStart, antes de calcular el «antes→ahora». */
+function tpConceptoPend(){
+  if(S.cat!=="TP" || !S.tpTeam || S.era!=="2026" || S.eraIdx==null) return false;
+  if(!S.regReg || !S.regAvisado || S.regReg<=yearNow()) return false;
+  return !(S.tpConcepto && S.tpConcepto.y===S.regReg);
+}
+function tpConceptoIntro(){
+  const y=S.regReg, hoy=yearNow();
+  /* 🎭 cada entrada trae su PIEL COMPLETA (Carlos, 12-sep: «las opciones tienen que cambiar de piel
+     también»): d = la escena, hoy/medio/fut = las tres frases con el vocabulario de esa escena.
+     ⚠️ La frase de `fut` no dice «hoy» nunca: debajo del título «Prioridad hoy» se leería al revés. */
+  const V=[
+   {d:L(`Tu jefe técnico ya está en tu puerta con la pregunta de los años que vienen: ¿cuándo empezamos a dibujar el coche de ${y}? Todo lo que le des al futuro se lo quitas al presente.`,`Your technical chief is already at your door with the question of the coming years: when do we start drawing the ${y} car? Everything you give the future, you take from the present.`,{pt:`O seu chefe técnico já está na sua porta com a pergunta dos próximos anos: quando começamos a desenhar o carro de ${y}? Tudo o que você der ao futuro, tira do presente.`}),
+    hoy:L("«Cuando toque: primero el coche de este año»","«When it's time: this year's car first»",{pt:"«Na hora certa: primeiro o carro deste ano»"}),
+    medio:L("«Id dibujando… sin soltar el de este año»","«Start sketching… without letting go of this year's car»",{pt:"«Vão desenhando… sem largar o deste ano»"}),
+    fut:L(`«Empezad ya con el de ${y}»`,`«Start on the ${y} car now»`,{pt:`«Comecem já o de ${y}»`})},
+   {d:L(`En la primera reunión tras el anuncio, la oficina técnica se divide sola: media sala quiere empezar mañana con el coche de ${y} y la otra media no quiere soltar el de este año.`,`In the first meeting after the announcement, the technical office splits on its own: half the room wants to start on the ${y} car tomorrow, the other half won't let go of this year's.`,{pt:`Na primeira reunião após o anúncio, o escritório técnico se divide sozinho: metade da sala quer começar amanhã o carro de ${y} e a outra metade não quer largar o deste ano.`}),
+    hoy:L("«Gana la mitad del coche de este año»","«The this-year's-car half wins»",{pt:"«Vence a metade do carro deste ano»"}),
+    medio:L("«Cada mitad, a lo suyo»","«Each half to its own»",{pt:"«Cada metade no seu»"}),
+    fut:L(`«Gana la mitad de ${y}»`,`«The ${y} half wins»`,{pt:`«Vence a metade de ${y}»`})},
+   {d:L(`El jefe de aerodinámica deja dos carpetas encima de tu mesa: una dice ${hoy} y la otra dice ${y}. «No hay gente para llenar las dos.»`,`The head of aerodynamics leaves two folders on your desk: one says ${hoy}, the other says ${y}. "There aren't enough people to fill both."`,{pt:`O chefe de aerodinâmica deixa duas pastas na sua mesa: uma diz ${hoy} e a outra diz ${y}. «Não há gente para encher as duas.»`}),
+    hoy:L(`«La carpeta de ${hoy}»`,`«The ${hoy} folder»`,{pt:`«A pasta de ${hoy}»`}),
+    medio:L("«Las dos carpetas, más finas»","«Both folders, thinner»",{pt:"«As duas pastas, mais finas»"}),
+    fut:L(`«La carpeta de ${y}»`,`«The ${y} folder»`,{pt:`«A pasta de ${y}»`})},
+   {d:L(`En la cena de Navidad de la fábrica nadie habla del coche de este año. Todos preguntan lo mismo: ¿qué vamos a hacer con el coche de ${y}?`,`At the factory Christmas dinner nobody talks about this year's car. Everyone asks the same thing: what are we doing about the ${y} car?`,{pt:`No jantar de Natal da fábrica ninguém fala do carro deste ano. Todos perguntam a mesma coisa: o que vamos fazer com o carro de ${y}?`}),
+    hoy:L("«Brindad por el de este año»","«Toast this year's car»",{pt:"«Brindem pelo deste ano»"}),
+    medio:L("«Un brindis por cada coche»","«One toast for each car»",{pt:"«Um brinde para cada carro»"}),
+    fut:L(`«Brindad por el de ${y}»`,`«Toast the ${y} car»`,{pt:`«Brindem pelo de ${y}»`})},
+   {d:L(`El simulador ya acepta el reglamento de ${y}. Tu jefe técnico te enseña la primera vuelta virtual y apaga la pantalla: «dime cuánto de esto quieres que sea de verdad, y cuándo».`,`The simulator already takes the ${y} rules. Your technical chief shows you the first virtual lap and switches off the screen: "tell me how much of this you want to be real, and when."`,{pt:`O simulador já aceita o regulamento de ${y}. O seu chefe técnico te mostra a primeira volta virtual e desliga a tela: «me diga quanto disto você quer que seja de verdade, e quando».`}),
+    hoy:L("«Apágalo: primero el coche de este año»","«Switch it off: this year's car first»",{pt:"«Desliga: primeiro o carro deste ano»"}),
+    medio:L("«Media fábrica al simulador, media al coche de este año»","«Half the factory on the simulator, half on this year's car»",{pt:"«Meia fábrica no simulador, meia no carro deste ano»"}),
+    fut:L(`«Hacedlo real: todos a ${y}»`,`«Make it real: everyone on ${y}»`,{pt:`«Façam de verdade: todos em ${y}»`})},
+   {d:L(`Dos rivales han anunciado ya equipos enteros dedicados al reglamento de ${y}. La prensa te pregunta por el tuyo, y todavía no existe.`,`Two rivals have already announced entire groups dedicated to the ${y} rules. The press asks about yours, and it doesn't exist yet.`,{pt:`Dois rivais já anunciaram grupos inteiros dedicados ao regulamento de ${y}. A imprensa pergunta pelo seu, e ele ainda não existe.`}),
+    hoy:L("«Que corran ellos: nosotros, centrados en este año»","«Let them run: we're focused on this year»",{pt:"«Que corram eles: nós, focados neste ano»"}),
+    medio:L("«Un grupo pequeño, sin descuidar el coche de este año»","«A small group, without neglecting this year's car»",{pt:"«Um grupo pequeno, sem descuidar o carro deste ano»"}),
+    fut:L(`«Anunciad mañana nuestro equipo de ${y}»`,`«Announce our ${y} group tomorrow»`,{pt:`«Anunciem amanhã o nosso grupo de ${y}»`})},
+   {d:L(`El presupuesto del invierno llega a tu mesa con una nota del jefe técnico: «falta una línea — cuánto va al coche de ${y}. Esa la escribes tú».`,`The winter budget lands on your desk with a note from your technical chief: "one line is missing — how much goes to the ${y} car. That one you write."`,{pt:`O orçamento do inverno chega à sua mesa com um bilhete do chefe técnico: «falta uma linha — quanto vai para o carro de ${y}. Essa você escreve».`}),
+    hoy:L("«Un cero, de momento: todo al coche de este año»","«A zero, for now: everything on this year's car»",{pt:"«Um zero, por enquanto: tudo no carro deste ano»"}),
+    medio:L("«La mitad de lo que pide»","«Half of what he asks»",{pt:"«A metade do que ele pede»"}),
+    fut:L(`«Una cifra grande para ${y}»`,`«A big number for ${y}»`,{pt:`«Um número grande para ${y}»`})},
+   {d:L(`Tu ingeniero más joven pide verte a solas: lleva tres meses dibujando el coche de ${y} por las noches. Lo que te enseña es prometedor — y no es su trabajo.`,`Your youngest engineer asks to see you alone: he's spent three months drawing the ${y} car at night. What he shows you is promising — and it isn't his job.`,{pt:`O seu engenheiro mais jovem pede para te ver a sós: passou três meses desenhando o carro de ${y} à noite. O que ele mostra é promissor — e não é o trabalho dele.`}),
+    hoy:L("«De vuelta al coche de este año»","«Back to this year's car»",{pt:"«De volta ao carro deste ano»"}),
+    medio:L("«Que siga por las noches, sin dejar su trabajo»","«He can keep going at night, without dropping his job»",{pt:"«Que continue à noite, sem largar o trabalho dele»"}),
+    fut:L(`«Dale un departamento para ${y}»`,`«Give him a ${y} department»`,{pt:`«Dê a ele um departamento para ${y}»`})},
+   {d:L(`La fábrica entera trabaja en el coche de este año… y en el túnel de viento hay una maqueta de ${y} tapada con una lona que nadie ha pedido oficialmente.`,`The whole factory is working on this year's car… and in the wind tunnel there's a ${y} model under a tarp that nobody officially ordered.`,{pt:`A fábrica inteira trabalha no carro deste ano… e no túnel de vento há uma maquete de ${y} coberta por uma lona que ninguém pediu oficialmente.`}),
+    hoy:L("«La lona se queda: el túnel es del coche de este año»","«The tarp stays: the tunnel belongs to this year's car»",{pt:"«A lona fica: o túnel é do carro deste ano»"}),
+    medio:L("«El túnel, a medias entre los dos coches»","«The tunnel, split between both cars»",{pt:"«O túnel, dividido entre os dois carros»"}),
+    fut:L(`«Quitad la lona: ${y} es oficial»`,`«Pull the tarp: ${y} is official»`,{pt:`«Tirem a lona: ${y} é oficial»`})},
+   {d:L(`«¿Cuándo empezamos con el coche de ${y}?» Es la primera frase de tu jefe técnico cada lunes desde el anuncio. Esta vez cierra la puerta y espera la respuesta de verdad.`,`"When do we start on the ${y} car?" It's been your technical chief's opening line every Monday since the announcement. This time he closes the door and waits for the real answer.`,{pt:`«Quando começamos o carro de ${y}?» É a primeira frase do seu chefe técnico toda segunda desde o anúncio. Desta vez ele fecha a porta e espera a resposta de verdade.`}),
+    hoy:L("«Pregúntamelo el año que viene»","«Ask me again next year»",{pt:"«Ano que vem você me pergunta de novo»"}),
+    medio:L("«Poco a poco, sin soltar el de este año»","«Little by little, without letting go of this year's car»",{pt:"«Aos poucos, sem largar o deste ano»"}),
+    fut:L("«Ya. Cierra la puerta al salir»","«Right now. Close the door on your way out»",{pt:"«Já. Feche a porta ao sair»"})},
+   {d:L(`El motorista os convoca: quiere saber cuánta gente vuestra trabajará con la suya en el proyecto de ${y}. La cifra que digas será la apuesta.`,`Your engine partner calls a meeting: they want to know how many of your people will work with theirs on the ${y} project. The number you give will be the bet.`,{pt:`O fornecedor de motor convoca vocês: quer saber quanta gente sua vai trabalhar com a deles no projeto de ${y}. O número que você disser será a aposta.`}),
+    hoy:L("«Ninguno todavía: están con el coche de este año»","«None yet: they're on this year's car»",{pt:"«Nenhum ainda: estão no carro deste ano»"}),
+    medio:L("«La mitad»","«Half»",{pt:"«A metade»"}),
+    fut:L("«Todos los que pidan»","«As many as they ask for»",{pt:"«Todos os que pedirem»"})},
+   {d:L(`En el paddock circulan los primeros conceptos ajenos para ${y}, a cual más raro. Tu jefe técnico los colecciona en una carpeta que dice «distracciones»… y debajo lleva el suyo.`,`The first rival concepts for ${y} are doing the rounds in the paddock, each stranger than the last. Your technical chief collects them in a folder labelled "distractions"… with his own tucked underneath.`,{pt:`No paddock circulam os primeiros conceitos alheios para ${y}, um mais estranho que o outro. O seu chefe técnico os coleciona numa pasta escrita «distrações»… e embaixo leva o dele.`}),
+    hoy:L("«Cierra la carpeta: a por este año»","«Close the folder: this year comes first»",{pt:"«Fecha a pasta: primeiro este ano»"}),
+    medio:L("«Estúdialos, sin soltar el coche de este año»","«Study them, without letting go of this year's car»",{pt:"«Estude-os, sem largar o carro deste ano»"}),
+    fut:L("«Enséñame el tuyo: adelante»","«Show me yours: go ahead»",{pt:"«Me mostra o seu: em frente»"})},
+   {d:L(`Un jefe rival te lo suelta en el pasillo, medio en broma: «¿vosotros también estáis ya con el coche de ${y}?». No le contestas. La respuesta te la debes a ti.`,`A rival boss drops it on you in the corridor, half joking: "are you lot on the ${y} car already too?" You don't answer him. You owe the answer to yourself.`,{pt:`Um chefe rival solta no corredor, meio de brincadeira: «vocês também já estão no carro de ${y}?». Você não responde. A resposta você deve a si mesmo.`}),
+    hoy:L("«No: lo nuestro es este año»","«No: our focus is this year»",{pt:"«Não: o nosso foco é este ano»"}),
+    medio:L("«Con los dos coches a la vez»","«With both cars at once»",{pt:"«Com os dois carros ao mesmo tempo»"}),
+    fut:L("«Sí, y a fondo»","«Yes, and flat out»",{pt:"«Sim, e a fundo»"})},
+   {d:L(`El consejo pregunta por primera vez qué plan hay para el reglamento de ${y}. No piden números todavía: piden saber que HAY un plan.`,`For the first time, the board asks what the plan is for the ${y} rules. They aren't asking for numbers yet: they're asking to know a plan EXISTS.`,{pt:`O conselho pergunta pela primeira vez qual é o plano para o regulamento de ${y}. Ainda não pedem números: pedem saber que EXISTE um plano.`}),
+    hoy:L("«El plan es centrarnos en este año»","«The plan is to focus on this year»",{pt:"«O plano é focar neste ano»"}),
+    medio:L("«El plan es repartir y no jugarse la casa»","«The plan is to split it and not bet the house»",{pt:"«O plano é dividir e não apostar a casa»"}),
+    fut:L(`«El plan es: todo al coche de ${y}»`,`«The plan is: everything on the ${y} car»`,{pt:`«O plano é: tudo no carro de ${y}»`})},
+   {d:L(`Vuestro mejor cerebro pide que le asignen al proyecto de ${y} «antes de que se lo den a otro». Retenerlo en el coche de este año también es una decisión.`,`Your best brain asks to be assigned to the ${y} project "before someone else gets it." Keeping him on this year's car is a decision too.`,{pt:`O seu melhor cérebro pede para ser designado ao projeto de ${y} «antes que deem a outro». Mantê-lo no carro deste ano também é uma decisão.`}),
+    hoy:L("«Te necesito en el coche de este año»","«I need you on this year's car»",{pt:"«Preciso de você no carro deste ano»"}),
+    medio:L("«Los dos proyectos: dos sombreros»","«Both projects: two hats»",{pt:"«Os dois projetos: dois chapéus»"}),
+    fut:L(`«${y} es tuyo, y que elija a su gente»`,`«${y} is yours, and pick your people»`,{pt:`«${y} é seu, e escolha a sua gente»`})},
+   {d:L(`Las primeras piezas de la temporada que viene entran en producción, y el jefe de fábrica pregunta con cuántas máquinas puede contar el proyecto de ${y}. Las máquinas no se clonan.`,`The first parts for next season enter production, and the factory manager asks how many machines the ${y} project can count on. Machines don't clone themselves.`,{pt:`As primeiras peças da temporada que vem entram em produção, e o chefe de fábrica pergunta com quantas máquinas o projeto de ${y} pode contar. Máquinas não se clonam.`}),
+    hoy:L("«Las máquinas son del coche de este año»","«The machines belong to this year's car»",{pt:"«As máquinas são do carro deste ano»"}),
+    medio:L("«Repartidlas entre los dos»","«Split them between both»",{pt:"«Dividam entre os dois»"}),
+    fut:L(`«Las máquinas son de ${y}»`,`«The machines belong to ${y}»`,{pt:`«As máquinas são de ${y}»`})}
+  ];
+  // 🔁 rotación sin repetir dentro de la partida: 16 escenas para 4-6 reglamentos
+  S._concVistos=S._concVistos||[];
+  let libres=V.map((_,i)=>i).filter(i=>S._concVistos.indexOf(i)<0);
+  if(!libres.length){ S._concVistos=[]; libres=V.map((_,i)=>i); }
+  const idx=libres[irnd(0,libres.length-1)];
+  S._concVistos.push(idx);
+  return V[idx];
+}
+function tpConceptoScreen(fin){
+  if(S.retired){ fin(); return; }
+  const tn=S.tpTeam, y=S.regReg, años=Math.max(1, y-yearNow());
+  const ordC=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
+  const _top=ordC.indexOf(tn)<3;
+  const I=tpConceptoIntro();   // 🎭 la escena y sus tres respuestas, con la misma piel
+  setDecision("🧭 "+L(`El concepto de ${y}`,`The ${y} concept`,{pt:`O conceito de ${y}`})+" · "+tn, "");
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=I.d; }catch(e){}
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const mk=(dot,nm,sub,fn)=>{
+    const b=document.createElement("button"); b.className="offer dilemma";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3b5bd6,#1c2a6b)">${dot}</span>
+      <span class="info"><span class="name">${nm}</span><span class="sub" style="display:block">${sub}</span></span>`;
+    b.onclick=()=>{ fn(); fin(); };
+    box.appendChild(b);
+  };
+  // 🔤 siempre A · B · C = hoy · balance · el año del reglamento; la frase de la escena va debajo
+  const _sub=(frase,efecto)=>`<i>${frase}</i><br>${efecto}`;
+  mk("🏁", L("Prioridad hoy","Priority: today",{pt:"Prioridade hoje"}),
+    _sub(I.hoy, L("Sin sacrificio: el estreno será lo que quiera ser.","No sacrifice: the debut will be whatever it wants to be.",{pt:"Sem sacrifício: a estreia será o que quiser ser."})),
+    ()=>{ S.tpConcepto={k:"hoy", y}; });
+  mk("⚖️", L("Balance","Balance",{pt:"Equilíbrio"}),
+    _sub(I.medio, L("Un pellizco cada año que queda, y un estreno sin extremos: ni el pelotazo ni el desastre.","A pinch from every remaining year, and a debut without extremes: no jackpot, no disaster.",{pt:"Um beliscão de cada ano que resta, e uma estreia sem extremos: nem a sorte grande nem o desastre."})),
+    ()=>{ S.tpConcepto={k:"medio", y};
+      TPCAR(-rnd(.3,.7));
+      for(let k=1;k<años;k++) tpSembrar(k, -rnd(.2,.5)); });
+  mk("🚀", L(`Prioridad ${y}`,`Priority: ${y}`,{pt:`Prioridade ${y}`}),
+    _sub(I.fut, L(`Lo que queda de reglamento viejo se resiente; el estreno de ${y} llega con ventaja.`,
+      `What's left of the old rules suffers; the ${y} debut arrives with an edge.`,
+      {pt:`O que resta do regulamento velho sofre; a estreia de ${y} chega com vantagem.`}))
+    +(_top?`<br><span class="aviso-consejo">⚠️ ${L("Tienes uno de los tres mejores coches: sacrificar el presente enfada al consejo","You have one of the three best cars: sacrificing the present sours the board",{pt:"Você tem um dos três melhores carros: sacrificar o presente irrita o conselho"})}</span>`:""),
+    ()=>{ S.tpConcepto={k:"ya", y};
+      TPCAR(-rnd(.8,1.5));
+      for(let k=1;k<años;k++) tpSembrar(k, -rnd(.6,1.2));
+      if(_top) TPRE(-rnd(.8,1.5)); });
+  scrollToDecision();
 }
 /* 👑 EL DOMINIO. La FIA no reacciona a que alguien gane: reacciona a QUÉ le está haciendo ganar
    (idea de Carlos). Un equipo que encadena títulos demuestra que manda la máquina → se empuja hacia
@@ -12984,6 +13130,14 @@ function tpSignTeam(t, how){
         {pt:`🪑 Você vai embora, e logo se vê que o plano de sucessão era papel: a ${_eq} começa a desfazer o que você construiu, e o paddock lembra quem escolheu aquelas mãos. −fama`}));
     }
   }
+  /* 🧭 EL CONCEPTO NO VIAJA CONTIGO (Carlos, 12-sep: «si te vas a otro equipo te comes lo que
+     hayan decidido antes de que llegaras»): con un reglamento pendiente, la casa nueva ya eligió
+     — se sortea qué (la mayoría no se vuelca) y te lo comes. Sin reglamento pendiente, a cero. */
+  if(S.tpTeam && S.tpTeam!==t.name){
+    S.tpConcepto = (S.regReg && S.regReg>yearNow() && S.regAvisado)
+      ? {k:["hoy","hoy","ya","medio"][irnd(0,3)], y:S.regReg, her:true}
+      : null;
+  }
   if(S.tpTeam && S.tpTeam!==t.name){ S.tpCosecha=[]; S.tpAlias=[]; S.tpMemoriaDesde=null; }
   // al dejar un equipo: sus contratos internos se limpian y ningún asiento se queda a null
   if(S.tpTeam && S.tpTeam!==t.name && S.seats[S.tpTeam]){
@@ -13058,6 +13212,15 @@ function tpYearStart(){
        para toda la parrilla — coches recién nacidos, sistemas sin rodar. SECRETA por decisión de
        Carlos: ni aviso, ni texto, ni explicación. El jugador la descubre viviéndola. */
     S.regCrisisY = yearNow()+2;
+    /* 🧭 EL CONCEPTO SE COBRA AQUÍ (12-sep-2026): tu apuesta de aquel invierno ajusta la tirada del
+       estreno — «ya» tira con ventaja (+2..5), «medio» se recorta hacia lo que eras (ni pelotazo ni
+       desastre), «hoy» es la lotería tal cual. Va ANTES de calcular `ahora`, así el texto de «vuestra
+       interpretación es LA buena / os equivocasteis» sigue diciendo la verdad. */
+    if(S.tpConcepto && S.tpConcepto.y===yearNow() && S.tpTeam){
+      const _c=S.tpConcepto; S.tpConcepto=null;
+      if(_c.k==="ya") S.f1perf[S.tpTeam]=Math.min(92,(S.f1perf[S.tpTeam]||75)+rnd(2,5));
+      else if(_c.k==="medio") S.f1perf[S.tpTeam]=Math.round(10*((S.f1perf[S.tpTeam]||75)*.65 + antes*.35))/10;
+    }
     /* 📸 LA FOTO DEL LISTÓN SE REPITE CON EL COCHE NUEVO (12-sep-2026, lo cazó un amigo de Carlos
        jugando: Ferrari 91→65 por el reglamento y el consejo le exigió «3º o mejor», el listón del
        coche VIEJO — y encima con el heredero en la oficina, un fallo era la calle). La foto de
@@ -14932,7 +15095,12 @@ function tpAnnounce(){
   const b=document.createElement("button"); b.className="offer dilemma";
   b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
     <span class="info"><span class="name">${L("Empezar la temporada","Start the season",{pt:"Começar a temporada"})}</span></span>`;
-  b.onclick=()=>{ tpRegPantalla(()=>{ const dl=pickTPDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); }); };
+  b.onclick=()=>{ tpRegPantalla(()=>{
+    /* 🧭 el concepto va DESPUÉS de las pantallas del reglamento (el aviso que lo provoca) y ANTES
+       del dilema del año: es la decisión fija de cada ciclo, no compite con el sorteo */
+    const _sig=()=>{ const dl=pickTPDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); };
+    if(tpConceptoPend()) tpConceptoScreen(_sig); else _sig();
+  }); };
   box.appendChild(b);
   scrollToDecision();
 }
@@ -15269,8 +15437,12 @@ function monedaSimbolica(tn){
   return yearNow()>=1999 ? L("un euro","a euro",{pt:"um euro"})
                          : L("un dólar","a dollar",{pt:"um dólar"});
 }
-const TP_TOPE=20;                      // temporadas máximas en el muro
-const TP_DESPEDIDA=17;                 // …y la temporada en la que al DUEÑO se le pregunta hasta cuándo
+/* 🚪 EL TOPE SE ABRE A 30 (12-sep-2026, el plan de Carlos desde el 11-sep: primero poblar el tramo
+   final de dilemas —14 nuevos entre veteranos y evergreen—, luego abrir). Todo lo que cuelga del
+   tope es paramétrico y se mueve solo: contratos, último contrato, texto de despedida, ventana de
+   la sede. El ranking NO se normaliza — decisión de Carlos: «la gente puede sumar más puntos». */
+const TP_TOPE=30;                      // temporadas máximas en el muro
+const TP_DESPEDIDA=TP_TOPE-3;          // …y la temporada en la que al DUEÑO se le pregunta hasta cuándo (atada al tope, antes 17 a mano)
 function tpDuracionContrato(tn){
   // los grandes atan corto (te exigen ya); los pequeños dan margen porque necesitan paciencia
   const perf=S.f1perf[tn]??75;
@@ -18799,8 +18971,11 @@ const TP_DILEMAS=[
     /* 🪑 excluyente con «El plan de sucesión» (Carlos, 12-sep): si el consejo ya te pidió plan,
        el becario no viene a por tu silla — solo uno de los dos por partida. */
     if(S.usedDilemmas && S.usedDilemmas.tpSucesion) return false;
+    /* 🚪 con el tope en 30 (12-sep), el heredero se muda al TRAMO FINAL de verdad (Carlos): antes
+       salía desde la 16 —el final de una carrera de 20—, pero con 30 eso era media carrera y su
+       trampa de un-fallo-y-calle te acompañaba 14 temporadas. Atado al tope: TP_TOPE−8 (desde la 22). */
     const filas=(S.seasons||[]).filter(r=>r.cat==="TP");
-    if(filas.length<16) return false;
+    if(filas.length<TP_TOPE-8) return false;
     const aqui=tpAniosAqui();
     if(aqui<8) return false;
     S._herA=aqui; return true; },
