@@ -2114,6 +2114,43 @@ const GRID2009 = {
   "Force India": [["A. Sutil",26,79,84,0,"🇩🇪"],["G. Fisichella",36,80,82,0,"🇮🇹"]],
   "Toro Rosso":  [["S. Buemi",21,76,82,0,"🇨🇭"],["S. Bourdais",30,76,80,0,"🇫🇷"]],
 };
+/* 🏁 LA PARRILLA DE 2011, para el reto de Kubica. Doce equipos, veinticuatro coches. El Red Bull
+   arriba porque ese año arrasó; el Renault negro y oro es EL QUINTO coche — el reto no te regala
+   nada: la pregunta es cuánto vale un fuera de serie en un coche mediano, y cuánto tarda en llegarle
+   el cochazo si lo demuestra.
+   🦋 DOS MARIPOSAS, las dos del mismo aleteo: Heidfeld y Bruno Senna SOLO llegaron a ese Renault
+   por el accidente — sin rally, ni uno ni otro. Petrov conserva el asiento 2, y el 1 es tuyo.
+   🧬 «Mercedes GP» y «Lotus» se llaman así A PROPÓSITO: son las llaves de LINEAGE_2010 — de ahí
+   salen solos Mercedes (2011-14), Caterham, Alfa/Audi y compañía, sin tocar una línea. */
+const TEAMS_2011 = [
+  {name:"Red Bull",     abbr:"RBR", color:"#0A1E5E", color2:"#D4001A", perf:94},
+  {name:"McLaren",      abbr:"MCL", color:"#C0C0C8", color2:"#DD1E2F", perf:90},
+  {name:"Ferrari",      abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:88},
+  {name:"Mercedes GP",  abbr:"MER", color:"#B9BCC4", color2:"#00A19B", perf:82},
+  {name:"Renault",      abbr:"REN", color:"#161616", color2:"#F5D800", perf:80},
+  {name:"Force India",  abbr:"FI",  color:"#E87511", color2:"#245A2A", perf:76},
+  {name:"Sauber",       abbr:"SAU", color:"#1B2A4A", color2:"#C0C0C8", perf:75},
+  {name:"Toro Rosso",   abbr:"STR", color:"#153A72", color2:"#D00000", perf:73},
+  {name:"Williams",     abbr:"WIL", color:"#1A3D7C", color2:"#7FB2E6", perf:70},
+  {name:"Lotus",        abbr:"LOT", color:"#00573F", color2:"#F5D800", perf:64},
+  {name:"HRT",          abbr:"HRT", color:"#4A4A4A", color2:"#C7A24B", perf:62},
+  {name:"Virgin",       abbr:"VIR", color:"#C00000", color2:"#1A1A1A", perf:61},
+];
+/* [nombre, edad en 2011 (año − nacimiento, como siempre), nivel, techo, títulos antes de 2011, bandera] */
+const GRID2011 = {
+  "Red Bull":    [["S. Vettel",24,93,96,1,"🇩🇪"],["M. Webber",35,84,87,0,"🇦🇺"]],
+  "McLaren":     [["L. Hamilton",26,92,96,1,"🇬🇧"],["J. Button",31,88,91,1,"🇬🇧"]],
+  "Ferrari":     [["F. Alonso",30,93,95,2,"🇪🇸"],["F. Massa",30,84,88,0,"🇧🇷"]],
+  "Mercedes GP": [["N. Rosberg",26,86,91,0,"🇩🇪"],["M. Schumacher",42,84,91,7,"🇩🇪"]],
+  "Renault":     [["V. Petrov",27,76,81,0,"🇷🇺"]],
+  "Force India": [["A. Sutil",28,79,84,0,"🇩🇪"],["P. di Resta",25,77,84,0,"🇬🇧"]],
+  "Sauber":      [["K. Kobayashi",25,78,83,0,"🇯🇵"],["S. Pérez",21,77,89,0,"🇲🇽"]],
+  "Toro Rosso":  [["S. Buemi",23,76,82,0,"🇨🇭"],["J. Alguersuari",21,75,82,0,"🇪🇸"]],
+  "Williams":    [["R. Barrichello",39,81,83,0,"🇧🇷"],["P. Maldonado",26,74,81,0,"🇻🇪"]],
+  "Lotus":       [["H. Kovalainen",30,80,85,0,"🇫🇮"],["J. Trulli",37,78,81,0,"🇮🇹"]],
+  "HRT":         [["V. Liuzzi",31,75,79,0,"🇮🇹"],["N. Karthikeyan",34,72,75,0,"🇮🇳"]],
+  "Virgin":      [["T. Glock",29,79,83,0,"🇩🇪"],["J. d'Ambrosio",26,71,76,0,"🇧🇪"]],
+};
 const LEGENDS_TARDIAS = {
   "2000": [["M. Schumacher",7,"🇩🇪",2007],["M. Häkkinen",2,"🇫🇮",2002],["J. Villeneuve",1,"🇨🇦",2007]],
   "2010": [["M. Schumacher",7,"🇩🇪",2013]],
@@ -3390,10 +3427,35 @@ const CHALLENGES = {
     persona:"SENNA JR",
     at:"2026-09-14T10:00:00Z",
   },
-  /* 🅿️ EL SITIO GUARDADO, AL FINAL A PROPÓSITO (Carlos, 24-ago: «Valentino es el III, el IV todavía
-     no está 100% decidido»). Estaba entre Pechito y Valentino y se comía el III aunque no exista.
-     Aquí abajo no puede robarle el número a nadie ya publicado, ni siquiera el día que se publique. */
-  reto3: { id:"reto3", wip:true },
+  /* 🇵🇱 RETO VI · EL VOLANTE VACÍO (Carlos eligió a Kubica el 12-sep-2026; ocupa el sitio que
+     llevaba guardado desde el 24-ago). Lo de aquí pasó: Kubica firmó con Renault para 2011 como
+     primer piloto, y el 6 de febrero se estrelló en el Ronde di Andora, en Liguria. El volante lo
+     ocuparon Heidfeld primero y Bruno Senna después — los dos SOLO llegaron por el accidente, y por
+     eso aquí no están (la mariposa va en GRID2011, como siempre).
+     ⚠️ LO QUE EL TEXTO NO AFIRMA: el preacuerdo con Ferrari para 2012 del que se habló años
+        después. Documentado con matices, pero no con la solidez que exige la regla de siempre —un
+        reto no inventa—, así que en su lugar va lo que sí está grabado: Alonso señalándolo como su
+        rival más duro.
+     🎯 SIN COMPARATIVA (como Valentino y La Bestia): no hay Kubica 2011 real contra el que medirse
+        — ese es exactamente el agujero que el reto rellena. El listón es la pregunta misma.
+     🎚️ OVR 88, TECHO 93, en EL QUINTO coche: el reto no es el coche, eres tú. Números medidos con
+        el banco de siempre contra Valentino de control. */
+  kubica: {
+    id:"kubica", era:"2010", year:2011, team:"Renault", role:"1", secret:true,
+    teams: TEAMS_2011, grid: GRID2011,
+    drop:["R. Kubica","N. Heidfeld","B. Senna"],
+    who:{ age:27, ovr:88, ceil:93, flag:"🇵🇱", country:"Polonia", style:"agresivo", num:"9" },
+    t:["El volante vacío","The empty seat","O volante vazio"],
+    sub:["El asiento que dejó el rally · 2011 · 27 años",
+         "The seat the rally left empty · 2011 · aged 27",
+         "O assento que o rali deixou vazio · 2011 · 27 anos"],
+    d:["Firmaste con Renault para 2011 siendo el piloto del que todo el paddock hablaba en voz baja: el que ganó con un BMW a los veintitrés, el que Alonso señalaba como su rival más duro. El 6 de febrero te subiste a un rally en Liguria, y el volante se quedó vacío. Aquí ese rally no existe: el coche negro y oro es tuyo, tienes veintisiete años y las dos manos sobre el volante. Todo lo que aquel invierno prometía sigue por delante.",
+       "You signed with Renault for 2011 as the driver the whole paddock whispered about: the man who won in a BMW at twenty-three, the one Alonso named as his toughest rival. On the 6th of February you climbed into a rally car in Liguria, and the seat was left empty. Here, that rally never happens: the black-and-gold car is yours, you are twenty-seven, and both hands are on the wheel. Everything that winter promised is still ahead.",
+       "Você assinou com a Renault para 2011 sendo o piloto de quem o paddock inteiro falava baixinho: o que venceu com uma BMW aos vinte e três, o que Alonso apontava como seu rival mais duro. No dia 6 de fevereiro você entrou num rali na Ligúria, e o volante ficou vazio. Aqui esse rali não existe: o carro preto e ouro é seu, você tem vinte e sete anos e as duas mãos no volante. Tudo o que aquele inverno prometia segue adiante."],
+    champ:"S. Vettel",   // 👑 campeón del mundo de 2010
+    persona:"KUBICA",
+    at:"2026-09-21T10:00:00Z",
+  },
 };
 // el nombre del monstruo se fija AL CREARLO, en el idioma de la partida (como los eventos del historial)
 function beastName(){ return L("La Bestia","The Beast",{pt:"A Fera"}); }
