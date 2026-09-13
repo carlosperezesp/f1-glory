@@ -46,8 +46,10 @@ const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp"];   // 🧑‍💼
    Arreglo sin migrar datos ni gastar un comando más: se guarda igual, pero al LEER se extrae el apodo
    limpio y se le pone el personaje que corresponde A ESTA TABLA. Los registros viejos quedan bien
    solos. ⚠️ Si se añade un reto con `persona`, hay que añadirlo aquí. */
-const PERSONAS = { alonso01: "ALONSO", pechito: "PECHITO", valentino: "VALENTINO", sennajr: "SENNA JR", kubica: "KUBICA" };
-const PERSONAS_LISTA = Object.keys(PERSONAS).map((k) => PERSONAS[k]);
+const PERSONAS = { alonso01: "ALONSO", pechito: "PECHITO", valentino: "VALENTINO", sennajr: "B. SENNA", kubica: "KUBICA" };
+/* "SENNA JR" fue el rótulo de ese reto hasta el 13-sep: las partidas de preview guardadas con él
+   tienen que seguir despegándose. */
+const PERSONAS_LISTA = Object.keys(PERSONAS).map((k) => PERSONAS[k]).concat(["SENNA JR"]);
 function apodoLimpio(n) {
   const s = String(n || "").trim();
   /* solo se despega el prefijo si es un PERSONAJE conocido: un apodo con paréntesis puestos por el

@@ -2076,7 +2076,7 @@ const GRID2007 = {
    pero un reto puede empezar SIETE años más tarde: en 2007 el récord lo tenía Schumacher con 7 desde
    2004 y el juego seguía diciendo que era Fangio con 5. El cuarto campo es el primer año en que
    cuenta como leyenda retirada, y el segundo, los títulos que tenía ENTONCES. */
-/* 🏁 LA PARRILLA DE 2009, para el reto de Senna Jr. Diez equipos, veinte coches. El Brawn sale
+/* 🏁 LA PARRILLA DE 2009, para el reto de Bruno Senna. Diez equipos, veinte coches. El Brawn sale
    arriba porque ahí SALIÓ arriba: el coche que ganó los dos Mundiales del año que el equipo se
    compró por una libra. Los niveles son los del año, no los de la leyenda: el McLaren de 2009
    empezó siendo un desastre aunque llevara al campeón vigente dentro. */
@@ -3420,11 +3420,11 @@ const CHALLENGES = {
     sub:["El asiento que no le dieron · 2009 · 25 años",
          "The seat he never got · 2009 · aged 25",
          "O assento que não lhe deram · 2009 · 25 anos"],
-    d:["En noviembre de 2008 probaste con Honda y te dijeron que estaban decidiendo. Un mes después el equipo se retiró de la Fórmula 1, y en marzo lo compró su propio director por una libra. El coche que salió de aquella fábrica era el mejor de la parrilla, y el asiento se lo dieron a otro. Aquí es tuyo. Llevas el apellido más pesado de este deporte y un coche capaz de ganarlo todo desde la primera carrera: ya no hay excusas ni hay dónde esconderse.",
-       "In November 2008 you tested for Honda and were told they were still deciding. A month later the team pulled out of Formula 1, and in March its own boss bought it for one pound. The car that came out of that factory was the best on the grid, and they gave the seat to somebody else. Here it's yours. You carry the heaviest surname in this sport and a car that can win from race one: no excuses left, and nowhere to hide.",
-       "Em novembro de 2008 você testou pela Honda e ouviu que ainda estavam decidindo. Um mês depois a equipe se retirou da Fórmula 1 e, em março, o próprio chefe a comprou por uma libra. O carro que saiu daquela fábrica era o melhor do grid, e o assento foi para outro. Aqui é seu. Você carrega o sobrenome mais pesado deste esporte e um carro capaz de ganhar tudo desde a primeira corrida: sem desculpas e sem onde se esconder."],
+    d:["Eres Bruno Senna. En noviembre de 2008 probaste con Honda y te dijeron que estaban decidiendo. Un mes después el equipo se retiró de la Fórmula 1, y en marzo lo compró su propio director por una libra. El coche que salió de aquella fábrica era el mejor de la parrilla, y el asiento se lo dieron a otro. Aquí es tuyo. Llevas el apellido más pesado de este deporte y un coche capaz de ganarlo todo desde la primera carrera: ya no hay excusas ni hay dónde esconderse.",
+       "You are Bruno Senna. In November 2008 you tested for Honda and were told they were still deciding. A month later the team pulled out of Formula 1, and in March its own boss bought it for one pound. The car that came out of that factory was the best on the grid, and they gave the seat to somebody else. Here it's yours. You carry the heaviest surname in this sport and a car that can win from race one: no excuses left, and nowhere to hide.",
+       "Você é Bruno Senna. Em novembro de 2008 você testou pela Honda e ouviu que ainda estavam decidindo. Um mês depois a equipe se retirou da Fórmula 1 e, em março, o próprio chefe a comprou por uma libra. O carro que saiu daquela fábrica era o melhor do grid, e o assento foi para outro. Aqui é seu. Você carrega o sobrenome mais pesado deste esporte e um carro capaz de ganhar tudo desde a primeira corrida: sem desculpas e sem onde se esconder."],
     champ:"L. Hamilton",   // 👑 campeón del mundo de 2008
-    persona:"SENNA JR",
+    persona:"B. SENNA",   // y no «BRUNO SENNA»: con un apodo de 14 letras pasaría del tope de 26 del ranking
     at:"2026-09-14T10:00:00Z",
   },
   /* 🇵🇱 RETO VI · EL VOLANTE VACÍO (Carlos eligió a Kubica el 12-sep-2026; ocupa el sitio que
@@ -3784,7 +3784,7 @@ function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
 const ROMANOS=["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
 function challengeLabel(c){
   const i=Object.keys(CHALLENGES).filter(k=>!CHALLENGES[k].wip).indexOf(c.id)+1;
-  return L(`Reto ${ROMANOS[i]||i} · ${c.t[0]}`, `Challenge ${ROMANOS[i]||i} · ${c.t[1]}`,{pt:`Desafio ${ROMANOS[i]||i} · ${c.t[0]}`});
+  return L(`Reto ${ROMANOS[i]||i} · ${c.t[0]}`, `Challenge ${ROMANOS[i]||i} · ${c.t[1]}`,{pt:`Desafio ${ROMANOS[i]||i} · ${c.t[2]||c.t[0]}`});
 }
 /* 🪪 NOMBRE VISIBLE. En un reto NO eres tú con su coche: ERES ÉL, y tu apodo va entre paréntesis →
    «ALONSO (PEPITO)». Se usa en la pantalla final, la tarjeta compartible y el ranking.
