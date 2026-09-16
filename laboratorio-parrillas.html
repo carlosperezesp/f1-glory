@@ -65,7 +65,7 @@ function tirar(){
   const cuna=document.getElementById("cuna"); cuna.innerHTML="";
   const f=document.createElement("iframe"); cuna.appendChild(f);
   f.addEventListener("load", ()=>setTimeout(()=>simular(f), 1800));
-  f.src="index.html";
+  f.src="index.html?lab="+Date.now();   // sin caché: cada tirada usa el juego recién desplegado
 }
 function simular(f){
   const w=f.contentWindow, salida=document.getElementById("salida"), estado=document.getElementById("estado");
