@@ -300,6 +300,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .spbadge i{display:block;width:82%;height:82%}
 .spbadge img{display:block;width:82%;height:82%;object-fit:contain;border:none;box-shadow:none}
 .spbadge.mb{width:20px;height:20px}
+.spbadge .capa{position:absolute;inset:9%;width:82%;height:82%}
+.spbadge.conCapas{position:relative;overflow:hidden}
 #teamDot.haslogo{background-size:cover;background-position:center;border:none !important;box-shadow:none}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
 .stat{background:var(--panel2);border-radius:12px;padding:8px 4px}
@@ -2916,11 +2918,20 @@ function familiasEnUso(salvo){
   F1_TEAMS.forEach(t=>{ if(t && t.name!==salvo) u.add(familiaColor(t.color)); });
   return u;
 }
+function familiasContadas(salvo){
+  const c={};
+  F1_TEAMS.forEach(t=>{ if(t && t.name!==salvo){ const f=familiaColor(t.color); c[f]=(c[f]||0)+1; } });
+  return c;
+}
 function eligePaleta(lista, salvo){
   if(!lista || !lista.length) return null;
-  const u=familiasEnUso(salvo);
-  const libres=lista.filter(p=>!u.has(p.f));
-  const pool=libres.length?libres:lista;         // si no queda ninguna libre, se repite
+  /* 🎨 que no abunden los mismos colores (Carlos, 16-sep): primero familias que NO lleva nadie;
+     si no queda, familias con MENOS DE DOS equipos; y solo como último recurso, repetir. Así un
+     tercer equipo negro no entra de negro si hay otro color libre. */
+  const c=familiasContadas(salvo);
+  const libres=lista.filter(p=>!(c[p.f]>0));
+  const raras =lista.filter(p=>(c[p.f]||0)<2);
+  const pool=libres.length?libres:(raras.length?raras:lista);
   return pool[irnd(0,pool.length-1)];
 }
 /* pone el escudo de un equipo recién aparecido y devuelve la paleta usada (o null
@@ -3087,6 +3098,64 @@ function spBadgeHTML(sb, cls){
   if(sb.img) return `<span class="spbadge ${cls}" style="background:${sb.c1}"><img src="${sb.img}" alt=""></span>`;
   return `<span class="spbadge ${cls}" style="background:${sb.c1}"><i style="background:${sb.c2};-webkit-mask:url(${sb.sil}) ${m};mask:url(${sb.sil}) ${m}"></i></span>`;
 }
+/* 🎨 LIBREAS POR ÉPOCA (16-sep-2026, fase 1 de la biblioteca de escudos). Cada tramo: d=desde,
+   h=hasta (opcional: al acabarse se vuelve al escudo de siempre), bg=el círculo (color o degradado),
+   aro=anillo interior opcional, capas=[{sil,c}] siluetas teñidas apiladas. Datos sacados de la
+   biblioteca (disenos/_generar-biblioteca.py), que es la especificación. Piloto: Williams, Sauber y
+   Haas, los tres con material que YA está desplegado — nada de Siluetas/ (no está en git). */
+const LIBREAS = {
+  "Williams":[
+    {d:1990, bg:"#0A3A8C", aro:"#F5D800", capas:[{sil:"williams_logo.png", c:"#F2F2F5"}]}, // Canon y Rothmans, con el aro amarillo
+    {d:1998, bg:"#C8102E", capas:[{sil:"williams_logo.png", c:"#F2F2F5"}]},                // Winfield
+    {d:2000, bg:"#101C4E", capas:[{sil:"williams_logo.png", c:"#F2F2F5"}]},                // BMW y los años que siguieron
+    {d:2014, bg:"#F2F2F5", capas:[{sil:"williams_logo.png", c:"#0A3A8C"}]},                // Martini: se da la vuelta
+    {d:2019, bg:"linear-gradient(160deg,#F4F6F8 42%,#53C2EE)", capas:[{sil:"williams_logo.png", c:"#0A3A8C"}]}, // ROKiT
+    {d:2021, bg:"#0A3A8C", capas:[{sil:"williams_logo.png", c:"#37BDF8"}]},                // azul eléctrico
+  ],
+  "Sauber":[
+    /* la S teñida cubre TODA la línea temporal (Carlos, 16-sep: nada de volver al disco rojo).
+       Si el equipo se llama «Sauber» pasado 2005 es que BMW/Alfa no llegaron: sigue su propia
+       historia. La S nueva (post-2010) llegará en la fase 2; de momento, la de siempre. */
+    {d:1993, bg:"#101014", capas:[{sil:"sauber_logo.png", c:"#F2F2F5"}]},                  // blanco sobre negro
+    {d:1995, bg:"#0A1E5E", capas:[{sil:"sauber_logo.png", c:"#F2F2F5"}]},                  // el año del azul de Red Bull
+    {d:1996, bg:"#1763B5", capas:[{sil:"sauber_logo.png", c:"#45BEBE"}]},                  // Petronas (si BMW no entra, lo mantiene)
+    {d:2010, bg:"#F4F6F8", capas:[{sil:"sauber_logo.png", c:"#D5051E"}]},                  // se va BMW: rojo sobre blanco
+    {d:2013, bg:"#121216", capas:[{sil:"sauber_logo.png", c:"#F4F6F8"}]},                  // blanco sobre negro
+    {d:2015, bg:"#1E3F9B", capas:[{sil:"sauber_logo.png", c:"#F2C300"}]},                  // azul y amarillo del Banco do Brasil
+    {d:2017, bg:"#F4F6F8", capas:[{sil:"sauber_logo.png", c:"#1E3F9B"}]},                  // azul sobre blanco
+    {d:2018, bg:"#8C1720", capas:[{sil:"sauber_logo.png", c:"#F4F6F8"}]},                  // el granate, aún con su S
+    {d:2019, bg:"#F4F6F8", capas:[{sil:"sauber_logo.png", c:"#D5051E"}]},                  // si Alfa no llega: rojo sobre blanco
+  ],
+  "Haas":[
+    {d:2016, bg:"#C0C0C8", capas:[{sil:"haas_logo.png", c:"#C8102E"}]},                    // gris y rojo
+    {d:2019, bg:"#0A0A0A", capas:[{sil:"haas_logo.png", c:"#D4B24C"}]},                    // Rich Energy
+    {d:2020, bg:"#F2F2F5", capas:[{sil:"haas_logo.png", c:"#C8102E"}]},                    // rojo sobre blanco, siete años
+  ],
+};
+function libreaDe(name, year){
+  const L=LIBREAS[name]; if(!L) return null;
+  const yr=year||((typeof S!=="undefined"&&S)?yearNow():9999);
+  /* un tramo TERMINA donde empieza el siguiente (h explícito solo hace falta en el último, para
+     devolver el escudo de siempre al acabarse). Sin esto, el tramo del 95 de Sauber —sin fin—
+     resucitaba en 2006 cuando caducaba el del Petronas. */
+  for(let i=L.length-1;i>=0;i--){
+    const t=L[i];
+    if(yr < t.d) continue;
+    const fin = (t.h!=null) ? t.h : (i<L.length-1 ? L[i+1].d-1 : null);
+    if(fin!=null && yr>fin) return null;
+    return t;
+  }
+  return null;
+}
+function libreaHTML(l, cls){
+  const m="center/contain no-repeat";
+  const capas=(l.capas||[]).map(c=>`<i class="capa" style="background:${c.c};-webkit-mask:url(${c.sil}) ${m};mask:url(${c.sil}) ${m}"></i>`).join("");
+  /* el aro NO puede ser box-shadow: .spbadge lo anula con !important (las insignias van planas,
+     petición de Carlos). Así que es una capa más: un anillo pintado con degradado radial, que
+     escala con el tamaño del escudo. */
+  const aro=l.aro?`<i class="capa" style="inset:0;width:100%;height:100%;background:radial-gradient(closest-side,transparent 88%,${l.aro} 89%)"></i>`:"";
+  return `<span class="spbadge conCapas ${cls}" style="background:${l.bg}">${capas}${aro}</span>`;
+}
 function logoFor(name, year){
   const eras=TEAM_LOGOS_ERA[name];
   // sin partida en curso (S null) no hay año que resolver: se usa el logo actual
@@ -3100,6 +3169,8 @@ function badge(team, extraCls, year){
   const obj  = (team && typeof team==="object") ? team : (F1_TEAMS.find(x=>x.name===name)||(name==="APXGP"?APXGP:null));
   const cls  = extraCls||"";
   if(SPONSOR_BADGE[name]) return spBadgeHTML(SPONSOR_BADGE[name], "team-dot "+cls);
+  const lib = libreaDe(name, year);
+  if(lib) return libreaHTML(lib, "team-dot "+cls);
   const src  = logoFor(name, year);
   if(src) return `<img class="team-dot tlogo ${cls}" src="${src}" alt="${name}">`;
   return `<span class="team-dot ${cls}" style="${obj?badgeStyle(obj):'background:#bbb'}">${(obj&&obj.abbr)||""}</span>`;
