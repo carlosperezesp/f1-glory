@@ -1929,13 +1929,13 @@ const ENTRIES_2010 = [
  // 🇺🇸 USF1: el proyecto americano que se hundió antes de debutar en 2010 — en muy pocas realidades, cuaja.
  // Y si cuaja, debuta con J.M. López 🇦🇷: su fichaje REAL para 2010 (driversBorn = [nombre, nacido, nivel, techo, bandera])
  {range:[2011,2014], prob:.12, team:{name:"USF1", abbr:"USF", color:"#1B3E7A", color2:"#C8102E", perf:60, cat:"F1"}, drivers:null,
-  driversBorn:[["J.M. López",1983,79,85,"🇦🇷"]]},
+  driversBorn:[["J.M. López",1983,79,85,"🇦🇷"]], dieAfter:{w:[2,5], p:.8}},  // se hundió antes de debutar: que aguante es la excepción
  // 🇷🇸 Stefan GP: lo intentó en 2010 y sonó otra vez en 2015 — rarísimo que entre, y rarísimo que aguante
  {range:[2014,2016], prob:.08, team:{name:"Stefan GP", abbr:"SGP", color:"#C6363C", color2:"#0C4076", perf:57, cat:"F1"}, drivers:null, dieAfter:{w:[2,5], p:.7}},
  // 🇯🇵 Toyota: se fue a finales de 2009; en algunas realidades el gigante vuelve
- {range:[2014,2022], prob:.28, team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null},
+ {range:[2014,2022], prob:.28, team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null, dieAfter:{w:[5,9], p:.45}},
  // 🇩🇪 Porsche: el eterno «casi»
- {range:[2016,2025], prob:.22, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null},
+ {range:[2016,2025], prob:.22, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null, dieAfter:{w:[6,10], p:.35}},
 /* 🇪🇸 CAMPOS RACING · EL TERCER INTENTO DE ADRIÁN CAMPOS (2021→2022). Tras Minardi como piloto y
     tras perder su equipo de 2010 —que se vendió a Carabante y salió a pista como HRT—, iba a por un
     proyecto con control de verdad, junto a Monaco Increase Management. Motor Renault muy rumoreado,
@@ -1954,7 +1954,7 @@ const ENTRIES_2010 = [
   dieAfter:{w:[3,7], p:.40}},
  // 🇺🇸 proyecto GM: o Andretti o Cadillac, nunca los dos
  {range:[2022,2027], prob:.3,  team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[3,8], p:.35}},
- {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+ {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[8,12], p:.3}},  // entra con respaldo de GM
 ];
 const ENTRIES_2020 = [
  /* 🇪🇸 el mismo what-if de Campos, en la era de 2020: aquí llega cuando tú aún estás subiendo la
@@ -1963,8 +1963,8 @@ const ENTRIES_2020 = [
  {range:[2022,2023], prob:.30, team:{name:"Campos Racing", abbr:"CMP", color:"#E8452C", color2:"#F2B01E", perf:61, cat:"F1"},
   drivers:null, noSi:"Campos", driversBorn:[["P. Wehrlein",1994,83,87,"🇩🇪"],["A. Palou",1997,83,87,"🇪🇸"]],
   dieAfter:{w:[3,7], p:.40}},
- {range:[2024,2028], prob:.35, team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
- {range:[2025,2029], prob:.6,  team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+ {range:[2024,2028], prob:.35, team:{name:"Andretti", abbr:"AND", color:"#D01031", color2:"#101418", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[3,8], p:.35}},
+ {range:[2025,2029], prob:.6,  team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[8,12], p:.3}},
  // 🇩🇪 Porsche: el acuerdo con Red Bull que se rompió en 2022 — en algunas realidades se firma otro camino
  {range:[2026,2031], prob:.25, team:{name:"Porsche", abbr:"POR", color:"#D5001C", color2:"#191F22", perf:67, cat:"F1"}, drivers:null, dieAfter:{w:[4,9], p:.25}},
  {range:[2027,2033], prob:.2,  team:{name:"Toyota", abbr:"TOY", color:"#EB0A1E", color2:"#F2F2F2", perf:68, cat:"F1"}, drivers:null, dieAfter:{w:[4,9], p:.25}},
@@ -2312,7 +2312,7 @@ const LINEAGE_1990 = [
  {key:"Arrows",   steps:[{to:{name:"Footwork",abbr:"FTW",color:"#B23A2E",color2:"#f5f5f5"}, w:[1991,1992], p:.75},
                          {to:{name:"Arrows",abbr:"ARR",color:"#FF6600",color2:"#111111"}, w:[1996,1998], p:.8, from:"Footwork"},
                          {die:true, w:[2002,2005], p:.8}]},
- {key:"Ligier",   steps:[{to:{name:"Prost GP",abbr:"PRO",color:"#0A1A3F",color2:"#F5F5F5"}, w:[1996,1998], p:.75},
+ {key:"Ligier",   steps:[{to:{name:"Prost GP",abbr:"PRO",color:"#0A1A3F",color2:"#F5F5F5"}, w:[1996,1998], p:.75, vivo:"A. Prost"},
                          /* ⚰️ SIN `from`: era el ÚNICO linaje cuya muerte exigía el rebautizo previo, y como
                             Ligier→Prost solo ocurre el 75% de las veces, 1 de cada 4 Ligier se volvía
                             INMORTAL (medido: el linaje vivo en 2010 el 50% de las partidas; la realidad,
@@ -2508,7 +2508,7 @@ const ENTRIES_2000 = [
  {range:[2009,2012], prob:.5,  team:{name:"HRT", abbr:"HRT", color:"#8A8D90", color2:"#B01B2E", perf:58, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.75}},
  {range:[2009,2012], prob:.5,  team:{name:"Virgin", abbr:"VIR", color:"#D11D2A", color2:"#151515", perf:60, cat:"F1"}, drivers:null, dieAfter:{w:[4,7], p:.6}},
  {range:[2014,2018], prob:.6,  team:{name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:64, cat:"F1"}, drivers:null},
- {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm"},
+ {range:[2024,2031], prob:.35, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null, excl:"gm", dieAfter:{w:[8,12], p:.3}},
 ];
 /* 🎬 debuts REALES de 2001 en adelante (año ±1 por partida). `pref` usa el nombre del equipo EN 2000:
    arrTeamNow() lo resuelve al nombre que tenga ese año (Minardi→Toro Rosso→AlphaTauri…). */
@@ -9186,7 +9186,7 @@ function maybeAccidenteEra(row){
     // 🏁 tu año se corta EN el accidente: corriste los GP previos y esos puntos cuentan (Rindt fue
     // campeón póstumo). La pantalla final la abre simSeason al ver `retired`.
     if(v.p){ S.crashRace=iAcc; S.retired=true; S.retireReason="accidente"; }
-    else quitarDeLaParrilla(v.d);
+    else { (S.muertos=S.muertos||[]).push(v.d.name); quitarDeLaParrilla(v.d); }  // ⚫ y queda anotado: los linajes lo consultan
   } else if(grave==="retira"){
     row.events.push(L(`🦴 Accidente gravísimo en ${gp}. ${nombre} sobrevive, pero no volverá a un coche de Fórmula 1. El paddock aprende a decir «por suerte» con la boca pequeña.`,
                       `🦴 A terrible accident at ${gp}. ${nombre} survives, but will never race a Formula 1 car again. The paddock learns to say «luckily» through gritted teeth.`,{pt:`🦴 Acidente gravíssimo em ${gp}. ${nombre} sobrevive, mas não voltará a um carro de Fórmula 1. O paddock aprende a dizer «ainda bem» de boca pequena.`}));
@@ -9806,6 +9806,11 @@ function processLineage(row){
       if(st.done || !st.go || yearNow()<st.year) return;
       // 🦋 ¿hace falta un comprador y no está en la parrilla? Entonces esta compra NO ocurre nunca.
       if(st.needs && !F1_TEAMS.some(x=>x.name===st.needs)){ st.done=true; return; }
+      /* ⚫ EL MUERTO NO FUNDA NADA (Carlos, 14-sep): un equipo con apellido no puede nacer si esa
+         persona murió en pista. Morir no mata a un equipo ya fundado —McLaren y Williams siguen
+         ahí sin sus fundadores—, pero sí impide fundarlo. El retirado por accidente sigue vivo:
+         él sí puede. Ligier sigue siendo Ligier (y para eso está su logo del siglo XXI). */
+      if(st.vivo && (S.muertos||[]).includes(st.vivo)){ st.done=true; return; }
       // 🔗 y cada rebautizo tiene que venir del anterior: sin Toro Rosso no hay AlphaTauri
       if(st.from && chn.cur!==st.from){ st.done=true; return; }
       /* 🛟 RESCATES QUE SOLO OCURREN SI HACE FALTA. Un equipo al que le va bien no cambia de dueño
