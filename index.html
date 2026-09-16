@@ -2493,20 +2493,84 @@ const GRID1990 = {
    compra Ligier, Ford compra Stewart): no necesitan `needs`. La única cadena con dependencia real es
    Minardi→Toro Rosso, que exige Red Bull en pista. Y `from` obliga a que cada rebautizo venga del
    anterior, para que nadie salte un escalón. */
+/* 🤝 EL MERCADO DE COMPRADORES DEL RETRO (Carlos, 14-sep). Hasta hoy, AGS, Coloni, Onyx,
+   EuroBrun, Larrousse o Scuderia Italia eran callejones sin salida: su linaje solo sabía morir.
+   Ahora el tercio de cola puede ser COMPRADO por la marca que esté libre en ese año — y en cada
+   partida sobreviven unos pocos distintos. Regla «una marca, un sitio»: si Fondmetal ya compró
+   Osella en esta partida, no puede comprar AGS (ni aunque luego muera: la aventura ya se gastó).
+   Y hay COMPRADORES MALOS (petición expresa): si todos los que llegan trajeran dinero, aceptar
+   una venta no sería una decisión. Andrea Moda compró Coloni en 1992, no clasificó casi nunca y
+   al dueño lo detuvieron en Mónaco: quiebra SIEMPRE. Subaru lo intentó en 1990 con un bóxer que
+   fue un desastre: casi siempre. */
+const COMPRADORES_RETRO={
+  "Fondmetal":  {abbr:"FON", color:"#2A3A6B", color2:"#c0c0c8", w:[1991,1994]},
+  "Subaru":     {abbr:"SUB", color:"#0A3F8F", color2:"#FFD500", w:[1990,1991], malo:{w:[1,2], p:.9}},
+  "Andrea Moda":{abbr:"AMO", color:"#0A0A0A", color2:"#F2F2F5", w:[1992,1992], malo:{w:[1,1], p:1}},
+  "Lamborghini":{abbr:"LAM", color:"#101014", color2:"#D4B24C", w:[1996,1999]},
+};
+function marcaRetro(nombre, cur){
+  // ¿la marca está libre? (ni en la parrilla, ni gastada ya en esta partida)
+  const d=COMPRADORES_RETRO[nombre];
+  if(!d || (S.compraRetro||{})[nombre]) return null;
+  if(F1_TEAMS.some(t=>t.name===nombre||t.name.indexOf(nombre)===0)) return null;
+  if(cur && !F1_TEAMS.some(t=>t.name===cur)) return null;   // el vendido tiene que existir aún
+  (S.compraRetro=S.compraRetro||{})[nombre]=true;
+  // toda compra corre AL MENOS una temporada con su nombre nuevo (nada de comprar y quebrar el mismo invierno)
+  if(cur){ const chn=(S.lineage||[]).find(c=>c.cur===cur);
+    if(chn) chn.steps.forEach(s=>{ if(s.die && !s.done && s.go) s.year=Math.max(s.year, yearNow()+1); }); }
+  // el comprador malo trae su propia quiebra puesta
+  if(d.malo){ S.lineage.push({key:nombre, cur:nombre,
+    steps:[{die:true, year:yearNow()+irnd(d.malo.w[0],d.malo.w[1]), go:ch(d.malo.p), done:false}]}); }
+  return {name:nombre, abbr:d.abbr, color:d.color, color2:d.color2};
+}
+function compradorRetro(cur){
+  const y=yearNow();
+  const libres=Object.keys(COMPRADORES_RETRO).filter(n=>{
+    const d=COMPRADORES_RETRO[n];
+    return y>=d.w[0] && y<=d.w[1] && !(S.compraRetro||{})[n]
+        && !F1_TEAMS.some(t=>t.name===n||t.name.indexOf(n)===0); });
+  if(!libres.length) return null;                 // nadie libre este año: la venta se reintenta
+  const n=libres[irnd(0,libres.length-1)];
+  const r=marcaRetro(n, cur); if(!r) return null;
+  /* 💰 un comprador BUENO trae dinero de verdad: la quiebra que el equipo tuviera pendiente
+     se cancela la mitad de las veces. El malo no cancela nada: suma la suya. */
+  if(!COMPRADORES_RETRO[n].malo){
+    const chn=(S.lineage||[]).find(c=>c.cur===cur);
+    if(chn) chn.steps.forEach(s=>{ if(s.die && !s.done && s.go && ch(.5)) s.go=false; });
+  }
+  return r;
+}
 const LINEAGE_1990 = [
  {key:"Life",     steps:[{die:true, w:[1990,1991], p:.99}]},
- {key:"EuroBrun", steps:[{die:true, w:[1990,1991], p:.98}]},
- {key:"Onyx",     steps:[{die:true, w:[1990,1992], p:.96}]},
- {key:"AGS",      steps:[{die:true, w:[1991,1993], p:.96}]},
- {key:"Coloni",   steps:[{die:true, w:[1991,1993], p:.95}]},
- {key:"Osella",   steps:[{to:{name:"Fondmetal",abbr:"FON",color:"#2A3A6B",color2:"#c0c0c8"}, w:[1991,1992], p:.8},
+ {key:"EuroBrun", steps:[{to:compradorRetro, w:[1990,1990], p:.15},
+                         {die:true, w:[1990,1991], p:.98}]},
+ {key:"Onyx",     steps:[{to:compradorRetro, w:[1990,1991], p:.25},
+                         {die:true, w:[1990,1992], p:.96}]},
+ {key:"AGS",      steps:[{to:compradorRetro, w:[1991,1992], p:.3},
+                         {die:true, w:[1991,1993], p:.96}]},
+ {key:"Coloni",   steps:[{to:compradorRetro, w:[1990,1992], p:.3},   // Subaru en el 90 y Andrea Moda en el 92: históricamente exactos
+                         {die:true, w:[1991,1993], p:.95}]},
+ {key:"Osella",   steps:[{to:function(cur){ return marcaRetro("Fondmetal", cur); }, w:[1991,1992], p:.8},
                          {die:true, w:[1992,1994], p:.95}]},
- {key:"Brabham",  steps:[{die:true, w:[1992,1994], p:.94}]},
+ {key:"Brabham",  steps:[{to:compradorRetro, w:[1992,1993], p:.25},
+                         {die:true, w:[1992,1994], p:.94}]},
  {key:"Leyton House", steps:[{to:{name:"March",abbr:"MAR",color:"#8AA0B0",color2:"#33414d"}, w:[1992,1993], p:.7},
                          {die:true, w:[1992,1995], p:.94}]},
- {key:"Scuderia Italia", steps:[{die:true, w:[1993,1995], p:.94}]},
- {key:"Larrousse", steps:[{die:true, w:[1994,1996], p:.94}]},
+ {key:"Scuderia Italia", steps:[{to:compradorRetro, w:[1992,1994], p:.25},
+                         {die:true, w:[1993,1995], p:.94}]},
+ {key:"Larrousse", steps:[{to:compradorRetro, w:[1993,1995], p:.25},
+                         {die:true, w:[1994,1996], p:.94}]},
  {key:"Lotus",    steps:[{die:true, w:[1994,1997], p:.9}]},
+ /* 🏆 PACIFIC TEAM LOTUS (aprobado 14-sep): Pacific compró los restos de Team Lotus a finales de
+    1994 y en 1995 corrió con su nombre — a veces el pequeño se queda el nombre del grande porque
+    es lo único que queda en pie. Solo si Lotus YA murió; y la muerte de Pacific va aquí, sin
+    `from`, para que muera se llame como se llame. */
+ {key:"Pacific",  steps:[{to:function(cur){
+                            if(!F1_TEAMS.some(t=>t.name===cur)) return null;      // aún no ha entrado
+                            if(F1_TEAMS.some(t=>t.name==="Lotus")) return null;   // Lotus vive: no hay restos que comprar
+                            return {name:"Pacific Team Lotus", abbr:"PTL", color:"#101014", color2:"#42ADF7"};
+                          }, w:[1995,1996], p:.5},
+                         {die:true, w:[1996,1998], p:.8}]},
  {key:"Arrows",   steps:[{to:{name:"Footwork",abbr:"FTW",color:"#B23A2E",color2:"#f5f5f5"}, w:[1991,1992], p:.75},
                          {to:{name:"Arrows",abbr:"ARR",color:"#FF6600",color2:"#111111"}, w:[1996,1998], p:.8, from:"Footwork"},
                          {die:true, w:[2002,2005], p:.8}]},
@@ -2523,6 +2587,10 @@ const LINEAGE_1990 = [
  {key:"Benetton", steps:[{to:{name:"Renault",abbr:"REN",color:"#F5D800",color2:"#0A0A0A"}, w:[2001,2004], p:.8},
                          {to:{name:"Lotus",abbr:"LOT",color:"#111111",color2:"#c9a227"}, w:[2011,2014], p:.5, from:"Renault"},
                          {to:{name:"Alpine",abbr:"ALP",color:"#0093CC",color2:"#FD4BC7"}, w:[2019,2024], p:.6, from:"Lotus"}]},
+ /* 🐂 MODENA → LAMBORGHINI (aprobado 14-sep): Modena corría con sus motores y el chasis lo
+    firmaba Lamborghini Engineering. Si esquiva su quiebra del 95 % (pasa en ~1 de cada 20
+    partidas), a finales de los 90 el toro deja de esconderse. */
+ {key:"Modena",   steps:[{to:function(cur){ return marcaRetro("Lamborghini", cur); }, w:[1996,1999], p:.6}]},
  {key:"Minardi",  steps:[{to:{name:"Toro Rosso",abbr:"STR",color:"#153A72",color2:"#D00000"}, w:[2005,2008], p:.75, needs:"Red Bull"},
                          {to:{name:"AlphaTauri",abbr:"AT",color:"#20394C",color2:"#C0C0C8"}, w:[2019,2022], p:.6, needs:"Red Bull", from:"Toro Rosso"},
                          {to:{name:"Racing Bulls",abbr:"RB",color:"#6692FF",color2:"#1C2A4F"}, w:[2023,2028], p:.85, needs:"Red Bull", from:"AlphaTauri"}]},
@@ -2535,7 +2603,7 @@ const ENTRIES_1990 = [
  {range:[1991,1991], prob:.5,  team:{name:"Modena", abbr:"MOD", color:"#1A4A8A", color2:"#c0c0c8", perf:54, cat:"F1"}, drivers:null, dieAfter:{w:[1,2], p:.95}},
  {range:[1993,1993], prob:.9,  team:{name:"Sauber", abbr:"SAU", color:"#C9B79A", color2:"#111111", perf:69, cat:"F1"}, drivers:null},
  {range:[1994,1995], prob:.7,  team:{name:"Simtek", abbr:"SIM", color:"#5A3A8A", color2:"#c0c0c8", perf:52, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.85}},
- {range:[1994,1995], prob:.7,  team:{name:"Pacific", abbr:"PAC", color:"#2A7A8A", color2:"#f5f5f5", perf:52, cat:"F1"}, drivers:null, dieAfter:{w:[2,4], p:.85}},
+ {range:[1994,1995], prob:.7,  team:{name:"Pacific", abbr:"PAC", color:"#2A7A8A", color2:"#f5f5f5", perf:52, cat:"F1"}, drivers:null},  // su muerte vive en LINEAGE_1990 (rama Pacific Team Lotus)
  {range:[1995,1996], prob:.6,  team:{name:"Forti", abbr:"FOR", color:"#C8B030", color2:"#6b5210", perf:51, cat:"F1"}, drivers:null, dieAfter:{w:[1,3], p:.9}},
  {range:[1997,1998], prob:.45, team:{name:"Lola", abbr:"LOL", color:"#B01A1A", color2:"#f5f5f5", perf:48, cat:"F1"}, drivers:null, dieAfter:{w:[1,2], p:.95}},
  {range:[1997,1998], prob:.85, team:{name:"Stewart", abbr:"STW", color:"#E6DDC7", color2:"#1a3d7c", perf:64, cat:"F1"}, drivers:null},
@@ -3382,7 +3450,7 @@ function futElige(name, looks){
 /* 👔 ROPA DE ESTRENO (Carlos, biblioteca: «según cómo esté la parrilla, empieza con uno u otro»):
    Audi y Cadillac no debutan siempre igual — el día que entran eligen de su paleta con la regla
    de abundancia. Solo en debuts DENTRO de una partida: la parrilla real de 2026 es la real. */
-const ROPA_DE_ESTRENO={"Audi":1,"Cadillac":1};
+const ROPA_DE_ESTRENO={"Audi":1,"Cadillac":1,"Lamborghini":1};
 function futSalida(name){
   if(!ROPA_DE_ESTRENO[name]||typeof LIBREAS_FUT==="undefined"||typeof S==="undefined"||!S) return;
   const f=LIBREAS_FUT[name]; if(!f||!f.looks||!f.looks.length) return;
