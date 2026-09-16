@@ -1543,6 +1543,14 @@ const SUPPORTERS = [
    «A. Salazar» y «M. Salazar» con tres años de diferencia pasaban limpios.
    Ahora son 120, por los países que tienen cantera de verdad, y —esto es lo que arregla la queja— un
    apellido usado no vuelve a salir en esa partida. */
+/* 🇬🇧🇮🇳 LA IDENTIDAD DEL EQUIPO TIRA DE LA CANTERA (Carlos, 14-sep): si uno de estos sobrevive
+   muchos años en una partida, su nacionalidad se nota en a quién ficha — BAR tiende a ingleses,
+   una Force India longeva hace aparecer regens indios que en otras partidas no existen. Es el
+   espejo del freno español de HRT, y separa las parrillas de dos partidas largas. El tirón solo
+   actúa al llenar UN ASIENTO DE ESE EQUIPO, pasados 8 años de partida, y es un empujón (45 %),
+   no un destino: la mayoría de sus fichajes siguen siendo de donde salgan. */
+const CANTERA_PAIS={"BAR":"🇬🇧","Force India":"🇮🇳","Sauber":"🇨🇭","Minardi":"🇮🇹",
+                    "Ligier":"🇫🇷","Prost GP":"🇫🇷","Jordan":"🇮🇪"};
 const GEN_NAMES = [
   ["Novák","🇨🇿"],["Costa","🇵🇹"],["Lindqvist","🇸🇪"],["Okada","🇯🇵"],["Moreno","🇪🇸"],
   ["Bianchi","🇮🇹"],["Dubois","🇫🇷"],["Kowalski","🇵🇱"],["Ricci","🇮🇹"],["Haugen","🇳🇴"],["Marchetti","🇮🇹"],
@@ -1576,7 +1584,9 @@ const GEN_NAMES = [
   ["Vandenberg","🇧🇪"],["Claes","🇧🇪"],
   ["O'Sullivan","🇮🇪"],["Doherty","🇮🇪"],
   ["Van Wyk","🇿🇦"],["Botha","🇿🇦"],
-  ["Chandran","🇮🇳"],["Malhotra","🇮🇳"],
+  ["Chandran","🇮🇳"],["Malhotra","🇮🇳"],["Rathore","🇮🇳"],["Deshmukh","🇮🇳"],["Banerjee","🇮🇳"],["Sehgal","🇮🇳"],
+  ["Keane","🇮🇪"],["Gallagher","🇮🇪"],
+  ["Zbinden","🇨🇭"],["Rüfenacht","🇨🇭"],
   ["Chen","🇨🇳"],["Liu","🇨🇳"],
   ["Seo","🇰🇷"],["Wijaya","🇮🇩"],
   ["Yılmaz","🇹🇷"],["Demir","🇹🇷"],
@@ -2374,7 +2384,11 @@ const LINEAGE_1990 = [
                           }, w:[1995,1996], p:.5},
                          {die:true, w:[1996,1998], p:.8}]},
  {key:"Arrows",   steps:[{to:{name:"Footwork",abbr:"FTW",color:"#B23A2E",color2:"#f5f5f5"}, w:[1991,1992], p:.75},
-                         {to:{name:"Arrows",abbr:"ARR",color:"#FF6600",color2:"#111111"}, w:[1996,1998], p:.8, from:"Footwork"},
+                         {to:{name:"Arrows",abbr:"ARR",color:"#FF6600",color2:"#111111"}, w:[1996,1998], p:.85, from:"Footwork"},
+                         /* 🏚️ la empresa quebró de verdad: si NADIE recupera el nombre, el equipo
+                            cierra (Carlos, 14-sep: «o vuelve Arrows o el equipo cierra»). Con esto
+                            el Footwork eterno pasa del 3 % al ~0,2 % de las partidas. */
+                         {die:true, w:[1999,2001], p:.9, from:"Footwork"},
                          {die:true, w:[2002,2005], p:.8}]},
  {key:"Ligier",   steps:[{to:{name:"Prost GP",abbr:"PRO",color:"#0A1A3F",color2:"#F5F5F5"}, w:[1996,1998], p:.75, vivo:"A. Prost"},
                          /* ⚰️ SIN `from`: era el ÚNICO linaje cuya muerte exigía el rebautizo previo, y como
@@ -2927,6 +2941,12 @@ const ESCUDOS_RESU={
    {f:"neutro",c1:"#0A0A0A",c2:"#F5D800"},
    {f:"neutro",c1:"linear-gradient(150deg,#232323,#000000)",c2:"linear-gradient(140deg,#FFE45C,#E0B400)"},
    {f:"neutro",c1:"#0A0A0A",c2:"linear-gradient(140deg,#FFFFFF,#B8B8B8)"}]},
+ "Simtek":{talla:1, /* dos temporadas y ni un punto — pero la consultora de Wirth siguió en el mundo,
+   y su morado no lo lleva ningún otro equipo: eligePaleta nunca lo descarta */ sil:["libreas/sim21.png"], pal:[
+   {f:"purpura",c1:"#673399",c2:"#FFFFFF"},
+   {f:"purpura",c1:"#F2F3F7",c2:"#3A1470"},
+   {f:"purpura",c1:"#4B1D8C",c2:"#C9CED4"},
+   {f:"purpura",c1:"linear-gradient(150deg,#8A4DC8,#2A0F4F)",c2:"#FFFFFF"}]},
  "Lotus":{talla:3, /* 7 títulos de constructores y 6 de pilotos */ sil:["resurrections/Lotus_new1.png","resurrections/Lotus_new2.png"], pal:[
    {f:"verde",c1:"#00543D",c2:"#C9A227"},
    {f:"verde",c1:"linear-gradient(145deg,#0A7A57,#00382A)",c2:"linear-gradient(140deg,#F2D98B,#B8891F)"},
@@ -5097,9 +5117,19 @@ function mkRookie(noCross, forTeam){
     const _fi=S.rookies.findIndex(r=>r[0]===S._forceRookie); S._forceRookie=null;
     if(_fi>=0){ const _r=S.rookies.splice(_fi,1)[0]; name=_r[0]; flag=_r[1]; born=_r[3]||null; _tech=_r[4]||null; }
   }
+  // 🇬🇧🇮🇳 el tirón de la cantera: este asiento es de un equipo con identidad nacional viva
+  // (el ancla es el arranque de la ERA, no S.baseYear: advanceEraTo lo reescribe en cada salto)
+  const _era0 = (typeof ERAS!=="undefined" && ERAS[S.era] && ERAS[S.era].baseYear) || S.baseYear || _yr;
+  const _pais = (forTeam && CANTERA_PAIS[forTeam] && (_yr-_era0)>=8 && ch(.45))
+              ? CANTERA_PAIS[forTeam] : null;
+  // …y si en la bolsa curada no hay compatriotas, el tirón salta directo al bote genérico,
+  // que es donde nacen los regens del país (el «mini pool» de una Force India longeva)
+  const _saltaAlBote = _pais && !_avail.some(j=>S.rookies[j][1]===_pais);
   if(name){ /* ya lo puso el bloque del mecenas o la bolsa */ }
-  else if(_avail.length){
+  else if(_avail.length && !_saltaAlBote){
     let _i=_avail[irnd(0,_avail.length-1)];
+    if(_pais){ const _mios=_avail.filter(j=>S.rookies[j][1]===_pais);
+      if(_mios.length) _i=_mios[irnd(0,_mios.length-1)]; }
     // 🇪🇸 realismo: sin equipo español vivo (HRT), la parrilla no se llena de españoles (máx 3) → se elige otro.
     // (Los británicos no tienen freno: con tanto equipo británico, sí es realista.)
     if(S.rookies[_i][1]==="🇪🇸" && seatedPool().filter(d=>d.flag==="🇪🇸").length>=3 && !F1_TEAMS.some(t=>t.name==="HRT")){
@@ -5126,7 +5156,10 @@ function mkRookie(noCross, forTeam){
        que es justo lo que ya hacía la versión anterior. */
     const _ap = S._genApe = S._genApe || {};
     const _libre = ap => !_ap[ap] && !S.dpool.some(d=>d && d.name && surname(d.name)===ap);
-    do{ g=GEN_NAMES[irnd(0,GEN_NAMES.length-1)];
+    // 🇬🇧🇮🇳 con el tirón de cantera activo, el bote se estrecha a los apellidos de ese país (si quedan)
+    const _bote = _pais && GEN_NAMES.some(x=>x[1]===_pais && _libre(x[0]))
+                ? GEN_NAMES.filter(x=>x[1]===_pais) : GEN_NAMES;
+    do{ g=_bote[irnd(0,_bote.length-1)];
         _n = /\.\s/.test(g[0]) ? g[0] : GEN_INITIALS[irnd(0,GEN_INITIALS.length-1)]+". "+g[0];
     } while(++_i2<24 && (S.dpool.some(d=>d && d.name===_n) || !_libre(g[0])));
     _ap[g[0]]=true;
@@ -13084,6 +13117,7 @@ const COMPRADORES={
    mito lleve tiempo muerto. */
 const RESURRECCIONES={
   Lotus:{abbr:"LOT",color:"#00543d",color2:"#c9a227", desde:2030},
+  Simtek:{abbr:"SIM",color:"#673399",color2:"#c0c0c8", desde:2033},
   Brabham:{abbr:"BRA",color:"#35578A",color2:"#F5F5F5", desde:2030},
   Jordan:{abbr:"JOR",color:"#2F9E2F",color2:"#111111", desde:2032},
   Tyrrell:{abbr:"TYR",color:"#0A1A6B",color2:"#F5F5F5", desde:2032},
