@@ -3379,6 +3379,19 @@ function futElige(name, looks){
   const pool=libres.length?libres:(raras.length?raras:cand);
   return pool[Math.floor(Math.random()*pool.length)];
 }
+/* 👔 ROPA DE ESTRENO (Carlos, biblioteca: «según cómo esté la parrilla, empieza con uno u otro»):
+   Audi y Cadillac no debutan siempre igual — el día que entran eligen de su paleta con la regla
+   de abundancia. Solo en debuts DENTRO de una partida: la parrilla real de 2026 es la real. */
+const ROPA_DE_ESTRENO={"Audi":1,"Cadillac":1};
+function futSalida(name){
+  if(!ROPA_DE_ESTRENO[name]||typeof LIBREAS_FUT==="undefined"||typeof S==="undefined"||!S) return;
+  const f=LIBREAS_FUT[name]; if(!f||!f.looks||!f.looks.length) return;
+  const look=futElige(name, f.looks); if(!look) return;
+  S.libFut=S.libFut||{}; S.libFut[name]={y:yearNow(), look:look};
+  const m=String(look.bg).match(/#[0-9a-fA-F]{6}/);
+  const t=F1_TEAMS.find(x=>x.name===name);
+  if(m&&t){ t.color=m[0]; const c2=(look.capas||[]).map(c=>c.c).find(c=>/^#/.test(c||"")); if(c2) t.color2=c2; }
+}
 function futEvoluciona(estreno){
   if(typeof LIBREAS_FUT==="undefined"||typeof S==="undefined"||!S) return;
   const y=yearNow();
@@ -3391,6 +3404,7 @@ function futEvoluciona(estreno){
     //  liveries» — Carlos, 16-sep. La identidad la pone su paleta, no la quietud.)
     const ya=S.libFut&&S.libFut[t.name];
     const desde=ya?ya.y:(f.fin||0);                                // desde cuándo lleva la ropa actual
+    if(ya && y-desde<3) return;                                    // una identidad se lleva 3 años mínimo
     let p=(f.v||.4)/6;                                             // deriva anual
     if(estreno) p=Math.min(.9,(f.v||.4)+.25);                      // revolución técnica: año de estrenos
     p+=Math.max(0, y-desde-10)*.05;                                // nadie va igual 15 años: la prob sube sola
@@ -9853,6 +9867,7 @@ function processEntries(row){
     if(!F1_TEAMS.some(t=>t.name===e.team.name)) F1_TEAMS.push(e.team);
     palmSeedTeam(e.team.name, S.baseYear);   // 🏆 si la marca tiene palmarés propio, llega con él puesto
     (S.llegadaExp=S.llegadaExp||{})[e.team.name]=yearNow();   // 🛌 y desde cuándo lleva aquí (ver gigCandidatos)
+    try{ futSalida(e.team.name); }catch(_e){}  // 👔 Cadillac elige su ropa de estreno mirando la parrilla
     if(S.era==="2026"){ try{ ponEscudo(e.team.name); }catch(_e){} }   // 🎨 la marca nueva estrena escudo
     /* 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento.
        ⚖️ NO en el equipo que un reto obliga a entrar: el reto es TU asiento y todos los jugadores
@@ -10064,6 +10079,7 @@ function processLineage(row){
       }
       const _eraMio = S.cat==="TP" && S.tpTeam===chn.cur;   // 📖 antes del rebrand: luego tpTeam ya es el nuevo
       rebrandTeam(chn.cur, st.to, row); chn.cur=st.to.name; st.done=true; yaCambio=true;
+      try{ futSalida(chn.cur); }catch(e){}  // 👔 Audi elige su ropa de estreno mirando la parrilla
       /* 📖 si el renombrado te pilla EN el muro, el capítulo se parte — «Alpine '26-'44 ·
          Renault '45-» — igual que hacen los flujos de venta. El mismo año de llegar no hay
          capítulo que partir: se renombra y ya. */
