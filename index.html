@@ -8732,9 +8732,9 @@ const DILEMAS=[
     El banquillo son las cuatro primeras carreras del año, con `missRaces`, como una lesión. Si el
     equipo quiebra contigo dentro, la guarda de siempre te avisa al acabar el año y te obliga a salir. */
  {id:"maletin",stage:"f1",
-  /* «sin ser el Nº1» solo cuenta si tienes compañero: en un equipo de un solo coche (Life, 1990) el Nº1
-     eres tú por definición, y es justo el equipo más de maletín de todos. */
-  cond:()=>S.cat==="F1" && !!S.team && yearNow()<=1999 && (S.titles.f1||0)===0 && (S.role!=="1" || !tieneCompanero()) && quiebraCerca(S.team.name),
+  /* Nunca en un equipo de un solo coche (Carlos, 18-sep): ahí el piloto de pago no te quita TU asiento,
+     te quita el único coche del equipo, y no consta un caso real así. Con compañero, y sin ser el Nº1. */
+  cond:()=>S.cat==="F1" && !!S.team && yearNow()<=1999 && (S.titles.f1||0)===0 && tieneCompanero() && S.role!=="1" && quiebraCerca(S.team.name),
   t:()=>L("El maletín","The briefcase",{pt:"A maleta"}),
   d:()=>{ const p=maletinPiloto(), o=MALETIN_PAIS[p.f]||MALETIN_PAIS["🇮🇹"];
     return L(`Tu equipo, ${S.team.name}, no llega a fin de mes. ${p.f} ${p.n} es un piloto privado que trae un maletín —el dinero de ${o[0]}— que salva la temporada, y pide a cambio lo único que no se compra: tu asiento en las cuatro primeras carreras del año.`,
@@ -16623,17 +16623,20 @@ function tpChavalOpt(k){
       }
       const nuevo=tpChavalFicha(fuera);
       if(!nuevo) return L("Al final la llamada no llega a hacerse. Sin cambios.","In the end the call never gets made. No change.",{pt:"No fim, a ligação não chega a ser feita. Sem mudanças."});
+      /* 💸 el finiquito y la cláusula se pagan SIEMPRE que firma, salga bien o mal (Carlos, 18-sep: «tendría
+         sentido por tener que pagar finiquitos y demás»). Como en «Vienen a por tu estrella»: sale del coche. */
+      TPCAR(-1);
       return roll(
-       [5,()=>(TPRE(-.8),L(`${chN} llega verde y el primer año lo pagas en puntos, pero en la fábrica ya hablan de otro piloto. −prestigio leve`,
-         `${chN} arrives green and you pay for it in points the first year, but the factory is already talking about a different driver. slight −prestige`,
-         {pt:`${chN} chega verde e no primeiro ano você paga em pontos, mas na fábrica já falam de outro piloto. −prestígio leve`}))],
-       [3,()=>(TPRE(-2),L(`${c.from} lo cuenta como un robo, y la prensa les compra la historia. −prestigio`,
-         `${c.from} call it theft, and the press buys their story. −prestige`,
-         {pt:`A ${c.from} conta como um roubo, e a imprensa compra a história. −prestígio`}))],
+       [5,()=>(TPRE(-.8),L(`${chN} llega verde y el primer año lo pagas en puntos, pero en la fábrica ya hablan de otro piloto. −coche, −prestigio leve`,
+         `${chN} arrives green and you pay for it in points the first year, but the factory is already talking about a different driver. −car, slight −prestige`,
+         {pt:`${chN} chega verde e no primeiro ano você paga em pontos, mas na fábrica já falam de outro piloto. −carro, −prestígio leve`}))],
+       [3,()=>(TPRE(-2),L(`${c.from} lo cuenta como un robo, y la prensa les compra la historia. −coche, −prestigio`,
+         `${c.from} call it theft, and the press buys their story. −car, −prestige`,
+         {pt:`A ${c.from} conta como um roubo, e a imprensa compra a história. −carro, −prestígio`}))],
        [2,()=>{ nuevo.ceil=Math.max((nuevo.skill||75)+1,(nuevo.ceil||90)-irnd(4,7));
-         return L(`Lo que prometía no parece poder replicarlo en ${S.tpTeam}.`,
-                  `Whatever he promised, he doesn't look able to repeat it at ${S.tpTeam}.`,
-                  {pt:`O que prometia não parece conseguir repetir na ${S.tpTeam}.`}); }]); }};
+         return L(`Lo que prometía no parece poder replicarlo en ${S.tpTeam}. −coche`,
+                  `Whatever he promised, he doesn't look able to repeat it at ${S.tpTeam}. −car`,
+                  {pt:`O que prometia não parece conseguir repetir na ${S.tpTeam}. −carro`}); }]); }};
 }
 /* 🎯 ¿QUIÉN VIENE DE VERDAD A POR TU ESTRELLA? Igual que con el favor del veterano, la amenaza tiene
    que ser CIERTA: un equipo que exista, con MEJOR coche que el tuyo, y con un piloto claramente peor
