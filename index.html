@@ -10787,15 +10787,13 @@ function bgF1Season(row){
 
 /* guarda el ranking completo de la temporada y devuelve funciones de delta vs el año pasado */
 function trackRanks(driverOrder, teamOrder){
-  /* 🚫 EL FILIAL TAMPOCO POR PUNTOS (Carlos, 29-ago, foto de 2043: Racing Bulls 7º y Red Bull 12º).
-     `tpCapFilial` protege el NIVEL del coche, pero la tabla de constructores sale de los PUNTOS de
-     los domingos, y con suerte y buenos pilotos el filial podía sumar más que la casa madre. La
-     regla es dura («jamás»): si el orden por puntos deja al junior por delante, se le recoloca
-     justo detrás de su casa madre antes de asignar posiciones. */
-  Object.entries(JUNIOR_OF).forEach(([junior,parent])=>{
-    const ji=teamOrder.indexOf(junior), pi=teamOrder.indexOf(parent);
-    if(ji>=0 && pi>=0 && ji<pi){ teamOrder.splice(ji,1); teamOrder.splice(teamOrder.indexOf(parent)+1,0,junior); }
-  });
+  /* 🐂 EL FILIAL PUEDE GANAR A LA CASA MADRE POR PUNTOS (18-sep-2026, revisión de Carlos). Desde el
+     29-ago había una regla que recolocaba al filial justo detrás de su casa madre si sumaba más puntos.
+     La quitó Carlos tras la queja de un jugador por Twitter: llevaba Racing Bulls, sus pilotos acabaron
+     9º y 10º (los de Red Bull, 11º y 26º) y aun así la tabla le ponía detrás — y el consejo juzga por
+     ESA tabla. Pasó de verdad: Toro Rosso 6º y Red Bull 7º en 2008. Lo que sigue en pie es el tope del
+     COCHE (`tpCapFilial` y el de `evolveF1`): el filial nunca tiene mejor coche que la casa madre, así
+     que ganarle por puntos exige pilotos claramente mejores y un año raro de Red Bull. */
   const prevD=S.rankD||{}, prevC=S.rankC||{};
   S.rankDPrev=prevD; S.rankCPrev=prevC;   // 🔼 persistidos: el desplegable pinta flechas en TODAS las filas
   S.rankD={}; driverOrder.forEach((n,i)=>{S.rankD[n]=i+1;});
