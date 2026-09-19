@@ -793,6 +793,15 @@ body.conBeta #topBtns{top:44px}
    Carlos lo quiere al revés —el idioma arriba, el claro/oscuro debajo—. Así se consigue sin tocar
    el marcado, que lo comparten las dos pantallas y los dos modos. */
 #topBtns{position:fixed;top:12px;right:12px;z-index:60;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:7px}
+/* ⚙️ plegado por defecto: solo se ve el engranaje, pequeño y medio transparente; al abrirlo bajan
+   el idioma y el tema. Se cierra tocando en cualquier otro sitio (listener junto al deck). */
+#cogToggle{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:999px;
+  width:32px;height:32px;flex:0 0 32px;font-size:15px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;opacity:.55;transition:opacity .15s,transform .2s;
+  box-shadow:0 2px 8px rgba(20,25,40,.14)}
+#cogToggle:hover,#topBtns.open #cogToggle{opacity:1}
+#topBtns.open #cogToggle{transform:rotate(90deg)}
+#topBtns:not(.open) #langToggle,#topBtns:not(.open) #themeToggle{display:none}
 #langToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;white-space:nowrap}
 #langToggle:hover{background:#fff}
@@ -824,8 +833,8 @@ body.conBeta #topBtns{top:44px}
    La reserva iba dimensionada para la barra en horizontal (~150 px de ancho); ahora que va
    apilada mide 61 px + 12 de margen, así que sobraba hueco y ese hueco era el que estrujaba
    la columna de los chips. Ajustada a la barra nueva. */
-@media(max-width:980px){ .agev{padding-right:76px} }
-@media(max-width:360px){ .agev{padding-right:72px} }
+@media(max-width:980px){ .agev{padding-right:46px} }   /* ⚙️ ya solo flota el engranaje */
+@media(max-width:360px){ .agev{padding-right:42px} }
 
 /* ================= MODO OSCURO ================= */
 :root[data-theme="dark"]{
@@ -989,6 +998,23 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career #decSub{font-size:14px;line-height:1.5}
   #career #decisionBox .offer .name{font-size:15px}
 }
+/* 🖥️ CUATRO COLUMNAS desde 1280px (Carlos, 19-sep, con la referencia del Football Manager: «ahí
+   hay hueco para muchas columnas»): panel · decidir · resumen (las temporadas, ya no quedan abajo) ·
+   mundial. Cada una con su propio scroll, como los paneles del FM, y todo un punto más pequeño. */
+@media (min-width:1280px){
+  #career{max-width:1800px!important}
+  #career .career-grid{grid-template-columns:275px minmax(0,1.05fr) minmax(0,1fr) 420px;max-width:1800px}
+  #career #driverCard{grid-row:1}
+  #career #decisionBox{grid-column:2;grid-row:1}
+  #career .timeline{grid-column:3;grid-row:1;margin:0;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
+  #career .timeline .tl-body{max-height:none}
+  #career #f1state{grid-column:4;grid-row:1}
+  /* densidad de panel de gestión */
+  #career .f1state{font-size:13px}
+  #career .f1state .cols{gap:10px}
+  #career .timeline{font-size:13.5px}
+  #career #decisionBox .offer{padding:10px 12px}
+}
 /* 📜 los años anteriores, debajo de la clasificación del año */
 .fs-prev{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
 .fs-prev h5{margin-bottom:8px}
@@ -1025,6 +1051,8 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{
     flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;
     max-height:calc(100dvh - 118px);overflow-y:auto;overscroll-behavior:contain}
+  body.deck-movil #decTitle{font-size:18px;line-height:1.25}   /* «El mercado · 2028 · McLaren» era grandísimo (Carlos) */
+  body.deck-movil #decSub{font-size:13px}
   body.deck-movil #driverCard{order:1} body.deck-movil #decisionBox{order:2;padding:2px 2px 30px}
   body.deck-movil .timeline{order:3} body.deck-movil #f1state{order:4}
   body.deck-movil .tl-body{max-height:none}
@@ -1042,6 +1070,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 <div id="topBtns">
   <button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
   <button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
+  <!-- ⚙️ AJUSTES (Carlos, 19-sep: los dos botones flotantes eran «un puto estorbo»): idioma y tema
+       viven plegados detrás de este engranaje pequeño y translúcido. column-reverse → va el último
+       en el HTML para pintarse ARRIBA. -->
+  <button id="cogToggle" onclick="document.getElementById('topBtns').classList.toggle('open')" title="Ajustes / Settings">⚙️</button>
 </div>
 
 <!-- ========== INTRO ========== -->
@@ -1532,7 +1564,13 @@ function pintaColorEquipo(t){
 const DECK_PANELES=[["driverCard",["Panel","Panel","Painel"]],["decisionBox",["Decidir","Decide","Decidir"]],
                     ["tlPanel",["Resumen","Recap","Resumo"]],["f1state",["Mundial","Standings","Mundial"]]];
 function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
-  if(!g||!el) return; g.scrollTo({left:el.offsetLeft-g.offsetLeft, behavior:"smooth"}); }
+  if(!g||!el) return;
+  const dest=()=>el.offsetLeft-g.offsetLeft;
+  g.scrollTo({left:dest(), behavior:"smooth"});
+  /* 🩹 un repintado a mitad de camino ABORTA el scroll suave (cazado el 19-sep: tras simular, el salto
+     al resumen se quedaba en el panel). Si a los 450 ms no hemos llegado, se remata en seco. */
+  setTimeout(()=>{ if(Math.abs(g.scrollLeft-dest())>40) g.scrollLeft=dest(); }, 450);
+}
 function deckPanelActivo(){ const b=document.querySelector("#deckTabs button.on"); return b ? b.dataset.p : "driverCard"; }
 function deckBotones(){ return [...document.querySelectorAll("#offerList button")].filter(b=>!b.disabled); }
 function deckGoPinta(){
@@ -1593,6 +1631,9 @@ function deckActualiza(){
   document.body.appendChild(go);
   const ol=document.getElementById("offerList");
   if(ol && window.MutationObserver) new MutationObserver(()=>deckGoPinta()).observe(ol,{childList:true});
+  /* ⚙️ el menú de ajustes se cierra al tocar cualquier otra cosa */
+  document.addEventListener("pointerdown",e=>{ const tb=document.getElementById("topBtns");
+    if(tb && tb.classList.contains("open") && !tb.contains(e.target)) tb.classList.remove("open"); });
 }catch(e){} })();
 /* ================= DATOS ================= */
 /* [nombre ES, bandera, nombre EN]. ⚠️ El nombre ESPAÑOL es la CLAVE canónica: `sel.country` guarda
@@ -7425,7 +7466,11 @@ function setDecision(title,sub,pulsing,outcome){
 }
 // en móvil las ofertas viven abajo: al aparecer, las traemos a la vista (con algo de contexto arriba)
 function scrollToDecision(){
-  if(document.body.classList.contains("deck-movil")){ deckIr("decisionBox"); return; }   // 📱 la mudanza
+  if(document.body.classList.contains("deck-movil")){
+    /* 📱 recién simulada la temporada, el jugador va al RESUMEN a leer su año; el botón flotante
+       «Continuar ▸» le lleva a Decidir cuando quiera (Carlos, 19-sep). El resto de veces, a Decidir. */
+    if(S && S._deckResumen){ S._deckResumen=false; deckIr("tlPanel"); deckGoPinta(); return; }
+    deckIr("decisionBox"); return; }   // 📱 la mudanza
   if(window.innerWidth>980) return;
   const el=$("decisionBox"); if(!el) return;
   requestAnimationFrame(()=>{
@@ -7649,6 +7694,7 @@ function startSeasonRun(){
     }
     try{ refreshCard(); }catch(e){}
     if(S.retired) return;
+    S._deckResumen=true;   // 📱 la primera pantalla tras simular lleva al RESUMEN, no a Decidir
     setTimeout(nextOffers, 180);
   }, 160);
 }
