@@ -154,6 +154,10 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .reto-strip .reto-n{font-size:19px;line-height:1;font-weight:900}
 .reto-strip .reto-t{font-size:10px;line-height:1.2;font-weight:700;opacity:.95;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word;max-width:100%}
 .reto-strip .dec.reto.actual{outline:3px solid #ffb52e;outline-offset:2px}
+.reto-strip .reto-a{font-size:10px;font-weight:800;opacity:.8;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+#yearGrid{grid-template-columns:repeat(5,1fr)}
+#yearGrid .dec{min-height:48px;font-size:13px}
+#yearGrid .dec.car{min-height:62px}
 .mode-card.open .retro-caret{transform:rotate(180deg)}
 .decade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:430px;margin:-3px auto 0;
   padding:13px;border:2px solid var(--line);border-top:none;border-radius:0 0 16px 16px;background:var(--panel);animation:fadeUp .25s both}
@@ -3577,9 +3581,11 @@ function toggleRetro(){
 }
 /* 🕰️ LOS TRES PASOS DEL RETRO (Carlos, 19-sep-2026): qué modo → qué década → qué año. Cada paso se abre
    debajo del anterior sin cerrar el de arriba, y el elegido queda marcado. */
+/* los años JUGABLES de cada década; al abrir una década se enseñan los diez, y los demás, apagados
+   (Carlos, 19-sep: «deberían poderse ver todos los años de esa década») */
 const RETRO_ANIOS = {
-  carrera: {"1990":["1990"], "2000":["2000"], "2010":["2010"], "2020":["2020"]},
-  tp:      {"2020":["2025"]},
+  carrera: {"1990":["1990"], "2000":["2000"], "2010":["2010"], "2020":["2020","2026"]},
+  tp:      {"2020":["2025","2026"]},
 };
 function retroTPabierto(){ return TP_RETRO_ABIERTO || PREVIEW; }
 function retroModo(m){
@@ -3596,16 +3602,15 @@ function retroAnios(modo, dec){
   const grid=document.getElementById(modo==="tp"?"tpDecadeGrid":"decadeGrid");
   grid.querySelectorAll(".dec").forEach(b=>b.classList.toggle("sel", (b.querySelector(".dec-y")||b).textContent.trim()===dec));
   const yg=document.getElementById("yearGrid"); yg.innerHTML="";
-  anios.forEach(y=>{
-    const b=document.createElement("button"); b.className="dec car";
-    b.innerHTML=`<span class="dec-y">${y}</span><img src="/ico/${dec}car.png" alt="" loading="lazy">`;
-    b.onclick=()=> modo==="tp" ? startTPFlow(y) : startCareerFlow(y);
+  for(let k=0;k<10;k++){
+    const y=String(+dec+k), ok=anios.includes(y);
+    const b=document.createElement("button"); b.className="dec"+(ok?" car":" locked"); b.disabled=!ok;
+    b.innerHTML = ok ? `<span class="dec-y">${y}</span><img src="/ico/${dec}car.png" alt="" loading="lazy">` : y;
+    if(ok) b.onclick=()=> modo==="tp" ? startTPFlow(y) : startCareerFlow(y);
     yg.appendChild(b);
-  });
+  }
   const n=document.createElement("div"); n.className="dec-note";
-  n.textContent = modo==="tp"
-    ? L(`Empiezas en ${anios[0]}, un año antes del reglamento nuevo.`,`You start in ${anios[0]}, a year before the new regulations.`,{pt:`Você começa em ${anios[0]}, um ano antes do regulamento novo.`})
-    : L("Más años en camino 🏗️","More years on the way 🏗️",{pt:"Mais anos a caminho 🏗️"});
+  n.textContent=L("Más años en camino 🏗️","More years on the way 🏗️",{pt:"Mais anos a caminho 🏗️"});
   yg.appendChild(n);
   yg.style.display="grid";
 }
@@ -4429,7 +4434,8 @@ function initSecretChallenges(){
   orden.forEach((c)=>{ const k=vivos.indexOf(c);
     const num=Object.keys(CHALLENGES).filter(x=>!CHALLENGES[x].wip).indexOf(c.id)+1;
     const b=document.createElement("button"); b.className="dec reto"+(k===0?" actual":"");
-    b.innerHTML=`<span class="reto-n">${ROMANOS[num]||num}</span><span class="reto-t">${LA(c.t)}</span>`;
+    const anio=c.year || (ERAS[c.era]&&ERAS[c.era].baseYear) || "";   // 📅 el año en que empieza (Carlos, 19-sep)
+    b.innerHTML=`<span class="reto-n">${ROMANOS[num]||num}</span><span class="reto-t">${LA(c.t)}</span>${anio?`<span class="reto-a">${anio}</span>`:""}`;
     b.title=challengeLabel(c)+" — "+LA(c.sub);
     b.onclick=(ev)=>{ ev.stopPropagation(); startChallengeFlow(c.id); };
     tira.appendChild(b);
