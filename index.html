@@ -5416,6 +5416,15 @@ function probRetiro(d, puestoCoche, nCoches){
   const i=Math.floor(e), f=e-i;                // los tramos son enteros; la edad efectiva no, así que se interpola
   return c[i]+(c[i+1]-c[i])*f;
 }
+/* 👋 SI SE RETIRA UNO DE TUS PILOTOS, EL MERCADO LO DICE (Carlos, 19-sep-2026: «se me hace raro no tener
+   a Alonso ni verlo en el mercado»). La retirada se contaba en la trayectoria, pero la pantalla del
+   mercado solo enseñaba el asiento LIBRE sin decir por qué. Se apunta aquí y `tpMercado` lo pinta. */
+function tpApuntaRetiro(teamName, d, row){
+  if(S.cat!=="TP" || teamName!==S.tpTeam || !d || !d.name) return;
+  const y=(row&&row.year!=null ? row.year : yearNow())+1;   // el mercado es el del invierno siguiente
+  if(!S._tpRetiros || S._tpRetiros.y!==y) S._tpRetiros={y, l:[]};
+  S._tpRetiros.l.push({n:surname(d.name), age:d.age, titles:d.titles||0});
+}
 function npcSeason(row){
   /* 🎂 UN CUMPLEAÑOS POR TEMPORADA, Y SOLO UNO (19-sep-2026, lo cazó Carlos con Bottas: 36 → 38 en un
      año). Los que tienen asiento cumplen en el bucle de los asientos; los que no, en la pasada de
@@ -5474,6 +5483,7 @@ function npcSeason(row){
         if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||0)>=27
            && !(S.retiredPool||[]).some(r=>r && r.name===d.name))
           (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
+        tpApuntaRetiro(teamName, d, row);
         slots[i]=null; return;
       }
       if(mktMoved(d)) return;   // acaba de firmar un traspaso anunciado: no se retira el mismo invierno
@@ -5504,6 +5514,7 @@ function npcSeason(row){
         if(((d.titles||0)>=1 || (d.skill||0)>=86) && (d.age||0)>=27
            && !(S.retiredPool||[]).some(r=>r && r.name===d.name))   // 🧍 nunca dos veces en el bolsillo
           (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
+        tpApuntaRetiro(teamName, d, row);
         slots[i]=null;
       }
     });
@@ -14263,7 +14274,18 @@ function tpMercado(){
      salía LITERAL en pantalla. Se pasa el texto plano a setDecision y el HTML se pinta después. */
   setDecision(L(`✍️ El mercado · ${yearNow()}`,`✍️ The market · ${yearNow()}`,{pt:`✍️ O mercado · ${yearNow()}`})+" · "+S.tpTeam,
     "");
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=garaje+"<br>"+(nAb>1
+  /* 👋 quién de los tuyos se ha retirado este invierno (ver tpApuntaRetiro) */
+  const _ret=(S._tpRetiros && S._tpRetiros.y===yearNow()) ? S._tpRetiros.l : [];
+  const _retTxt=_ret.length===1
+      ? L(`👋 ${_ret[0].n} cuelga el casco a los ${_ret[0].age}${_ret[0].titles>1?", con "+_ret[0].titles+" Mundiales":_ret[0].titles===1?", campeón del mundo":""}: su asiento queda libre.`,
+          `👋 ${_ret[0].n} hangs up his helmet at ${_ret[0].age}${_ret[0].titles>1?", with "+_ret[0].titles+" world titles":_ret[0].titles===1?", a world champion":""}: his seat is open.`,
+          {pt:`👋 ${_ret[0].n} pendura o capacete aos ${_ret[0].age}${_ret[0].titles>1?", com "+_ret[0].titles+" Mundiais":_ret[0].titles===1?", campeão do mundo":""}: a vaga dele fica livre.`})
+    : _ret.length>1
+      ? L(`👋 ${_ret.map(x=>x.n).join(" y ")} cuelgan el casco: sus asientos quedan libres.`,
+          `👋 ${_ret.map(x=>x.n).join(" and ")} hang up their helmets: their seats are open.`,
+          {pt:`👋 ${_ret.map(x=>x.n).join(" e ")} penduram o capacete: as vagas deles ficam livres.`})
+    : "";
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+garaje+"<br>"+(nAb>1
       ? L("Dos huecos por cubrir: llama a quien quieras, y tú decides en qué asiento se sienta cada uno.",
           "Two seats to fill: call whoever you want, and you decide which seat each one takes.",
           {pt:"Duas vagas para cobrir: ligue para quem quiser, e você decide em qual assento cada um senta."})
