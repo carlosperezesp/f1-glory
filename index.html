@@ -1030,8 +1030,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career .f1state .cols{gap:10px}
   #career .timeline{font-size:13.5px}
   #career .timeline .tl-row{grid-template-columns:38px 1fr 38px 34px 34px 56px;gap:6px;padding:8px 10px}
-  /* 📰 cada noticia del año, en su renglón (Carlos: la columna alta da hueco de sobra) */
-  #career .tl-row .ev .evi{display:block;padding:2.5px 0}
+  /* 📰 cada noticia del año, en su renglón y con su borde (Carlos, 19-sep). Y a ancho completo:
+     el hueco de la columna del año se lo queda el texto, fuera el margen gigante. */
+  #career .tl-row .ev{grid-column:1/-1}
+  #career .tl-row .ev .evi{display:block;padding:5px 9px;margin:3px 0;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
   #career .tl-row .ev .evi+.evi::before{content:""}
   #career #decisionBox .offer{padding:10px 12px}
 }
