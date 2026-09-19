@@ -3353,6 +3353,19 @@ function libreaHTML(l, cls){
   const aro=l.aro?`<i class="capa" style="inset:0;width:100%;height:100%;background:radial-gradient(closest-side,transparent 88%,${l.aro} 89%)"></i>`:"";
   return `<span class="spbadge conCapas ${cls}" style="background:${l.bg}">${capas}${aro}</span>`;
 }
+/* 🛡️ EL ESCUDO DE UN EQUIPO, DE UNA SOLA FUENTE (Carlos, 19-sep-2026: «vi discrepancias en los logos de
+   Audi y McLaren en el mercado y en la parrilla»). El mercado pintaba con badge() —la biblioteca y su
+   evolución de libreas— y la parrilla y tu tarjeta con el PNG fijo, así que a medida que un equipo
+   cambiaba de ropa cada pantalla enseñaba uno distinto. Ahora las tres preguntan aquí primero:
+   la librea en curso (si ya evolucionó), luego la de la biblioteca para ese año, y solo sin ninguna
+   de las dos, el PNG de siempre. */
+function crestLook(name, year){
+  if(!name) return null;
+  const yrF = year || ((typeof S!=="undefined"&&S)?yearNow():9999);
+  const fu  = (typeof S!=="undefined"&&S&&S.libFut)?S.libFut[name]:null;
+  if(fu && yrF>=fu.y) return fu.look;
+  return libreaDe(name, year);
+}
 function logoFor(name, year){
   const eras=TEAM_LOGOS_ERA[name];
   // sin partida en curso (S null) no hay año que resolver: se usa el logo actual
@@ -5157,6 +5170,7 @@ function refreshCard(){
     const _sb=SPONSOR_BADGE[S.team.name];
     const _lg=logoFor(S.team.name);
     if(_sb){ spBadgeDot(d,_sb); }
+    else if(crestLook(S.team.name)){ d.className="team-dot"; d.style.cssText="background:transparent;border:none;box-shadow:none;padding:0"; d.innerHTML=libreaHTML(crestLook(S.team.name),"team-dot"); }   // 🛡️ el mismo escudo que el mercado y la parrilla
     else if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
@@ -11022,6 +11036,8 @@ function trackRanks(driverOrder, teamOrder){
 function teamBadge(name, year){
   if(!name) return "";
   if(SPONSOR_BADGE[name]) return spBadgeHTML(SPONSOR_BADGE[name], "mb");
+  const _look=crestLook(name, year);   // 🛡️ el mismo escudo que el mercado (ver crestLook)
+  if(_look) return libreaHTML(_look, "mb");
   const src=logoFor(name, year);
   if(src) return `<img class="tlogo mb" src="${src}" alt="${name}">`;
   const T=F1_TEAMS.find(t=>t.name===name)||(name==="APXGP"?APXGP:null);
@@ -13764,6 +13780,7 @@ function tpRefreshCard(){
     $("teamRole").textContent="TEAM PRINCIPAL";
     const d=$("teamDot"); const _sb=SPONSOR_BADGE[S.team.name]; const _lg=logoFor(S.team.name);
     if(_sb){ spBadgeDot(d,_sb); }
+    else if(crestLook(S.team.name)){ d.className="team-dot"; d.style.cssText="background:transparent;border:none;box-shadow:none;padding:0"; d.innerHTML=libreaHTML(crestLook(S.team.name),"team-dot"); }   // 🛡️ el mismo escudo que el mercado y la parrilla
     else if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
