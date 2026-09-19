@@ -135,6 +135,13 @@ h1,h2,h3{font-style:italic;letter-spacing:-.5px}
 .mode-card.retro-on:hover{border-color:var(--accent)}
 .mode-card.retro-on .mode-ico{filter:none}
 .retro-caret{margin-left:auto;font-size:15px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+/* 🕰️ el «Retro» del modo jefe: una pastilla dentro de su tarjeta (pulsar la tarjeta sigue siendo 2026) */
+.tp-retro-pill{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:5px 10px;
+  border-radius:999px;border:1.5px solid var(--line);background:var(--panel2);color:var(--muted);
+  font-size:12px;font-weight:800;letter-spacing:.02em;cursor:pointer;transition:border-color .15s,color .15s}
+.tp-retro-pill:hover,.tp-retro-pill:focus-visible{border-color:var(--accent);color:var(--text,inherit);outline:none}
+.tp-retro-pill .car{transition:transform .2s;display:inline-block}
+#tpCard.open .tp-retro-pill .car{transform:rotate(180deg)}
 .mode-card.open .retro-caret{transform:rotate(180deg)}
 .decade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:430px;margin:-3px auto 0;
   padding:13px;border:2px solid var(--line);border-top:none;border-radius:0 0 16px 16px;background:var(--panel);animation:fadeUp .25s both}
@@ -898,6 +905,19 @@ body.conBeta #topBtns{top:44px}
       <span class="soon-badge" id="badgeTP" data-es="Próximamente" data-pt="Em breve" data-pl="Wkrótce" data-fr="Bientôt" data-pt="Em breve" data-en="Coming soon">Próximamente</span>
       <span class="mode-ico"><img src="/ico/teamprincipal.png" alt="" width="30" height="30" loading="lazy"></span>
       <span class="mode-txt"><b data-es="Modo Team Principal" data-pt="Modo Chefe de Equipe" data-pl="Tryb szefa zespołu" data-fr="Mode Directeur d'écurie" data-pt="Modo Team Principal" data-en="Team Principal mode">Modo Team Principal</b><small data-es="Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria" data-pt="Contrate os melhores pilotos, desenvolva o melhor carro e leve a sua equipe à glória" data-pl="Podpisuj najlepszych kierowców, rozwijaj najlepszy samochód i poprowadź zespół po chwałę" data-fr="Recrute les meilleurs pilotes, développe la meilleure voiture et mène ton écurie à la gloire" data-pt="Contrata os melhores pilotos, desenvolve o melhor carro e leva a tua equipa à glória" data-en="Sign the best drivers, develop the best car, and take your team to glory">Ficha a los mejores pilotos, desarrolla el mejor coche y lleva a tu equipo a la gloria</small></span>
+      <span class="tp-retro-pill" id="tpRetroPill" role="button" tabindex="0" style="display:none" onclick="toggleTPRetro(event)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleTPRetro(event)"><span data-es="Retro" data-pt="Retrô" data-en="Retro">Retro</span> <span class="car">▾</span></span>
+    </div>
+    <!-- 🕰️ décadas del modo jefe (19-sep-2026): por ahora solo la de 2020, que arranca en 2025 -->
+    <div class="decade-grid" id="tpDecadeGrid" style="display:none">
+      <button class="dec locked car" disabled><span class="dec-y">1950</span><img src="/ico/1950car.png" alt="" loading="lazy"></button>
+      <button class="dec locked car" disabled><span class="dec-y">1960</span><img src="/ico/1960car.png" alt="" loading="lazy"></button>
+      <button class="dec locked car" disabled><span class="dec-y">1970</span><img src="/ico/1970car.png" alt="" loading="lazy"></button>
+      <button class="dec locked car" disabled><span class="dec-y">1980</span><img src="/ico/1980car.png" alt="" loading="lazy"></button>
+      <button class="dec locked" disabled>1990</button>
+      <button class="dec locked" disabled>2000</button>
+      <button class="dec locked car" disabled><span class="dec-y">2010</span><img src="/ico/2010car.png" alt="" loading="lazy"></button>
+      <button class="dec car" onclick="startTPFlow('2025')"><span class="dec-y">2020</span><img src="/ico/2020car.png" alt="" loading="lazy"></button>
+      <div class="dec-note" data-es="Empiezas en 2025, un año antes del reglamento nuevo 🏗️ Las demás décadas están en camino." data-pt="Você começa em 2025, um ano antes do regulamento novo 🏗️ As outras décadas estão a caminho." data-en="You start in 2025, a year before the new regulations 🏗️ The other decades are on their way.">Empiezas en 2025, un año antes del reglamento nuevo 🏗️ Las demás décadas están en camino.</div>
     </div>
     <div class="mode-card retro-on" id="retroCard" onclick="toggleRetro()">
       <span class="new-badge" id="badgeRetro" style="display:none" data-es="¡Nuevo!" data-pt="Novo!" data-pl="Nowość!" data-fr="Nouveau !" data-pt="Novo!" data-en="New!">¡Nuevo!</span>
@@ -2652,9 +2672,68 @@ const ARRIVALS_2000 = [
 ];
 
 // registro de eras. La "2026" envuelve el mundo actual; las retro traen su parrilla/cantera/leyendas de época.
+/* 🕰️ LA ERA 2025 — EL MODO JEFE DESDE EL AÑO PASADO (Carlos, 18-19 sep 2026). Parrilla del GP de
+   Australia 2025, la del arranque real: Lawson aún en Red Bull, Tsunoda en Racing Bulls, Doohan en
+   Alpine. Los números son el CENTRO de la horquilla: cada partida los mueve igual que en 2026 (coches
+   ±3 con cola, techos sorteados, nivel ±2 en el modo jefe). Criterio: los valores de GRID2026 con un año
+   menos de rodaje; los coches, en el orden real de constructores de 2025.
+   «Sauber» a secas, no «Kick Sauber» (decisión de Carlos del 11-ago: el linaje modela equipos, no
+   marcas de apuestas), con el verde y negro de sus últimos años. */
+const TEAMS_2025 = [
+  {name:"McLaren", abbr:"MCL", color:"#FF8000", color2:"#47474F", perf:92},
+  {name:"Mercedes", abbr:"MER", color:"#00A19B", color2:"#0f0f14", perf:87},
+  {name:"Red Bull", abbr:"RBR", color:"#3671C6", color2:"#E30118", perf:87},
+  {name:"Ferrari", abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:87},
+  {name:"Williams", abbr:"WIL", color:"#1868DB", color2:"#00A3E0", perf:76},
+  {name:"Racing Bulls", abbr:"RB", color:"#6692FF", color2:"#1C2A4F", perf:74},
+  {name:"Aston Martin", abbr:"AMR", color:"#229971", color2:"#CEDC00", perf:74},
+  {name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:73},
+  {name:"Sauber", abbr:"SAU", color:"#00E701", color2:"#0A0A0A", perf:72},
+  {name:"Alpine", abbr:"ALP", color:"#0093CC", color2:"#FD4BC7", perf:70},
+];
+// [nombre, edad, nivel, techo, títulos, bandera] — Norris aún sin título: lo gana este año
+const GRID2025 = {
+  "McLaren":[["L. Norris",25,93,95,0,"🇬🇧"],["O. Piastri",24,91,95,0,"🇦🇺"]],
+  "Mercedes":[["G. Russell",27,90,92,0,"🇬🇧"],["K. Antonelli",18,83,95,0,"🇮🇹"]],
+  "Red Bull":[["M. Verstappen",27,96,97,4,"🇳🇱"],["L. Lawson",23,79,85,0,"🇳🇿"]],
+  "Ferrari":[["C. Leclerc",27,91,93,0,"🇲🇨"],["L. Hamilton",40,87,90,7,"🇬🇧"]],
+  "Williams":[["A. Albon",28,82,85,0,"🇹🇭"],["C. Sainz",30,86,88,0,"🇪🇸"]],
+  "Racing Bulls":[["Y. Tsunoda",24,82,85,0,"🇯🇵"],["I. Hadjar",20,78,88,0,"🇫🇷"]],
+  "Aston Martin":[["F. Alonso",43,88,90,2,"🇪🇸"],["L. Stroll",26,76,80,0,"🇨🇦"]],
+  "Haas":[["E. Ocon",28,80,83,0,"🇫🇷"],["O. Bearman",19,79,90,0,"🇬🇧"]],
+  "Sauber":[["N. Hülkenberg",37,81,83,0,"🇩🇪"],["G. Bortoleto",20,79,89,0,"🇧🇷"]],
+  "Alpine":[["P. Gasly",29,82,85,0,"🇫🇷"],["J. Doohan",22,76,82,0,"🇦🇺"]],
+};
+/* 🎲 LO QUE PASA EN 2026, CALIBRADO POR LO CERCA QUE ESTÁS DEL ANUNCIO (Carlos, 19-sep: «si empiezas
+   en 2025 es más probable que Sauber cambie a Audi que si empiezas en 2020»). La regla: cuanto más
+   cerca del anuncio real, más seguro y con menos margen de años.
+   · Audi: anunciada en agosto de 2022 para 2026 → desde 2025, 95% en 2026 y 5% se retrasa a 2027
+     (`wp`: probabilidad del primer año de la ventana). Desde 2020 sigue siendo el 65% en 2026-2031.
+   · Cadillac: aprobada en marzo de 2025 → 85% en 2026 y 15% en 2027 (`yp`, idea de Carlos). Trae a
+     Pérez y Bottas, que en 2025 están fuera (año sabático y reserva de Mercedes).
+   · El reglamento de 2026 no se sortea: estaba publicado desde 2024 (ver initTPState). */
+const LINEAGE_2025 = [
+  {key:"Sauber", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2027], wp:.95, p:1}]},
+  ...LINEAGE_2026,
+];
+const EXPANSION_2025 = [
+  {range:[2026,2027], yp:.85, prob:1, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"},
+    drivers:null, driversBorn:[["S. Pérez",1990,81,83,"🇲🇽"],["V. Bottas",1989,80,82,"🇫🇮"]]},
+  // …y del resto, lo mismo que en 2026, que sale con su propio dado (entra uno como mucho)
+  ...EXPANSION.map(e=>({...e, prob:e.prob!=null ? e.prob : .34})),
+];
+/* los que no corren en Australia pero están en el mundo: Colapinto (reserva de Alpine, entró tras seis
+   carreras) y Lindblad (F2 y cantera de Red Bull; titular de Racing Bulls en 2026) */
+const ARRIVALS_2025 = [
+  {y:2025, n:"F. Colapinto", b:2003, c:85, sk:78, f:"🇦🇷", pref:"Alpine", soloPref:true},
+  {y:2026, n:"A. Lindblad", b:2007, c:92, sk:76, f:"🇬🇧", pref:"Racing Bulls", soloPref:true},
+];
 const ERAS = {
   "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
     lineage:LINEAGE_2026, arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
+  /* 🕰️ 2025: por ahora SOLO para el modo jefe (Carlos, 19-sep). El piloto no puede empezar aquí. */
+  "2025":{ id:"2025", baseYear:2025, teams:TEAMS_2025, grid:GRID2025, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION_2025, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
+    lineage:LINEAGE_2025, arrivals:ARRIVALS_2025, juniorOf:{"Racing Bulls":"Red Bull"} },
   // crossovers TAMBIÉN en retro: cada estrella lleva su año de nacimiento real y solo cruza con 27-37
   // años → Palou (n. 1997) solo puede aparecer 2024-2034, empiece la partida en 2010 o en 2020. Sin anacronismos.
   "2020":{ id:"2020", baseYear:2020, teams:TEAMS_2020, grid:GRID2020, rookies:ROOKIE_2020, crossovers:CROSSOVERS, legends:LEGENDS_2020, expansion:ENTRIES_2020, cats:{F4:"F4",F3:"F3",FR:["Fórmula Renault","Formula Renault","Fórmula Renault"],F2:"F2"}, jr:{F4:F4_2020,F3:F3_2020,FR:FREN_2020,F2:F2_2020}, kart:null,
@@ -2769,6 +2848,7 @@ const LEYENDAS_RETIRADAS = {
           dos sitios a la vez (aviso de Carlos). */
        ["S. Hayes","🇺🇸",85,47,0,2024,true]]
 };
+LEYENDAS_RETIRADAS[2025]=LEYENDAS_RETIRADAS[2026];   // 🕰️ los mismos retirados: Ricciardo y Magnussen ya lo dejaron en 2024
 function retiredSeed(baseYear){
   (LEYENDAS_RETIRADAS[baseYear]||[]).forEach(function(L6){
     /* 🎂 la edad del dato es la que TENÍA AL RETIRARSE; el bolsillo la quiere a día de hoy */
@@ -4772,7 +4852,8 @@ function startCareer(){
        destapó al medir el mapa nuevo: Mercedes se vendía yendo octava. Van los tres. */
     steps:c.steps.map(st=>({to:st.to, die:st.die, needs:st.needs, from:st.from,
       siFondo:st.siFondo, siFondoDe:st.siFondoDe, siFlag:st.siFlag,
-      year:irnd(st.w[0],st.w[1]), go:ch(st.p), done:false}))}));
+      /* 🎲 `wp`: si la ventana tiene año preferente (Audi desde 2025: 95% en 2026), se tira ese dado */
+      year:(st.wp!=null ? (ch(st.wp)?st.w[0]:st.w[1]) : irnd(st.w[0],st.w[1])), go:ch(st.p), done:false}))}));
   // 🎬 llegadas históricas con jitter ±1 año (Antonelli puede llegar en 2024, 2025 o 2026…)
   S.arrivals = (ERA.arrivals||[]).map(a=>({...a, y:a.y+irnd(-1,1)}));
   // 🏗️ RECONSTRUIR la parrilla F1 desde la era elegida (contenido reemplazado IN SITU → todas las
@@ -4790,7 +4871,7 @@ function startCareer(){
   const EXP = S.expansion || [];
   if(EXP.length){
     if(EXP.some(e=>e.prob!=null)){
-      EXP.forEach(e=>{ e.added = !ch(e.prob); e.year = irnd(e.range[0],e.range[1]); });
+      EXP.forEach(e=>{ e.added = !ch(e.prob); e.year = e.yp!=null ? (ch(e.yp)?e.range[0]:e.range[1]) : irnd(e.range[0],e.range[1]); });
       // grupos exclusivos (excl): si varios del mismo grupo salieron, se queda solo UNO al azar
       const gs={};
       EXP.forEach(e=>{ if(!e.added && e.excl){ (gs[e.excl]=gs[e.excl]||[]).push(e); } });
@@ -4860,6 +4941,22 @@ function startCareer(){
       if(d && S.rankD[d.name]==null) S.rankD[d.name]=i+1; });
     S.rankC={"McLaren":1,"Mercedes":2,"Red Bull":3,"Ferrari":4,"Williams":5,"Racing Bulls":6,
              "Aston Martin":7,"Haas":8,"Audi":9,"Alpine":10};   // 📄 constructores 2025 reales (Sauber→Audi en 2026)
+    S.lastChampName="L. Norris";   // 👑 el vigente (19-sep): sin esto su título se databa al azar entre 2022 y 2025
+  }
+  /* 🕰️ …y lo mismo para la era 2025, con la tabla FINAL real de 2024: el punto de partida del que
+     salen las flechas del primer año y los rivales directos. Vigente: Verstappen. */
+  if(ERA.id==="2025" && !CHALLENGE){
+    const _R24=["Verstappen","Norris","Leclerc","Piastri","Sainz","Russell","Hamilton","Perez","Alonso",
+                "Hulkenberg","Gasly","Tsunoda","Stroll","Ocon","Magnussen","Albon","Ricciardo","Bearman",
+                "Colapinto","Zhou","Lawson","Bottas","Sargeant","Doohan"];
+    S.rankD={};
+    const _todos=[]; Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") _todos.push(d); }));
+    const _ult=n=>String(n).trim().split(/\s+/).pop().toLowerCase().replace(/ü/g,"u");
+    _R24.forEach((ap,i)=>{ const d=_todos.find(x=>x.name && _ult(x.name)===_ult(ap));
+      if(d && S.rankD[d.name]==null) S.rankD[d.name]=i+1; });
+    S.rankC={"McLaren":1,"Ferrari":2,"Red Bull":3,"Mercedes":4,"Aston Martin":5,"Alpine":6,"Haas":7,
+             "Racing Bulls":8,"Williams":9,"Sauber":10};   // 📄 constructores 2024 reales
+    S.lastChampName="M. Verstappen";
   }
   // 💛💙 «GENERACIÓN DORADA» (raro, ~15%): los pilotos de TU nacionalidad reciben un empujón de por vida →
   // de vez en cuando ves a un compatriota (Sainz, Colapinto, Bortoleto…) pelear e incluso GANAR mundiales.
@@ -5057,7 +5154,10 @@ function mkRookie(noCross, forTeam){
        2026, que es donde no hay llegadas históricas pendientes.
        Cuando se pide cantera expresamente, las llegadas de más de 26 no entran en el sorteo; siguen
        esperando su hueco y llegarán por cualquier otra vía, que es donde sí tienen sentido. */
-    const due=S.arrivals.filter(a=>a.y<=yr && !(noCross && (yr-a.b)>EDAD_CANTERA));
+    /* 🔒 `soloPref`: durante sus dos primeros años solo entra por SU equipo (19-sep: en una partida de 2025,
+       Lindblad —cantera de Red Bull— salía de probador en Sauber). Pasado ese plazo, como cualquier llegada. */
+    const due=S.arrivals.filter(a=>a.y<=yr && !(noCross && (yr-a.b)>EDAD_CANTERA)
+      && !(a.soloPref && forTeam && arrTeamNow(a.pref)!==forTeam && (yr-a.y)<2));
     if(due.length){
       let pick=null;
       if(forTeam){ const m=due.filter(a=>arrTeamNow(a.pref)===forTeam); if(m.length && ch(.85)) pick=m[0]; }
@@ -6298,7 +6398,16 @@ const ERA_GORDA_P   = .60;          // …y probabilidad de que la siguiente lo 
    cola al top 2 los daba un reseteo y solo el 4% se escalaba año a año — o sea que el juego no sabía
    contar la historia de Red Bull 2005-2010 ni la de McLaren 2013-2025, solo sabía rifar. */
 const REG_SACUDIDA = .35;
-function eraActual(){ return (S.cat==="TP" && S.era==="2026" && S.eraIdx!=null) ? ERA_TEC[S.eraIdx] : null; }
+/* 🕰️ LA ESCALERA TAMBIÉN EMPIEZA EN 2025 (19-sep-2026). Las partidas de jefe de la era 2025 viven su
+   primer año en el reglamento de 2022-2025 —«Efecto suelo»—, que no es un peldaño de la escalera: pesa lo
+   mismo que el de partida (.48) y solo existe hasta que entra el de 2026, que ya estaba publicado. Por
+   eso no se inserta en ERA_TEC (movería todos los índices): es un estado aparte, `S.eraPre`. */
+const ERA_PRE = {w:.48, sp:10, n:["Efecto suelo","Ground effect","Efeito solo"],
+  q:["los coches se pegan al suelo por debajo, y a este reglamento le queda un año",
+     "the cars suck themselves to the ground from underneath, and these rules have one year left",
+     "os carros grudam no chão por baixo, e este regulamento tem um ano pela frente"]};
+function eraConEscalera(){ return S.era==="2026" || S.era==="2025"; }
+function eraActual(){ return (S.cat==="TP" && eraConEscalera() && S.eraIdx!=null) ? (S.eraPre ? ERA_PRE : ERA_TEC[S.eraIdx]) : null; }
 /* 📋 PROGRAMAR EL SIGUIENTE — y aquí está la regla que lo ordena todo (Carlos, 10-sep):
    **UN REGLAMENTO PUBLICADO NO SE TOCA.** Ni la fecha ni la dirección. La FIA no adelanta el de 2033
    porque Ferrari lleve cinco años ganando: lo que hace es que el SIGUIENTE llegue antes de lo normal
@@ -6309,7 +6418,7 @@ function eraActual(){ return (S.cat==="TP" && S.era==="2026" && S.eraIdx!=null) 
    La dirección natural sigue el arco del documento de Carlos: hasta los 2040 la técnica se come al
    piloto y a partir de ahí llega la corrección. Los topes de la escalera mandan sobre el arco. */
 function eraProgramar(){
-  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(S.cat!=="TP" || !eraConEscalera() || S.eraIdx==null) return;
   const susto = S.domPend || 0;                 // 👑 lo que dejó pedido un dominio, si lo hubo
   let dir = susto ? susto : (ch(yearNow()<2045 ? .30 : .70) ? 1 : -1);
   if(S.eraIdx<=0) dir=1;
@@ -6328,9 +6437,12 @@ function eraProgramar(){
 }
 /* 🏁 …Y APLICARLA cuando llega la revolución: se mueve el peldaño y se nombra la era nueva. */
 function eraSaltar(){
-  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(S.cat!=="TP" || !eraConEscalera() || S.eraIdx==null) return;
   const dir = S.regDir || (ch(.5)?1:-1), n = S.regSaltos || 1;
-  S.eraIdx = Math.max(0, Math.min(ERA_TEC.length-1, S.eraIdx + dir*n));
+  /* 🕰️ el reglamento de 2026 en una partida de 2025: se sale del «Efecto suelo» y se llega al peldaño de
+     partida (Híbrido extremo) SIN moverse en la escalera — pesa lo mismo; lo que cambia es el coche */
+  if(S.eraPre) S.eraPre=false;
+  else S.eraIdx = Math.max(0, Math.min(ERA_TEC.length-1, S.eraIdx + dir*n));
   const e = ERA_TEC[S.eraIdx];
   let _cuerpo = L(`${LA(e.q).charAt(0).toUpperCase()+LA(e.q).slice(1)}.`,
                   `${LA(e.q).charAt(0).toUpperCase()+LA(e.q).slice(1)}.`,
@@ -6385,7 +6497,7 @@ function eraDireccionTxt(){
    se publica y que entra pueden pasar cinco años, que en una partida son cinco pantallas de mercado:
    la última temporada con el reglamento viejo hay que decirlo otra vez. */
 function eraRecordar(){
-  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(S.cat!=="TP" || !eraConEscalera() || S.eraIdx==null) return;
   if(!S.regReg || S.regRecordado || yearNow()!==S.regReg-1) return;
   S.regRecordado = true;
   tpRegCola(L(`🔔 Última temporada con este reglamento`,`🔔 Last season under these rules`,{pt:`🔔 Última temporada com este regulamento`}),
@@ -6394,7 +6506,7 @@ function eraRecordar(){
               {pt:`No ano que vem entra o regulamento de ${S.regReg}, o que ${eraDireccionTxt()}. É o último inverno para chegar preparado.`}));
 }
 function eraAvisar(){
-  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(S.cat!=="TP" || !eraConEscalera() || S.eraIdx==null) return;
   if(!S.regAviso || S.regAvisado || yearNow()<S.regAviso) return;
   if(!S.regReg || S.regReg<=yearNow()) return;
   S.regAvisado = true;
@@ -6410,10 +6522,18 @@ function eraAvisar(){
     L("todas las cenas del paddock acaban en el mismo tema","every paddock dinner ends on the same subject",{pt:"todo jantar do paddock termina no mesmo assunto"}),
     L("los jefes técnicos ya solo miran hacia allí","the technical chiefs only look that way now",{pt:"os chefes técnicos já só olham para lá"})
   ][irnd(0,4)];
+  /* 🕰️ en una partida de 2025 el reglamento de 2026 no se publica: está escrito desde 2024 */
+  if(S.eraPre){
+    tpRegCola(L(`📋 El reglamento de ${S.regReg} ya está escrito`,`📋 The ${S.regReg} regulations are already written`,{pt:`📋 O regulamento de ${S.regReg} já está escrito`}),
+              L(`La FIA lo publicó hace un año y ${_pad}: el reglamento que viene ${hacia}. Motores nuevos, coches nuevos, y marcas nuevas en camino. Todo lo que decidas este año en la fábrica se decide sabiéndolo.`,
+                `The FIA published them a year ago and ${_pad}: the incoming regulations ${hacia}. New engines, new cars, and new names on the way. Everything you decide in the factory this year is decided knowing that.`,
+                {pt:`A FIA publicou há um ano e ${_pad}: o regulamento que vem ${hacia}. Motores novos, carros novos, e marcas novas a caminho. Tudo o que você decidir na fábrica este ano se decide sabendo disso.`}));
+    return;
+  }
   tpRegCola(L(`📋 La FIA publica el reglamento de ${S.regReg}`,`📋 The FIA publishes the ${S.regReg} regulations`,{pt:`📋 A FIA publica o regulamento de ${S.regReg}`}),
-            L(`Faltan ${S.regReg-yearNow()} años y ${_pad}: el reglamento que viene ${hacia}. A partir de hoy, todo lo que decidas en esta fábrica se decide sabiéndolo.`,
-              `It's ${S.regReg-yearNow()} years away and ${_pad}: the incoming regulations ${hacia}. From today, everything you decide in this factory is decided knowing that.`,
-              {pt:`Faltam ${S.regReg-yearNow()} anos e ${_pad}: o regulamento que vem ${hacia}. A partir de hoje, tudo o que você decidir nesta fábrica se decide sabendo disso.`}));
+            L(`${S.regReg-yearNow()===1?"Falta un año":"Faltan "+(S.regReg-yearNow())+" años"} y ${_pad}: el reglamento que viene ${hacia}. A partir de hoy, todo lo que decidas en esta fábrica se decide sabiéndolo.`,
+              `It's ${S.regReg-yearNow()===1?"one year":(S.regReg-yearNow())+" years"} away and ${_pad}: the incoming regulations ${hacia}. From today, everything you decide in this factory is decided knowing that.`,
+              {pt:`${S.regReg-yearNow()===1?"Falta um ano":"Faltam "+(S.regReg-yearNow())+" anos"} e ${_pad}: o regulamento que vem ${hacia}. A partir de hoje, tudo o que você decidir nesta fábrica se decide sabendo disso.`}));
 }
 /* ═══ 🧭 «EL CONCEPTO» — LA DECISIÓN DE CADA REGLAMENTO (Carlos, 12-sep-2026: «qué valor tengo yo
    a la hora de acertar con el coche?»). NO es un dilema del bote: sale SIEMPRE que la FIA publica
@@ -6431,7 +6551,7 @@ function eraAvisar(){
    🧳 Si cambias de equipo a mitad de ciclo, TE COMES lo que esa casa decidió antes de llegar tú
    (herencia sorteada en tpSignTeam). El pago vive en tpYearStart, antes de calcular el «antes→ahora». */
 function tpConceptoPend(){
-  if(S.cat!=="TP" || !S.tpTeam || S.era!=="2026" || S.eraIdx==null) return false;
+  if(S.cat!=="TP" || !S.tpTeam || !eraConEscalera() || S.eraIdx==null) return false;
   if(!S.regReg || !S.regAvisado || S.regReg<=yearNow()) return false;
   return !(S.tpConcepto && S.tpConcepto.y===S.regReg);
 }
@@ -6560,7 +6680,7 @@ function tpConceptoScreen(fin){
    🤝 Y no se pisa con las revoluciones naturales: un dominio ADELANTA la que ya estaba
    programada, nunca añade una nueva. */
 function eraDominio(){
-  if(S.cat!=="TP" || S.era!=="2026" || S.eraIdx==null) return;
+  if(S.cat!=="TP" || !eraConEscalera() || S.eraIdx==null) return;
   if(!(S.seasons||[]).some(r=>r.cat==="TP")) return;
   const cT = Object.keys(S.rankC||{}).find(t=>S.rankC[t]===1) || null;
   const dN = Object.keys(S.rankD||{}).find(n=>S.rankD[n]===1) || null;
@@ -10022,7 +10142,7 @@ function processEntries(row){
     palmSeedTeam(e.team.name, S.baseYear);   // 🏆 si la marca tiene palmarés propio, llega con él puesto
     (S.llegadaExp=S.llegadaExp||{})[e.team.name]=yearNow();   // 🛌 y desde cuándo lleva aquí (ver gigCandidatos)
     try{ futSalida(e.team.name); }catch(_e){}  // 👔 Cadillac elige su ropa de estreno mirando la parrilla
-    if(S.era==="2026"){ try{ ponEscudo(e.team.name); }catch(_e){} }   // 🎨 la marca nueva estrena escudo
+    if(eraConEscalera()){ try{ ponEscudo(e.team.name); }catch(_e){} }   // 🎨 la marca nueva estrena escudo
     /* 🏁 baja prob de que el recién llegado sea un COCHAZO (Brawn'09): descifraron el nuevo reglamento.
        ⚖️ NO en el equipo que un reto obliga a entrar: el reto es TU asiento y todos los jugadores
           compiten en la misma tabla, así que ese 3% le regalaba a uno de cada treinta un coche
@@ -10250,7 +10370,7 @@ function processLineage(row){
       }
       /* 🎨 el nombre nuevo estrena escudo, distinto en cada partida. Solo en la era actual: en el
          retro los escudos son los históricos y no se tocan. */
-      if(S.era==="2026"){ try{ ponEscudo(chn.cur); }catch(e){} }
+      if(eraConEscalera()){ try{ ponEscudo(chn.cur); }catch(e){} }
     });
   });
 }
@@ -10332,6 +10452,7 @@ const CACHE_SEED = {
   "2020": {"Mercedes":95,"Ferrari":94,"Red Bull":90,"McLaren":84,"Renault":72,"Williams":68,"Racing Point":58,"AlphaTauri":50,"Alfa Romeo":55,"Haas":45},
   "2026": {"Ferrari":94,"Mercedes":92,"Red Bull":90,"McLaren":90,"Aston Martin":75,"Alpine":70,"Williams":75,"Racing Bulls":52,"Haas":48,"Audi":70,"Cadillac":60,"Sauber":55},
 };
+CACHE_SEED["2025"]=CACHE_SEED["2026"];   // 🕰️ la grandeza de cada casa no cambia en un año
 /* 💰 un equipo con un cochazo desaprovechado sale al mercado y se lleva a la mejor estrella disponible */
 function poachStar(tn, row){
   if(tpManaged(tn)) return;   // 🧑‍💼 tu equipo no sale de compras sin ti
@@ -13135,8 +13256,20 @@ function initTPCard(){
      adelantado, una hora antes de abrir. */
   c.style.cursor="pointer";
   c.onclick=startTPFlow;
+  /* 🕰️ el Retro del jefe: mientras se prueba, solo con el preview (como las décadas del clásico) */
+  const pill=document.getElementById("tpRetroPill");
+  if(pill && (TP_RETRO_ABIERTO || PREVIEW)) pill.style.display="inline-flex";
 }
-function startTPFlow(){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA="2026"; showIdentity(); }   /* 📊 el modo lo dice `career_started` */
+let TP_RETRO_ABIERTO=false;   // 🚧 al público cuando Carlos lo dé por bueno
+function toggleTPRetro(ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  const c=document.getElementById("tpCard"), g=document.getElementById("tpDecadeGrid");
+  if(!c||!g) return;
+  const open = g.style.display==="none";
+  g.style.display = open ? "grid" : "none";
+  c.classList.toggle("open", open);
+}
+function startTPFlow(era){ TP_MODE=true; CHALLENGE=null; SELECTED_ERA=(typeof era==="string" && ERAS[era]) ? era : "2026"; showIdentity(); }   /* 📊 el modo lo dice `career_started` */
 
 /* ═══════════ 🔧 EL REPARTO DEL COCHE (fase 1: solo vive, todavía no afecta a nada) ═══════════
    El coche de cada equipo sigue valiendo lo que dice `f1perf`. Lo nuevo es DE QUÉ ESTÁ HECHO ese
@@ -13292,6 +13425,13 @@ function initTPState(){
   S.domUmbral = irnd(ERA_UMBRAL[0], ERA_UMBRAL[1]);     // …y cuánta paciencia tiene la FIA en ESTA partida
   S.domEq=null; S.domPil=null; S.regGorda=false; S.regGordaY=S.baseYear; S._regCola=[];
   eraProgramar();
+  /* 🕰️ DESDE 2025, EL REGLAMENTO DE 2026 NO SE SORTEA (Carlos: «un reglamento publicado no se toca»; el
+     de 2026 lo estaba desde 2024). Entra en 2026 sí o sí, avisado desde el primer invierno, premiando al
+     coche —unidades de potencia nuevas— y sin ser «de las gordas»: la reordenación es la normal. */
+  if(S.era==="2025"){
+    S.eraPre=true; S.regReg=2026; S.regDir=-1; S.regSaltos=0;
+    S.regAviso=2025; S.regAvisado=false; S.regRecordado=true; S.regGorda=false;
+  }
   initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
   /* 🎲 OVR VARIABLE POR PARTIDA (idea de Carlos, 18-ago). El nivel de los titulares venía FIJO del
      dato de la era (solo el techo se sorteaba); en el modo jefe eso hacía cada partida demasiado
@@ -13559,9 +13699,9 @@ function tpRefreshCard(){
 function tpChooseTeam(){
   const box=$("offerList");
   setDecision(L("🧑‍💼 Elige tu escudería","🧑‍💼 Choose your team",{pt:"🧑‍💼 Escolha a sua equipe"}),
-    L("Cualquiera de los "+F1_TEAMS.length+" proyectos de 2026 puede ser tuyo. Ojo: la exigencia del consejo escala con el coche — en un grande es el título o la calle; en un colista te darán tiempo.",
-      "Any of the "+F1_TEAMS.length+" projects on the 2026 grid can be yours. Careful: the board's demands scale with the car — at a giant it's title-or-sack; at a backmarker they'll give you time.",
-      {pt:"Qualquer um dos "+F1_TEAMS.length+" projetos de 2026 pode ser seu. Atenção: a exigência do conselho cresce com o carro — numa grande é título ou rua; numa lanterna vão te dar tempo."}));
+    L("Cualquiera de los "+F1_TEAMS.length+" proyectos de "+yearNow()+" puede ser tuyo. Ojo: la exigencia del consejo escala con el coche — en un grande es el título o la calle; en un colista te darán tiempo.",
+      "Any of the "+F1_TEAMS.length+" projects on the "+yearNow()+" grid can be yours. Careful: the board's demands scale with the car — at a giant it's title-or-sack; at a backmarker they'll give you time.",
+      {pt:"Qualquer um dos "+F1_TEAMS.length+" projetos de "+yearNow()+" pode ser seu. Atenção: a exigência do conselho cresce com o carro — numa grande é título ou rua; numa lanterna vão te dar tempo."}));
   $("decRecap").style.display="none";
   box.innerHTML="";
   box.appendChild(tpGridBtn());
@@ -13707,7 +13847,7 @@ function tpSignTeam(t, how){
        verdad hasta que eliges escudería, y hasta entonces no hay equipo ni CEO que contar.
        ⚠️ El campo `ceo` se había añadido el 3-sep y se perdió en el trasplante de la beta del 4-sep,
        donde solo se reinyectaron seis piezas y ésta no estaba. Vuelve aquí. */
-    track("career_started",{mode:"tp", team:S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?", lang:LANG, era:"2026"});
+    track("career_started",{mode:"tp", team:S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?", lang:LANG, era:S.era||"2026"});
     S.pendingEvents.push(L(`🧑‍💼 ${S.tpTeam} te presenta como su nuevo Team Principal. ${S.tpOwner.intro()}`,
       `🧑‍💼 ${S.tpTeam} unveils you as their new Team Principal. ${S.tpOwner.intro()}`,
       {pt:`🧑‍💼 A ${S.tpTeam} te apresenta como novo Team Principal. ${S.tpOwner.intro()}`}));
@@ -20546,7 +20686,7 @@ function endTPCareer(){
   /* 📖 Alpine y Renault son la MISMA fábrica: el contador de equipos funde los nombres viejos del
      equipo actual (S.tpAlias) para no contar dos veces un renombrado. */
   const teams=[...new Set((S.tpStints||[]).map(s=>((S.tpAlias||[]).indexOf(s.team)>=0 ? S.tpTeam : s.team)))];
-  track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:"2026"});
+  track("career_ended",{mode:"tp", result:C>=1?"constructors_champion":D>=1?"drivers_boss":"boss", constructors:C, drivers_titles:D, seasons:yrs, era:S.era||"2026"});
   const m=$("endModal"); m.style.display="flex"; ajustaBotonRepetir();
   const _finTP=paisFin(sel.flag);   // 🕰️ misma regla en el final del jefe
   $("endName").innerHTML=(_finTP && yearNow()>_finTP) ? "" : flg(sel.flag)+" ";
