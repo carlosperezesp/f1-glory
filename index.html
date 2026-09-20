@@ -983,8 +983,8 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career .tl-head{display:none}
   /* el panel, compacto */
   #career #driverCard .driver-head{gap:10px;flex-wrap:wrap}
-  #career #driverCard .ovr-badge{width:58px;height:58px}
-  #career #driverCard .ovr-badge .n{font-size:23px}
+  #career #driverCard .ovr-badge{width:52px;height:52px;border-radius:14px}
+  #career #driverCard .ovr-badge .n{font-size:20px}
   #career #driverCard .ovr-badge .l{font-size:8.5px}
   #career #driverCard .tag{font-size:10px;padding:2px 8px}
   /* la columna es estrecha: EDAD/FAMA (o TEMPORADA/CONSEJO en el jefe) dejan la esquina derecha y
@@ -994,17 +994,20 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
     display:grid;grid-auto-flow:column;grid-template-rows:auto auto;justify-content:start;column-gap:26px;row-gap:0}
   #career #driverCard .agev .a{font-size:18px}
   #career #driverCard .team{margin-top:12px;padding-top:10px}
-  #career #driverCard .team .tname{font-size:17px}
+  #career #driverCard .team{flex-wrap:wrap}   /* la etiqueta baja de línea antes que cortar «McLaren» */
+  #career #driverCard .team .tname{font-size:15px}
   #career #driverCard .stats-row{gap:6px;margin-top:12px;padding-top:10px}
   #career #driverCard .stat{padding:7px 2px}
   #career #driverCard .stat .k{font-size:8.5px;letter-spacing:.04em}
-  #career #driverCard .stat .v{font-size:17px}
+  #career #driverCard .stat .v{font-size:15px}
   #career #driverCard .trophies{margin-top:10px;padding-top:8px;font-size:11px}
   /* la decisión, a su tamaño */
   #career #decTitle{font-size:22px;line-height:1.2}
-  #career #decSub{font-size:14px;line-height:1.5}
-  #career #decisionBox .offer .name{font-size:15px}
+  #career #decSub{font-size:13px;line-height:1.5;margin:6px 0 10px}
+  #career #decisionBox .offer .name{font-size:14.5px}
+  #career #decisionBox .offer .sub{font-size:12px;line-height:1.45}
   #career .offer .dot{width:32px;height:32px;font-size:10px}
+  #career .gar-chip{font-size:11.5px;padding:3px 8px}
 }
 /* 🖥️ CUATRO COLUMNAS desde 1280px (Carlos, 19-sep, con la referencia del Football Manager: «ahí
    hay hueco para muchas columnas»): panel · decidir · resumen (las temporadas, ya no quedan abajo) ·
@@ -1019,8 +1022,8 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 }
 @media (min-width:1280px){
   #career{max-width:1800px!important}
-  #career .career-grid{grid-template-columns:275px minmax(0,1.05fr) minmax(0,1fr) 420px;max-width:1800px}
-  #career #driverCard{grid-row:1}
+  #career .career-grid{grid-template-columns:240px minmax(0,1fr) minmax(0,1fr) 330px;max-width:1800px;gap:14px}   /* 🎨 el encaje de Carlos en Stitch (20-sep) */
+  #career #driverCard{grid-row:1;padding:14px}
   #career #decisionBox{grid-column:2;grid-row:1}
   #career .timeline{grid-column:3;grid-row:1;margin:0;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
   #career .timeline .tl-body{max-height:none}
@@ -1028,14 +1031,22 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   /* densidad de panel de gestión */
   #career .f1state{font-size:13px}
   #career .f1state .cols{gap:10px}
+  #career .f1state .srow{font-size:12px;padding:3px 5px}
+  #career .fs-prev{margin-top:12px;padding-top:8px}
+  #career .fs-prev .fpg{font-size:11.5px;gap:2px 8px}
+  /* 🧑‍🔧 el garaje vive en el panel (Stitch de Carlos): la copia del mercado se esconde */
+  #career .garwrap{display:none}
+  #driverCard #panelGaraje{display:block;margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
+  #panelGaraje .gar-chip{display:inline-block;margin:2px 4px 2px 0;font-size:11px;padding:3px 7px}
   #career .timeline{font-size:13.5px}
   #career .timeline .tl-row{grid-template-columns:38px 1fr 38px 34px 34px 56px;gap:6px;padding:8px 10px}
   /* 📰 cada noticia del año, en su renglón y con su borde (Carlos, 19-sep). Y a ancho completo:
      el hueco de la columna del año se lo queda el texto, fuera el margen gigante. */
   #career .tl-row .ev{grid-column:1/-1}
-  #career .tl-row .ev .evi{display:block;padding:5px 9px;margin:3px 0;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+  #career .tl-row .ev .evi{display:block;padding:6px 10px;margin:5px 0;font-size:11.5px;line-height:1.45;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
   #career .tl-row .ev .evi+.evi::before{content:""}
-  #career #decisionBox .offer{padding:10px 12px}
+  #career .tl-row .ev.top3{font-size:12px;line-height:1.6;padding:8px 10px;border-radius:9px}
+  #career #decisionBox .offer{padding:10px 12px;margin-bottom:8px;border-radius:12px;gap:12px}
 }
 /* 📜 los años anteriores, debajo de la clasificación del año */
 .fs-prev{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
@@ -1050,6 +1061,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .fs-prev .fpg{display:grid;grid-template-columns:1.15fr 1fr;gap:4px 12px;padding:8px 0 4px;font-size:12px;line-height:1.5}
 .fs-prev .fpr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fs-prev .fpt{opacity:.9}
+#panelGaraje{display:none}
 
 /* 📱 LOS CUATRO BLOQUES EN MÓVIL (Carlos, 13-sep, en todos los modos): A panel · B dilemas y
    elecciones · C resumen del año · D clasificación. Se deslizan de lado y C y D bajan hacia los años
@@ -1086,6 +1098,12 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #cogToggle{background:transparent;border:0;box-shadow:none;width:32px;height:32px;opacity:.75;filter:grayscale(1)}
   body.deck-movil #topBtns.open #cogToggle{background:var(--panel2);border:1px solid var(--line);opacity:1}
   body.deck-movil #decTitle{font-size:18px;line-height:1.25}   /* «El mercado · 2028 · McLaren» era grandísimo (Carlos) */
+  /* 📰 en el móvil las noticias también van en cajitas (Stitch de Carlos, 20-sep) */
+  body.deck-movil .tl-row .ev{width:100%}
+  body.deck-movil .tl-row .ev .evi{display:block;padding:9px 12px;margin:7px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+  body.deck-movil .tl-row .ev .evi+.evi::before{content:""}
+  body.deck-movil .tl-row .ev.top3{padding:10px 12px;line-height:1.75;margin-bottom:12px}
+  body.deck-movil .offer{padding:14px;margin-bottom:12px;gap:12px}
   body.deck-movil #decSub{font-size:13px}
   body.deck-movil #driverCard{order:1} body.deck-movil #decisionBox{order:2;padding:2px 2px 30px}
   body.deck-movil .timeline{order:3} body.deck-movil #f1state{order:4}
@@ -5509,6 +5527,7 @@ function refreshCard(){
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
     try{ pintaColorEquipo(S.team); deckActualiza(); }catch(e){}   // 🎨 la mudanza
+    if(S.cat!=="TP"){ try{ panelGaraje(""); }catch(e){} }
   } else {
     $("teamName").textContent=L("Agente libre","Free agent",{pt:"Agente livre"}); $("teamRole").textContent=""; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
     $("driverCard").style.background="var(--panel)";
@@ -11475,7 +11494,7 @@ function renderF1State(){
       if(!H) return `<div class="fp">${cab}</div>`;
       const dLis=H.d.map(([n,t],i)=>`<div class="fpr">${i+1}º ${surname(n)}${t?` <span class="fpt">${teamBadge(t,r.year)||""}</span>`:""}</div>`).join("");
       const cLis=H.c.map((t,i)=>`<div class="fpr">${i+1}º ${teamBadge(t,r.year)||""} ${t}</div>`).join("");
-      return `<details class="fp"><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
+      return `<details class="fp"${filas.indexOf(r)===0?" open":""}><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
     }).join("") : "";
   }catch(e){}
 }
@@ -14643,6 +14662,16 @@ function tpAsientoLinea(i){
     : `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)} · ${d.age} · 📜${Math.max(0,d.tpc||0)}`;
   return `<span class="gar-chip" style="border-color:${col}">${cuerpo}</span>`;
 }
+/* 🧑‍🔧 EL GARAJE EN EL PANEL (Stitch de Carlos, 20-sep): tus asientos, el probador y el invertir
+   orden se pintan también dentro de la tarjeta del equipo. En escritorio ancho se ve AHÍ (la copia
+   del mercado se oculta); en móvil sigue en Decidir, que es donde estás mirando. */
+function panelGaraje(html){
+  const card=document.getElementById("driverCard"); if(!card) return;
+  let g=document.getElementById("panelGaraje");
+  if(!html){ if(g) g.innerHTML=""; if(g) g.style.display="none"; return; }
+  if(!g){ g=document.createElement("div"); g.id="panelGaraje"; card.appendChild(g); }
+  g.style.display=""; g.innerHTML=html;
+}
 function tpMercado(){
   if(S.retired) return;
   const abiertos=tpAbiertos();
@@ -14675,7 +14704,8 @@ function tpMercado(){
           `👋 ${_ret.map(x=>x.n).join(" and ")} hang up their helmets: their seats are open.`,
           {pt:`👋 ${_ret.map(x=>x.n).join(" e ")} penduram o capacete: as vagas deles ficam livres.`})
     : "";
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+garaje+"<br>"+(nAb>1
+  try{ panelGaraje(garaje); }catch(e){}
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+`<span class="garwrap">${garaje}<br></span>`+(nAb>1
       ? L("Dos huecos por cubrir: llama a quien quieras, y tú decides en qué asiento se sienta cada uno.",
           "Two seats to fill: call whoever you want, and you decide which seat each one takes.",
           {pt:"Duas vagas para cobrir: ligue para quem quiser, e você decide em qual assento cada um senta."})
@@ -14787,7 +14817,8 @@ function tpElegirAsiento(c, ab){
   setDecision(L(`✍️ ${c.d?c.d.name:L("El debutante","The rookie",{pt:"O estreante"})} acepta · ¿dónde lo sientas?`,
                 `✍️ ${c.d?c.d.name:"The rookie"} accepts · which seat?`,
                 {pt:`✍️ ${c.d?c.d.name:"O estreante"} aceita · onde ele senta?`})+" · "+S.tpTeam, "");
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=[tpAsientoLinea(0), tpAsientoLinea(1)].join(" "); }catch(e){}
+  try{ const _g=[tpAsientoLinea(0), tpAsientoLinea(1)].join(" "); panelGaraje(_g);
+       const _d=$("decSub"); if(_d) _d.innerHTML=`<span class="garwrap">${_g}</span>`; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   [...ab].sort((x,y)=>x.i-y.i).forEach(h=>{   // 🪑 el Nº1 primero: es la jerarquía, no una lista
@@ -15905,8 +15936,9 @@ function tpRumboScreen(){
   const _chipTr=`<span class="tr-chip ${ti.c}">${ti.a} ${ti.t}</span>`;
   setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`})+" · "+tn, "");
   // setDecision escapa el HTML (lección del mercado): el chip se pinta por innerHTML
+  try{ panelGaraje(tpPilotosHTML()); }catch(e){}
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=
-    tpAvisoHTML()+tpPilotosHTML()+
+    tpAvisoHTML()+`<span class="garwrap">${tpPilotosHTML()}</span>`+
     L(`Tu coche: ${tpStars(tn)} ${_chipTr}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
       `Your car: ${tpStars(tn)} ${_chipTr}. Where you push the factory shows over 2-3 seasons.`,
       {pt:`O seu carro: ${tpStars(tn)} ${_chipTr}. Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}); }catch(e){}
