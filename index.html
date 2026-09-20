@@ -1034,6 +1034,11 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career .f1state .srow{font-size:12px;padding:3px 5px}
   #career .fs-prev{margin-top:12px;padding-top:8px}
   #career .fs-prev .fpg{font-size:11.5px;gap:2px 8px}
+  /* 🧑‍💼 en el panel del jefe sobran el chip «TEAM PRINCIPAL» (ya se sabe) y la celda TEMPORADAS
+     (arriba ya pone «Temporada 2») — Carlos, 20-sep */
+  #career #driverCard.tp #teamRole{display:none}
+  #career #driverCard.tp .stats-row{grid-template-columns:repeat(3,1fr)}
+  #career #driverCard.tp .stats-row .stat:first-child{display:none}
   /* 🧑‍🔧 el garaje vive en el panel (Stitch de Carlos): la copia del mercado se esconde */
   #career .garwrap{display:none}
   #driverCard #panelGaraje{display:block;margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
@@ -16071,11 +16076,12 @@ function tpRepartoScreen(){
      coche —dónde metes el dinero de más y de dónde lo quitas—, que es lo que esta pantalla decide. */
   /* separador de RAYA y no de punto: el «·» ya es el marcador del presupuesto neutro, y al quitar
      las estrellas quedaba «Motor · presupuesto normal · Fiabilidad», imposible de leer. */
-  setDecision(L(`🔧 ¿Qué quieres desarrollar más este año? · ${yearNow()}`,`🔧 What do you want to develop most this year? · ${yearNow()}`,{pt:`🔧 O que você quer desenvolver mais este ano? · ${yearNow()}`})+" · "+tn,
+  setDecision(L(`🔧 ¿Qué quieres desarrollar más este año? · ${yearNow()}`,`🔧 What do you want to develop most this year? · ${yearNow()}`,{pt:`🔧 O que você quer desenvolver mais este ano? · ${yearNow()}`}),   /* sin el equipo: ya está en el panel (Carlos, 20-sep) */
     /* 🗣️ una sola frase (Carlos, 29-ago: «eso ya lo vemos» — los chips de cada tarjeta ya cuentan
        el estado, no hace falta repetirlo arriba). `resumen` muere aquí. */
     L("Selecciona tu prioridad para este año.","Pick your priority for this year.",{pt:"Selecione a sua prioridade para este ano."}));
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=tpAvisoHTML()+tpPilotosHTML()+_d.innerHTML; }catch(e){}
+  try{ panelGaraje(tpPilotosHTML()); }catch(e){}
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=tpAvisoHTML()+`<span class="garwrap">${tpPilotosHTML()}</span>`+_d.innerHTML; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
