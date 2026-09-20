@@ -1041,8 +1041,36 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career #driverCard.tp .stats-row .stat:first-child{display:none}
   /* 🧑‍🔧 el garaje vive en el panel (Stitch de Carlos): la copia del mercado se esconde */
   #career .garwrap{display:none}
-  #driverCard #panelGaraje{display:block;margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
+  #driverCard #panelGaraje{display:block;margin-top:9px}
   #panelGaraje .gar-chip{display:inline-block;margin:2px 4px 2px 0;font-size:11px;padding:3px 7px}
+  /* 🧑‍💼 las nueve líneas del panel del jefe (Carlos, 20-sep) */
+  #career #driverCard.tp{display:flex;flex-direction:column}
+  #career #driverCard.tp .driver-head,#career #driverCard.tp .team{display:none}
+  #career #driverCard.tp #tpPanelA{display:block;order:1}
+  #career #driverCard.tp #panelGaraje{order:2;border-top:0;padding-top:0}
+  #career #driverCard.tp #tpPanelB{display:block;order:3;margin-top:9px;border-top:1px solid var(--line);padding-top:7px}
+  #career #driverCard.tp .stats-row{order:4}
+  #career #driverCard.tp .trophies{order:5}
+  .tpl-l1{display:flex;align-items:center;gap:7px;font-size:12.5px}
+  .tpl-l1>b{font-size:13.5px;letter-spacing:.02em}
+  .tpl-nat{color:var(--muted);font-size:11.5px;font-weight:700}
+  .tpl-right{margin-left:auto;font-size:11px}
+  .tpl-con{color:var(--muted);font-weight:700;font-size:11px;white-space:nowrap;flex-shrink:0}
+  .tpl-l2{display:flex;align-items:center;gap:5px;margin-top:9px;min-width:0}
+  .tpl-l2 .team-dot{width:24px;height:24px;flex-shrink:0}
+  .tpl-car{width:52px;height:52px;border-radius:14px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:900;flex-shrink:0}
+  .tpl-car .n{font-size:20px;line-height:1}
+  .tpl-car .l{font-size:7.5px;letter-spacing:1px;opacity:.9}
+  .tpl-team{font-family:var(--f-disp);font-weight:800;font-size:13px;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tpl-kv{font-size:12px;margin:4px 0;line-height:1.45}
+  .tpl-kv .k{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.05em}
+  #panelGaraje .gpil{border:1px solid var(--line);border-left:3px solid var(--team,var(--line));border-radius:8px;padding:5px 9px;margin:6px 0;background:var(--panel2)}
+  #panelGaraje .gpil.libre{color:var(--muted);font-size:10.5px;font-weight:800;letter-spacing:.05em}
+  #panelGaraje .gp1{font-weight:700;font-size:12.5px}
+  #panelGaraje .gp2{font-size:11px;color:var(--muted);margin-top:1px}
+  #panelGaraje .gswap{cursor:pointer}
+  /* 🖱️ cada columna con su propio scroll (Carlos, 20-sep): la página no baja entera */
+  #career #decisionBox{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
   #career .timeline{font-size:13.5px}
   #career .timeline .tl-row{grid-template-columns:38px 1fr 38px 34px 34px 56px;gap:6px;padding:8px 10px}
   /* 📰 cada noticia del año, en su renglón y con su borde (Carlos, 19-sep). Y a ancho completo:
@@ -1067,6 +1095,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .fs-prev .fpr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fs-prev .fpt{opacity:.9}
 #panelGaraje{display:none}
+#tpPanelA,#tpPanelB{display:none}
 
 /* 📱 LOS CUATRO BLOQUES EN MÓVIL (Carlos, 13-sep, en todos los modos): A panel · B dilemas y
    elecciones · C resumen del año · D clasificación. Se deslizan de lado y C y D bajan hacia los años
@@ -14166,6 +14195,7 @@ function tpRefreshCard(){
     else _tc.style.display="none";
   }
   try{ $("driverCard").classList.add("tp"); }catch(e){}
+  try{ renderTPPanel(_carP, mood, _soyDueno?L("Cuentas","Books",{pt:"Contas"}):L("Consejo","Board",{pt:"Conselho"})); if(S._garMode) panelGaraje(S._garMode); }catch(e){}
   $("valV").textContent=mood[0]; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
   const ks=document.querySelectorAll("#driverCard .stats-row .k");
   if(ks[0]) ks[0].textContent=L("Temporadas","Seasons",{pt:"Temporadas"});
@@ -14667,15 +14697,58 @@ function tpAsientoLinea(i){
     : `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)} · ${d.age} · 📜${Math.max(0,d.tpc||0)}`;
   return `<span class="gar-chip" style="border-color:${col}">${cuerpo}</span>`;
 }
-/* 🧑‍🔧 EL GARAJE EN EL PANEL (Stitch de Carlos, 20-sep): tus asientos, el probador y el invertir
-   orden se pintan también dentro de la tarjeta del equipo. En escritorio ancho se ve AHÍ (la copia
-   del mercado se oculta); en móvil sigue en Decidir, que es donde estás mirando. */
-function panelGaraje(html){
+/* 🧑‍🔧 EL GARAJE EN EL PANEL (Stitch de Carlos, 20-sep; rediseño del 20 por la tarde): tus pilotos
+   como tarjetas —nombre y estrellas arriba; edad y contrato debajo; sin el «Nº1», que ya se ve por el
+   orden— con borde fino y el canto izquierdo del color del equipo. `mode` dice si el botón de invertir
+   tiene sentido en la pantalla actual ("m" mercado · "r" rumbo/ejes · "x" sin invertir · "" fuera). */
+function panelGaraje(mode){
   const card=document.getElementById("driverCard"); if(!card) return;
   let g=document.getElementById("panelGaraje");
-  if(!html){ if(g) g.innerHTML=""; if(g) g.style.display="none"; return; }
+  if(!mode){ S._garMode=null; if(g){ g.innerHTML=""; g.style.display="none"; } return; }
   if(!g){ g=document.createElement("div"); g.id="panelGaraje"; card.appendChild(g); }
-  g.style.display=""; g.innerHTML=html;
+  S._garMode=mode;
+  const filas=[];
+  const sl=S.seats[S.tpTeam]||[];
+  [0,1].forEach(i=>{
+    const d=sl[i];
+    if(!d || d==="PLAYER"){ filas.push(`<div class="gpil libre">${L("ASIENTO LIBRE","OPEN SEAT",{pt:"VAGA LIVRE"})}</div>`); return; }
+    const vencido=(d.tpc||0)<=0 && !(S._tpRenovados||{})[d.name];
+    filas.push(`<div class="gpil">
+      <div class="gp1">${d.flag||"🏁"} ${surname(d.name)} ${tpEtiqueta(d)}</div>
+      <div class="gp2">${d.age} ${L("años","yo",{pt:"anos"})} · ${vencido?`<b>${L("vencido","expired",{pt:"vencido"})}</b>`:"📜"+Math.max(0,d.tpc||0)}</div></div>`);
+  });
+  filas.push(S.tpReserva
+    ? `<div class="gpil res"><div class="gp1">🧢 ${surname(S.tpReserva.name)} ${tpEtiqueta(S.tpReserva)}</div></div>`
+    : `<div class="gpil res libre">🧢 ${L("SIN PROBADOR","NO RESERVE",{pt:"SEM RESERVA"})}</div>`);
+  if(mode==="m"||mode==="r"){
+    const _sw=((sl[0]&&sl[0]!=="PLAYER")||(sl[1]&&sl[1]!=="PLAYER"));
+    if(_sw) filas.push(`<span class="gar-chip gswap" onclick="tpSwapSeats(${mode==="r"?"'rumbo'":""})">↔️ ${L("invertir orden","swap order",{pt:"inverter ordem"})}</span>`);
+  }
+  g.style.display=""; g.innerHTML=filas.join("");
+}
+/* 🧑‍💼 LAS NUEVE LÍNEAS DEL PANEL DEL JEFE en escritorio (Carlos, 20-sep): nombre+país+fama · coche+
+   equipo+contrato · pilotos · CEO · consejo · objetivo · temporada · números · vitrina. Las dos
+   primeras y las de la 4 a la 7 viven en estos bloques; el resto son las piezas de siempre, reordenadas
+   por CSS. Solo se ve ≥1280 con la tarjeta .tp: en móvil y en el clásico no cambia nada. */
+function renderTPPanel(carP, mood, moodLbl){
+  const card=document.getElementById("driverCard"); if(!card) return;
+  let A=document.getElementById("tpPanelA"), B=document.getElementById("tpPanelB");
+  if(!A){ A=document.createElement("div"); A.id="tpPanelA"; card.insertBefore(A, card.firstChild); }
+  if(!B){ B=document.createElement("div"); B.id="tpPanelB"; card.appendChild(B); }
+  const eq=F1_TEAMS.find(t=>t.name===S.tpTeam);
+  const contrato=(S.tpContract!=null && S.tpContract>0)
+    ? `<span class="tpl-right tpl-con">📄 ${S.tpContract} ${S.tpContract===1?L("año","yr",{pt:"ano"}):L("años","yrs",{pt:"anos"})}</span>` : "";
+  A.innerHTML=`
+    <div class="tpl-l1"><b>${(sel.name||"").toUpperCase()}</b><span class="tpl-nat">${natLabel()}</span><span class="tpl-right">⭐ ${L("Fama","Fame",{pt:"Fama"})} ${S.tpPrest}</span></div>
+    <div class="tpl-l2"><span class="tpl-car" style="background:${ovrColor(carP)}"><span class="n">${carP}</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span>${eq?badge(eq,"dot"):""}<b class="tpl-team">${S.tpTeam||""}</b>${contrato}</div>`;
+  const obj=(S.tpGoal && S.tpGoal.target!=null)
+    ? `<div class="tpl-kv">🎯 <span class="k">${L("Objetivo","Target",{pt:"Meta"})} ${S.tpGoal.year||yearNow()}:</span> <b>${S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º"}</b></div>` : "";
+  const cap=(S.tpCapricho && S.tpOwner && S.tpOwner.k==="show") ? `<div class="tpl-kv">${tpCaprichoChip(S.tpCapricho)}</div>` : "";
+  B.innerHTML=`
+    <div class="tpl-kv">${tpOwnerLabel()||""}</div>
+    <div class="tpl-kv"><span class="k">${moodLbl}:</span> <b style="color:${mood[1]}">${mood[0]}</b></div>
+    ${obj}${cap}
+    <div class="tpl-kv"><span class="k">${L("Temporada","Season",{pt:"Temporada"})}</span> <b>${S.age+1}</b></div>`;
 }
 function tpMercado(){
   if(S.retired) return;
@@ -14709,7 +14782,7 @@ function tpMercado(){
           `👋 ${_ret.map(x=>x.n).join(" and ")} hang up their helmets: their seats are open.`,
           {pt:`👋 ${_ret.map(x=>x.n).join(" e ")} penduram o capacete: as vagas deles ficam livres.`})
     : "";
-  try{ panelGaraje(garaje); }catch(e){}
+  try{ panelGaraje("m"); }catch(e){}
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+`<span class="garwrap">${garaje}<br></span>`+(nAb>1
       ? L("Dos huecos por cubrir: llama a quien quieras, y tú decides en qué asiento se sienta cada uno.",
           "Two seats to fill: call whoever you want, and you decide which seat each one takes.",
@@ -14822,7 +14895,7 @@ function tpElegirAsiento(c, ab){
   setDecision(L(`✍️ ${c.d?c.d.name:L("El debutante","The rookie",{pt:"O estreante"})} acepta · ¿dónde lo sientas?`,
                 `✍️ ${c.d?c.d.name:"The rookie"} accepts · which seat?`,
                 {pt:`✍️ ${c.d?c.d.name:"O estreante"} aceita · onde ele senta?`})+" · "+S.tpTeam, "");
-  try{ const _g=[tpAsientoLinea(0), tpAsientoLinea(1)].join(" "); panelGaraje(_g);
+  try{ const _g=[tpAsientoLinea(0), tpAsientoLinea(1)].join(" "); panelGaraje("x");
        const _d=$("decSub"); if(_d) _d.innerHTML=`<span class="garwrap">${_g}</span>`; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
@@ -15941,7 +16014,7 @@ function tpRumboScreen(){
   const _chipTr=`<span class="tr-chip ${ti.c}">${ti.a} ${ti.t}</span>`;
   setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`})+" · "+tn, "");
   // setDecision escapa el HTML (lección del mercado): el chip se pinta por innerHTML
-  try{ panelGaraje(tpPilotosHTML()); }catch(e){}
+  try{ panelGaraje("r"); }catch(e){}
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=
     tpAvisoHTML()+`<span class="garwrap">${tpPilotosHTML()}</span>`+
     L(`Tu coche: ${tpStars(tn)} ${_chipTr}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
@@ -16080,7 +16153,7 @@ function tpRepartoScreen(){
     /* 🗣️ una sola frase (Carlos, 29-ago: «eso ya lo vemos» — los chips de cada tarjeta ya cuentan
        el estado, no hace falta repetirlo arriba). `resumen` muere aquí. */
     L("Selecciona tu prioridad para este año.","Pick your priority for this year.",{pt:"Selecione a sua prioridade para este ano."}));
-  try{ panelGaraje(tpPilotosHTML()); }catch(e){}
+  try{ panelGaraje("r"); }catch(e){}
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=tpAvisoHTML()+`<span class="garwrap">${tpPilotosHTML()}</span>`+_d.innerHTML; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
