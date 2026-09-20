@@ -1049,8 +1049,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career #driverCard.tp #tpPanelA{display:block;order:1}
   #career #driverCard.tp #panelGaraje{order:2;border-top:0;padding-top:0}
   #career #driverCard.tp #tpPanelB{display:block;order:3;margin-top:9px;border-top:1px solid var(--line);padding-top:7px}
-  #career #driverCard.tp .stats-row{order:4}
-  #career #driverCard.tp .trophies{order:5}
+  #career #driverCard.tp #tpSeasonHead{display:block;order:4;margin-top:9px;border-top:1px solid var(--line);padding-top:7px;font-size:12px}
+  #career #driverCard.tp #tpSeasonHead .k{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.05em}
+  #career #driverCard.tp .stats-row{order:5;margin-top:6px}
+  #career #driverCard.tp .trophies{order:6}
   .tpl-l1{display:flex;align-items:center;gap:7px;font-size:12.5px}
   .tpl-l1>b{font-size:13.5px;letter-spacing:.02em}
   .tpl-nat{color:var(--muted);font-size:11.5px;font-weight:700}
@@ -1061,7 +1063,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   .tpl-car{width:52px;height:52px;border-radius:14px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:900;flex-shrink:0}
   .tpl-car .n{font-size:20px;line-height:1}
   .tpl-car .l{font-size:7.5px;letter-spacing:1px;opacity:.9}
-  .tpl-team{font-family:var(--f-disp);font-weight:800;font-size:13px;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tpl-l2r{min-width:0;flex:1}
+  .tpl-l2a{display:flex;align-items:center;gap:6px;min-width:0}
+  .tpl-team{font-family:var(--f-disp);font-weight:800;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tpl-con{margin-top:2px}
   .tpl-kv{font-size:12px;margin:4px 0;line-height:1.45}
   .tpl-kv .k{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.05em}
   #panelGaraje .gpil{border:1px solid var(--line);border-left:3px solid var(--team,var(--line));border-radius:8px;padding:5px 9px;margin:6px 0;background:var(--panel2)}
@@ -1095,7 +1100,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .fs-prev .fpr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fs-prev .fpt{opacity:.9}
 #panelGaraje{display:none}
-#tpPanelA,#tpPanelB{display:none}
+#tpPanelA,#tpPanelB,#tpSeasonHead{display:none}
 
 /* 📱 LOS CUATRO BLOQUES EN MÓVIL (Carlos, 13-sep, en todos los modos): A panel · B dilemas y
    elecciones · C resumen del año · D clasificación. Se deslizan de lado y C y D bajan hacia los años
@@ -14717,8 +14722,9 @@ function panelGaraje(mode){
       <div class="gp1">${d.flag||"🏁"} ${surname(d.name)} ${tpEtiqueta(d)}</div>
       <div class="gp2">${d.age} ${L("años","yo",{pt:"anos"})} · ${vencido?`<b>${L("vencido","expired",{pt:"vencido"})}</b>`:"📜"+Math.max(0,d.tpc||0)}</div></div>`);
   });
-  filas.push(S.tpReserva
-    ? `<div class="gpil res"><div class="gp1">🧢 ${surname(S.tpReserva.name)} ${tpEtiqueta(S.tpReserva)}</div></div>`
+  const _r=S.tpReserva;
+  filas.push(_r
+    ? `<div class="gpil res"><div class="gp1">🧢 ${_r.flag||"🏁"} ${surname(_r.name)} ${tpEtiqueta(_r)}</div><div class="gp2">${_r.age} ${L("años","yo",{pt:"anos"})}${(_r.tpc||0)>0?" · 📜"+_r.tpc:""}</div></div>`
     : `<div class="gpil res libre">🧢 ${L("SIN PROBADOR","NO RESERVE",{pt:"SEM RESERVA"})}</div>`);
   if(mode==="m"||mode==="r"){
     const _sw=((sl[0]&&sl[0]!=="PLAYER")||(sl[1]&&sl[1]!=="PLAYER"));
@@ -14737,18 +14743,20 @@ function renderTPPanel(carP, mood, moodLbl){
   if(!B){ B=document.createElement("div"); B.id="tpPanelB"; card.appendChild(B); }
   const eq=F1_TEAMS.find(t=>t.name===S.tpTeam);
   const contrato=(S.tpContract!=null && S.tpContract>0)
-    ? `<span class="tpl-right tpl-con">📄 ${S.tpContract} ${S.tpContract===1?L("año","yr",{pt:"ano"}):L("años","yrs",{pt:"anos"})}</span>` : "";
+    ? `<div class="tpl-con">📄 ${S.tpContract} ${S.tpContract===1?L("año restante","yr left",{pt:"ano restante"}):L("años restantes","yrs left",{pt:"anos restantes"})}</div>` : "";
   A.innerHTML=`
     <div class="tpl-l1"><b>${(sel.name||"").toUpperCase()}</b><span class="tpl-nat">${natLabel()}</span><span class="tpl-right">⭐ ${L("Fama","Fame",{pt:"Fama"})} ${S.tpPrest}</span></div>
-    <div class="tpl-l2"><span class="tpl-car" style="background:${ovrColor(carP)}"><span class="n">${carP}</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span>${eq?badge(eq,"dot"):""}<b class="tpl-team">${S.tpTeam||""}</b>${contrato}</div>`;
+    <div class="tpl-l2"><span class="tpl-car" style="background:${ovrColor(carP)}"><span class="n">${carP}</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span><div class="tpl-l2r"><div class="tpl-l2a">${eq?badge(eq,"dot"):""}<b class="tpl-team">${S.tpTeam||""}</b></div>${contrato}</div></div>`;
   const obj=(S.tpGoal && S.tpGoal.target!=null)
     ? `<div class="tpl-kv">🎯 <span class="k">${L("Objetivo","Target",{pt:"Meta"})} ${S.tpGoal.year||yearNow()}:</span> <b>${S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º"}</b></div>` : "";
   const cap=(S.tpCapricho && S.tpOwner && S.tpOwner.k==="show") ? `<div class="tpl-kv">${tpCaprichoChip(S.tpCapricho)}</div>` : "";
   B.innerHTML=`
     <div class="tpl-kv">${tpOwnerLabel()||""}</div>
     <div class="tpl-kv"><span class="k">${moodLbl}:</span> <b style="color:${mood[1]}">${mood[0]}</b></div>
-    ${obj}${cap}
-    <div class="tpl-kv"><span class="k">${L("Temporada","Season",{pt:"Temporada"})}</span> <b>${S.age+1}</b></div>`;
+    ${obj}${cap}`;
+  let C=document.getElementById("tpSeasonHead");
+  if(!C){ C=document.createElement("div"); C.id="tpSeasonHead"; card.insertBefore(C, B.nextSibling); }
+  C.innerHTML=`<span class="k">${L("Temporada","Season",{pt:"Temporada"})}</span> <b>${S.age+1}</b>`;
 }
 function tpMercado(){
   if(S.retired) return;
