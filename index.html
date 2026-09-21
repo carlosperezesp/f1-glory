@@ -519,7 +519,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 /* 🏁 TRES COLUMNAS, NO CINCO (Carlos, 28-ago: «no merece la pena tener tanto chip»). Los puestos
    de tus dos pilotos ya salen —con su color— en la línea de debajo del equipo, así que a la derecha
    se queda solo el de constructores, que es el que no está en ningún otro sitio. */
-.tl-head.tp,.tl-row.tp{grid-template-columns:52px 1fr 74px}
+.tl-head.tp,.tl-row.tp{grid-template-columns:52px minmax(0,1fr)}
+.tl-row.tp .pos.circ{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;padding:0;font-size:11px;flex-shrink:0;margin-left:2px;vertical-align:middle}
 /* las pastillas de piloto, ya dentro de la línea de texto: en fila, pequeñas y que envuelvan */
 .tl-row .cat .pos{display:inline-block;width:auto;padding:2px 7px;font-size:11px;border-radius:7px;box-shadow:none;vertical-align:middle}
 .tl-row .cat .pos.p1{box-shadow:0 1px 3px rgba(242,174,0,.45)}
@@ -1076,12 +1077,16 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #panelGaraje .gp2{font-size:11px;color:var(--muted);margin-top:1px}
   #panelGaraje .gswap{cursor:pointer}
   /* 🖱️ cada columna con su propio scroll (Carlos, 20-sep): la página no baja entera */
-  #career #decisionBox{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
+  #career #decisionBox{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
+    padding:2px 12px 24px;margin:0 -12px;scrollbar-width:none}
+  #career #decisionBox::-webkit-scrollbar{display:none}
   #career .timeline{font-size:13.5px}
   #career .timeline .tl-row{grid-template-columns:38px 1fr 38px 34px 34px 56px;gap:6px;padding:8px 10px}
   /* 📰 cada noticia del año, en su renglón y con su borde (Carlos, 19-sep). Y a ancho completo:
      el hueco de la columna del año se lo queda el texto, fuera el margen gigante. */
   #career .tl-row .ev{grid-column:1/-1}
+  #career .tl-row .tp-verdict{grid-column:1/-1;justify-self:start}
+  #career .tl-row:hover{background:transparent}
   #career .tl-row .ev .evi{display:block;padding:6px 10px;margin:5px 0;font-size:11.5px;line-height:1.45;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
   #career .tl-row .ev .evi+.evi::before{content:""}
   #career .tl-row .ev.top3{font-size:12px;line-height:1.6;padding:8px 10px;border-radius:9px}
@@ -13073,8 +13078,9 @@ function renderTimeline(){
       c[3].style.display = _tp ? "none" : "";     // 🏁 los pilotos ya no tienen columna propia:
       c[4].style.display = _tp ? "none" : "";     //    van con su color en la línea del equipo
       if(_tp){
-        c[5].textContent = L("Constr.","Constr.",{pt:"Constr."});
+        c[5].style.display="none";   // ⭕ el puesto va en su círculo, junto al escudo
       } else {
+        c[5].style.display="";
         c[3].textContent = L("V","W",{pt:"V"});
         c[4].textContent = L("Pod","Pod",{pt:"Pód"});
         c[5].textContent = L("Camp.","Champ.",{pt:"Camp."});
@@ -13131,19 +13137,26 @@ function renderTimeline(){
     const nameWithBadge=(x)=> (x && typeof x==="object")
       ? `${teamBadge(x.t, r.year)||""}&nbsp;${x.n}` : x;
     // 👑 pilotos y 🏭 constructores en dos líneas pero UNA sola tarjeta (afinado con Carlos)
-    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")}<br>🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
+    /* 🧑‍💼 en el modo jefe, TUS pilotos y TU equipo van en negrita dentro del top-3 (Carlos, 21-sep):
+       se compara por apellido —el top-3 puede llevar inicial («M. Verstappen») y tpDrv no. */
+    const _ap=x=>String(x||"").split(" ").pop();
+    const _mios=esTP?(r.tpDrv||[]).map(d=>_ap(d.n)):[];
+    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(x=>{const h=nameWithBadge(x); const n=(x&&typeof x==="object")?x.n:x; return (esTP&&_mios.includes(_ap(n)))?`<b>${h}</b>`:h;}).join(" · ")}<br>🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return (esTP&&t===r.team)?`<b>${h}</b>`:h;}).join(" · ")}</span>`:"";
+    /* ⭕ el puesto de constructores del jefe vive como CÍRCULO al lado del escudo (Carlos, 21-sep);
+       el 🏆 del campeón no cabe en el círculo: el dorado de p1 ya lo dice. */
+    const circPos=esTP?`<span class="pos circ ${posCls}">${r.pos!=null?r.pos+"º":"—"}</span>`:"";
     div.innerHTML=`
       <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${esTP
         ? `<span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}`
         : r.age}</span>
-      <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}
+      <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}${circPos}
         <span><span class="nm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
             : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
       ${esTP ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
       ${esTP ? "" : `<span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>`}
       ${esTP ? "" : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
-      <span class="pos ${posCls}">${posLab}</span>
+      ${esTP?"":`<span class="pos ${posCls}">${posLab}</span>`}
       ${top3}
       ${r.cat==="TP"&&r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
       ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`;
