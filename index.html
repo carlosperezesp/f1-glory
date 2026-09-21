@@ -519,7 +519,15 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 /* 🏁 TRES COLUMNAS, NO CINCO (Carlos, 28-ago: «no merece la pena tener tanto chip»). Los puestos
    de tus dos pilotos ya salen —con su color— en la línea de debajo del equipo, así que a la derecha
    se queda solo el de constructores, que es el que no está en ningún otro sitio. */
-.tl-head.tp,.tl-row.tp{grid-template-columns:52px minmax(0,1fr)}
+.tl-head.tp{grid-template-columns:52px minmax(0,1fr)}
+.tl-row.tp{display:block}
+.tl-row.tp .tph{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.tl-row.tp .tpnm{font-family:var(--f-disp);font-weight:800;font-size:15.5px;letter-spacing:.01em}
+.tl-row.tp .tpb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.tl-row.tp .tpb .pos.circ{margin-left:0}
+.tl-row.tp .tpb .cat{display:inline}
+.tl-row.tp .tp-verdict{line-height:1.5;margin-top:6px}
+.tl-row.tp .ev{margin-top:7px}
 .tl-row.tp .pos.circ{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;padding:0;font-size:11px;flex-shrink:0;margin-left:2px;vertical-align:middle}
 /* las pastillas de piloto, ya dentro de la línea de texto: en fila, pequeñas y que envuelvan */
 .tl-row .cat .pos{display:inline-block;width:auto;padding:2px 7px;font-size:11px;border-radius:7px;box-shadow:none;vertical-align:middle}
@@ -13145,7 +13153,13 @@ function renderTimeline(){
     /* ⭕ el puesto de constructores del jefe vive como CÍRCULO al lado del escudo (Carlos, 21-sep);
        el 🏆 del campeón no cabe en el círculo: el dorado de p1 ya lo dice. */
     const circPos=esTP?`<span class="pos circ ${posCls}">${r.pos!=null?r.pos+"º":"—"}</span>`:"";
-    div.innerHTML=`
+    div.innerHTML= esTP ? `
+      <span class="tph"><span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}"><span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}</span><span class="tpnm">${teamDisp(r.team, r.year)} · ${r.year}</span></span>
+      <span class="tpb">${badge(r.team,"",r.year)}${circPos}<span class="cat">${ptsTxt}</span></span>
+      ${top3}
+      ${r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r).replace(" → ","<br>")}</span>`:""}
+      ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`
+    : `
       <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${esTP
         ? `<span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}`
         : r.age}</span>
