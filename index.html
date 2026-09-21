@@ -1035,9 +1035,20 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career .career-grid{grid-template-columns:240px minmax(0,.8fr) minmax(0,1fr) minmax(330px,440px);max-width:1800px;gap:14px}   /* 🎨 el encaje de Carlos en Stitch (20-sep) */
   #career #driverCard{grid-row:1;padding:14px}
   #career #decisionBox{grid-column:2;grid-row:1}
-  #career .timeline{grid-column:3;grid-row:1;margin:0;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
+  #career .timeline{grid-column:3;grid-row:1;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
+    background:transparent;border:0;box-shadow:none;border-radius:0;
+    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
+  #career .timeline::-webkit-scrollbar{display:none}
+  #career .timeline .tl-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);padding:12px 14px}
+  #career .timeline .tl-empty{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
   #career .timeline .tl-body{max-height:none}
-  #career #f1state{grid-column:4;grid-row:1}
+  #career #f1state{grid-column:4;grid-row:1;background:transparent;border:0;box-shadow:none;border-radius:0;
+    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
+  #career #f1state::-webkit-scrollbar{display:none}
+  #career #f1state .cols{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin:0}
+  #career #f1state .fs-prev{border-top:0;padding-top:4px}
+  #career #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:10px 14px;margin-bottom:10px}
+  #career #f1state .fs-prev .fp:last-child{border-bottom:1px solid var(--line)}
   /* densidad de panel de gestión */
   #career .f1state{font-size:13px}
   #career .f1state .cols{gap:10px}
@@ -16052,7 +16063,7 @@ function tpRumboScreen(){
   /* ⭐ el nivel del coche en ESTRELLAS y la tendencia como chip de color (Carlos, 20-ago: fuera el
      número pelado y el «proyecto estable» en texto plano) */
   const _chipTr=`<span class="tr-chip ${ti.c}">${ti.a} ${ti.t}</span>`;
-  setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`}), "");
+  setDecision(L(`🔧 El rumbo del coche · Temporada\u00A0${yearNow()}`,`🔧 The car's direction · Season\u00A0${yearNow()}`,{pt:`🔧 O rumo do carro · Temporada\u00A0${yearNow()}`}), "");
   // setDecision escapa el HTML (lección del mercado): el chip se pinta por innerHTML
   try{ panelGaraje("r"); }catch(e){}
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=
