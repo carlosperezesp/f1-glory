@@ -1024,7 +1024,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 }
 @media (min-width:1280px){
   #career{max-width:1800px!important}
-  #career .career-grid{grid-template-columns:240px minmax(0,.8fr) minmax(0,1.2fr) 330px;max-width:1800px;gap:14px}   /* 🎨 el encaje de Carlos en Stitch (20-sep) */
+  #career .career-grid{grid-template-columns:240px minmax(0,.8fr) minmax(0,1fr) minmax(330px,440px);max-width:1800px;gap:14px}   /* 🎨 el encaje de Carlos en Stitch (20-sep) */
   #career #driverCard{grid-row:1;padding:14px}
   #career #decisionBox{grid-column:2;grid-row:1}
   #career .timeline{grid-column:3;grid-row:1;margin:0;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
@@ -13061,7 +13061,7 @@ function tpVerdictLine(r){
     case "fuera":  return r.tpFallo1
       ? L(`🎯 Objetivo: ${objetivo} → 🚪 fallado: destituido`,`🎯 Target: ${objetivo} → 🚪 missed: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada: demitido`})
       : L(`🎯 Objetivo: ${objetivo} → 🚪 fallado otra vez: destituido`,`🎯 Target: ${objetivo} → 🚪 missed again: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada de novo: demitido`});
-    default:       return L(`🎯 Objetivo: ${objetivo} → ❌ no cumplido, el consejo aprieta`,`🎯 Target: ${objetivo} → ❌ missed, the board tightens`,{pt:`🎯 Meta: ${objetivo} → ❌ não cumprida, o conselho aperta`});
+    default:       return L(`🎯 Objetivo: ${objetivo} → ❌ no cumplido`,`🎯 Target: ${objetivo} → ❌ missed`,{pt:`🎯 Meta: ${objetivo} → ❌ não cumprida`});
   }
 }
 function renderTimeline(){
@@ -13141,7 +13141,7 @@ function renderTimeline(){
        se compara por apellido —el top-3 puede llevar inicial («M. Verstappen») y tpDrv no. */
     const _ap=x=>String(x||"").split(" ").pop();
     const _mios=esTP?(r.tpDrv||[]).map(d=>_ap(d.n)):[];
-    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(x=>{const h=nameWithBadge(x); const n=(x&&typeof x==="object")?x.n:x; return (esTP&&_mios.includes(_ap(n)))?`<b>${h}</b>`:h;}).join(" · ")}<br>🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return (esTP&&t===r.team)?`<b>${h}</b>`:h;}).join(" · ")}</span>`:"";
+    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(x=>{const h=nameWithBadge(x); const n=(x&&typeof x==="object")?x.n:x; return (esTP&&_mios.includes(_ap(n)))?`<b>${h}</b>`:h;}).join(" · ")}<br>🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return (esTP&&t===((r.team&&r.team.name)||r.team))?`<b>${h}</b>`:h;}).join(" · ")}</span>`:"";
     /* ⭕ el puesto de constructores del jefe vive como CÍRCULO al lado del escudo (Carlos, 21-sep);
        el 🏆 del campeón no cabe en el círculo: el dorado de p1 ya lo dice. */
     const circPos=esTP?`<span class="pos circ ${posCls}">${r.pos!=null?r.pos+"º":"—"}</span>`:"";
