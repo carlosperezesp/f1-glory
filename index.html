@@ -1032,44 +1032,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #intro h1{font-size:clamp(32px,4.2vw,56px)}
   #identity{zoom:.82}
 }
-@media (min-width:1280px){
-  #career{max-width:1800px!important}
-  #career .career-grid{grid-template-columns:240px minmax(0,.8fr) minmax(0,1fr) minmax(330px,440px);max-width:1800px;gap:14px}   /* 🎨 el encaje de Carlos en Stitch (20-sep) */
-  #career #driverCard{grid-row:1;padding:14px}
-  #career #decisionBox{grid-column:2;grid-row:1}
-  #career .timeline{grid-column:3;grid-row:1;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
-    background:transparent;border:0;box-shadow:none;border-radius:0;
-    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
-  #career .timeline::-webkit-scrollbar{display:none}
-  #career .timeline .tl-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);padding:12px 14px}
-  #career .timeline .tl-empty{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
-  #career .timeline .tl-body{max-height:none}
-  #career #f1state{grid-column:4;grid-row:1;background:transparent;border:0;box-shadow:none;border-radius:0;
-    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
-  #career #f1state::-webkit-scrollbar{display:none}
-  #career #f1state::before{display:none}
-  /* 🟥 la línea de acento vive ahora en CADA tarjeta, no en el contenedor transparente */
-  #career .timeline .tl-row,#career #f1state .cols,#career #f1state .fs-prev .fp{position:relative;overflow:hidden}
-  #career .timeline .tl-row::before,#career #f1state .cols::before,#career #f1state .fs-prev .fp::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
-  #career #f1state .cols{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin:0}
-  #career #f1state .fs-prev{border-top:0;padding-top:4px}
-  #career #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:10px 14px;margin-bottom:10px}
-  #career #f1state .fs-prev .fp:last-child{border-bottom:1px solid var(--line)}
-  /* densidad de panel de gestión */
-  #career .f1state{font-size:13px}
-  #career .f1state .cols{gap:10px}
-  #career .f1state .srow{font-size:12px;padding:3px 5px}
-  #career .fs-prev{margin-top:12px;padding-top:8px}
-  #career .fs-prev .fpg{font-size:11.5px;gap:2px 8px}
-  /* 🧑‍💼 en el panel del jefe sobran el chip «TEAM PRINCIPAL» (ya se sabe) y la celda TEMPORADAS
-     (arriba ya pone «Temporada 2») — Carlos, 20-sep */
-  #career #driverCard.tp #teamRole{display:none}
-  #career #driverCard.tp .stats-row{grid-template-columns:repeat(3,1fr)}
-  #career #driverCard.tp .stats-row .stat:first-child{display:none}
-  /* 🧑‍🔧 el garaje vive en el panel (Stitch de Carlos): la copia del mercado se esconde */
-  #career .garwrap{display:none}
-  #driverCard #panelGaraje{display:block;margin-top:9px}
-  #panelGaraje .gar-chip{display:inline-block;margin:2px 4px 2px 0;font-size:11px;padding:3px 7px}
+/* 🧑‍💼 EL PANEL DEL JEFE EN TODOS LOS ANCHOS (Carlos, 22-sep: «lo adaptas para móvil con lo que
+   ya tenemos?»): las nueve líneas, el garaje en tarjetas y la temporada titulando los números salen
+   del @media de escritorio y valen también para el deck del móvil y el tramo intermedio. La copia
+   .garwrap de Decidir sigue existiendo solo en escritorio-oculta: en el móvil decides sin ver el panel. */
   /* 🧑‍💼 las nueve líneas del panel del jefe (Carlos, 20-sep) */
   #career #driverCard.tp{display:flex;flex-direction:column}
   #career #driverCard.tp .driver-head,#career #driverCard.tp .team{display:none}
@@ -1101,6 +1067,45 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #panelGaraje .gp1{font-weight:700;font-size:12.5px}
   #panelGaraje .gp2{font-size:11px;color:var(--muted);margin-top:1px}
   #panelGaraje .gswap{cursor:pointer}
+  #career #driverCard.tp #teamRole{display:none}
+  #career #driverCard.tp .stats-row{grid-template-columns:repeat(3,1fr)}
+  #career #driverCard.tp .stats-row .stat:first-child{display:none}
+  #career #driverCard.tp #panelGaraje{display:block;margin-top:9px}
+  #panelGaraje .gar-chip{display:inline-block;margin:2px 4px 2px 0;font-size:11px;padding:3px 7px}
+
+@media (min-width:1280px){
+  #career{max-width:1800px!important}
+  #career .career-grid{grid-template-columns:240px minmax(0,.8fr) minmax(0,1fr) minmax(330px,440px);max-width:1800px;gap:14px}   /* 🎨 el encaje de Carlos en Stitch (20-sep) */
+  #career #driverCard{grid-row:1;padding:14px}
+  #career #decisionBox{grid-column:2;grid-row:1}
+  #career .timeline{grid-column:3;grid-row:1;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
+    background:transparent;border:0;box-shadow:none;border-radius:0;
+    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
+  #career .timeline::-webkit-scrollbar{display:none}
+  #career .timeline .tl-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);padding:12px 14px}
+  #career .timeline .tl-empty{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+  #career .timeline .tl-body{max-height:none}
+  #career #f1state{grid-column:4;grid-row:1;background:transparent;border:0;box-shadow:none;border-radius:0;
+    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
+  #career #f1state::-webkit-scrollbar{display:none}
+  #career #f1state::before{display:none}
+  /* 🟥 la línea de acento vive ahora en CADA tarjeta, no en el contenedor transparente */
+  #career .timeline .tl-row,#career #f1state .cols,#career #f1state .fs-prev .fp{position:relative;overflow:hidden}
+  #career .timeline .tl-row::before,#career #f1state .cols::before,#career #f1state .fs-prev .fp::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
+  #career #f1state .cols{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin:0}
+  #career #f1state .fs-prev{border-top:0;padding-top:4px}
+  #career #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:10px 14px;margin-bottom:10px}
+  #career #f1state .fs-prev .fp:last-child{border-bottom:1px solid var(--line)}
+  /* densidad de panel de gestión */
+  #career .f1state{font-size:13px}
+  #career .f1state .cols{gap:10px}
+  #career .f1state .srow{font-size:12px;padding:3px 5px}
+  #career .fs-prev{margin-top:12px;padding-top:8px}
+  #career .fs-prev .fpg{font-size:11.5px;gap:2px 8px}
+  /* 🧑‍💼 en el panel del jefe sobran el chip «TEAM PRINCIPAL» (ya se sabe) y la celda TEMPORADAS
+     (arriba ya pone «Temporada 2») — Carlos, 20-sep */
+  /* 🧑‍🔧 el garaje vive en el panel (Stitch de Carlos): la copia del mercado se esconde */
+  #career .garwrap{display:none}
   /* 🖱️ cada columna con su propio scroll (Carlos, 20-sep): la página no baja entera */
   #career #decisionBox{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
     padding:2px 12px 24px;margin:0 -12px;scrollbar-width:none}
@@ -1178,6 +1183,15 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #decSub{font-size:13px}
   body.deck-movil #driverCard{order:1} body.deck-movil #decisionBox{order:2;padding:2px 2px 30px}
   body.deck-movil .timeline{order:3} body.deck-movil #f1state{order:4}
+  /* 🃏 los chips de temporada del escritorio, también en el deck (Carlos, 22-sep) */
+  body.deck-movil .timeline{background:transparent;border:0;box-shadow:none;border-radius:0}
+  body.deck-movil .timeline .tl-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);padding:12px 14px;position:relative;overflow:hidden}
+  body.deck-movil .timeline .tl-row::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
+  body.deck-movil #f1state{background:transparent;border:0;box-shadow:none}
+  body.deck-movil #f1state::before{display:none}
+  body.deck-movil #f1state .cols,body.deck-movil #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px;position:relative;overflow:hidden}
+  body.deck-movil #f1state .cols::before,body.deck-movil #f1state .fs-prev .fp::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
+  body.deck-movil #f1state .fs-prev{border-top:0}
   body.deck-movil .tl-body{max-height:none}
   body.deck-movil .f1state .cols{grid-template-columns:1fr;display:grid;gap:18px}   /* en el panel del móvil, pilotos y constructores uno debajo del otro */
 }
