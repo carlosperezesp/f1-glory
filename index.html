@@ -528,7 +528,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tl-row.tp .tpb .team-dot{width:30px;height:30px}
 .tl-row.tp .ev.top3{margin-top:10px;display:block;line-height:1.9}
 .tl-row.tp .tpb .cat{display:inline}
-.tl-row.tp .tp-verdict{line-height:1.5;margin-top:6px}
+.tl-row.tp .tp-verdict{line-height:1.5;margin-top:6px;display:block;width:100%}
 .tl-row.tp .ev{margin-top:7px}
 .tl-row.tp .pos.circ{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;padding:0;font-size:11px;flex-shrink:0;margin-left:2px;vertical-align:middle}
 /* las pastillas de piloto, ya dentro de la línea de texto: en fila, pequeñas y que envuelvan */
@@ -1032,6 +1032,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #intro h1{font-size:clamp(32px,4.2vw,56px)}
   #identity{zoom:.82}
 }
+.garwrap{display:none}   /* 🧹 la copia de pilotos en Decidir sobra en TODOS los anchos: viven en el panel (Carlos, 22-sep) */
 /* 🧑‍💼 EL PANEL DEL JEFE EN TODOS LOS ANCHOS (Carlos, 22-sep: «lo adaptas para móvil con lo que
    ya tenemos?»): las nueve líneas, el garaje en tarjetas y la temporada titulando los números salen
    del @media de escritorio y valen también para el deck del móvil y el tramo intermedio. La copia
@@ -1066,7 +1067,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #panelGaraje .gpil.libre{color:var(--muted);font-size:10.5px;font-weight:800;letter-spacing:.05em}
   #panelGaraje .gp1{font-weight:700;font-size:12.5px}
   #panelGaraje .gp2{font-size:11px;color:var(--muted);margin-top:1px}
-  #panelGaraje .gswap{cursor:pointer}
+  #panelGaraje .gpil.gswap{cursor:pointer;font-weight:700;font-size:12px;user-select:none}
   #career #driverCard.tp #teamRole{display:none}
   #career #driverCard.tp .stats-row{grid-template-columns:repeat(3,1fr)}
   #career #driverCard.tp .stats-row .stat:first-child{display:none}
@@ -1105,7 +1106,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   /* 🧑‍💼 en el panel del jefe sobran el chip «TEAM PRINCIPAL» (ya se sabe) y la celda TEMPORADAS
      (arriba ya pone «Temporada 2») — Carlos, 20-sep */
   /* 🧑‍🔧 el garaje vive en el panel (Stitch de Carlos): la copia del mercado se esconde */
-  #career .garwrap{display:none}
+
   /* 🖱️ cada columna con su propio scroll (Carlos, 20-sep): la página no baja entera */
   #career #decisionBox{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
     padding:2px 12px 24px;margin:0 -12px;scrollbar-width:none}
@@ -1227,7 +1228,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
       <rect x="10" y="22" width="6" height="6"/><rect x="22" y="22" width="6" height="6"/>
     </g></svg></div>
   <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-pt="Construa a sua carreira<br>na <span>Fórmula 1</span>" data-pl="Zbuduj swoją karierę<br>w <span>Formule 1</span>" data-fr="Construis ta carrière<br>en <span>Formule 1</span>" data-pt="Constrói a tua carreira<br>na <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
-  <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-pt="Comece no karting, suba pela F4, F3 e F2, conquiste uma vaga e enfrente Verstappen, Norris, Antonelli e os que virão. A história da F1 continua sendo escrita… com você dentro." data-pl="Zacznij od kartingu, przejdź przez F4, F3 i F2, wywalcz sobie fotel i zmierz się z Verstappenem, Norrisem, Antonellim i tymi, którzy dopiero nadejdą. Historia F1 wciąż się pisze… a ty jesteś w środku." data-fr="Commence en karting, gravis la F4, la F3 et la F2, décroche un baquet et affronte Verstappen, Norris, Antonelli et ceux qui suivront. L'histoire de la F1 continue de s'écrire… avec toi dedans." data-pt="Começa no karting, sobe pela F4, F3 e F2, ganha um lugar na grelha e luta contra Verstappen, Norris, Antonelli e os que hão de vir. A história da F1 continua a escrever-se… contigo lá dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
+  <!-- 🧹 la parrafada de intro se fue (Carlos, 22-sep): cada tarjeta de modo ya lleva su descripción -->
   <!-- 🧭 EL MENÚ DE CUATRO MODOS (Carlos, 19-sep-2026): se quita «Iniciar carrera» y los modos quedan
        iguales. Retro → dos cuadrados (Carrera / Team Principal) → sus décadas → los años de cada década.
        Retos → cuadrados de 4×2 con desplazamiento lateral cuando haya más de ocho. -->
@@ -7626,6 +7627,7 @@ function setDecision(title,sub,pulsing,outcome){
 }
 // en móvil las ofertas viven abajo: al aparecer, las traemos a la vista (con algo de contexto arriba)
 function scrollToDecision(){
+  try{ deckActualiza(); }catch(e){}   /* 📱 el deck se decide aquí: «Elige tu escudería» llegaba sin pestañas porque nadie lo reevaluaba con el career ya visible (Carlos, 22-sep) */
   if(document.body.classList.contains("deck-movil")){
     /* 📱 recién simulada la temporada, el jugador va al RESUMEN a leer su año; el botón flotante
        «Continuar ▸» le lleva a Decidir cuando quiera (Carlos, 19-sep). El resto de veces, a Decidir. */
@@ -13083,24 +13085,17 @@ function tpConfianza(hoy){
 }
 function tpVerdictLine(r){
   const objetivo=r.tpGoalTxt||"";
-  const cumple=(r.constrPos===1?"1º":(r.constrPos||"?")+"º");
   /* ⚖️ UNA TEMPORADA ANULADA AÑOS DESPUÉS. El juicio del crashgate puede retirarte los puntos de
      constructores de un año que ya jugaste, así que esa fila de la trayectoria cambia de significado
      mucho tiempo después de haberla vivido. Va antes del switch porque manda sobre el veredicto que
      tuviera: da igual que aquel año cumplieras, si te lo han quitado. */
-  if(r.tpDQ) return L(`🎯 Objetivo: ${objetivo} → ⚖️ ANULADO: la FIA os retiró los puntos de constructores`,
-                      `🎯 Target: ${objetivo} → ⚖️ VOIDED: the FIA stripped your constructors' points`,
-                      {pt:`🎯 Meta: ${objetivo} → ⚖️ ANULADO: a FIA retirou os pontos de construtores`});
+  if(r.tpDQ) return `🎯⚖️: ${objetivo}`;
   switch(r.tpVerdict){
-    case "titulo": return L(`🎯 Objetivo: ${objetivo} → 🏆 rescatado por el título de pilotos`,`🎯 Target: ${objetivo} → 🏆 saved by the drivers' title`,{pt:`🎯 Meta: ${objetivo} → 🏆 salvo pelo título de pilotos`});
-    case "ok":     return L(`🎯 Objetivo: ${objetivo} → ✅ cumplido`,`🎯 Target: ${objetivo} → ✅ met`,{pt:`🎯 Meta: ${objetivo} → ✅ cumprida`});
-    case "gracia": return L(`🎯 Objetivo: ${objetivo} → 🛡️ fallado, pero el consejo te da un año más`,`🎯 Target: ${objetivo} → 🛡️ missed, but the board gives you one more year`,{pt:`🎯 Objetivo: ${objetivo} → 🛡️ falhado, mas o conselho te dá mais um ano`});
-    /* 🚪 ya no siempre es «el segundo año»: con el consejo con memoria puedes caer al tercero o al
-       cuarto si tu historial te ha ido comprando indultos. La línea dice lo que es verdad siempre. */
-    case "fuera":  return r.tpFallo1
-      ? L(`🎯 Objetivo: ${objetivo} → 🚪 fallado: destituido`,`🎯 Target: ${objetivo} → 🚪 missed: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada: demitido`})
-      : L(`🎯 Objetivo: ${objetivo} → 🚪 fallado otra vez: destituido`,`🎯 Target: ${objetivo} → 🚪 missed again: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada de novo: demitido`});
-    default:       return L(`🎯 Objetivo: ${objetivo} → ❌ no cumplido`,`🎯 Target: ${objetivo} → ❌ missed`,{pt:`🎯 Meta: ${objetivo} → ❌ não cumprida`});
+    case "titulo": return `🎯🏆: ${objetivo}`;   // dorado: el título de pilotos lo rescató
+    case "ok":     return `🎯✅: ${objetivo}`;
+    case "gracia": return `🎯🛡️: ${objetivo}`;   // ámbar: fallado, pero con indulto
+    case "fuera":  return `🎯🚪: ${objetivo}`;   // rojo intenso: destituido
+    default:       return `🎯❌: ${objetivo}`;
   }
 }
 function renderTimeline(){
@@ -13188,7 +13183,7 @@ function renderTimeline(){
       <span class="tph"><span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}"><span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}</span><span class="tpnm">${teamDisp(r.team, r.year)} · ${r.year}</span></span>
       <span class="tpb">${badge(r.team,"",r.year)}${circPos}<span class="cat">${ptsTxt}</span></span>
       ${top3}
-      ${r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r).replace(" → ","<br>")}</span>`:""}
+      ${r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
       ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`
     : `
       <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${esTP
@@ -14791,7 +14786,7 @@ function panelGaraje(mode){
     : `<div class="gpil res libre">🧢 ${L("SIN PROBADOR","NO RESERVE",{pt:"SEM RESERVA"})}</div>`);
   if(mode==="m"||mode==="r"){
     const _sw=((sl[0]&&sl[0]!=="PLAYER")||(sl[1]&&sl[1]!=="PLAYER"));
-    if(_sw) filas.push(`<span class="gar-chip gswap" onclick="tpSwapSeats(${mode==="r"?"'rumbo'":""})">↔️ ${L("invertir orden","swap order",{pt:"inverter ordem"})}</span>`);
+    if(_sw) filas.push(`<div class="gpil gswap" role="button" onclick="tpSwapSeats(${mode==="r"?"'rumbo'":""})">↔️ ${L("invertir orden pilotos","swap driver order",{pt:"inverter ordem dos pilotos"})}</div>`);
   }
   g.style.display=""; g.innerHTML=filas.join("");
 }
@@ -16088,9 +16083,9 @@ function tpRumboScreen(){
   try{ panelGaraje("r"); }catch(e){}
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=
     tpAvisoHTML()+`<span class="garwrap">${tpPilotosHTML()}</span>`+
-    L(`Tu coche: ${tpStars(tn)} ${_chipTr}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
-      `Your car: ${tpStars(tn)} ${_chipTr}. Where you push the factory shows over 2-3 seasons.`,
-      {pt:`O seu carro: ${tpStars(tn)} ${_chipTr}. Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}); }catch(e){}
+    L(`Tu coche: ${tpStars(tn)} ${_chipTr}.<br>Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
+      `Your car: ${tpStars(tn)} ${_chipTr}.<br>Where you push the factory shows over 2-3 seasons.`,
+      {pt:`O seu carro: ${tpStars(tn)} ${_chipTr}.<br>Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}); }catch(e){}
   /* ✍️ el fichaje recién hecho se confirma AQUÍ: antes saltabas al rumbo sin saber si cuajó (Carlos) */
   if(S._tpFirmadoTxt){ try{ const _d=$("decSub")||document.querySelector("#decision .sub"); if(_d) _d.innerHTML=S._tpFirmadoTxt+"<br>"+_d.innerHTML; }catch(e){} S._tpFirmadoTxt=null; }
   $("decRecap").style.display="none";
