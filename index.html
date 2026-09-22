@@ -1760,7 +1760,11 @@ let _deckIrTimer=null;
 function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
   if(!g||!el) return;
   const dest=()=>el.offsetLeft-g.offsetLeft;
-  g.scrollTo({left:dest(), behavior:"smooth"});
+  /* 🎯 un viaje de MÁS de un panel va en seco: scroll-snap-stop:always (puesto para que un flick no
+     se salte pantallas) también para el scroll suave en el panel intermedio, y Mundial→Decidir
+     aterrizaba torcido (Carlos, 22-sep). El viaje corto conserva la animación. */
+  const _lejos=Math.abs(g.scrollLeft-dest())>g.clientWidth*1.2;
+  g.scrollTo({left:dest(), behavior:_lejos?"auto":"smooth"});
   /* 🩹 un repintado a mitad de camino ABORTA el scroll suave (cazado el 19-sep: tras simular, el salto
      al resumen se quedaba en el panel). Si a los 450 ms no hemos llegado, se remata en seco.
      ⚠️ CANCELABLE (22-sep): dos deckIr seguidos —invertir orden desde el Panel repinta el mercado,
