@@ -1130,6 +1130,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .fs-prev .fp{padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.55}
 .fs-prev .fp:last-child{border-bottom:0}
 .fs-prev .fp b{font-variant-numeric:tabular-nums;margin-right:6px}
+.fs-prev .fpn{display:inline-block;min-width:27px;font-variant-numeric:tabular-nums}
 .fs-prev details.fp summary{cursor:pointer;list-style:none;position:relative;padding-right:16px}
 .fs-prev details.fp summary::-webkit-details-marker{display:none}
 .fs-prev details.fp summary::after{content:"▾";position:absolute;right:2px;top:2px;color:var(--muted);transition:transform .2s}
@@ -11646,7 +11647,7 @@ function renderF1State(){
     const filas=(S.seasons||[]).slice().reverse().filter(r=>r && r.top3d && r.top3c && !vistos.has(r.year) && vistos.add(r.year));
     pv.style.display = filas.length ? "" : "none";
     pv.innerHTML = filas.length ? `<h5>${L("📜 Años anteriores","📜 Previous seasons",{pt:"📜 Anos anteriores"})}</h5>` + filas.map(r=>{
-      const cab=`<b>${r.year}</b>👑 ${r.top3d.map(x=>surname(nm(x))).join(" · ")}<br><span style="color:var(--muted)">🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`;
+      const cab=`<b>${L("Temporada","Season",{pt:"Temporada"})} ${r.year}</b><br>👑 ${r.top3d.map(x=>`${(x&&typeof x==="object"&&x.t)?(teamBadge(x.t,r.year)||"")+"&nbsp;":""}${surname(nm(x))}`).join(" · ")}<br><span style="color:var(--muted)">🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`;
       /* 📜 con foto del año guardada, el año es un desplegable con su parrilla completa */
       const H=(S.rankHist||[]).find(h=>h.y===r.year);
       if(!H) return `<div class="fp">${cab}</div>`;
@@ -11655,8 +11656,8 @@ function renderF1State(){
       const _flagDe=n=>{ try{ const all=[...(S.dpool||[]),...(S.retiredPool||[]),...(S.freeAgents||[]),...Object.values(S.seats||{}).flat()];
         const d=all.find(x=>x&&x!=="PLAYER"&&x.name===n); return (d&&d.flag)||""; }catch(e){ return ""; } };
       const dLis=H.d.map((x,i)=>{ const [n,t]=x, fl=x[2]||_flagDe(n);
-        return `<div class="fpr">${i+1}º${t?` <span class="fpt">${teamBadge(t,r.year)||""}</span>`:""} ${fl?flg(fl)+" ":""}${surname(n)}</div>`; }).join("");
-      const cLis=H.c.map((t,i)=>`<div class="fpr">${i+1}º ${teamBadge(t,r.year)||""} ${t}</div>`).join("");
+        return `<div class="fpr"><span class="fpn">${i+1}º</span>${t?`<span class="fpt">${teamBadge(t,r.year)||""}</span> `:""}${fl?flg(fl)+" ":""}${surname(n)}</div>`; }).join("");
+      const cLis=H.c.map((t,i)=>`<div class="fpr"><span class="fpn">${i+1}º</span>${teamBadge(t,r.year)||""} ${t}</div>`).join("");
       return `<details class="fp"${filas.indexOf(r)===0?" open":""}><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
     }).join("") : "";
   }catch(e){}
