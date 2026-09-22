@@ -949,13 +949,12 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 [data-theme="dark"] .ovr-badge{border-radius:8px;box-shadow:0 0 0 1px var(--line),0 0 22px rgba(255,181,46,.10)}
 .trophies .empty{color:var(--muted);opacity:.8;font-size:11px}
 .decision h3{font-size:26px;line-height:1.1}
-.offer,[data-theme="dark"] .offer{background:var(--panel);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.offer,[data-theme="dark"] .offer{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow)}
 [data-theme="dark"] .offer{border-top-color:var(--line)!important;border-right-color:var(--line)!important;border-bottom-color:var(--line)!important;border-width:1px!important;border-left-width:4px!important}
 .offer{border-width:1px!important;border-left-width:5px!important}
 .offer .name{font-family:var(--f-disp);font-weight:700;font-size:17px}
 .offer.dilemma,[data-theme="dark"] .offer.dilemma{background:var(--panel);border-color:var(--line)!important;border-left:4px solid var(--gold)!important}
 .offer.retire,[data-theme="dark"] .offer.retire{background:transparent;border-style:dashed!important}
-.offer{background:var(--panel)}   /* 🎨 el azulado #eef3ff era del diseño viejo; en la mudanza todas las tarjetas son var(--panel) (Carlos, 22-sep) */
 .offer:hover{transform:translateY(-1px)}
 #decRecap,[data-theme="dark"] #decRecap{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--team-ink);border-radius:var(--r-in)}
 .decision p.outcome{border-radius:var(--r-in);border-left:3px solid var(--gold)}
@@ -1181,6 +1180,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #topBtns{position:static;grid-column:5;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding:2px 0}
   body.deck-movil #cogToggle{background:transparent;border:0;box-shadow:none;width:32px;height:32px;opacity:.75;filter:grayscale(1)}
   body.deck-movil #topBtns.open #cogToggle{background:var(--panel2);border:1px solid var(--line);opacity:1}
+  /* 🎨 sombras planas en el deck (Carlos, 22-sep: «el fondo sigue teniendo otro color»): la sombra
+     difusa de 26px pintaba una mancha gris bajo cada tarjeta; en pantallas pequeñas, borde y una
+     sombra de contacto bastan */
+  body.deck-movil .offer,body.deck-movil .tl-row,body.deck-movil #f1state .cols,body.deck-movil #f1state .fs-prev .fp,body.deck-movil .card{box-shadow:0 1px 2px rgba(20,22,28,.05)}
   body.deck-movil #decTitle{font-size:18px;line-height:1.25}   /* «El mercado · 2028 · McLaren» era grandísimo (Carlos) */
   /* 📰 en el móvil las noticias también van en cajitas (Stitch de Carlos, 20-sep) */
   body.deck-movil .tl-row .ev{width:100%}
@@ -14318,6 +14321,8 @@ function tpRefreshCard(){
 /* pantalla de arranque: CUALQUIERA de los proyectos de 2026 — la libertad se paga en exigencia */
 function tpChooseTeam(){
   const box=$("offerList");
+  try{ refreshCard(); }catch(e){}   /* 🧑‍💼 la tarjeta del jefe VACÍA desde el primer segundo (Carlos, 22-sep:
+     el panel salía con la carta clásica del piloto —edad, GP, poles— y «se transformaba» al elegir equipo) */
   setDecision(L("🧑‍💼 Elige tu escudería","🧑‍💼 Choose your team",{pt:"🧑‍💼 Escolha a sua equipe"}),
     L("Cualquiera de los "+F1_TEAMS.length+" proyectos de "+yearNow()+" puede ser tuyo. Ojo: la exigencia del consejo escala con el coche — en un grande es el título o la calle; en un colista te darán tiempo.",
       "Any of the "+F1_TEAMS.length+" projects on the "+yearNow()+" grid can be yours. Careful: the board's demands scale with the car — at a giant it's title-or-sack; at a backmarker they'll give you time.",
@@ -14835,18 +14840,24 @@ function renderTPPanel(carP, mood, moodLbl){
   if(!A){ A=document.createElement("div"); A.id="tpPanelA"; card.insertBefore(A, card.firstChild); }
   if(!B){ B=document.createElement("div"); B.id="tpPanelB"; card.appendChild(B); }
   const eq=F1_TEAMS.find(t=>t.name===S.tpTeam);
-  const contrato=(S.tpContract!=null && S.tpContract>0)
+  const contrato=(S.tpTeam && S.tpContract!=null && S.tpContract>0)
     ? `<div class="tpl-con">📄 ${S.tpContract} ${S.tpContract===1?L("año restante","yr left",{pt:"ano restante"}):L("años restantes","yrs left",{pt:"anos restantes"})}</div>` : "";
+  /* 🕳️ SIN EQUIPO TODAVÍA (pantalla de elegir escudería): la misma estructura, con huecos —
+     chip del coche en gris con «—» y el sitio del equipo diciéndote qué falta. */
+  const _l2=S.tpTeam
+    ? `<span class="tpl-car" style="background:${ovrColor(carP)}"><span class="n">${carP}</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span><div class="tpl-l2r"><div class="tpl-l2a">${eq?badge(eq,"dot"):""}<b class="tpl-team">${S.tpTeam||""}</b></div>${contrato}</div>`
+    : `<span class="tpl-car" style="background:linear-gradient(135deg,#a7adb5,#7c828a)"><span class="n">—</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span><div class="tpl-l2r"><div class="tpl-l2a"><b class="tpl-team" style="color:var(--muted)">${L("Elige tu escudería","Choose your team",{pt:"Escolha a sua equipe"})}</b></div></div>`;
   A.innerHTML=`
-    <div class="tpl-l1"><b>${(sel.name||"").toUpperCase()}</b><span class="tpl-nat">${natLabel()}</span><span class="tpl-right">⭐ ${L("Fama","Fame",{pt:"Fama"})} ${S.tpPrest}</span></div>
-    <div class="tpl-l2"><span class="tpl-car" style="background:${ovrColor(carP)}"><span class="n">${carP}</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span><div class="tpl-l2r"><div class="tpl-l2a">${eq?badge(eq,"dot"):""}<b class="tpl-team">${S.tpTeam||""}</b></div>${contrato}</div></div>`;
+    <div class="tpl-l1"><b>${(sel.name||"").toUpperCase()}</b><span class="tpl-nat">${natLabel()}</span><span class="tpl-right">⭐ ${L("Fama","Fame",{pt:"Fama"})} ${S.tpPrest??50}</span></div>
+    <div class="tpl-l2">${_l2}</div>`;
   const obj=(S.tpGoal && S.tpGoal.target!=null)
     ? `<div class="tpl-kv">🎯 <span class="k">${L("Objetivo","Target",{pt:"Meta"})} ${S.tpGoal.year||yearNow()}:</span> <b>${S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º"}</b></div>` : "";
   const cap=(S.tpCapricho && S.tpOwner && S.tpOwner.k==="show") ? `<div class="tpl-kv">${tpCaprichoChip(S.tpCapricho)}</div>` : "";
-  B.innerHTML=`
+  B.innerHTML=(S.tpTeam?`
     <div class="tpl-kv">${tpOwnerLabel()||""}</div>
     <div class="tpl-kv"><span class="k">${moodLbl}:</span> <b style="color:${mood[1]}">${mood[0]}</b></div>
-    ${obj}${cap}`;
+    ${obj}${cap}`:"");
+  B.style.display=S.tpTeam?"":"none";
   let C=document.getElementById("tpSeasonHead");
   if(!C){ C=document.createElement("div"); C.id="tpSeasonHead"; card.insertBefore(C, B.nextSibling); }
   C.innerHTML=`<span class="k">${L("Temporada","Season",{pt:"Temporada"})}</span> <b>${S.age+1}</b>`;
