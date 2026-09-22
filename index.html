@@ -1219,7 +1219,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil .timeline{background:transparent;border:0;box-shadow:none;border-radius:0}
   body.deck-movil .timeline .tl-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);padding:12px 14px;position:relative;overflow:hidden}
   body.deck-movil .timeline .tl-row::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
-  body.deck-movil #f1state{background:transparent;border:0;box-shadow:none}
+  body.deck-movil #f1state{background:transparent;border:0;box-shadow:none;padding-top:0}   /* el padding:16px de .f1state lo dejaba más abajo que los otros tres paneles (Carlos, 22-sep) */
   body.deck-movil #f1state::before{display:none}
   body.deck-movil #f1state .cols,body.deck-movil #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px;position:relative;overflow:hidden}
   body.deck-movil #f1state .cols::before,body.deck-movil #f1state .fs-prev .fp::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
