@@ -955,6 +955,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .offer .name{font-family:var(--f-disp);font-weight:700;font-size:17px}
 .offer.dilemma,[data-theme="dark"] .offer.dilemma{background:var(--panel);border-color:var(--line)!important;border-left:4px solid var(--gold)!important}
 .offer.retire,[data-theme="dark"] .offer.retire{background:transparent;border-style:dashed!important}
+.offer{background:var(--panel)}   /* 🎨 el azulado #eef3ff era del diseño viejo; en la mudanza todas las tarjetas son var(--panel) (Carlos, 22-sep) */
 .offer:hover{transform:translateY(-1px)}
 #decRecap,[data-theme="dark"] #decRecap{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--team-ink);border-radius:var(--r-in)}
 .decision p.outcome{border-radius:var(--r-in);border-left:3px solid var(--gold)}
@@ -1175,6 +1176,11 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
     max-height:calc(100dvh - 118px);overflow-y:auto;overscroll-behavior-y:contain;overscroll-behavior-x:auto;
     scrollbar-width:none}
   body.deck-movil #driverCard::-webkit-scrollbar,body.deck-movil #decisionBox::-webkit-scrollbar,body.deck-movil .timeline::-webkit-scrollbar,body.deck-movil #f1state::-webkit-scrollbar{display:none}
+  /* 👇 la pista de «hay más abajo» (Carlos, 22-sep): un velo pegado al borde inferior del panel
+     que se queda atrás —y desaparece— cuando llegas al final del contenido */
+  body.deck-movil #driverCard::after,body.deck-movil #decisionBox::after,body.deck-movil .timeline::after,body.deck-movil #f1state::after{
+    content:"";display:block;position:sticky;bottom:0;height:44px;margin-top:-44px;
+    background:linear-gradient(transparent,var(--bg));pointer-events:none}
   /* ⚙️ el engranaje vive DENTRO de la barra de pestañas, en su quinta celda (Carlos: «flotando
      perdido en el éter»): deckActualiza lo muda ahí al entrar en modo baraja y lo devuelve al salir */
   body.deck-movil #topBtns{position:static;grid-column:5;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding:2px 0}
@@ -1183,6 +1189,13 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #decTitle{font-size:18px;line-height:1.25}   /* «El mercado · 2028 · McLaren» era grandísimo (Carlos) */
   /* 📰 en el móvil las noticias también van en cajitas (Stitch de Carlos, 20-sep) */
   body.deck-movil .tl-row .ev{width:100%}
+  /* 🔍 en el deck sobra ancho: el nombre y la fama del jefe suben de cuerpo (Carlos, 22-sep) */
+  body.deck-movil .tpl-l1{font-size:14px}
+  body.deck-movil .tpl-l1>b{font-size:17px}
+  body.deck-movil .tpl-nat{font-size:13px}
+  body.deck-movil .tpl-right{font-size:13.5px}
+  body.deck-movil .tpl-team{font-size:16px}
+  body.deck-movil .tpl-con{font-size:12.5px}
   body.deck-movil .tl-row .ev .evi{display:block;padding:9px 12px;margin:7px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
   body.deck-movil .tl-row .ev .evi+.evi::before{content:""}
   body.deck-movil .tl-row .ev.top3{padding:10px 12px;line-height:1.75;margin-bottom:12px}
@@ -1724,13 +1737,18 @@ function pintaColorEquipo(t){
 /* 📱 EL MURO EN PANELES: pestañas que llevan a cada panel y se encienden al deslizar. */
 const DECK_PANELES=[["driverCard",["Panel","Panel","Painel"]],["decisionBox",["Decidir","Decide","Decidir"]],
                     ["tlPanel",["Resumen","Recap","Resumo"]],["f1state",["Mundial","Standings","Mundial"]]];
+let _deckIrTimer=null;
 function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
   if(!g||!el) return;
   const dest=()=>el.offsetLeft-g.offsetLeft;
   g.scrollTo({left:dest(), behavior:"smooth"});
   /* 🩹 un repintado a mitad de camino ABORTA el scroll suave (cazado el 19-sep: tras simular, el salto
-     al resumen se quedaba en el panel). Si a los 450 ms no hemos llegado, se remata en seco. */
-  setTimeout(()=>{ if(Math.abs(g.scrollLeft-dest())>40) g.scrollLeft=dest(); }, 450);
+     al resumen se quedaba en el panel). Si a los 450 ms no hemos llegado, se remata en seco.
+     ⚠️ CANCELABLE (22-sep): dos deckIr seguidos —invertir orden desde el Panel repinta el mercado,
+     que salta a Decidir, y luego volvemos al Panel— dejaban DOS remates programados y ganaba el
+     viejo: el jugador acababa en Decidir sin quererlo. El último deckIr manda. */
+  if(_deckIrTimer) clearTimeout(_deckIrTimer);
+  _deckIrTimer=setTimeout(()=>{ _deckIrTimer=null; if(Math.abs(g.scrollLeft-dest())>40) g.scrollLeft=dest(); }, 450);
 }
 function deckPanelActivo(){ const b=document.querySelector("#deckTabs button.on"); return b ? b.dataset.p : "driverCard"; }
 function deckBotones(){ return [...document.querySelectorAll("#offerList button")].filter(b=>!b.disabled); }
@@ -14800,9 +14818,17 @@ function panelGaraje(mode){
     : `<div class="gpil res libre">🧢 ${L("SIN PROBADOR","NO RESERVE",{pt:"SEM RESERVA"})}</div>`);
   if(mode==="m"||mode==="r"){
     const _sw=((sl[0]&&sl[0]!=="PLAYER")||(sl[1]&&sl[1]!=="PLAYER"));
-    if(_sw) filas.push(`<div class="gpil gswap" role="button" onclick="tpSwapSeats(${mode==="r"?"'rumbo'":""})">↔️ ${L("invertir orden pilotos","swap driver order",{pt:"inverter ordem dos pilotos"})}</div>`);
+    if(_sw) filas.push(`<div class="gpil gswap" role="button" onclick="garSwap('${mode}')">↔️ ${L("invertir orden pilotos","swap driver order",{pt:"inverter ordem dos pilotos"})}</div>`);
   }
   g.style.display=""; g.innerHTML=filas.join("");
+}
+/* ↔️ INVERTIR DESDE EL PANEL SIN CAMBIAR DE PANTALLA (Carlos, 22-sep: «cada vez que le doy a
+   invertir pilotos me lleva a otra pantalla»). tpSwapSeats repinta la pantalla de decisión y su
+   scrollToDecision te llevaba a Decidir: si estabas en el Panel del deck, se vuelve a él. */
+function garSwap(mode){
+  const vuelta=document.body.classList.contains("deck-movil") ? deckPanelActivo() : null;
+  tpSwapSeats(mode==="r" ? "rumbo" : undefined);
+  if(vuelta && vuelta!=="decisionBox") requestAnimationFrame(()=>deckIr(vuelta));
 }
 /* 🧑‍💼 LAS NUEVE LÍNEAS DEL PANEL DEL JEFE en escritorio (Carlos, 20-sep): nombre+país+fama · coche+
    equipo+contrato · pilotos · CEO · consejo · objetivo · temporada · números · vitrina. Las dos
