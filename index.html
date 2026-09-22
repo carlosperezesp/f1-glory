@@ -465,7 +465,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   .tl-head{display:none}
   .tl-body{max-height:none}
   .tl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:13px 14px}
-  .tl-row>.age{flex:0 0 auto;align-self:flex-start;margin-top:2px}
+  .tl-row>.age{flex:0 0 auto;align-self:flex-start;margin-top:2px;padding-left:9px;padding-right:9px}
   .tl-row>.club{order:1;flex:1 1 60%;min-width:0}
   .tl-row .club .nm{white-space:normal;font-size:15px}
   .tl-row .club .cat{white-space:normal;line-height:1.35}
@@ -473,9 +473,10 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   .tl-row>.pos{order:3;flex:0 0 auto;width:auto;padding:5px 11px}
   .tl-row>.num{order:4;flex:0 0 auto;font-size:13px;color:var(--muted)}
   .tl-row>.num.w{color:#c98f00}.tl-row>.num.p{color:#16a34a}
+  .tl-row .numlbl{display:inline}
   .tl-row>.vcol::before{content:"🏆 ";font-size:11px}
   .tl-row>.pcol::before{content:"🥉 ";font-size:11px}
-  .tl-row>.ev{order:9;flex:1 1 100%;margin-top:2px}
+  .tl-row>.ev{order:9;flex:1 1 100%;margin-top:0}
   .f1state{padding:14px 16px;margin-bottom:0}
   .f1state .cols{gap:16px}
   #printHeader .ps{gap:8px 12px}
@@ -532,6 +533,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tl-row.tp .ev{margin-top:7px}
 .tl-row.tp .pos.circ{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;padding:0;font-size:11px;flex-shrink:0;margin-left:2px;vertical-align:middle}
 /* las pastillas de piloto, ya dentro de la línea de texto: en fila, pequeñas y que envuelvan */
+.numlbl{display:none}   /* la palabra «Victorias/Podios» solo cabe en la fila ancha del móvil */
 .tl-row .cat .pos{display:inline-block;width:auto;padding:2px 7px;font-size:11px;border-radius:7px;box-shadow:none;vertical-align:middle}
 .tl-row .cat .pos.p1{box-shadow:0 1px 3px rgba(242,174,0,.45)}
 .tl-row .cat .pos.p2{box-shadow:inset 0 0 0 1.2px #aab2c0}
@@ -1144,6 +1146,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 /* 📱 LOS CUATRO BLOQUES EN MÓVIL (Carlos, 13-sep, en todos los modos): A panel · B dilemas y
    elecciones · C resumen del año · D clasificación. Se deslizan de lado y C y D bajan hacia los años
    anteriores. No se mueve HTML: las columnas de la rejilla pasan a `display:contents`. */
+#decisionBox #decRecap{display:none!important}   /* 🧹 «TU TEMPORADA…» fuera de Decidir (Carlos, 22-sep): ya lo cuenta el Resumen */
 #deckTabs{display:none}
 #deckGo{display:none}
 #deckMas{display:none}
@@ -1201,6 +1204,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #decTitle{font-size:18px;line-height:1.25}   /* «El mercado · 2028 · McLaren» era grandísimo (Carlos) */
   /* 📰 en el móvil las noticias también van en cajitas (Stitch de Carlos, 20-sep) */
   body.deck-movil .tl-row .ev{width:100%}
+  /* 🧹 el hueco de 27px entre el top-3 y las noticias (Carlos, 22-sep): eran tres capas sumadas */
+  body.deck-movil .tl-row .ev.top3{margin-bottom:0}
+  body.deck-movil .tl-row .ev:not(.top3){padding-top:0}
+  body.deck-movil .tl-row .ev .evi:first-child{margin-top:0}
   /* 🔍 en el deck sobra ancho: el nombre y la fama del jefe suben de cuerpo (Carlos, 22-sep) */
   body.deck-movil .tpl-l1{font-size:14px}
   body.deck-movil .tpl-l1>b{font-size:17px}
@@ -1804,7 +1811,9 @@ function deckActualiza(){
      redimensionado—, se recoloca en seco sobre el panel activo. Al salir del deck, a cero. */
   try{ const g=document.querySelector("#career .career-grid");
     if(g){ if(!on){ g.scrollLeft=0; }
-      else { const el=document.getElementById(deckPanelActivo());
+      /* ⚠️ con un deckIr EN VUELO no se re-encaja: el snap en seco al panel más cercano abortaba el
+         viaje al Resumen tras simular (cazado en el clásico, 22-sep) */
+      else if(!_deckIrTimer){ const el=document.getElementById(deckPanelActivo());
         if(el){ const d=el.offsetLeft-g.offsetLeft; if(Math.abs(g.scrollLeft-d)>4) g.scrollLeft=d; } } }
   }catch(e){}
   /* ⚙️ el bloque de ajustes se muda a la 5ª celda de la barra en modo baraja, y vuelve al cuerpo al salir */
@@ -7932,6 +7941,12 @@ function startSeasonRun(){
     if(S.retired) return;
     S._deckResumen=true;   // 📱 la primera pantalla tras simular lleva al RESUMEN, no a Decidir
     setTimeout(nextOffers, 180);
+    /* 📱 en el CLÁSICO la pantalla siguiente no siempre pasa por scrollToDecision (las del jefe sí),
+       y el salto al Resumen se quedaba sin consumir (cazado el 22-sep). Si a los 340ms el flag sigue
+       vivo, se consume aquí; en escritorio se apaga sin viaje. */
+    setTimeout(()=>{ try{ if(S && S._deckResumen){
+      if(document.body.classList.contains("deck-movil")) scrollToDecision();
+      else S._deckResumen=false; } }catch(e){} }, 340);
   }, 160);
 }
 
@@ -11613,14 +11628,11 @@ function hallRows(){
 function renderF1State(){
   /* la visibilidad del ▾ se decide ANTES del early return: si no, al pasar de una carrera clásica a
      una de jefe el botón se quedaba oculto del modo anterior hasta que corriera una temporada entera */
-  { const _tp=fsPuedeDesplegar();
-    const _bd=document.getElementById("fsMoreD"), _bc=document.getElementById("fsMoreC");
-    if(_bd) _bd.style.display=_tp?"":"none";
-    if(_bc) _bc.style.display=_tp?"":"none";
-    if(!_tp){ FS_OPEN.d=false; FS_OPEN.c=false; }
-    /* 🎨 la mudanza: en el modo jefe la clasificación va ENTERA siempre (Carlos, 13-sep: «en pc hay que
-       mostrar la clasificación completa, al menos en el modo TP»). El clásico sigue con top 3 + tú. */
-    else { FS_OPEN.d=FS_OPEN.c=true; if(_bd) _bd.style.display="none"; if(_bc) _bc.style.display="none"; } }
+  /* 🎨 la clasificación del año va ENTERA en LOS DOS modos (Carlos, 22-sep: «deberíamos mostrar toda
+     la clasificación en el año actual también, como el modo TP» — revierte la decisión del 16-ago). */
+  { const _bd=document.getElementById("fsMoreD"), _bc=document.getElementById("fsMoreC");
+    FS_OPEN.d=FS_OPEN.c=true;
+    if(_bd) _bd.style.display="none"; if(_bc) _bc.style.display="none"; }
   if(!S.lastTop3) return;
   $("f1state").style.display="block";
   $("fsYear").textContent=S.lastTop3.year;
@@ -13274,9 +13286,11 @@ function renderTimeline(){
         <span><span class="nm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
             : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
-      ${esTP ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
-      ${esTP ? "" : `<span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>`}
-      ${esTP ? "" : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
+      ${esTP || r.ovr==null ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
+      ${esTP ? "" : (()=>{ const _w=r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins;
+        return `<span class="num vcol ${r.wins>0?"w":""}">${_w}${_w==="—"?"":`<span class="numlbl"> ${L("Victorias","Wins",{pt:"Vitórias"})}</span>`}</span>`; })()}
+      ${esTP ? "" : (()=>{ const _p=r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods;
+        return `<span class="num pcol ${r.pods>0?"p":""}">${_p}${_p==="—"?"":`<span class="numlbl"> ${L("Podios","Podiums",{pt:"Pódios"})}</span>`}</span>`; })()}
       ${esTP?"":`<span class="pos ${posCls}">${posLab}</span>`}
       ${top3}
       ${r.cat==="TP"&&r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
