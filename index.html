@@ -1760,18 +1760,20 @@ let _deckIrTimer=null;
 function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
   if(!g||!el) return;
   const dest=()=>el.offsetLeft-g.offsetLeft;
-  /* 🎯 un viaje de MÁS de un panel va en seco: scroll-snap-stop:always (puesto para que un flick no
-     se salte pantallas) también para el scroll suave en el panel intermedio, y Mundial→Decidir
-     aterrizaba torcido (Carlos, 22-sep). El viaje corto conserva la animación. */
+  /* 🎯 ANIMADO TAMBIÉN EN LOS VIAJES LARGOS (Carlos, 22-sep: «me gustaba más la animación»):
+     scroll-snap-stop:always frenaba el scroll suave en el panel intermedio (Mundial→Decidir quedaba
+     torcido), así que el imán del snap se APAGA durante el viaje y el remate lo reenciende. */
   const _lejos=Math.abs(g.scrollLeft-dest())>g.clientWidth*1.2;
-  g.scrollTo({left:dest(), behavior:_lejos?"auto":"smooth"});
+  g.style.scrollSnapType="none";
+  g.scrollTo({left:dest(), behavior:"smooth"});
   /* 🩹 un repintado a mitad de camino ABORTA el scroll suave (cazado el 19-sep: tras simular, el salto
      al resumen se quedaba en el panel). Si a los 450 ms no hemos llegado, se remata en seco.
      ⚠️ CANCELABLE (22-sep): dos deckIr seguidos —invertir orden desde el Panel repinta el mercado,
      que salta a Decidir, y luego volvemos al Panel— dejaban DOS remates programados y ganaba el
      viejo: el jugador acababa en Decidir sin quererlo. El último deckIr manda. */
   if(_deckIrTimer) clearTimeout(_deckIrTimer);
-  _deckIrTimer=setTimeout(()=>{ _deckIrTimer=null; if(Math.abs(g.scrollLeft-dest())>40) g.scrollLeft=dest(); }, 450);
+  _deckIrTimer=setTimeout(()=>{ _deckIrTimer=null; g.style.scrollSnapType="";
+    if(Math.abs(g.scrollLeft-dest())>40) g.scrollLeft=dest(); }, _lejos?650:450);
 }
 function deckPanelActivo(){
   /* 📐 por POSICIÓN REAL del carrusel, no por la pestaña subrayada: el subrayado lo pinta el evento
