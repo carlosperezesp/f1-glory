@@ -1176,11 +1176,6 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
     max-height:calc(100dvh - 118px);overflow-y:auto;overscroll-behavior-y:contain;overscroll-behavior-x:auto;
     scrollbar-width:none}
   body.deck-movil #driverCard::-webkit-scrollbar,body.deck-movil #decisionBox::-webkit-scrollbar,body.deck-movil .timeline::-webkit-scrollbar,body.deck-movil #f1state::-webkit-scrollbar{display:none}
-  /* 👇 la pista de «hay más abajo» (Carlos, 22-sep): un velo pegado al borde inferior del panel
-     que se queda atrás —y desaparece— cuando llegas al final del contenido */
-  body.deck-movil #driverCard::after,body.deck-movil #decisionBox::after,body.deck-movil .timeline::after,body.deck-movil #f1state::after{
-    content:"";display:block;position:sticky;bottom:0;height:44px;margin-top:-44px;
-    background:linear-gradient(transparent,var(--bg));pointer-events:none}
   /* ⚙️ el engranaje vive DENTRO de la barra de pestañas, en su quinta celda (Carlos: «flotando
      perdido en el éter»): deckActualiza lo muda ahí al entrar en modo baraja y lo devuelve al salir */
   body.deck-movil #topBtns{position:static;grid-column:5;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding:2px 0}
