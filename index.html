@@ -1145,12 +1145,18 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
    anteriores. No se mueve HTML: las columnas de la rejilla pasan a `display:contents`. */
 #deckTabs{display:none}
 #deckGo{display:none}
+#deckMas{display:none}
 @media (max-width:980px){
   body.deck-movil #deckGo{display:flex;position:fixed;left:50%;transform:translateX(-50%);
     bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;align-items:center;gap:8px;
     border:0;border-radius:999px;padding:12px 26px;background:var(--team-ink);color:var(--team-on);
     font-family:var(--f-disp);font-weight:800;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.28)}
   body.deck-movil #deckGo[hidden]{display:none}
+  body.deck-movil #deckMas{display:flex;position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(16px + env(safe-area-inset-bottom));z-index:59;width:42px;height:42px;border-radius:50%;
+    align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel);
+    color:var(--muted);font-size:20px;line-height:1;box-shadow:0 2px 8px rgba(20,22,28,.12);padding:0}
+  body.deck-movil #deckMas[hidden]{display:none}
   body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{padding-bottom:78px}
 }
 @media (max-width:980px){
@@ -1748,13 +1754,37 @@ function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=
   if(_deckIrTimer) clearTimeout(_deckIrTimer);
   _deckIrTimer=setTimeout(()=>{ _deckIrTimer=null; if(Math.abs(g.scrollLeft-dest())>40) g.scrollLeft=dest(); }, 450);
 }
-function deckPanelActivo(){ const b=document.querySelector("#deckTabs button.on"); return b ? b.dataset.p : "driverCard"; }
+function deckPanelActivo(){
+  /* 📐 por POSICIÓN REAL del carrusel, no por la pestaña subrayada: el subrayado lo pinta el evento
+     scroll y hay llegadas (recolocación en seco, primera pantalla) donde nunca dispara — deckGo y la
+     flecha se creían en el Panel estando en Decidir (cazado el 22-sep). */
+  const g=document.querySelector("#career .career-grid");
+  if(g && document.body.classList.contains("deck-movil")){
+    let mejor="driverCard", d=1e9;
+    DECK_PANELES.forEach(([id])=>{ const el=document.getElementById(id); if(!el) return;
+      const x=Math.abs(el.offsetLeft-g.offsetLeft-g.scrollLeft); if(x<d){ d=x; mejor=id; } });
+    return mejor;
+  }
+  const b=document.querySelector("#deckTabs button.on"); return b ? b.dataset.p : "driverCard"; }
+/* 🔻 «cuando las opciones queden muy abajo, una flecha» (Carlos, 22-sep): vive en el hueco del
+   flotante, solo en Decidir y solo si de verdad queda contenido por debajo. Tocarla baja un tramo. */
+function deckMasPinta(){
+  const mas=document.getElementById("deckMas"); if(!mas) return;
+  const on=document.body.classList.contains("deck-movil");
+  const enB=deckPanelActivo()==="decisionBox";
+  const el=document.getElementById("decisionBox");
+  const resto=el ? el.scrollHeight-el.scrollTop-el.clientHeight : 0;
+  mas.hidden = !on || !enB || resto<=90;   /* 90 ≈ el padding inferior del panel: sin él, la flecha nunca se apagaba */
+}
 function deckBotones(){ return [...document.querySelectorAll("#offerList button")].filter(b=>!b.disabled); }
 function deckGoPinta(){
   const go=document.getElementById("deckGo"); if(!go) return;
   const on=document.body.classList.contains("deck-movil"), bs=deckBotones(), enB=deckPanelActivo()==="decisionBox";
-  go.hidden = !on || !bs.length || (enB && bs.length>1);
+  /* 🧹 dentro de Decidir NUNCA: con una sola opción salían DOS «Continuar», el de la lista y el
+     flotante (Carlos, 22-sep). El flotante es solo el camino de vuelta desde las otras pestañas. */
+  go.hidden = !on || !bs.length || enB;
   go.textContent = L("Continuar ▸","Continue ▸",{pt:"Continuar ▸"});
+  deckMasPinta();
 }
 function deckActualiza(){
   const _car=document.getElementById("career");
@@ -1776,8 +1806,10 @@ function deckActualiza(){
   }catch(e){}
   deckGoPinta();
   const tabs=document.getElementById("deckTabs"); if(!tabs) return;
+  const _act=deckPanelActivo();   /* 🖍️ y el subrayado se repinta aquí también: no siempre hay un evento scroll que lo haga */
   [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p);
-    b.hidden = !el || getComputedStyle(el).display==="none"; b.textContent=LA(DECK_PANELES.find(x=>x[0]===b.dataset.p)[1]); });
+    b.hidden = !el || getComputedStyle(el).display==="none"; b.textContent=LA(DECK_PANELES.find(x=>x[0]===b.dataset.p)[1]);
+    b.classList.toggle("on", b.dataset.p===_act); });
 }
 (function deckInit(){ try{
   const g=document.querySelector("#career .career-grid"); if(!g) return;
@@ -1819,6 +1851,10 @@ function deckActualiza(){
     if(enB && bs.length===1){ bs[0].click(); return; }
     deckIr("decisionBox"); };
   document.body.appendChild(go);
+  const mas=document.createElement("button"); mas.id="deckMas"; mas.type="button"; mas.hidden=true; mas.textContent="▾";
+  mas.onclick=()=>{ const el=document.getElementById("decisionBox"); if(el) el.scrollBy({top:el.clientHeight*0.75, behavior:"smooth"}); };
+  document.body.appendChild(mas);
+  if(db) db.addEventListener("scroll", deckMasPinta, {passive:true});
   const ol=document.getElementById("offerList");
   if(ol && window.MutationObserver) new MutationObserver(()=>deckGoPinta()).observe(ol,{childList:true});
   /* ⚙️ el menú de ajustes se cierra al tocar cualquier otra cosa */
@@ -11506,8 +11542,10 @@ function trackRanks(driverOrder, teamOrder){
   /* 📜 FOTO DEL AÑO para «Años anteriores» (Carlos, 19-sep: «ver mediante un desplegable la parrilla
      completa de ese año»). Nombre y equipo de cada clasificado; ligera (≤45 años guardados). */
   try{
-    const _tm={}; Object.entries(S.seats||{}).forEach(([t,sl])=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER"&&d.name) _tm[d.name]=t; }));
-    (S.rankHist=S.rankHist||[]).push({y:yearNow(), d:driverOrder.slice(0,28).map(n=>[n,_tm[n]||""]), c:teamOrder.slice()});
+    const _tm={}, _fl={};
+    Object.entries(S.seats||{}).forEach(([t,sl])=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER"&&d.name){ _tm[d.name]=t; _fl[d.name]=d.flag||""; } }));
+    (S.dpool||[]).forEach(d=>{ if(d&&d.name&&!_fl[d.name]) _fl[d.name]=d.flag||""; });
+    (S.rankHist=S.rankHist||[]).push({y:yearNow(), d:driverOrder.slice(0,28).map(n=>[n,_tm[n]||"",_fl[n]||""]), c:teamOrder.slice()});
     if(S.rankHist.length>45) S.rankHist.shift();
   }catch(e){}
   return {
@@ -11612,7 +11650,12 @@ function renderF1State(){
       /* 📜 con foto del año guardada, el año es un desplegable con su parrilla completa */
       const H=(S.rankHist||[]).find(h=>h.y===r.year);
       if(!H) return `<div class="fp">${cab}</div>`;
-      const dLis=H.d.map(([n,t],i)=>`<div class="fpr">${i+1}º ${surname(n)}${t?` <span class="fpt">${teamBadge(t,r.year)||""}</span>`:""}</div>`).join("");
+      /* 🏳️ posición · logo · bandera · nombre (Carlos, 22-sep). Las fotos viejas no traen bandera:
+         se busca por nombre entre los pilotos vivos de la partida. */
+      const _flagDe=n=>{ try{ const all=[...(S.dpool||[]),...(S.retiredPool||[]),...(S.freeAgents||[]),...Object.values(S.seats||{}).flat()];
+        const d=all.find(x=>x&&x!=="PLAYER"&&x.name===n); return (d&&d.flag)||""; }catch(e){ return ""; } };
+      const dLis=H.d.map((x,i)=>{ const [n,t]=x, fl=x[2]||_flagDe(n);
+        return `<div class="fpr">${i+1}º${t?` <span class="fpt">${teamBadge(t,r.year)||""}</span>`:""} ${fl?flg(fl)+" ":""}${surname(n)}</div>`; }).join("");
       const cLis=H.c.map((t,i)=>`<div class="fpr">${i+1}º ${teamBadge(t,r.year)||""} ${t}</div>`).join("");
       return `<details class="fp"${filas.indexOf(r)===0?" open":""}><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
     }).join("") : "";
