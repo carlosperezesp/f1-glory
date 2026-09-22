@@ -1154,6 +1154,8 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{padding-bottom:78px}
 }
 @media (max-width:980px){
+  body.deck-movil #betaBar,body.deck-movil #previewBar{display:none!important}   /* !important: el betaBar se enciende con estilo EN LÍNEA */   /* 🧹 faldones fuera (Carlos, 22-sep): el BETA fijo tapaba las pestañas y el de pruebas solo estorba (el público no lo ve) */
+  body.deck-movil.conBeta{padding-top:0}
   body.deck-movil #deckTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 42px;gap:4px;position:sticky;top:0;z-index:30;
     background:var(--bg);padding:8px 0 0;margin:0 84px 10px 0}   /* hueco para los botones fijos de idioma y tema */
   body.deck-movil #deckTabs button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
@@ -1168,7 +1170,11 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil .career-grid > div{display:contents}
   body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{
     flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;
-    max-height:calc(100dvh - 118px);overflow-y:auto;overscroll-behavior:contain}
+    /* ⚠️ `overscroll-behavior:contain` A SECAS mataba el deslizar en Android (Brave de Carlos, 22-sep):
+       contiene TAMBIÉN el eje X y el gesto horizontal nunca llegaba al carrusel. Solo el vertical. */
+    max-height:calc(100dvh - 118px);overflow-y:auto;overscroll-behavior-y:contain;overscroll-behavior-x:auto;
+    scrollbar-width:none}
+  body.deck-movil #driverCard::-webkit-scrollbar,body.deck-movil #decisionBox::-webkit-scrollbar,body.deck-movil .timeline::-webkit-scrollbar,body.deck-movil #f1state::-webkit-scrollbar{display:none}
   /* ⚙️ el engranaje vive DENTRO de la barra de pestañas, en su quinta celda (Carlos: «flotando
      perdido en el éter»): deckActualiza lo muda ahí al entrar en modo baraja y lo devuelve al salir */
   body.deck-movil #topBtns{position:static;grid-column:5;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding:2px 0}
@@ -1739,6 +1745,14 @@ function deckActualiza(){
   const on = typeof S!=="undefined" && S && S.cat && _car && getComputedStyle(_car).display!=="none"
              && window.matchMedia("(max-width:980px)").matches;
   document.body.classList.toggle("deck-movil", !!on);
+  /* 📐 re-encaje del carrusel (Carlos, 22-sep: el panel salía «comido hacia la izquierda»): si el
+     scroll quedó a medio camino entre paneles —snap desalineado tras un cambio de pantalla o un
+     redimensionado—, se recoloca en seco sobre el panel activo. Al salir del deck, a cero. */
+  try{ const g=document.querySelector("#career .career-grid");
+    if(g){ if(!on){ g.scrollLeft=0; }
+      else { const el=document.getElementById(deckPanelActivo());
+        if(el){ const d=el.offsetLeft-g.offsetLeft; if(Math.abs(g.scrollLeft-d)>4) g.scrollLeft=d; } } }
+  }catch(e){}
   /* ⚙️ el bloque de ajustes se muda a la 5ª celda de la barra en modo baraja, y vuelve al cuerpo al salir */
   try{ const tb=document.getElementById("topBtns"), tabs=document.getElementById("deckTabs");
     if(on && tabs && tb && tb.parentNode!==tabs) tabs.appendChild(tb);
