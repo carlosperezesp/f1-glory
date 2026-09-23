@@ -987,7 +987,14 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .mode-card{border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow)}
 .mode-txt b{font-family:var(--f-disp);font-weight:700;font-size:16px}
 .mode-txt small{font-size:10.5px;text-transform:none;letter-spacing:.02em}
-#themeToggle,#langToggle,[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+#themeToggle,#langToggle,#viewToggle,[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle,[data-theme="dark"] #viewToggle{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+/* 🫧 CUERPO PROPIO AL DESPLEGARSE (Carlos, 23-sep): abiertos se posan ENCIMA de la tarjeta —sobre
+   EDAD/FAMA— y con el mismo color que ella parecían iconos sueltos flotando sobre el texto. Un aro
+   y una sombra de verdad los separan del fondo en los dos temas. */
+#topBtns.open #langToggle,#topBtns.open #themeToggle,#topBtns.open #viewToggle{
+  box-shadow:0 0 0 1px var(--line), 0 8px 22px rgba(10,12,20,.30)}
+[data-theme="dark"] #topBtns.open #langToggle,[data-theme="dark"] #topBtns.open #themeToggle,[data-theme="dark"] #topBtns.open #viewToggle{
+  box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 8px 22px rgba(0,0,0,.55)}
 
 /* 🖥️ TRES COLUMNAS EN ESCRITORIO — 2ª versión (Carlos, 19-sep: «demasiado grande el panel mío», «una
    cagada que las elecciones estén abajo a la izquierda», «pilotos y constructores a la par», «un Edad y
@@ -1191,7 +1198,9 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #deckTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 42px;gap:4px;position:sticky;top:0;z-index:30;
     background:var(--bg);padding:8px 0 0;margin:0 0 10px;
     box-shadow:0 10px 12px -12px rgba(20,22,28,.4)}   /* a todo el ancho; la sombrita hace que el contenido que pasa por debajo se lea como corte, no como «me tapa» */
-  body.deck-movil #deckTabs button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
+  /* `>button`: SOLO las pestañas. #topBtns vive dentro de la barra, así que sus botones heredaban
+     este `background:none` y salían transparentes sobre la tarjeta (Carlos, 23-sep). */
+  body.deck-movil #deckTabs>button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
     font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:3px solid var(--line)}
   body.deck-movil #deckTabs button.on{color:var(--team-ink);border-bottom-color:var(--team-ink)}
   body.deck-movil #deckTabs button[hidden]{display:none}
@@ -1216,7 +1225,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   /* ⚙️ el desplegable en VOLADIZO (Carlos, 22-sep: «cuando salen las opciones el menú se hace más
      largo»): idioma y tema se posicionan en absoluto bajo el engranaje y la barra no crece. */
   body.deck-movil #topBtns{position:relative;top:0;right:0;grid-column:5;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding:2px 0}   /* top/right a cero: el relative heredaba el top:44px del modo banner y el ⚙️ se caía de la barra */
-  body.deck-movil #topBtns.open #langToggle,body.deck-movil #topBtns.open #themeToggle,body.deck-movil #topBtns.open #viewToggle{position:absolute;right:2px;z-index:35;box-shadow:0 4px 12px rgba(20,22,28,.18)}
+  body.deck-movil #topBtns.open #langToggle,body.deck-movil #topBtns.open #themeToggle,body.deck-movil #topBtns.open #viewToggle{position:absolute;right:2px;z-index:35}
   body.deck-movil #topBtns.open #viewToggle{top:44px}
   body.deck-movil #topBtns.open #langToggle{top:90px}
   body.deck-movil #topBtns.open #themeToggle{top:136px}
