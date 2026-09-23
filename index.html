@@ -522,16 +522,22 @@ img.tlogo.mb{width:20px;height:20px;border:none}
    de tus dos pilotos ya salen —con su color— en la línea de debajo del equipo, así que a la derecha
    se queda solo el de constructores, que es el que no está en ningún otro sitio. */
 .tl-head.tp{grid-template-columns:52px minmax(0,1fr)}
-.tl-row.tp{display:block}
-.tl-row.tp .tph{display:flex;align-items:center;gap:9px;margin-bottom:8px}
-.tl-row.tp .tpnm{font-family:var(--f-disp);font-weight:800;font-size:15.5px;letter-spacing:.01em}
+.tl-row{display:block}
+.tl-row .tph{display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap}
+.tl-row .tpnm{font-family:var(--f-disp);font-weight:800;font-size:15.5px;letter-spacing:.01em;min-width:0;flex:1 1 0;line-height:1.25}
 .tl-row.tp .tpb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
 .tl-row.tp .tpb .pos.circ{margin-left:0}
 .tl-row.tp .tpb .team-dot{width:30px;height:30px}
-.tl-row.tp .ev.top3{margin-top:10px;display:block;line-height:1.9}
+.tl-row .ev.top3{margin-top:10px;display:block;line-height:1.9}
 .tl-row.tp .tpb .cat{display:inline}
+.tl-row .pos.posr{margin-left:auto;display:inline-block;width:auto;padding:4px 11px;white-space:nowrap;box-shadow:none}
+.tl-row .tph .ovrcell{width:auto;min-width:38px;padding:4px 9px}
+.tl-row .clin{display:block;font-size:12.5px;color:var(--muted);margin:2px 0 4px;line-height:1.5}
+.tl-row .clw{color:#c98f00;font-weight:700}
+.tl-row .clp{color:#16a34a;font-weight:700}
+[data-theme="dark"] .tl-row .clw{color:#e6b325}
 .tl-row.tp .tp-verdict{line-height:1.5;margin-top:6px;display:block;width:100%}
-.tl-row.tp .ev{margin-top:7px}
+.tl-row .ev{margin-top:7px;display:block}
 .tl-row.tp .pos.circ{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;padding:0;font-size:11px;flex-shrink:0;margin-left:2px;vertical-align:middle}
 /* las pastillas de piloto, ya dentro de la línea de texto: en fila, pequeñas y que envuelvan */
 .numlbl{display:none}   /* la palabra «Victorias/Podios» solo cabe en la fila ancha del móvil */
@@ -13270,7 +13276,7 @@ function renderTimeline(){
     const constr=r.constrPos?`🏭 ${L("Constructores","Constructors",{pt:"Construtores"})}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best",{pt:"melhor"})} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TP"?tpLinea()   // 🧑‍💼 debajo del equipo, tus dos pilotos con su puesto y su color
-      :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} pts`:L(yearNow()>=2005?"FP1 + simulador":"Test privados",yearNow()>=2005?"FP1 + simulator":"Private testing",{pt:yearNow()>=2005?"TL1 + simulador":"Testes privados"})):r.cat==="ADV"?"":`${r.pts} pts`;
+      :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} ${L("puntos","points",{pt:"pontos"})}`:L(yearNow()>=2005?"FP1 + simulador":"Test privados",yearNow()>=2005?"FP1 + simulator":"Private testing",{pt:yearNow()>=2005?"TL1 + simulador":"Testes privados"})):r.cat==="ADV"?"":`${r.pts} ${L("puntos","points",{pt:"pontos"})}`;
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
     // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
     const advR=r.advResult;
@@ -13302,23 +13308,19 @@ function renderTimeline(){
       ${top3}
       ${r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
       ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`
-    : `
-      <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${esTP
-        ? `<span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}`
-        : r.age}</span>
-      <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}${circPos}
-        <span><span class="nm">${r.team2
+    : (()=>{
+      const _w=r.cat==="ADV"?(advR&&advR.win?"🏆":null):r.cat==="TEST"&&!raced?null:r.wins;
+      const _p=r.cat==="ADV"?null:r.cat==="TEST"&&!raced?null:r.pods;
+      const linea2=[ptsTxt, constr,
+        _w==null?null:`<span class="clw">🏆 ${_w} ${L("Victorias","Wins",{pt:"Vitórias"})}</span>`,
+        _p==null?null:`<span class="clp">🥉 ${_p} ${L("Podios","Podiums",{pt:"Pódios"})}</span>`].filter(Boolean).join(" · ");
+      return `
+      <span class="tph"><span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${r.age}</span>${r.ovr!=null?`<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`:""}${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}<span class="tpnm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
-            : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
-      ${esTP || r.ovr==null ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
-      ${esTP ? "" : (()=>{ const _w=r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins;
-        return `<span class="num vcol ${r.wins>0?"w":""}">${_w}${_w==="—"?"":`<span class="numlbl"> ${L("Victorias","Wins",{pt:"Vitórias"})}</span>`}</span>`; })()}
-      ${esTP ? "" : (()=>{ const _p=r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods;
-        return `<span class="num pcol ${r.pods>0?"p":""}">${_p}${_p==="—"?"":`<span class="numlbl"> ${L("Podios","Podiums",{pt:"Pódios"})}</span>`}</span>`; })()}
-      ${esTP?"":`<span class="pos ${posCls}">${posLab}</span>`}
+            : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><span class="pos posr ${posCls}">${posLab}</span></span>
+      ${linea2?`<span class="clin">${linea2}</span>`:""}
       ${top3}
-      ${r.cat==="TP"&&r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
-      ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`;
+      ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`; })();
     b.appendChild(div);
   });
 }
