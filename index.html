@@ -478,6 +478,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   .tl-row>.vcol::before{content:"🏆 ";font-size:11px}
   .tl-row>.pcol::before{content:"🥉 ";font-size:11px}
   .tl-row>.ev{order:9;flex:1 1 100%;margin-top:0}
+  .tl-row .clsep{display:none}
+  .tl-row .clin .clgrp{display:block;margin-top:1px}
   .f1state{padding:14px 16px;margin-bottom:0}
   .f1state .cols{gap:16px}
   #printHeader .ps{gap:8px 12px}
@@ -1245,6 +1247,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #f1state .cols,body.deck-movil #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px;position:relative;overflow:hidden}
   body.deck-movil #f1state .cols::before,body.deck-movil #f1state .fs-prev .fp::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
   body.deck-movil #f1state .fs-prev{border-top:0}
+  body.deck-movil .fs-prev details.fp summary::after{right:-8px}   /* la ▾ pegada al borde de la tarjeta (Carlos, 23-sep) */
   body.deck-movil .tl-body{max-height:none}
   body.deck-movil .f1state .cols{grid-template-columns:1fr;display:grid;gap:18px}   /* en el panel del móvil, pilotos y constructores uno debajo del otro */
 }
@@ -1788,7 +1791,8 @@ function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=
      viejo: el jugador acababa en Decidir sin quererlo. El último deckIr manda. */
   if(_deckIrTimer) clearTimeout(_deckIrTimer);
   _deckIrTimer=setTimeout(()=>{ _deckIrTimer=null; g.style.scrollSnapType="";
-    if(Math.abs(g.scrollLeft-dest())>40) g.scrollLeft=dest(); }, _lejos?650:450);
+    /* umbral a 2px (era 40): un desvío de 10-20px dejaba la tarjeta con el borde comido (Carlos, 23-sep) */
+    if(Math.abs(g.scrollLeft-dest())>2) g.scrollLeft=dest(); }, _lejos?650:450);
 }
 function deckPanelActivo(){
   /* 📐 por POSICIÓN REAL del carrusel, no por la pestaña subrayada: el subrayado lo pinta el evento
@@ -5709,7 +5713,7 @@ function refreshCard(){
   $("stGP").textContent=S.gp; $("stW").textContent=S.wins;
   $("stP").textContent=S.podiums; $("stPP").textContent=S.poles;
   if(S.team){
-    const roleTxt = S.cat==="TEST"?L("PROBADOR","RESERVE",{pt:"PILOTO DE TESTES"}): S.cat==="F1"&&S.role?`Nº${S.role}`:"";
+    const roleTxt = S.cat==="TEST"?L("PROBADOR","RESERVE",{pt:"PILOTO DE TESTES"}): S.cat==="F1"&&S.role?L(`Piloto Nº${S.role}`,`Driver No.${S.role}`,{pt:`Piloto N.º${S.role}`}):"";
     $("teamName").textContent = S.team.name;
     $("teamRole").textContent = roleTxt;
     const d=$("teamDot");
@@ -11695,7 +11699,9 @@ function renderF1State(){
     const filas=(S.seasons||[]).slice().reverse().filter(r=>r && r.top3d && r.top3c && !vistos.has(r.year) && vistos.add(r.year));
     pv.style.display = filas.length ? "" : "none";
     pv.innerHTML = filas.length ? `<h5>${L("📜 Años anteriores","📜 Previous seasons",{pt:"📜 Anos anteriores"})}</h5>` + filas.map(r=>{
-      const cab=`<b>${L("Temporada","Season",{pt:"Temporada"})} ${r.year}</b><br>👑 ${r.top3d.map(x=>`${(x&&typeof x==="object"&&x.t)?(teamBadge(x.t,r.year)||"")+"&nbsp;":""}${surname(nm(x))}`).join(" · ")}<br><span style="color:var(--muted)">🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`;
+      const _yo=n=>["TÚ","YOU","TU"].includes(String(n||"").trim());
+      const _miEq=(r.team&&r.team.name)||r.team;
+      const cab=`<b>${L("Temporada","Season",{pt:"Temporada"})} ${r.year}</b><br>👑 ${r.top3d.map(x=>{const h=`${(x&&typeof x==="object"&&x.t)?(teamBadge(x.t,r.year)||"")+"&nbsp;":""}${surname(nm(x))}`; return _yo(nm(x))?`<b>${h}</b>`:h;}).join(" · ")}<br><span style="color:var(--muted)">🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return t===_miEq?`<b>${h}</b>`:h;}).join(" · ")}</span>`;
       /* 📜 con foto del año guardada, el año es un desplegable con su parrilla completa */
       const H=(S.rankHist||[]).find(h=>h.y===r.year);
       if(!H) return `<div class="fp">${cab}</div>`;
@@ -13305,7 +13311,8 @@ function renderTimeline(){
        se compara por apellido —el top-3 puede llevar inicial («M. Verstappen») y tpDrv no. */
     const _ap=x=>String(x||"").split(" ").pop();
     const _mios=esTP?(r.tpDrv||[]).map(d=>_ap(d.n)):[];
-    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(x=>{const h=nameWithBadge(x); const n=(x&&typeof x==="object")?x.n:x; return (esTP&&_mios.includes(_ap(n)))?`<b>${h}</b>`:h;}).join(" · ")}<br>🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return (esTP&&t===((r.team&&r.team.name)||r.team))?`<b>${h}</b>`:h;}).join(" · ")}</span>`:"";
+    const _soyYo=n=>["TÚ","YOU","TU"].includes(String(n||"").trim());
+    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(x=>{const h=nameWithBadge(x); const n=(x&&typeof x==="object")?x.n:x; return ((esTP&&_mios.includes(_ap(n)))||(!esTP&&_soyYo(n)))?`<b>${h}</b>`:h;}).join(" · ")}<br>🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return (t===((r.team&&r.team.name)||r.team))?`<b>${h}</b>`:h;}).join(" · ")}</span>`:"";
     /* ⭕ el puesto de constructores del jefe vive como CÍRCULO al lado del escudo (Carlos, 21-sep);
        el 🏆 del campeón no cabe en el círculo: el dorado de p1 ya lo dice. */
     const circPos=esTP?`<span class="pos circ ${posCls}">${r.pos!=null?r.pos+"º":"—"}</span>`:"";
@@ -13318,9 +13325,12 @@ function renderTimeline(){
     : (()=>{
       const _w=r.cat==="ADV"?(advR&&advR.win?"🏆":null):r.cat==="TEST"&&!raced?null:r.wins;
       const _p=r.cat==="ADV"?null:r.cat==="TEST"&&!raced?null:r.pods;
-      const linea2=[ptsTxt, constr,
-        _w==null?null:`<span class="clw">🏆 ${_w} ${L("Victorias","Wins",{pt:"Vitórias"})}</span>`,
+      const _grpWP=[_w==null?null:`<span class="clw">🏆 ${_w} ${L("Victorias","Wins",{pt:"Vitórias"})}</span>`,
         _p==null?null:`<span class="clp">🥉 ${_p} ${L("Podios","Podiums",{pt:"Pódios"})}</span>`].filter(Boolean).join(" · ");
+      const _grpPts=[ptsTxt, constr].filter(Boolean).join(" · ");
+      /* 📱 en móvil victorias y podios bajan a su propia línea (Carlos, 23-sep): el separador
+         intermedio lleva su clase para poder esconderse y .clgrp pasa a block por CSS */
+      const linea2=[_grpPts, _grpWP?`<span class="clsep"> · </span><span class="clgrp">${_grpWP}</span>`:null].filter(Boolean).join("");
       return `
       <span class="tph"><span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${r.age}</span>${r.ovr!=null?`<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`:""}${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}<span class="tpnm">${r.team2
             ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
