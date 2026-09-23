@@ -1200,7 +1200,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
     flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;
     /* ⚠️ `overscroll-behavior:contain` A SECAS mataba el deslizar en Android (Brave de Carlos, 22-sep):
        contiene TAMBIÉN el eje X y el gesto horizontal nunca llegaba al carrusel. Solo el vertical. */
-    max-height:calc(100dvh - 88px);overflow-y:auto;overscroll-behavior-y:contain;overscroll-behavior-x:auto;
+    /* ⚠️ overscroll-y:contain bloqueaba SUBIR la página cuando el panel ya estaba arriba (Carlos,
+       23-sep: «no me deja hacer scroll hacia arriba… se ve tapado por el menú»): el gesto moría en
+       el panel. Con auto, al agotar el panel el gesto encadena a la página. */
+    max-height:calc(100dvh - 88px);overflow-y:auto;overscroll-behavior-y:auto;overscroll-behavior-x:auto;
     scrollbar-width:none}
   body.deck-movil #driverCard::-webkit-scrollbar,body.deck-movil #decisionBox::-webkit-scrollbar,body.deck-movil .timeline::-webkit-scrollbar,body.deck-movil #f1state::-webkit-scrollbar{display:none}
   /* ⚙️ el engranaje vive DENTRO de la barra de pestañas, en su quinta celda (Carlos: «flotando
@@ -1778,6 +1781,10 @@ const DECK_PANELES=[["driverCard",["Panel","Panel","Painel"]],["decisionBox",["D
 let _deckIrTimer=null;
 function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
   if(!g||!el) return;
+  /* 📄 la PÁGINA se realinea al inicio del juego en cada viaje: si quedó scrolleada a media
+     tarjeta, la cabecera del panel aterrizaba tapada bajo las pestañas (Carlos, 23-sep) */
+  try{ const c=document.getElementById("career");
+    if(c && Math.abs(c.getBoundingClientRect().top)>6) c.scrollIntoView({block:"start"}); }catch(e){}
   const dest=()=>el.offsetLeft-g.offsetLeft;
   /* 🎯 ANIMADO TAMBIÉN EN LOS VIAJES LARGOS (Carlos, 22-sep: «me gustaba más la animación»):
      scroll-snap-stop:always frenaba el scroll suave en el panel intermedio (Mundial→Decidir quedaba
