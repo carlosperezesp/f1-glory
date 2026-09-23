@@ -832,7 +832,6 @@ body.conBeta #topBtns{top:44px}
 #langToggle:hover{background:#fff}
 #themeToggle,#viewToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;width:34px;height:34px;flex:0 0 34px;font-size:16px;line-height:1;box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}
-#viewToggle[hidden]{display:none}
 @media(min-width:981px){ #viewToggle{display:none} }   /* el deck solo existe en móvil: en escritorio el botón no significa nada */
 @media print{#topBtns{display:none}}
 /* 📱 LAS DOS TARJETAS en pantallas estrechas: los chips y la edad/fama no se pisan.
@@ -1284,7 +1283,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   <button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
   <!-- 📱 VISTA DEL MÓVIL (Carlos, 23-sep): pestañas (lo de serie) o todo en una página, para los
        jugadores que echaban de menos la interfaz de antes. Solo aparece en móvil. -->
-  <button id="viewToggle" hidden onclick="toggleVista()" title="Ver todo en una página">📄</button>
+  <button id="viewToggle" onclick="toggleVista()" title="Ver todo en una página">📄</button>
   <!-- ⚙️ AJUSTES (Carlos, 19-sep: los dos botones flotantes eran «un puto estorbo»): idioma y tema
        viven plegados detrás de este engranaje pequeño y translúcido. column-reverse → va el último
        en el HTML para pintarse ARRIBA. -->
@@ -1951,8 +1950,7 @@ function deckActualiza(){
   if(db) db.addEventListener("scroll", deckMasPinta, {passive:true});
   const ol=document.getElementById("offerList");
   if(ol && window.MutationObserver) new MutationObserver(()=>deckGoPinta()).observe(ol,{childList:true});
-  /* 🧪 el selector de vista, de momento SOLO en pruebas (se abre al público quitando el PREVIEW) */
-  try{ if(typeof PREVIEW!=="undefined" && PREVIEW){ const vb=document.getElementById("viewToggle"); if(vb) vb.hidden=false; } vistaPinta(); }catch(e){}
+  try{ vistaPinta(); }catch(e){}   /* 📱 el selector de vista arranca con el icono que toca */
   /* ⚙️ el menú de ajustes se cierra al tocar cualquier otra cosa */
   document.addEventListener("pointerdown",e=>{ const tb=document.getElementById("topBtns");
     if(tb && tb.classList.contains("open") && !tb.contains(e.target)) tb.classList.remove("open"); });
