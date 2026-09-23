@@ -354,7 +354,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 #decRecap .recap-b{font-size:14px;margin-top:5px;line-height:1.4}
 #decRecap .rp{font-weight:800;padding:1px 8px;border-radius:7px;margin-right:2px}
 .offers{display:flex;flex-direction:column;gap:10px}
-.offer{background:linear-gradient(135deg,#eef3ff,#e6ecfb);border:1.5px solid #d4dff3;border-radius:16px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:14px;text-align:left;color:var(--text);transition:all .15s;width:100%;box-shadow:var(--shadow);animation:fadeUp .4s both;position:relative;overflow:hidden}
+.offer{background:linear-gradient(135deg,#eef3ff,#e6ecfb);border:1.5px solid #d4dff3;border-radius:16px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;text-align:left;color:var(--text);transition:all .15s;width:100%;box-shadow:var(--shadow);animation:fadeUp .4s both;position:relative;overflow:hidden}
 .offer:nth-child(2){animation-delay:.07s}.offer:nth-child(3){animation-delay:.14s}.offer:nth-child(4){animation-delay:.21s}
 .offer:hover{border-color:#15151e;transform:translateY(-2px);box-shadow:0 14px 30px rgba(21,21,30,.14)}
 .offer .dot{width:42px;height:42px;font-size:12px}
@@ -380,6 +380,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .otrend.down{color:#c62a2a;background:#fbe6e6}
 .otrend.down2{color:#a80f0f;background:#f8d7d7}
 .carline{display:block;margin-top:5px;font-size:11.5px;color:var(--muted)}
+.offer>.sub,.offer>.otrend,.offer>.carline{flex:1 1 100%}
 .jprofile{display:inline-block;margin-top:6px;font-size:11.5px;color:#3a4150;background:#eef4ff;border:1px solid #d8e4fb;padding:3px 9px;border-radius:7px;line-height:1.35;flex:1 1 100%;margin-top:2px}
 .fit{font-weight:800;padding:1px 6px;border-radius:5px}
 .fit.good{color:#0a7d32;background:#d7f5e0}
@@ -493,7 +494,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   .stat{padding:8px 2px}
   .stat .v{font-size:18px}
   /* ofertas: que el bloque de estrellas no se corte */
-  .offer{gap:10px;padding:13px 12px}
+  .offer{gap:6px 10px;padding:13px 12px}
   .offer .dot{width:38px;height:38px}
   .offer .info{min-width:0}
   .offer .name{font-size:15px}
@@ -1123,7 +1124,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career .tl-row .ev .evi{display:block;padding:6px 10px;margin:5px 0;font-size:11.5px;line-height:1.45;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
   #career .tl-row .ev .evi+.evi::before{content:""}
   #career .tl-row .ev.top3{font-size:12px;line-height:1.6;padding:8px 10px;border-radius:9px}
-  #career #decisionBox .offer{padding:10px 12px;margin-bottom:0;border-radius:12px;gap:12px;align-items:flex-start}
+  #career #decisionBox .offer{padding:10px 12px;margin-bottom:0;border-radius:12px;gap:6px 12px;align-items:flex-start}
   #career #decisionBox .offer .team-dot{margin-top:1px}
   #career #decisionBox .offers{gap:6px}
 }
@@ -1143,6 +1144,8 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .fs-prev .fpt{opacity:.9}
 #panelGaraje{display:none}
 #tpPanelA,#tpPanelB,#tpSeasonHead{display:none}
+.pl-name{font-family:var(--f-disp);font-weight:800;font-size:16px;letter-spacing:.02em;margin-bottom:8px}
+.pl-name:empty,#driverCard.tp .pl-name{display:none}
 
 /* 📱 LOS CUATRO BLOQUES EN MÓVIL (Carlos, 13-sep, en todos los modos): A panel · B dilemas y
    elecciones · C resumen del año · D clasificación. Se deslizan de lado y C y D bajan hacia los años
@@ -1219,7 +1222,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil .tl-row .ev .evi{display:block;padding:9px 12px;margin:7px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
   body.deck-movil .tl-row .ev .evi+.evi::before{content:""}
   body.deck-movil .tl-row .ev.top3{padding:10px 12px;line-height:1.75;margin-bottom:12px}
-  body.deck-movil .offer{padding:14px;margin-bottom:12px;gap:12px}
+  body.deck-movil .offer{padding:14px;margin-bottom:12px;gap:6px 12px}
   body.deck-movil #decSub{font-size:13px}
   body.deck-movil #driverCard{order:1} body.deck-movil #decisionBox{order:2;padding:2px 2px 30px}
   body.deck-movil .timeline{order:3} body.deck-movil #f1state{order:4}
@@ -1416,7 +1419,8 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   <div class="career-grid">
     <div>
       <div class="card" id="driverCard">
-        <div class="driver-head">
+        <div class="pl-name" id="plName"></div>
+      <div class="driver-head">
           <div class="ovr-badge" id="ovrBadge"><span class="n" id="ovrNum">50</span><span class="l">OVR</span></div>
           <div class="driver-meta">
             <div class="tags">
@@ -5686,6 +5690,7 @@ function refreshCard(){
     $("driverCard").classList.remove("tp"); }catch(e){} }
   if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
   if(sel.flag) $("tagNat").textContent = natLabel();
+  try{ const _pn=$("plName"); if(_pn) _pn.textContent=(sel.name||"").toUpperCase(); }catch(e){}   /* 🏷️ tu nombre, arriba (Carlos, 23-sep: «aquí no se ve mi nombre») */
   $("ovrNum").textContent = S.ovr;
   $("ovrBadge").style.background=ovrColor(S.ovr);
   $("ageV").textContent = S.age;
@@ -7753,7 +7758,7 @@ function renderOffers(offers, withRetire){
     const mate = o.team.cat==="F1"&&_sl1
       ? (Array.isArray(_sl1)&&_sl1.length<2 && !_sl1.some(x=>x==="PLAYER")
           ? ` · ${L("Coche único: correrías solo","One-car team: you'd race alone",{pt:"Carro único: você correria sozinho"})}`
-          : ` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: `+mateIfJoin(o.team.name).name)
+          : (m=>` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: ${(m&&m.flag)?flg(m.flag)+" ":""}${(m&&m.name)||""}`)(mateIfJoin(o.team.name)))
       : "";
     let trendLine="", carLine="", profileLine="";
     if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">${L("TENDENCIA","TREND",{pt:"TENDÊNCIA"})}: ${ti.a} ${ti.t}</span>`; }
@@ -7772,9 +7777,11 @@ function renderOffers(offers, withRetire){
     /* 🎨 la línea «F4 · 2029» fuera y las estrellas EN su sitio (Carlos, 23-sep): el nombre ya dice
        el equipo, el título de la pantalla dice la categoría, y sin el bloque de la derecha el texto
        respira en pantallas pequeñas. */
+    /* 🎨 junto al logo solo el nombre y las estrellas; todo lo demás (compañero, tendencia, coche,
+       descripción) son filas a TODO el ancho de la tarjeta (Carlos, 23-sep: los sangrados). */
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
-      <span class="sub perfsub" style="display:block"><span class="perf">${stars}</span></span>${(mate||subNote)?`<span class="sub" style="display:block">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}</span>${profileLine}`;
+      <span class="sub perfsub" style="display:block"><span class="perf">${stars}</span></span></span>${(mate||subNote)?`<span class="sub fw">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}${profileLine}`;
     b.onclick=()=>signContract(o);
     box.appendChild(b);
   });
@@ -12226,8 +12233,13 @@ function esperarTrasQuiebraOption(exEquipo){
 function specialOfferBtn(o){
   const b=document.createElement("button"); b.className="offer";
   b.style.border="2px solid "+(o.team? o.team.color : (o.color||"#888")); b.style.borderLeftWidth="6px";
+  /* ⭐ si la oferta trae un equipo de F1 (la promesa de probador+asiento), sus estrellas también
+     se enseñan (Carlos, 23-sep); y el texto va a todo el ancho, como en las ofertas normales. */
+  const _sp=o.team && S.f1perf && S.f1perf[o.team.name]!=null
+    ? (S.regUnknown ? "❓" : (n=>"★".repeat(n)+"☆".repeat(5-n))(Math.max(1,Math.min(5,Math.round(1+4*((S.f1perf[o.team.name]??75)-60)/36)))))
+    : null;
   b.innerHTML=`${o.team ? badge(o.team,"dot") : `<span class="team-dot dot" style="background:${o.color||'#888'}">${o.em||"🌎"}</span>`}
-    <span class="info"><span class="name">${o.name}</span><span class="sub" style="display:block">${o.sub||""}</span></span>`;
+    <span class="info"><span class="name">${o.name}</span>${_sp?`<span class="sub perfsub" style="display:block"><span class="perf">${_sp}</span></span>`:""}</span><span class="sub fw">${o.sub||""}</span>`;
   b.onclick=o.onClick; return b;
 }
 function renderSpecialOptions(opts){ const box=$("offerList"); box.innerHTML=""; opts.forEach(o=>box.appendChild(specialOfferBtn(o))); }
