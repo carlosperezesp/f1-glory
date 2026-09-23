@@ -11773,7 +11773,11 @@ function fsResto(cual){
     const _mvB=(prev,p)=> prev==null?"":prev>p?`<span class="mv up">▲${prev-p}</span>`:prev<p?`<span class="mv down">▼${p-prev}</span>`:`<span class="mv eq">=</span>`;
     return orden.map(([n,p])=>{
       const _pv0=(S.rankDPrev||{})[n], _cls0=_pv0==null?"":_pv0>p?" mv-up":_pv0<p?" mv-down":"";
-      if(n==="__ME__") return `<div class="srow extra me${_cls0}"><span class="nm">${p}º ${flg(sel.flag)} <b>${L("TÚ","YOU",{pt:"TU"})}</b></span><span class="rt2">${_mvB(_pv0,p)}${S.team?teamBadge(S.team.name):""}</span></div>`;
+      if(n==="__ME__"){
+        // 🏭 el equipo con el que corriste ESE año, no el que acabas de firmar en el mercado
+        const _miEq=(S.rankDTeam||{})["__ME__"] || (S.team&&S.team.name) || null;
+        return `<div class="srow extra me${_cls0}"><span class="nm">${p}º ${flg(sel.flag)} <b>${L("TÚ","YOU",{pt:"TU"})}</b></span><span class="rt2">${_mvB(_pv0,p)}${_miEq?teamBadge(_miEq):""}</span></div>`;
+      }
       const fl=buscaFlag(n);
       // el equipo con el que corrió ESE año; si no consta, se rebusca entre los asientos de ahora
       const eqAnual=(S.rankDTeam||{})[n];
@@ -12047,6 +12051,19 @@ function simF1(row,st){
   palmReg(row.year, constrRank.length?constrRank[0][0]:null,
           standings[0]?(standings[0].isP?myTeam:standings[0].team):null,
           standings[0]?(standings[0].isP?"__ME__":standings[0].name):null);
+  /* 🏭 CON QUÉ EQUIPO CORRIÓ CADA UNO ESTE AÑO — TAMBIÉN CUANDO CORRES TÚ (Carlos, 23-sep-2026:
+     «¿tres pilotos de Red Bull en el modo carrera?»). `S.rankDTeam` solo se rellenaba en
+     `bgF1Season`, o sea en los años en que la F1 corre SIN ti (juniors, probador, aventura, modo
+     jefe). En cuanto debutas en la F1 manda esta función y el mapa se quedaba CONGELADO en tu último
+     año de juniors: la clasificación de 2035 pintaba los escudos de 2029. Y lo que no estaba en ese
+     mapa viejo caía al rebusque por los asientos de HOY, que a la hora de mirar la tarjeta ya son los
+     del invierno siguiente. De ahí la parrilla imposible de la captura: Red Bull y Racing Bulls con
+     tres pilotos cada uno, cuatro equipos con uno solo y dos pilotos sin escudo — los 24 asientos
+     estaban bien, lo que estaba mal era a quién se le colgaba cada escudo.
+     Se apunta también el TUYO como "__ME__": tu fila usaba `S.team.name`, que tras firmar en el
+     mercado de invierno ya es el equipo NUEVO, así que aparecías en la tabla del año pasado con el
+     escudo del que aún no has estrenado. */
+  S.rankDTeam={}; standings.forEach(d=>{ S.rankDTeam[d.isP?"__ME__":d.name]=d.team; });
   const {mvD,mvC}=trackRanks(standings.map(d=>d.isP?"__ME__":d.name), constrRank.map(e=>e[0]));
   S.lastTop3={year:row.year,
     d:standings.slice(0,3).map((d,i)=>({n:d.isP?"TÚ":_dis3(i),team:d.team,flag:d.dref?d.dref.flag:undefined,me:d.isP,mv:mvD(d.isP?"__ME__":d.name,i+1)})),
