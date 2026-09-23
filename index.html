@@ -11583,6 +11583,7 @@ function trackRanks(driverOrder, teamOrder){
   try{
     const _tm={}, _fl={};
     Object.entries(S.seats||{}).forEach(([t,sl])=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER"&&d.name){ _tm[d.name]=t; _fl[d.name]=d.flag||""; } }));
+    if(S.team&&S.team.name){ _tm["__ME__"]=S.team.name; } _fl["__ME__"]=sel.flag||"";
     (S.dpool||[]).forEach(d=>{ if(d&&d.name&&!_fl[d.name]) _fl[d.name]=d.flag||""; });
     (S.rankHist=S.rankHist||[]).push({y:yearNow(), d:driverOrder.slice(0,28).map(n=>[n,_tm[n]||"",_fl[n]||""]), c:teamOrder.slice()});
     if(S.rankHist.length>45) S.rankHist.shift();
@@ -11659,16 +11660,15 @@ function renderF1State(){
   const mvCls=mv=> mv>0?" mv-up":mv<0?" mv-down":"";
   const _mio=(x)=>x.me || (S.cat==="TP" && x.team===S.tpTeam);   // 🧑‍💼 en el muro, los TUYOS destacan
   let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${_mio(x)?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.me?L("TÚ","YOU",{pt:"TU"}):x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
-  if(S.lastTop3.myPos!=null && S.lastTop3.myPos>3)
-    dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} ${L("TÚ","YOU",{pt:"TU"})}</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
+  /* 🧹 la fila suelta «24º TÚ» tras el podio era del modo top3+tú: con la clasificación completa
+     (Carlos, 23-sep) TÚ sale EN su puesto dentro de la lista (fsResto pinta el «__ME__»). */
   if(FS_OPEN.d) dHtml+=fsResto("d");
   $("fsDrivers").innerHTML=dHtml;
   const cmv=S.lastTop3.cmv||[];
   // en la clasificación mostramos solo el movimiento de posición (▲/▼ vs el año pasado);
   // la tendencia del PROYECTO (coche al alza/declive) va en las ofertas, no aquí (confundía)
   let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${(S.cat==="F1"&&S.team&&x===S.team.name)||(S.cat==="TP"&&tpManaged(x))?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}</span>${mvB(cmv[i])}</div>`).join("");
-  if(S.lastTop3.myConstr!=null && S.lastTop3.myConstr>3 && S.team)
-    cHtml+=`<div class="srow me${mvCls(S.lastTop3.myConstrMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myConstr}º</b> ${teamBadge(S.team.name)} ${S.team.name}</span>${mvB(S.lastTop3.myConstrMv)}</div>`;
+  /* 🧹 ídem con tu constructor: su fila de la lista completa ya va marcada en .me */
   if(FS_OPEN.c) cHtml+=fsResto("c");
   $("fsTeams").innerHTML=cHtml;
   /* 📜 LOS AÑOS ANTERIORES, debajo (la mudanza, 13-sep: «bajando, ver años anteriores»). Cada fila de
@@ -11690,8 +11690,9 @@ function renderF1State(){
          se busca por nombre entre los pilotos vivos de la partida. */
       const _flagDe=n=>{ try{ const all=[...(S.dpool||[]),...(S.retiredPool||[]),...(S.freeAgents||[]),...Object.values(S.seats||{}).flat()];
         const d=all.find(x=>x&&x!=="PLAYER"&&x.name===n); return (d&&d.flag)||""; }catch(e){ return ""; } };
-      const dLis=H.d.map((x,i)=>{ const [n,t]=x, fl=x[2]||_flagDe(n);
-        return `<div class="fpr"><span class="fpn">${i+1}º</span>${t?`<span class="fpt">${teamBadge(t,r.year)||""}</span> `:""}${fl?flg(fl)+" ":""}${surname(n)}</div>`; }).join("");
+      const dLis=H.d.map((x,i)=>{ const [n,t]=x, fl=(n==="__ME__"?sel.flag:(x[2]||_flagDe(n)));
+        const nom=n==="__ME__" ? `<b>${L("TÚ","YOU",{pt:"TU"})}</b>` : surname(n);
+        return `<div class="fpr"><span class="fpn">${i+1}º</span>${t?`<span class="fpt">${teamBadge(t,r.year)||""}</span> `:""}${fl?flg(fl)+" ":""}${nom}</div>`; }).join("");
       const cLis=H.c.map((t,i)=>`<div class="fpr"><span class="fpn">${i+1}º</span>${teamBadge(t,r.year)||""} ${t}</div>`).join("");
       return `<details class="fp"${filas.indexOf(r)===0?" open":""}><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
     }).join("") : "";
@@ -11738,6 +11739,8 @@ function fsResto(cual){
        top 3»). El año anterior vive en S.rankDPrev desde trackRanks. */
     const _mvB=(prev,p)=> prev==null?"":prev>p?`<span class="mv up">▲${prev-p}</span>`:prev<p?`<span class="mv down">▼${p-prev}</span>`:`<span class="mv eq">=</span>`;
     return orden.map(([n,p])=>{
+      const _pv0=(S.rankDPrev||{})[n], _cls0=_pv0==null?"":_pv0>p?" mv-up":_pv0<p?" mv-down":"";
+      if(n==="__ME__") return `<div class="srow extra me${_cls0}"><span class="nm">${p}º ${flg(sel.flag)} <b>${L("TÚ","YOU",{pt:"TU"})}</b></span><span class="rt2">${_mvB(_pv0,p)}${S.team?teamBadge(S.team.name):""}</span></div>`;
       const fl=buscaFlag(n);
       // el equipo con el que corrió ESE año; si no consta, se rebusca entre los asientos de ahora
       const eqAnual=(S.rankDTeam||{})[n];
