@@ -354,11 +354,11 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 #decRecap .recap-b{font-size:14px;margin-top:5px;line-height:1.4}
 #decRecap .rp{font-weight:800;padding:1px 8px;border-radius:7px;margin-right:2px}
 .offers{display:flex;flex-direction:column;gap:10px}
-.offer{background:linear-gradient(135deg,#eef3ff,#e6ecfb);border:1.5px solid #d4dff3;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;text-align:left;color:var(--text);transition:all .15s;width:100%;box-shadow:var(--shadow);animation:fadeUp .4s both;position:relative;overflow:hidden}
+.offer{background:linear-gradient(135deg,#eef3ff,#e6ecfb);border:1.5px solid #d4dff3;border-radius:16px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:14px;text-align:left;color:var(--text);transition:all .15s;width:100%;box-shadow:var(--shadow);animation:fadeUp .4s both;position:relative;overflow:hidden}
 .offer:nth-child(2){animation-delay:.07s}.offer:nth-child(3){animation-delay:.14s}.offer:nth-child(4){animation-delay:.21s}
 .offer:hover{border-color:#15151e;transform:translateY(-2px);box-shadow:0 14px 30px rgba(21,21,30,.14)}
 .offer .dot{width:42px;height:42px;font-size:12px}
-.offer .info{flex:1}
+.offer .info{flex:1;min-width:0}
 .offer .name{font-weight:800;font-size:16px}
 .offer .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
 .offer .role{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.5px;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:1px}
@@ -380,7 +380,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .otrend.down{color:#c62a2a;background:#fbe6e6}
 .otrend.down2{color:#a80f0f;background:#f8d7d7}
 .carline{display:block;margin-top:5px;font-size:11.5px;color:var(--muted)}
-.jprofile{display:inline-block;margin-top:6px;font-size:11.5px;color:#3a4150;background:#eef4ff;border:1px solid #d8e4fb;padding:3px 9px;border-radius:7px;line-height:1.35}
+.jprofile{display:inline-block;margin-top:6px;font-size:11.5px;color:#3a4150;background:#eef4ff;border:1px solid #d8e4fb;padding:3px 9px;border-radius:7px;line-height:1.35;flex:1 1 100%;margin-top:2px}
 .fit{font-weight:800;padding:1px 6px;border-radius:5px}
 .fit.good{color:#0a7d32;background:#d7f5e0}
 .fit.bad{color:#c62a2a;background:#fbe6e6}
@@ -7774,7 +7774,7 @@ function renderOffers(offers, withRetire){
        respira en pantallas pequeñas. */
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
-      <span class="sub perfsub" style="display:block"><span class="perf">${stars}</span></span>${(mate||subNote)?`<span class="sub" style="display:block">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}${profileLine}</span>`;
+      <span class="sub perfsub" style="display:block"><span class="perf">${stars}</span></span>${(mate||subNote)?`<span class="sub" style="display:block">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}</span>${profileLine}`;
     b.onclick=()=>signContract(o);
     box.appendChild(b);
   });
