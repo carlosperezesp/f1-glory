@@ -1123,7 +1123,8 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   #career .tl-row .ev .evi{display:block;padding:6px 10px;margin:5px 0;font-size:11.5px;line-height:1.45;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
   #career .tl-row .ev .evi+.evi::before{content:""}
   #career .tl-row .ev.top3{font-size:12px;line-height:1.6;padding:8px 10px;border-radius:9px}
-  #career #decisionBox .offer{padding:10px 12px;margin-bottom:0;border-radius:12px;gap:12px}
+  #career #decisionBox .offer{padding:10px 12px;margin-bottom:0;border-radius:12px;gap:12px;align-items:flex-start}
+  #career #decisionBox .offer .team-dot{margin-top:1px}
   #career #decisionBox .offers{gap:6px}
 }
 /* 📜 los años anteriores, debajo de la clasificación del año */
@@ -7768,10 +7769,12 @@ function renderOffers(offers, withRetire){
     // note/profile aceptan par [es,en] para poder repintarse al cambiar de idioma
     const noteTxt = Array.isArray(o.note) ? LA(o.note) : o.note;
     const subNote = (noteTxt && !o.profile) ? " · "+noteTxt : "";
+    /* 🎨 la línea «F4 · 2029» fuera y las estrellas EN su sitio (Carlos, 23-sep): el nombre ya dice
+       el equipo, el título de la pantalla dice la categoría, y sin el bloque de la derecha el texto
+       respira en pantallas pequeñas. */
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
-      <span class="sub" style="display:block">${catLbl} · ${yearNow()}</span>${(mate||subNote)?`<span class="sub" style="display:block">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}${profileLine}</span>
-      <span class="perfwrap"><span class="perf">${stars}</span></span>`;
+      <span class="sub perfsub" style="display:block"><span class="perf">${stars}</span></span>${(mate||subNote)?`<span class="sub" style="display:block">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}${profileLine}</span>`;
     b.onclick=()=>signContract(o);
     box.appendChild(b);
   });
