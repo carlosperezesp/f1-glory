@@ -41,6 +41,10 @@
 <meta name="twitter:description" content="Del karting a la gloria. ¿Hasta dónde llegarás? · From karting to glory. How far will you go?">
 <meta name="twitter:image" content="https://f1-glory.com/f1-glory.jpg">
 <link rel="preload" href="TwemojiCountryFlags.woff2" as="font" type="font/woff2" crossorigin>
+<!-- 🎨 LA MUDANZA: Anybody para titulares e Inter para todo lo demás, números incluidos. JetBrains Mono
+     salió el 13-sep (Carlos: «no me gusta, tiene un punto dentro del 0»). -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,600..900&family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 /* 🏁 Windows no trae dibujos de banderas: pinta «ES», «BR», «IT» en vez de 🇪🇸 🇧🇷 🇮🇹.
    Esta fuente SOLO contiene los glifos de bandera (76 KB), así que el resto del texto y
@@ -350,11 +354,11 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 #decRecap .recap-b{font-size:14px;margin-top:5px;line-height:1.4}
 #decRecap .rp{font-weight:800;padding:1px 8px;border-radius:7px;margin-right:2px}
 .offers{display:flex;flex-direction:column;gap:10px}
-.offer{background:linear-gradient(135deg,#eef3ff,#e6ecfb);border:1.5px solid #d4dff3;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;text-align:left;color:var(--text);transition:all .15s;width:100%;box-shadow:var(--shadow);animation:fadeUp .4s both;position:relative;overflow:hidden}
+.offer{background:linear-gradient(135deg,#eef3ff,#e6ecfb);border:1.5px solid #d4dff3;border-radius:16px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;text-align:left;color:var(--text);transition:all .15s;width:100%;box-shadow:var(--shadow);animation:fadeUp .4s both;position:relative;overflow:hidden}
 .offer:nth-child(2){animation-delay:.07s}.offer:nth-child(3){animation-delay:.14s}.offer:nth-child(4){animation-delay:.21s}
 .offer:hover{border-color:#15151e;transform:translateY(-2px);box-shadow:0 14px 30px rgba(21,21,30,.14)}
 .offer .dot{width:42px;height:42px;font-size:12px}
-.offer .info{flex:1}
+.offer .info{flex:1;min-width:0}
 .offer .name{font-weight:800;font-size:16px}
 .offer .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
 .offer .role{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.5px;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:1px}
@@ -376,7 +380,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .otrend.down{color:#c62a2a;background:#fbe6e6}
 .otrend.down2{color:#a80f0f;background:#f8d7d7}
 .carline{display:block;margin-top:5px;font-size:11.5px;color:var(--muted)}
-.jprofile{display:inline-block;margin-top:6px;font-size:11.5px;color:#3a4150;background:#eef4ff;border:1px solid #d8e4fb;padding:3px 9px;border-radius:7px;line-height:1.35}
+.offer>.sub,.offer>.otrend,.offer>.carline{flex:1 1 100%}
+.jprofile{display:inline-block;margin-top:6px;font-size:11.5px;color:#3a4150;background:#eef4ff;border:1px solid #d8e4fb;padding:3px 9px;border-radius:7px;line-height:1.35;flex:1 1 100%;margin-top:2px}
 .fit{font-weight:800;padding:1px 6px;border-radius:5px}
 .fit.good{color:#0a7d32;background:#d7f5e0}
 .fit.bad{color:#c62a2a;background:#fbe6e6}
@@ -407,7 +412,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tl-row.new{animation:fadeUp .45s both}
 .tl-row.champ{background:linear-gradient(90deg,#fff6d8,#fffdf4 60%,transparent)}
 .tl-row.champ:hover{background:linear-gradient(90deg,#ffefc2,#fffdf4 60%,transparent)}
-.tl-row .age{font-weight:800;background:var(--panel2);border-radius:9px;text-align:center;padding:6px 0}
+.tl-row .age{font-weight:800;background:var(--panel2);border-radius:9px;text-align:center;padding:6px 11px;min-width:38px;box-sizing:border-box}
 /* 🧑‍💼 en el modo jefe ese número no es la edad, es la temporada: se dice (Carlos, 30-ago). Y en UNA
    línea —«Temporada 6», no «Temporada» encima del 6— (Carlos, 31-ago), así que la celda deja de ser
    una columna de 52px y pasa a ocupar su propia línea, alineada a la izquierda. */
@@ -449,6 +454,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .pos.top{background:linear-gradient(135deg,#dcf5e3,#b1e8c0);color:#15803d}
 .pos.rest{background:#d9e7fb;color:#2b6cb0}
 .tl-row .ev{grid-column:2/-1;font-size:12px;color:#5a5a66;padding:2px 0 4px}
+.tl-row .ev .evi+.evi::before{content:" · ";opacity:.6}   /* 📰 en línea (móvil); el escritorio las parte en renglones */
 .tl-row .ev.top3{color:#3a3a48;background:var(--panel2);border-radius:8px;padding:5px 10px;margin:2px 0 4px;line-height:2}
 .tl-row .ovrcell{text-align:center;font-weight:800;border-radius:8px;padding:5px 0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 2px 6px rgba(21,21,30,.15)}
 .tl-empty{padding:60px 20px;text-align:center;color:#b9b9c2;font-size:14px}
@@ -460,7 +466,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   .tl-head{display:none}
   .tl-body{max-height:none}
   .tl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:13px 14px}
-  .tl-row>.age{flex:0 0 auto;align-self:flex-start;margin-top:2px}
+  .tl-row>.age{flex:0 0 auto;align-self:flex-start;margin-top:2px;padding-left:9px;padding-right:9px}
   .tl-row>.club{order:1;flex:1 1 60%;min-width:0}
   .tl-row .club .nm{white-space:normal;font-size:15px}
   .tl-row .club .cat{white-space:normal;line-height:1.35}
@@ -468,9 +474,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   .tl-row>.pos{order:3;flex:0 0 auto;width:auto;padding:5px 11px}
   .tl-row>.num{order:4;flex:0 0 auto;font-size:13px;color:var(--muted)}
   .tl-row>.num.w{color:#c98f00}.tl-row>.num.p{color:#16a34a}
+  .tl-row .numlbl{display:inline}
   .tl-row>.vcol::before{content:"🏆 ";font-size:11px}
   .tl-row>.pcol::before{content:"🥉 ";font-size:11px}
-  .tl-row>.ev{order:9;flex:1 1 100%;margin-top:2px}
+  .tl-row>.ev{order:9;flex:1 1 100%;margin-top:0}
+  .tl-row .clsep{display:none}
+  .tl-row .clin .clgrp{display:block;margin-top:1px}
   .f1state{padding:14px 16px;margin-bottom:0}
   .f1state .cols{gap:16px}
   #printHeader .ps{gap:8px 12px}
@@ -487,7 +496,7 @@ img.tlogo.mb{width:20px;height:20px;border:none}
   .stat{padding:8px 2px}
   .stat .v{font-size:18px}
   /* ofertas: que el bloque de estrellas no se corte */
-  .offer{gap:10px;padding:13px 12px}
+  .offer{gap:6px 10px;padding:13px 12px}
   .offer .dot{width:38px;height:38px}
   .offer .info{min-width:0}
   .offer .name{font-size:15px}
@@ -514,8 +523,26 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 /* 🏁 TRES COLUMNAS, NO CINCO (Carlos, 28-ago: «no merece la pena tener tanto chip»). Los puestos
    de tus dos pilotos ya salen —con su color— en la línea de debajo del equipo, así que a la derecha
    se queda solo el de constructores, que es el que no está en ningún otro sitio. */
-.tl-head.tp,.tl-row.tp{grid-template-columns:52px 1fr 74px}
+.tl-head.tp{grid-template-columns:52px minmax(0,1fr)}
+.tl-row{display:block}
+.tl-row .tph{display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap}
+.tl-row .tpnm{font-family:var(--f-disp);font-weight:800;font-size:15.5px;letter-spacing:.01em;min-width:0;flex:1 1 0;line-height:1.25}
+.tl-row.tp .tpb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.tl-row.tp .tpb .pos.circ{margin-left:0}
+.tl-row.tp .tpb .team-dot{width:30px;height:30px}
+.tl-row .ev.top3{margin-top:10px;display:block;line-height:1.9}
+.tl-row.tp .tpb .cat{display:inline}
+.tl-row .pos.posr{margin-left:auto;display:inline-block;width:auto;padding:4px 11px;white-space:nowrap;box-shadow:none}
+.tl-row .tph .ovrcell{width:auto;min-width:38px;padding:4px 9px}
+.tl-row .clin{display:block;font-size:12.5px;color:var(--muted);margin:2px 0 4px;line-height:1.5}
+.tl-row .clw{color:#c98f00;font-weight:700}
+.tl-row .clp{color:#16a34a;font-weight:700}
+[data-theme="dark"] .tl-row .clw{color:#e6b325}
+.tl-row.tp .tp-verdict{line-height:1.5;margin-top:6px;display:block;width:100%}
+.tl-row .ev{margin-top:7px;display:block}
+.tl-row.tp .pos.circ{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;padding:0;font-size:11px;flex-shrink:0;margin-left:2px;vertical-align:middle}
 /* las pastillas de piloto, ya dentro de la línea de texto: en fila, pequeñas y que envuelvan */
+.numlbl{display:none}   /* la palabra «Victorias/Podios» solo cabe en la fila ancha del móvil */
 .tl-row .cat .pos{display:inline-block;width:auto;padding:2px 7px;font-size:11px;border-radius:7px;box-shadow:none;vertical-align:middle}
 .tl-row .cat .pos.p1{box-shadow:0 1px 3px rgba(242,174,0,.45)}
 .tl-row .cat .pos.p2{box-shadow:inset 0 0 0 1.2px #aab2c0}
@@ -791,6 +818,15 @@ body.conBeta #topBtns{top:44px}
    Carlos lo quiere al revés —el idioma arriba, el claro/oscuro debajo—. Así se consigue sin tocar
    el marcado, que lo comparten las dos pantallas y los dos modos. */
 #topBtns{position:fixed;top:12px;right:12px;z-index:60;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:7px}
+/* ⚙️ plegado por defecto: solo se ve el engranaje, pequeño y medio transparente; al abrirlo bajan
+   el idioma y el tema. Se cierra tocando en cualquier otro sitio (listener junto al deck). */
+#cogToggle{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:999px;
+  width:32px;height:32px;flex:0 0 32px;font-size:15px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;opacity:.55;transition:opacity .15s,transform .2s;
+  box-shadow:0 2px 8px rgba(20,25,40,.14)}
+#cogToggle:hover,#topBtns.open #cogToggle{opacity:1}
+#topBtns.open #cogToggle{transform:rotate(90deg)}
+#topBtns:not(.open) #langToggle,#topBtns:not(.open) #themeToggle{display:none}
 #langToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;white-space:nowrap}
 #langToggle:hover{background:#fff}
@@ -822,8 +858,8 @@ body.conBeta #topBtns{top:44px}
    La reserva iba dimensionada para la barra en horizontal (~150 px de ancho); ahora que va
    apilada mide 61 px + 12 de margen, así que sobraba hueco y ese hueco era el que estrujaba
    la columna de los chips. Ajustada a la barra nueva. */
-@media(max-width:980px){ .agev{padding-right:76px} }
-@media(max-width:360px){ .agev{padding-right:72px} }
+@media(max-width:980px){ .agev{padding-right:46px} }   /* ⚙️ ya solo flota el engranaje */
+@media(max-width:360px){ .agev{padding-right:42px} }
 
 /* ================= MODO OSCURO ================= */
 :root[data-theme="dark"]{
@@ -883,6 +919,346 @@ body.conBeta #topBtns{top:44px}
 [data-theme="dark"] .style-cards button{background:var(--panel2)}
 [data-theme="dark"] .style-cards button.sel{background:linear-gradient(135deg,#e10600,#ff6a1a);border-color:#e10600;color:#fff}
 [data-theme="dark"] .style-cards button .d{color:var(--muted)}
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════
+   🎨 LA MUDANZA (13-sep-2026 · rama `mudanza`, VERSIÓN DE PRUEBA). Una capa encima de la de siempre:
+   se puede quitar entera borrando este bloque. Oscuro = «Racing Modernity», claro = «Kinetic Velocity»
+   (los dos diseños de Stitch de Carlos). El acento deja de ser el rojo fijo y pasa a ser EL COLOR DE
+   TU EQUIPO (`pintaColorEquipo`), elegido para que se lea sobre el fondo del tema.
+   ════════════════════════════════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#e5e8ea; --panel:#ffffff; --panel2:#f1f2f4; --line:#d8dbe0;
+  --text:#1a1a1a; --muted:#5a5e66; --accent:#bb152c; --accent2:#e10600; --gold:#a87700;
+  --shadow:0 1px 2px rgba(20,22,28,.05), 0 10px 26px rgba(20,22,28,.07);
+  --team:var(--accent); --team-ink:var(--accent); --team-soft:rgba(187,21,44,.09); --team-on:#ffffff;
+  --r-card:16px; --r-in:10px;
+  --f-disp:'Anybody','Twemoji Country Flags',system-ui,sans-serif;
+  --f-body:'Twemoji Country Flags','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'Twemoji Country Flags','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;   /* etiquetas y cifras: Inter, sin el 0 con punto */
+}
+:root[data-theme="dark"]{
+  --bg:#13131b; --panel:#1f1f27; --panel2:#292933; --line:rgba(255,255,255,.10);
+  --text:#e4e1ee; --muted:#9d9aab; --accent:#e10600; --gold:#ffb52e;
+  --shadow:none; --r-card:6px; --r-in:4px; --team-soft:rgba(225,6,0,.12);
+}
+*{font-family:var(--f-body)}
+body,[data-theme="dark"] body{background:var(--bg);-webkit-font-smoothing:antialiased}
+h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter-spacing:-.02em}
+*,*::before,*::after{font-style:normal!important}   /* ninguna cursiva, tampoco las que pone el código en línea */
+.stat .k,.tl-head,.f1state h5,.agev .lbl,.card h3,.offer .role,.tag,.trophies .empty,.pt-tier,.mode-txt small{font-family:var(--f-mono);letter-spacing:.08em}
+.stat .v,.ovr-badge .n,.tl-row .num,.agev .a,.f1state .srow .rt2,.f1state .srow .nm{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.stat .k,.tl-head,.f1state h5,.agev .lbl,.card h3,.offer .role,.tag,.trophies .empty,.pt-tier{font-weight:600;text-transform:uppercase}
+.card,.timeline{border-radius:var(--r-card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.card::before{height:3px;background:var(--team-ink)}
+[data-theme="dark"] .card,[data-theme="dark"] .timeline{background-color:var(--panel)}
+.tag{border-radius:999px;padding:3px 10px;font-size:11px;background:var(--panel2);border-color:var(--line)}
+.tag.red{background:var(--team-ink);border-color:transparent;color:var(--team-on)}
+.stat{border-radius:var(--r-in);background:var(--panel2)}
+[data-theme="dark"] .stat{border:1px solid var(--line);background:var(--bg)}
+.stat .k{font-size:9.5px}
+.ovr-badge{border-radius:50%}
+[data-theme="dark"] .ovr-badge{border-radius:8px;box-shadow:0 0 0 1px var(--line),0 0 22px rgba(255,181,46,.10)}
+.trophies .empty{color:var(--muted);opacity:.8;font-size:11px}
+.decision h3{font-size:26px;line-height:1.1}
+.offer,[data-theme="dark"] .offer{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow)}
+[data-theme="dark"] .offer{border-top-color:var(--line)!important;border-right-color:var(--line)!important;border-bottom-color:var(--line)!important;border-width:1px!important;border-left-width:4px!important}
+.offer{border-width:1px!important;border-left-width:5px!important}
+.offer .name{font-family:var(--f-disp);font-weight:700;font-size:17px}
+.offer.dilemma,[data-theme="dark"] .offer.dilemma{background:var(--panel);border-color:var(--line)!important;border-left:4px solid var(--gold)!important}
+.offer.retire,[data-theme="dark"] .offer.retire{background:transparent;border-style:dashed!important}
+.offer:hover{transform:translateY(-1px)}
+#decRecap,[data-theme="dark"] #decRecap{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--team-ink);border-radius:var(--r-in)}
+.decision p.outcome{border-radius:var(--r-in);border-left:3px solid var(--gold)}
+.f1state h5{font-size:10.5px;text-transform:uppercase;color:var(--muted)}
+.f1state .srow{border-radius:var(--r-in)}
+.f1state .srow.me,[data-theme="dark"] .f1state .srow.me{background:var(--team-soft);box-shadow:inset 3px 0 0 var(--team-ink);font-weight:700;color:var(--text)}
+.tl-head{background:var(--panel);font-size:10px}
+.tl-row{border-bottom:1px solid var(--line)}
+.tl-row:hover{background:var(--panel2)}
+.tl-body::-webkit-scrollbar-thumb{background:var(--line)}
+.btn{border-radius:999px;background:var(--team-ink);color:var(--team-on);box-shadow:0 8px 22px var(--team-soft);font-family:var(--f-disp);font-weight:800;letter-spacing:.01em}
+.btn:hover{box-shadow:0 12px 30px var(--team-soft)}
+#intro{background:transparent}
+#intro::before{background:radial-gradient(circle at 35% 35%, var(--team-soft), transparent 70%)}
+#intro h1{font-weight:900;letter-spacing:-.035em}
+#intro h1 span{background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--accent)}
+.mode-card{border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.mode-txt b{font-family:var(--f-disp);font-weight:700;font-size:16px}
+.mode-txt small{font-size:10.5px;text-transform:none;letter-spacing:.02em}
+#themeToggle,#langToggle,[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+
+/* 🖥️ TRES COLUMNAS EN ESCRITORIO — 2ª versión (Carlos, 19-sep: «demasiado grande el panel mío», «una
+   cagada que las elecciones estén abajo a la izquierda», «pilotos y constructores a la par», «un Edad y
+   Equipo en mitad de la nada», «los textos de El mercado muy grandes»).
+   · Izquierda, estrecha y quieta al bajar: tu panel, compacto.
+   · Centro: LA DECISIÓN ARRIBA DEL TODO —se decide todo el rato— y la trayectoria debajo.
+   · Derecha, quieta: pilotos y constructores lado a lado, y los años anteriores debajo.
+   Sin mover HTML: las dos columnas del HTML pasan a `display:contents` y cada pieza va a su celda. */
+@media (min-width:1180px){
+  #career{max-width:1560px!important;width:100%;margin-left:auto;margin-right:auto}
+  #career .career-grid{grid-template-columns:290px minmax(0,1fr) 480px;max-width:1560px;margin:0 auto;align-items:start;gap:18px}
+  #career .career-grid>div{display:contents}
+  #career #driverCard{grid-column:1;grid-row:1 / span 2;position:sticky;top:16px;padding:16px}
+  #career #decisionBox{grid-column:2;grid-row:1;margin:0}
+  #career .timeline{grid-column:2;grid-row:2}
+  #career #f1state{grid-column:3;grid-row:1 / span 2;margin:0;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
+  #career .f1state .cols{grid-template-columns:1fr 1fr;gap:14px}
+  #career .tl-head{display:none}
+  /* el panel, compacto */
+  #career #driverCard .driver-head{gap:10px;flex-wrap:wrap}
+  #career #driverCard .ovr-badge{width:52px;height:52px;border-radius:14px}
+  #career #driverCard .ovr-badge .n{font-size:20px}
+  #career #driverCard .ovr-badge .l{font-size:8.5px}
+  #career #driverCard .tag{font-size:10px;padding:2px 8px}
+  /* la columna es estrecha: EDAD/FAMA (o TEMPORADA/CONSEJO en el jefe) dejan la esquina derecha y
+     pasan a una fila propia debajo de los chips, en dos pares ordenados */
+  #career #driverCard .driver-head{flex-wrap:wrap}
+  #career #driverCard .agev{order:9;flex:1 0 100%;max-width:none;padding-right:0;margin-top:8px;text-align:left;
+    display:grid;grid-auto-flow:column;grid-template-rows:auto auto;justify-content:start;column-gap:26px;row-gap:0}
+  #career #driverCard .agev .a{font-size:18px}
+  #career #driverCard .team{margin-top:12px;padding-top:10px}
+  #career #driverCard .team{flex-wrap:wrap}   /* la etiqueta baja de línea antes que cortar «McLaren» */
+  #career #driverCard .team .tname{font-size:15px}
+  #career #driverCard .stats-row{gap:6px;margin-top:12px;padding-top:10px}
+  #career #driverCard .stat{padding:7px 2px}
+  #career #driverCard .stat .k{font-size:8.5px;letter-spacing:.04em}
+  #career #driverCard .stat .v{font-size:15px}
+  #career #driverCard .trophies{margin-top:10px;padding-top:8px;font-size:11px}
+  /* la decisión, a su tamaño */
+  #career #decTitle{font-size:22px;line-height:1.2}
+  #career #decSub{font-size:13px;line-height:1.5;margin:6px 0 10px}
+  #career #decisionBox .offer .name{font-size:14.5px}
+  #career #decisionBox .offer .sub{font-size:12px;line-height:1.45}
+  #career .offer .dot{width:32px;height:32px;font-size:10px}
+  #career .gar-chip{font-size:11.5px;padding:3px 8px}
+}
+/* 🖥️ CUATRO COLUMNAS desde 1280px (Carlos, 19-sep, con la referencia del Football Manager: «ahí
+   hay hueco para muchas columnas»): panel · decidir · resumen (las temporadas, ya no quedan abajo) ·
+   mundial. Cada una con su propio scroll, como los paneles del FM, y todo un punto más pequeño. */
+/* 🖥️ LA PORTADA Y LA IDENTIDAD, A ESCALA DE ESCRITORIO (Carlos, 19-sep: «¿POR QUÉ LO TIENES QUE HACER
+   TODO TAN GRANDE?»). El juego nació para el móvil; en un monitor al 100% el titular y las tarjetas de
+   identidad eran gigantes y los botones de abajo se salían de la pantalla. */
+@media (min-width:1180px){
+  #intro{zoom:.82}
+  #intro h1{font-size:clamp(32px,4.2vw,56px)}
+  #identity{zoom:.82}
+}
+.garwrap{display:none}   /* 🧹 la copia de pilotos en Decidir sobra en TODOS los anchos: viven en el panel (Carlos, 22-sep) */
+/* 🧑‍💼 EL PANEL DEL JEFE EN TODOS LOS ANCHOS (Carlos, 22-sep: «lo adaptas para móvil con lo que
+   ya tenemos?»): las nueve líneas, el garaje en tarjetas y la temporada titulando los números salen
+   del @media de escritorio y valen también para el deck del móvil y el tramo intermedio. La copia
+   .garwrap de Decidir sigue existiendo solo en escritorio-oculta: en el móvil decides sin ver el panel. */
+  /* 🧑‍💼 las nueve líneas del panel del jefe (Carlos, 20-sep) */
+  /* 🏷️ nombre en su línea; país y fama debajo (Carlos, 23-sep: con nombres largos se apelotonaba) */
+  #career #driverCard.tp .tpl-l1{flex-wrap:wrap;row-gap:1px}
+  #career #driverCard.tp .tpl-l1>b{flex:1 0 100%}
+  #career #driverCard.tp{display:flex;flex-direction:column}
+  #career #driverCard.tp .driver-head,#career #driverCard.tp .team{display:none}
+  #career #driverCard.tp #tpPanelA{display:block;order:1}
+  #career #driverCard.tp #panelGaraje{order:2;border-top:0;padding-top:0}
+  #career #driverCard.tp #tpPanelB{display:block;order:3;margin-top:9px;border-top:1px solid var(--line);padding-top:7px}
+  #career #driverCard.tp #tpSeasonHead{display:block;order:4;margin-top:9px;border-top:1px solid var(--line);padding-top:7px;font-size:12px}
+  #career #driverCard.tp #tpSeasonHead .k{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.05em}
+  #career #driverCard.tp .stats-row{order:5;margin-top:6px;border-top:0;padding-top:0}
+  #career #driverCard.tp .trophies{order:6}
+  .tpl-l1{display:flex;align-items:center;gap:7px;font-size:12.5px}
+  .tpl-l1>b{font-size:13.5px;letter-spacing:.02em}
+  .tpl-nat{color:var(--muted);font-size:11.5px;font-weight:700}
+  .tpl-right{margin-left:auto;font-size:11px}
+  .tpl-con{color:var(--muted);font-weight:700;font-size:11px;white-space:nowrap;flex-shrink:0}
+  .tpl-l2{display:flex;align-items:center;gap:5px;margin-top:9px;min-width:0}
+  .tpl-l2 .team-dot{width:24px;height:24px;flex-shrink:0}
+  .tpl-car{width:52px;height:52px;border-radius:14px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:900;flex-shrink:0}
+  .tpl-car .n{font-size:20px;line-height:1}
+  .tpl-car .l{font-size:7.5px;letter-spacing:1px;opacity:.9}
+  .tpl-l2r{min-width:0;flex:1}
+  .tpl-l2a{display:flex;align-items:center;gap:6px;min-width:0}
+  .tpl-team{font-family:var(--f-disp);font-weight:800;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tpl-con{margin-top:2px}
+  .tpl-kv{font-size:12px;margin:4px 0;line-height:1.45}
+  .tpl-kv .k{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.05em}
+  #panelGaraje .gpil{border:1px solid var(--line);border-left:3px solid var(--team,var(--line));border-radius:8px;padding:5px 9px;margin:6px 0;background:var(--panel2)}
+  #panelGaraje .gpil.libre{color:var(--muted);font-size:10.5px;font-weight:800;letter-spacing:.05em}
+  #panelGaraje .gp1{font-weight:700;font-size:12.5px}
+  #panelGaraje .gp2{font-size:11px;color:var(--muted);margin-top:1px}
+  #panelGaraje .gpil.gswap{cursor:pointer;font-weight:700;font-size:12px;user-select:none}
+  #career #driverCard.tp #teamRole{display:none}
+  #career #driverCard.tp .stats-row{grid-template-columns:repeat(3,1fr)}
+  #career #driverCard.tp .stats-row .stat:first-child{display:none}
+  #career #driverCard.tp #panelGaraje{display:block;margin-top:9px}
+  #panelGaraje .gar-chip{display:inline-block;margin:2px 4px 2px 0;font-size:11px;padding:3px 7px}
+
+@media (min-width:1280px){
+  #career{max-width:1800px!important}
+  #career .career-grid{grid-template-columns:240px minmax(0,.8fr) minmax(0,1fr) minmax(330px,440px);max-width:1800px;gap:14px}   /* 🎨 el encaje de Carlos en Stitch (20-sep) */
+  #career #driverCard{grid-row:1;padding:14px}
+  #career #decisionBox{grid-column:2;grid-row:1}
+  #career .timeline{grid-column:3;grid-row:1;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
+    background:transparent;border:0;box-shadow:none;border-radius:0;
+    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
+  #career .timeline::-webkit-scrollbar{display:none}
+  #career .timeline .tl-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);padding:12px 14px}
+  #career .timeline .tl-empty{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+  #career .timeline .tl-body{max-height:none}
+  #career #f1state{grid-column:4;grid-row:1;background:transparent;border:0;box-shadow:none;border-radius:0;
+    padding:2px 10px 24px;margin:0 -10px;scrollbar-width:none}
+  #career #f1state::-webkit-scrollbar{display:none}
+  #career #f1state::before{display:none}
+  /* 🟥 la línea de acento vive ahora en CADA tarjeta, no en el contenedor transparente */
+  #career .timeline .tl-row,#career #f1state .cols,#career #f1state .fs-prev .fp{position:relative;overflow:hidden}
+  #career .timeline .tl-row::before,#career #f1state .cols::before,#career #f1state .fs-prev .fp::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
+  #career #f1state .cols{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin:0}
+  #career #f1state .fs-prev{border-top:0;padding-top:4px}
+  #career #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:10px 14px;margin-bottom:10px}
+  #career #f1state .fs-prev .fp:last-child{border-bottom:1px solid var(--line)}
+  /* densidad de panel de gestión */
+  #career .f1state{font-size:13px}
+  #career .f1state .cols{gap:10px}
+  #career .f1state .srow{font-size:12px;padding:3px 5px}
+  #career .fs-prev{margin-top:12px;padding-top:8px}
+  #career .fs-prev .fpg{font-size:11.5px;gap:2px 8px}
+  /* 🧑‍💼 en el panel del jefe sobran el chip «TEAM PRINCIPAL» (ya se sabe) y la celda TEMPORADAS
+     (arriba ya pone «Temporada 2») — Carlos, 20-sep */
+  /* 🧑‍🔧 el garaje vive en el panel (Stitch de Carlos): la copia del mercado se esconde */
+
+  /* 🎨 sombras de contacto también aquí (Carlos, 23-sep: «las columnas de diferente color»): la
+     difusa de 26px acumulada carril a carril teñía el fondo de tonos distintos */
+  #career .offer,#career .timeline .tl-row,#career #f1state .cols,#career #f1state .fs-prev .fp,#career .card{box-shadow:0 1px 2px rgba(20,22,28,.05)}
+  /* 🖱️ cada columna con su propio scroll (Carlos, 20-sep): la página no baja entera */
+  #career #decisionBox{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
+    padding:2px 12px 24px;margin:0 -12px;scrollbar-width:none}
+  #career #decisionBox::-webkit-scrollbar{display:none}
+  #career .timeline{font-size:13.5px}
+  #career .timeline .tl-row{grid-template-columns:38px 1fr 38px 34px 34px 56px;gap:6px;padding:8px 10px}
+  /* 📰 cada noticia del año, en su renglón y con su borde (Carlos, 19-sep). Y a ancho completo:
+     el hueco de la columna del año se lo queda el texto, fuera el margen gigante. */
+  #career .tl-row .ev{grid-column:1/-1}
+  #career .tl-row .tp-verdict{grid-column:1/-1;justify-self:start}
+  #career .tl-row:hover{background:var(--panel)}
+  #career .tl-row .ev .evi{display:block;padding:6px 10px;margin:5px 0;font-size:11.5px;line-height:1.45;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+  #career .tl-row .ev .evi+.evi::before{content:""}
+  #career .tl-row .ev.top3{font-size:12px;line-height:1.6;padding:8px 10px;border-radius:9px}
+  #career #decisionBox .offer{padding:10px 12px;margin-bottom:0;border-radius:12px;gap:6px 12px;align-items:flex-start}
+  #career #decisionBox .offer .team-dot{margin-top:1px}
+  #career #decisionBox .offers{gap:6px}
+}
+/* 📜 los años anteriores, debajo de la clasificación del año */
+.fs-prev{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.fs-prev h5{margin-bottom:8px}
+.fs-prev .fp{padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.55}
+.fs-prev .fp:last-child{border-bottom:0}
+.fs-season{font-weight:800;font-size:15px;margin-bottom:2px}
+.fs-prev .fp b{font-variant-numeric:tabular-nums;margin-right:6px}
+.fs-prev .fpn{display:inline-block;min-width:27px;font-variant-numeric:tabular-nums}
+.fs-prev details.fp summary{cursor:pointer;list-style:none;position:relative;padding-right:16px}
+.fs-prev details.fp summary::-webkit-details-marker{display:none}
+.fs-prev details.fp summary::after{content:"▾";position:absolute;right:2px;top:2px;color:var(--muted);transition:transform .2s}
+.fs-prev details.fp[open] summary::after{transform:rotate(180deg)}
+.fs-prev .fpg{display:grid;grid-template-columns:1.15fr 1fr;gap:4px 12px;padding:9px 0 4px;font-size:12px;line-height:1.5;border-top:1px solid var(--line);margin-top:9px}
+.fs-prev .fpr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-prev .fpt{opacity:.9}
+#panelGaraje{display:none}
+#tpPanelA,#tpPanelB,#tpSeasonHead{display:none}
+.pl-name{font-family:var(--f-disp);font-weight:800;font-size:16px;letter-spacing:.02em;margin-bottom:8px}
+.pl-name:empty,#driverCard.tp .pl-name{display:none}
+
+/* 📱 LOS CUATRO BLOQUES EN MÓVIL (Carlos, 13-sep, en todos los modos): A panel · B dilemas y
+   elecciones · C resumen del año · D clasificación. Se deslizan de lado y C y D bajan hacia los años
+   anteriores. No se mueve HTML: las columnas de la rejilla pasan a `display:contents`. */
+#decisionBox #decRecap{display:none!important}   /* 🧹 «TU TEMPORADA…» fuera de Decidir (Carlos, 22-sep): ya lo cuenta el Resumen */
+#deckTabs{display:none}
+#deckGo{display:none}
+#deckMas{display:none}
+@media (max-width:980px){
+  body.deck-movil #deckGo{display:flex;position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;align-items:center;gap:8px;
+    border:0;border-radius:999px;padding:12px 26px;background:var(--team-ink);color:var(--team-on);
+    font-family:var(--f-disp);font-weight:800;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+  body.deck-movil #deckGo[hidden]{display:none}
+  body.deck-movil #deckMas{display:flex;position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(16px + env(safe-area-inset-bottom));z-index:59;width:42px;height:42px;border-radius:50%;
+    align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel);
+    color:var(--muted);font-size:20px;line-height:1;box-shadow:0 2px 8px rgba(20,22,28,.12);padding:0}
+  body.deck-movil #deckMas[hidden]{display:none}
+  body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{padding-bottom:78px}
+  body.deck-movil #decisionBox{padding-bottom:58px}   /* en Decidir no hay flotante: solo el hueco de la flecha */
+}
+@media (max-width:980px){
+  body.deck-movil #betaBar,body.deck-movil #previewBar{display:none!important}   /* !important: el betaBar se enciende con estilo EN LÍNEA */   /* 🧹 faldones fuera (Carlos, 22-sep): el BETA fijo tapaba las pestañas y el de pruebas solo estorba (el público no lo ve) */
+  body.deck-movil.conBeta{padding-top:0}
+  body.deck-movil #deckTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 42px;gap:4px;position:sticky;top:0;z-index:30;
+    background:var(--bg);padding:8px 0 0;margin:0 0 10px;
+    box-shadow:0 10px 12px -12px rgba(20,22,28,.4)}   /* a todo el ancho; la sombrita hace que el contenido que pasa por debajo se lea como corte, no como «me tapa» */
+  body.deck-movil #deckTabs button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
+    font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:3px solid var(--line)}
+  body.deck-movil #deckTabs button.on{color:var(--team-ink);border-bottom-color:var(--team-ink)}
+  body.deck-movil #deckTabs button[hidden]{display:none}
+  /* ⚠️ `flex-direction:row` A MANO: la regla móvil de siempre apila la rejilla en columna, y sin esto
+     los paneles salían uno debajo de otro aunque las pestañas funcionasen */
+  body.deck-movil .career-grid{display:flex;flex-direction:row;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
+    scrollbar-width:none;align-items:flex-start}
+  body.deck-movil .career-grid::-webkit-scrollbar{display:none}
+  body.deck-movil .career-grid > div{display:contents}
+  body.deck-movil #driverCard,body.deck-movil #decisionBox,body.deck-movil .timeline,body.deck-movil #f1state{
+    flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;scroll-snap-stop:always;margin:0;
+    /* ⚠️ `overscroll-behavior:contain` A SECAS mataba el deslizar en Android (Brave de Carlos, 22-sep):
+       contiene TAMBIÉN el eje X y el gesto horizontal nunca llegaba al carrusel. Solo el vertical. */
+    /* ⚠️ overscroll-y:contain bloqueaba SUBIR la página cuando el panel ya estaba arriba (Carlos,
+       23-sep: «no me deja hacer scroll hacia arriba… se ve tapado por el menú»): el gesto moría en
+       el panel. Con auto, al agotar el panel el gesto encadena a la página. */
+    max-height:calc(100dvh - 88px);overflow-y:auto;overscroll-behavior-y:auto;overscroll-behavior-x:auto;
+    scrollbar-width:none}
+  body.deck-movil #driverCard::-webkit-scrollbar,body.deck-movil #decisionBox::-webkit-scrollbar,body.deck-movil .timeline::-webkit-scrollbar,body.deck-movil #f1state::-webkit-scrollbar{display:none}
+  /* ⚙️ el engranaje vive DENTRO de la barra de pestañas, en su quinta celda (Carlos: «flotando
+     perdido en el éter»): deckActualiza lo muda ahí al entrar en modo baraja y lo devuelve al salir */
+  /* ⚙️ el desplegable en VOLADIZO (Carlos, 22-sep: «cuando salen las opciones el menú se hace más
+     largo»): idioma y tema se posicionan en absoluto bajo el engranaje y la barra no crece. */
+  body.deck-movil #topBtns{position:relative;top:0;right:0;grid-column:5;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding:2px 0}   /* top/right a cero: el relative heredaba el top:44px del modo banner y el ⚙️ se caía de la barra */
+  body.deck-movil #topBtns.open #langToggle,body.deck-movil #topBtns.open #themeToggle{position:absolute;right:2px;z-index:35;box-shadow:0 4px 12px rgba(20,22,28,.18)}
+  body.deck-movil #topBtns.open #langToggle{top:44px}
+  body.deck-movil #topBtns.open #themeToggle{top:90px}
+  body.deck-movil #cogToggle{background:transparent;border:0;box-shadow:none;width:32px;height:32px;opacity:.75;filter:grayscale(1)}
+  body.deck-movil #topBtns.open #cogToggle{background:var(--panel2);border:1px solid var(--line);opacity:1}
+  /* 🎨 sombras planas en el deck (Carlos, 22-sep: «el fondo sigue teniendo otro color»): la sombra
+     difusa de 26px pintaba una mancha gris bajo cada tarjeta; en pantallas pequeñas, borde y una
+     sombra de contacto bastan */
+  body.deck-movil .offer,body.deck-movil .tl-row,body.deck-movil #f1state .cols,body.deck-movil #f1state .fs-prev .fp,body.deck-movil .card{box-shadow:0 1px 2px rgba(20,22,28,.05)}
+  body.deck-movil #decTitle{font-size:18px;line-height:1.25}   /* «El mercado · 2028 · McLaren» era grandísimo (Carlos) */
+  /* 📰 en el móvil las noticias también van en cajitas (Stitch de Carlos, 20-sep) */
+  body.deck-movil .tl-row .ev{width:100%}
+  /* 🧹 el hueco de 27px entre el top-3 y las noticias (Carlos, 22-sep): eran tres capas sumadas */
+  body.deck-movil .tl-row .ev.top3{margin-bottom:0}
+  body.deck-movil .tl-row .ev:not(.top3){padding-top:0}
+  body.deck-movil .tl-row .ev .evi:first-child{margin-top:0}
+  /* 🔍 en el deck sobra ancho: el nombre y la fama del jefe suben de cuerpo (Carlos, 22-sep) */
+  body.deck-movil #driverCard:not(.tp) .agev{padding-right:0}   /* EDAD/FAMA al borde (Carlos, 23-sep): arrastraba 46px de padding del layout viejo */
+  body.deck-movil .tpl-l1{font-size:14px}
+  body.deck-movil .tpl-l1>b{font-size:17px}
+  body.deck-movil .tpl-nat{font-size:13px}
+  body.deck-movil .tpl-right{font-size:13.5px}
+  body.deck-movil .tpl-team{font-size:16px}
+  body.deck-movil .tpl-con{font-size:12.5px}
+  body.deck-movil .tl-row .ev .evi{display:block;padding:9px 12px;margin:7px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+  body.deck-movil .tl-row .ev .evi+.evi::before{content:""}
+  body.deck-movil .tl-row .ev.top3{padding:10px 12px;line-height:1.75;margin-bottom:12px}
+  body.deck-movil .offer{padding:14px;margin-bottom:12px;gap:6px 12px}
+  body.deck-movil #decSub{font-size:13px}
+  body.deck-movil #driverCard{order:1} body.deck-movil #decisionBox{order:2;padding:2px 2px 30px}
+  body.deck-movil .timeline{order:3} body.deck-movil #f1state{order:4}
+  /* 🃏 los chips de temporada del escritorio, también en el deck (Carlos, 22-sep) */
+  body.deck-movil .timeline{background:transparent;border:0;box-shadow:none;border-radius:0}
+  body.deck-movil .timeline .tl-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;box-shadow:var(--shadow);padding:12px 14px;position:relative;overflow:hidden}
+  body.deck-movil .timeline .tl-row::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
+  body.deck-movil #f1state{background:transparent;border:0;box-shadow:none;padding-top:0}   /* el padding:16px de .f1state lo dejaba más abajo que los otros tres paneles (Carlos, 22-sep) */
+  body.deck-movil #f1state::before{display:none}
+  body.deck-movil #f1state .cols,body.deck-movil #f1state .fs-prev .fp{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px;position:relative;overflow:hidden}
+  body.deck-movil #f1state .cols::before,body.deck-movil #f1state .fs-prev .fp::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-ink,var(--accent))}
+  body.deck-movil #f1state .fs-prev{border-top:0}
+  body.deck-movil .fs-prev details.fp summary::after{right:-8px}   /* la ▾ pegada al borde de la tarjeta (Carlos, 23-sep) */
+  body.deck-movil .tl-body{max-height:none}
+  body.deck-movil .f1state .cols{grid-template-columns:1fr;display:grid;gap:18px}   /* en el panel del móvil, pilotos y constructores uno debajo del otro */
+}
+@media (prefers-reduced-motion: reduce){ body.deck-movil .career-grid{scroll-behavior:auto} }
 </style>
 </head>
 <body>
@@ -894,6 +1270,10 @@ body.conBeta #topBtns{top:44px}
 <div id="topBtns">
   <button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
   <button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
+  <!-- ⚙️ AJUSTES (Carlos, 19-sep: los dos botones flotantes eran «un puto estorbo»): idioma y tema
+       viven plegados detrás de este engranaje pequeño y translúcido. column-reverse → va el último
+       en el HTML para pintarse ARRIBA. -->
+  <button id="cogToggle" onclick="document.getElementById('topBtns').classList.toggle('open')" title="Ajustes / Settings">⚙️</button>
 </div>
 
 <!-- ========== INTRO ========== -->
@@ -910,7 +1290,7 @@ body.conBeta #topBtns{top:44px}
       <rect x="10" y="22" width="6" height="6"/><rect x="22" y="22" width="6" height="6"/>
     </g></svg></div>
   <h1 data-es="Construye tu carrera<br>en la <span>Fórmula 1</span>" data-pt="Construa a sua carreira<br>na <span>Fórmula 1</span>" data-pl="Zbuduj swoją karierę<br>w <span>Formule 1</span>" data-fr="Construis ta carrière<br>en <span>Formule 1</span>" data-pt="Constrói a tua carreira<br>na <span>Fórmula 1</span>" data-en="Build your career<br>in <span>Formula 1</span>">Construye tu carrera<br>en la <span>Fórmula 1</span></h1>
-  <p data-es="Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro." data-pt="Comece no karting, suba pela F4, F3 e F2, conquiste uma vaga e enfrente Verstappen, Norris, Antonelli e os que virão. A história da F1 continua sendo escrita… com você dentro." data-pl="Zacznij od kartingu, przejdź przez F4, F3 i F2, wywalcz sobie fotel i zmierz się z Verstappenem, Norrisem, Antonellim i tymi, którzy dopiero nadejdą. Historia F1 wciąż się pisze… a ty jesteś w środku." data-fr="Commence en karting, gravis la F4, la F3 et la F2, décroche un baquet et affronte Verstappen, Norris, Antonelli et ceux qui suivront. L'histoire de la F1 continue de s'écrire… avec toi dedans." data-pt="Começa no karting, sobe pela F4, F3 e F2, ganha um lugar na grelha e luta contra Verstappen, Norris, Antonelli e os que hão de vir. A história da F1 continua a escrever-se… contigo lá dentro." data-en="Start in karting, climb through F4, F3 and F2, earn a seat and battle Verstappen, Norris, Antonelli and whoever comes next. F1 history is still being written… with you in it.">Empieza en el karting, sube por F4, F3 y F2, gánate un asiento y pelea contra Verstappen, Norris, Antonelli y los que vendrán. La historia de la F1 sigue escribiéndose… contigo dentro.</p>
+  <!-- 🧹 la parrafada de intro se fue (Carlos, 22-sep): cada tarjeta de modo ya lleva su descripción -->
   <!-- 🧭 EL MENÚ DE CUATRO MODOS (Carlos, 19-sep-2026): se quita «Iniciar carrera» y los modos quedan
        iguales. Retro → dos cuadrados (Carrera / Team Principal) → sus décadas → los años de cada década.
        Retos → cuadrados de 4×2 con desplazamiento lateral cuando haya más de ocho. -->
@@ -1059,7 +1439,8 @@ body.conBeta #topBtns{top:44px}
   <div class="career-grid">
     <div>
       <div class="card" id="driverCard">
-        <div class="driver-head">
+        <div class="pl-name" id="plName"></div>
+      <div class="driver-head">
           <div class="ovr-badge" id="ovrBadge"><span class="n" id="ovrNum">50</span><span class="l">OVR</span></div>
           <div class="driver-meta">
             <div class="tags">
@@ -1095,7 +1476,7 @@ body.conBeta #topBtns{top:44px}
     <div>
       <div class="card f1state" id="f1state" style="display:none">
         <div class="cols">
-          <div><h5><span data-es="👑 Mundial de pilotos" data-pt="👑 Mundial de pilotos" data-pl="👑 Mistrzostwa kierowców" data-fr="👑 Championnat pilotes" data-pt="👑 Mundial de pilotos" data-en="👑 Drivers' Championship">👑 Mundial de pilotos</span> <span id="fsYear"></span><button class="fs-more" id="fsMoreD" onclick="fsToggle()" title="Ver las dos clasificaciones enteras">▾</button></h5><div id="fsDrivers"></div></div>
+          <div class="fs-season" id="fsSeason" style="grid-column:1/-1"></div><div><h5><span data-es="👑 Mundial de pilotos" data-pt="👑 Mundial de pilotos" data-pl="👑 Mistrzostwa kierowców" data-fr="👑 Championnat pilotes" data-pt="👑 Mundial de pilotos" data-en="👑 Drivers' Championship">👑 Mundial de pilotos</span> <span id="fsYear"></span><button class="fs-more" id="fsMoreD" onclick="fsToggle()" title="Ver las dos clasificaciones enteras">▾</button></h5><div id="fsDrivers"></div></div>
           <div><h5><span data-es="🏭 Constructores" data-pt="🏭 Construtores" data-pl="🏭 Konstruktorzy" data-fr="🏭 Constructeurs" data-pt="🏭 Construtores" data-en="🏭 Constructors">🏭 Constructores</span><button class="fs-more" id="fsMoreC" onclick="fsToggle()" title="Ver las dos clasificaciones enteras">▾</button></h5><div id="fsTeams"></div></div>
         </div>
       </div>
@@ -1374,6 +1755,168 @@ function setTheme(t){
   // el fondo del panel/tarjeta se fija por JS con un degradé; re-renderizar para que tome el tema
   try{ if(typeof S!=="undefined" && S){ refreshCard(); } }catch(e){}
 }
+/* 🎨 EL COLOR DE TU EQUIPO (la mudanza, 13-sep-2026). El acento de la interfaz pasa a ser el de tu
+   escudería. De sus dos colores gana el PRIMERO si se lee sobre el fondo del tema (contraste 3:1); si
+   no, el segundo; y si tampoco, el primero aclarado u oscurecido hasta que se lea. Sin esto el Renault
+   amarillo o el McLaren plateado desaparecían en claro, y el Red Bull azul marino en oscuro. */
+function pintaColorEquipo(t){
+  const R=document.documentElement.style;
+  if(!t || !t.color){ ["--team","--team-ink","--team-soft","--team-on"].forEach(v=>R.removeProperty(v)); return; }
+  const rgb=h=>{ let s=String(h||"").replace("#",""); if(s.length===3) s=s.split("").map(c=>c+c).join("");
+    const n=parseInt(s.slice(0,6),16); return isNaN(n)?null:[n>>16&255,n>>8&255,n&255]; };
+  const lum=c=>{ const v=c.map(x=>{x/=255; return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4);}); return .2126*v[0]+.7152*v[1]+.0722*v[2]; };
+  const oscuro = THEME==="dark", fondo = oscuro ? [31,31,39] : [255,255,255];
+  const ratio=c=>{ const a=lum(c), b=lum(fondo); return (Math.max(a,b)+.05)/(Math.min(a,b)+.05); };
+  const hex=c=>"#"+c.map(x=>Math.round(x).toString(16).padStart(2,"0")).join("");
+  const c1=rgb(t.color), c2=rgb(t.color2);
+  let ink = c1 && ratio(c1)>=3 ? c1 : (c2 && ratio(c2)>=3 ? c2 : null);
+  if(!ink){ ink=(c1||c2||[225,6,0]).slice(); const meta=oscuro?255:0;
+    for(let k=0;k<12 && ratio(ink)<3;k++) ink=ink.map(x=>x+(meta-x)*.18); }
+  R.setProperty("--team", hex(c1||ink));
+  R.setProperty("--team-ink", hex(ink));
+  R.setProperty("--team-soft", `rgba(${ink.map(Math.round).join(",")},${oscuro?.16:.11})`);
+  /* ✍️ y el texto que va ENCIMA del color: negro sobre los claros (Renault amarillo), blanco sobre el resto */
+  R.setProperty("--team-on", lum(ink)>.45 ? "#15151e" : "#ffffff");
+}
+/* 📱 EL MURO EN PANELES: pestañas que llevan a cada panel y se encienden al deslizar. */
+const DECK_PANELES=[["driverCard",["Panel","Panel","Painel"]],["decisionBox",["Decidir","Decide","Decidir"]],
+                    ["tlPanel",["Resumen","Recap","Resumo"]],["f1state",["Mundial","Standings","Mundial"]]];
+let _deckIrTimer=null;
+function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=document.getElementById(id);
+  if(!g||!el) return;
+  /* 📄 la PÁGINA se realinea al inicio del juego en cada viaje: si quedó scrolleada a media
+     tarjeta, la cabecera del panel aterrizaba tapada bajo las pestañas (Carlos, 23-sep) */
+  try{ const c=document.getElementById("career");
+    if(c && Math.abs(c.getBoundingClientRect().top)>6) c.scrollIntoView({block:"start"}); }catch(e){}
+  const dest=()=>el.offsetLeft-g.offsetLeft;
+  /* 🎯 ANIMADO TAMBIÉN EN LOS VIAJES LARGOS (Carlos, 22-sep: «me gustaba más la animación»):
+     scroll-snap-stop:always frenaba el scroll suave en el panel intermedio (Mundial→Decidir quedaba
+     torcido), así que el imán del snap se APAGA durante el viaje y el remate lo reenciende. */
+  const _lejos=Math.abs(g.scrollLeft-dest())>g.clientWidth*1.2;
+  g.style.scrollSnapType="none";
+  g.scrollTo({left:dest(), behavior:"smooth"});
+  /* 🩹 un repintado a mitad de camino ABORTA el scroll suave (cazado el 19-sep: tras simular, el salto
+     al resumen se quedaba en el panel). Si a los 450 ms no hemos llegado, se remata en seco.
+     ⚠️ CANCELABLE (22-sep): dos deckIr seguidos —invertir orden desde el Panel repinta el mercado,
+     que salta a Decidir, y luego volvemos al Panel— dejaban DOS remates programados y ganaba el
+     viejo: el jugador acababa en Decidir sin quererlo. El último deckIr manda. */
+  if(_deckIrTimer) clearTimeout(_deckIrTimer);
+  _deckIrTimer=setTimeout(()=>{ _deckIrTimer=null; g.style.scrollSnapType="";
+    /* umbral a 2px (era 40): un desvío de 10-20px dejaba la tarjeta con el borde comido (Carlos, 23-sep) */
+    if(Math.abs(g.scrollLeft-dest())>2) g.scrollLeft=dest();
+    /* …y un SEGUNDO remate: al restaurar el imán, Brave re-snapea un frame después y volvía a
+       torcer el panel ~20px (Carlos, 23-sep, «se ven raras todas las pestañas») */
+    setTimeout(()=>{ if(!_deckIrTimer && Math.abs(g.scrollLeft-dest())>2) g.scrollLeft=dest(); }, 150); }, _lejos?650:450);
+}
+function deckPanelActivo(){
+  /* 📐 por POSICIÓN REAL del carrusel, no por la pestaña subrayada: el subrayado lo pinta el evento
+     scroll y hay llegadas (recolocación en seco, primera pantalla) donde nunca dispara — deckGo y la
+     flecha se creían en el Panel estando en Decidir (cazado el 22-sep). */
+  const g=document.querySelector("#career .career-grid");
+  if(g && document.body.classList.contains("deck-movil")){
+    let mejor="driverCard", d=1e9;
+    DECK_PANELES.forEach(([id])=>{ const el=document.getElementById(id); if(!el) return;
+      const x=Math.abs(el.offsetLeft-g.offsetLeft-g.scrollLeft); if(x<d){ d=x; mejor=id; } });
+    return mejor;
+  }
+  const b=document.querySelector("#deckTabs button.on"); return b ? b.dataset.p : "driverCard"; }
+/* 🔻 «cuando las opciones queden muy abajo, una flecha» (Carlos, 22-sep): vive en el hueco del
+   flotante, solo en Decidir y solo si de verdad queda contenido por debajo. Tocarla baja un tramo. */
+function deckMasPinta(){
+  const mas=document.getElementById("deckMas"); if(!mas) return;
+  const on=document.body.classList.contains("deck-movil");
+  const enB=deckPanelActivo()==="decisionBox";
+  const el=document.getElementById("decisionBox");
+  const resto=el ? el.scrollHeight-el.scrollTop-el.clientHeight : 0;
+  mas.hidden = !on || !enB || resto<=90;   /* 90 ≈ el padding inferior del panel: sin él, la flecha nunca se apagaba */
+}
+function deckBotones(){ return [...document.querySelectorAll("#offerList button")].filter(b=>!b.disabled); }
+function deckGoPinta(){
+  const go=document.getElementById("deckGo"); if(!go) return;
+  const on=document.body.classList.contains("deck-movil"), bs=deckBotones(), enB=deckPanelActivo()==="decisionBox";
+  /* 🧹 dentro de Decidir NUNCA: con una sola opción salían DOS «Continuar», el de la lista y el
+     flotante (Carlos, 22-sep). El flotante es solo el camino de vuelta desde las otras pestañas. */
+  go.hidden = !on || !bs.length || enB;
+  go.textContent = L("Continuar ▸","Continue ▸",{pt:"Continuar ▸"});
+  deckMasPinta();
+}
+function deckActualiza(){
+  const _car=document.getElementById("career");
+  const on = typeof S!=="undefined" && S && S.cat && _car && getComputedStyle(_car).display!=="none"
+             && window.matchMedia("(max-width:980px)").matches;
+  document.body.classList.toggle("deck-movil", !!on);
+  /* 📐 re-encaje del carrusel (Carlos, 22-sep: el panel salía «comido hacia la izquierda»): si el
+     scroll quedó a medio camino entre paneles —snap desalineado tras un cambio de pantalla o un
+     redimensionado—, se recoloca en seco sobre el panel activo. Al salir del deck, a cero. */
+  try{ const g=document.querySelector("#career .career-grid");
+    if(g){ if(!on){ g.scrollLeft=0; }
+      /* ⚠️ con un deckIr EN VUELO no se re-encaja: el snap en seco al panel más cercano abortaba el
+         viaje al Resumen tras simular (cazado en el clásico, 22-sep) */
+      else if(!_deckIrTimer){ const el=document.getElementById(deckPanelActivo());
+        if(el){ const d=el.offsetLeft-g.offsetLeft; if(Math.abs(g.scrollLeft-d)>4) g.scrollLeft=d; } } }
+  }catch(e){}
+  /* ⚙️ el bloque de ajustes se muda a la 5ª celda de la barra en modo baraja, y vuelve al cuerpo al salir */
+  try{ const tb=document.getElementById("topBtns"), tabs=document.getElementById("deckTabs");
+    if(on && tabs && tb && tb.parentNode!==tabs) tabs.appendChild(tb);
+    if(!on && tb && tb.parentNode!==document.body) document.body.appendChild(tb);
+  }catch(e){}
+  deckGoPinta();
+  const tabs=document.getElementById("deckTabs"); if(!tabs) return;
+  const _act=deckPanelActivo();   /* 🖍️ y el subrayado se repinta aquí también: no siempre hay un evento scroll que lo haga */
+  [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p);
+    b.hidden = !el || getComputedStyle(el).display==="none"; b.textContent=LA(DECK_PANELES.find(x=>x[0]===b.dataset.p)[1]);
+    b.classList.toggle("on", b.dataset.p===_act); });
+}
+(function deckInit(){ try{
+  const g=document.querySelector("#career .career-grid"); if(!g) return;
+  const tl=document.querySelector("#career .timeline"); if(tl && !tl.id) tl.id="tlPanel";
+  // el recap de la temporada vive dentro de la decisión: así es parte del mismo panel
+  const rc=document.getElementById("decRecap"), db=document.getElementById("decisionBox");
+  if(rc && db) db.insertBefore(rc, db.firstChild);
+  const tabs=document.createElement("div"); tabs.id="deckTabs";
+  DECK_PANELES.forEach(([id])=>{ const b=document.createElement("button"); b.type="button"; b.dataset.p=id;
+    b.onclick=()=>deckIr(id); tabs.appendChild(b); });
+  g.parentNode.insertBefore(tabs, g);
+  g.addEventListener("scroll",()=>{ let mejor=null, d=1e9;
+    [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p); if(!el||b.hidden) return;
+      const x=Math.abs(el.offsetLeft-g.offsetLeft-g.scrollLeft); if(x<d){ d=x; mejor=b; } });
+    [...tabs.children].forEach(b=>b.classList.toggle("on", b===mejor)); deckGoPinta(); },{passive:true});
+  window.addEventListener("resize", deckActualiza);
+  /* 👉 PASAR DE PANTALLA DESLIZANDO (Carlos, 19-sep: «me falta que me dejes hacer scroll a la derecha o a
+     la izquierda»). Con el dedo lo hace el navegador solo; esto cubre el ratón (arrastrar), la rueda
+     o el trackpad en horizontal y las flechas del teclado. */
+  const deckVisibles=()=>DECK_PANELES.map(([id])=>id).filter(id=>{ const b=tabs.querySelector(`[data-p="${id}"]`); return b && !b.hidden; });
+  const deckPaso=(dir)=>{ const v=deckVisibles(), k=v.indexOf(deckPanelActivo()); const n=v[Math.max(0,Math.min(v.length-1,k+dir))]; if(n) deckIr(n); };
+  let _x0=null, _y0=0;
+  g.addEventListener("pointerdown",e=>{ if(e.pointerType!=="mouse" || e.button!==0 || e.target.closest("button,a,input,select,.gar-chip")) return; _x0=e.clientX; _y0=e.clientY; });
+  window.addEventListener("pointerup",e=>{ if(_x0==null) return; const dx=e.clientX-_x0, dy=e.clientY-_y0; _x0=null;
+    if(document.body.classList.contains("deck-movil") && Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.3) deckPaso(dx<0?1:-1); });
+  let _rueda=0, _ruedaT=0;
+  g.addEventListener("wheel",e=>{ if(!document.body.classList.contains("deck-movil")) return;
+    if(Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return;   // la rueda vertical sigue bajando por el panel
+    e.preventDefault(); const t=Date.now(); if(t-_ruedaT>450) _rueda=0; _ruedaT=t; _rueda+=e.deltaX;
+    if(Math.abs(_rueda)>70){ deckPaso(_rueda>0?1:-1); _rueda=0; _ruedaT=t+400; } },{passive:false});
+  document.addEventListener("keydown",e=>{ if(!document.body.classList.contains("deck-movil")) return;
+    if(/INPUT|TEXTAREA|SELECT/.test((e.target&&e.target.tagName)||"")) return;
+    if(e.key==="ArrowRight"){ deckPaso(1); e.preventDefault(); } else if(e.key==="ArrowLeft"){ deckPaso(-1); e.preventDefault(); } });
+  /* ▶️ EL BOTÓN DE SEGUIR, SIEMPRE ABAJO (Carlos, 13-sep): fuera de «Decidir» te lleva allí; dentro, si
+     solo hay un camino («Empezar la temporada», «Continuar») lo pulsa. Si hay que ELEGIR, se esconde:
+     no se decide nada por el jugador y no tapa las opciones. La lista de ofertas se vigila sola. */
+  const go=document.createElement("button"); go.id="deckGo"; go.type="button"; go.hidden=true;
+  go.onclick=()=>{ const enB=deckPanelActivo()==="decisionBox", bs=deckBotones();
+    if(enB && bs.length===1){ bs[0].click(); return; }
+    deckIr("decisionBox"); };
+  document.body.appendChild(go);
+  const mas=document.createElement("button"); mas.id="deckMas"; mas.type="button"; mas.hidden=true; mas.textContent="▾";
+  mas.onclick=()=>{ const el=document.getElementById("decisionBox"); if(el) el.scrollBy({top:el.clientHeight*0.75, behavior:"smooth"}); };
+  document.body.appendChild(mas);
+  if(db) db.addEventListener("scroll", deckMasPinta, {passive:true});
+  const ol=document.getElementById("offerList");
+  if(ol && window.MutationObserver) new MutationObserver(()=>deckGoPinta()).observe(ol,{childList:true});
+  /* ⚙️ el menú de ajustes se cierra al tocar cualquier otra cosa */
+  document.addEventListener("pointerdown",e=>{ const tb=document.getElementById("topBtns");
+    if(tb && tb.classList.contains("open") && !tb.contains(e.target)) tb.classList.remove("open"); });
+}catch(e){} })();
 /* ================= DATOS ================= */
 /* [nombre ES, bandera, nombre EN]. ⚠️ El nombre ESPAÑOL es la CLAVE canónica: `sel.country` guarda
    siempre c[0], porque de ahí cuelgan NAT_AFFINITY, el cameo de Alonso y el país del ranking.
@@ -4689,6 +5232,7 @@ function initInstallHint(){
   window.addEventListener("appinstalled", ()=>dismissInstallHint());
 }
 function showIdentity(){
+  try{ pintaColorEquipo(null); }catch(e){}   // 🎨 la mudanza: cada carrera nueva empieza sin el color del equipo anterior
   $("intro").style.display="none"; $("identity").style.display="block"; renderCountries();
   /* 🔎 con 207 países, la lista ya no se recorre a ojo: el buscador pasa a ser la vía normal.
      Se le da el foco SOLO con ratón: en el móvil abriría el teclado de golpe y taparía media
@@ -5174,6 +5718,7 @@ function refreshCard(){
     $("driverCard").classList.remove("tp"); }catch(e){} }
   if(sel.style) $("tagStyle").textContent = styleLabel(sel.style);
   if(sel.flag) $("tagNat").textContent = natLabel();
+  try{ const _pn=$("plName"); if(_pn) _pn.textContent=(sel.name||"").toUpperCase(); }catch(e){}   /* 🏷️ tu nombre, arriba (Carlos, 23-sep: «aquí no se ve mi nombre») */
   $("ovrNum").textContent = S.ovr;
   $("ovrBadge").style.background=ovrColor(S.ovr);
   $("ageV").textContent = S.age;
@@ -5182,7 +5727,7 @@ function refreshCard(){
   $("stGP").textContent=S.gp; $("stW").textContent=S.wins;
   $("stP").textContent=S.podiums; $("stPP").textContent=S.poles;
   if(S.team){
-    const roleTxt = S.cat==="TEST"?L("PROBADOR","RESERVE",{pt:"PILOTO DE TESTES"}): S.cat==="F1"&&S.role?`Nº${S.role}`:"";
+    const roleTxt = S.cat==="TEST"?L("PROBADOR","RESERVE",{pt:"PILOTO DE TESTES"}): S.cat==="F1"&&S.role?L(`Piloto Nº${S.role}`,`Driver No.${S.role}`,{pt:`Piloto N.º${S.role}`}):"";
     $("teamName").textContent = S.team.name;
     $("teamRole").textContent = roleTxt;
     const d=$("teamDot");
@@ -5193,9 +5738,12 @@ function refreshCard(){
     else if(_lg){ d.className="team-dot haslogo"; d.style.cssText=`background:#fff url(${_lg}) center/cover;border:none`; d.textContent=""; }
     else { d.className="team-dot"; d.style.cssText=badgeStyle(S.team); d.textContent=S.team.abbr||""; }
     $("driverCard").style.background=`linear-gradient(135deg, ${hex6(S.team.color)}1e 0%, var(--panel) 55%)`;
+    try{ pintaColorEquipo(S.team); deckActualiza(); }catch(e){}   // 🎨 la mudanza
+    if(S.cat!=="TP"){ try{ panelGaraje(""); }catch(e){} }
   } else {
     $("teamName").textContent=L("Agente libre","Free agent",{pt:"Agente livre"}); $("teamRole").textContent=""; $("teamDot").className="team-dot"; $("teamDot").style.cssText="background:#bbb"; $("teamDot").textContent="";
     $("driverCard").style.background="var(--panel)";
+    try{ pintaColorEquipo(null); deckActualiza(); }catch(e){}
   }
   const tc=$("trophyCase");
   const shelf=[];
@@ -6762,7 +7310,7 @@ function tpConceptoScreen(fin){
   const ordC=[...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).map(t=>t.name);
   const _top=ordC.indexOf(tn)<3;
   const I=tpConceptoIntro();   // 🎭 la escena y sus tres respuestas, con la misma piel
-  setDecision("🧭 "+L(`El concepto de ${y}`,`The ${y} concept`,{pt:`O conceito de ${y}`})+" · "+tn, "");
+  setDecision("🧭 "+L(`El concepto de ${y}`,`The ${y} concept`,{pt:`O conceito de ${y}`}), "");
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=I.d; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
@@ -7202,6 +7750,12 @@ function setDecision(title,sub,pulsing,outcome){
 }
 // en móvil las ofertas viven abajo: al aparecer, las traemos a la vista (con algo de contexto arriba)
 function scrollToDecision(){
+  try{ deckActualiza(); }catch(e){}   /* 📱 el deck se decide aquí: «Elige tu escudería» llegaba sin pestañas porque nadie lo reevaluaba con el career ya visible (Carlos, 22-sep) */
+  if(document.body.classList.contains("deck-movil")){
+    /* 📱 recién simulada la temporada, el jugador va al RESUMEN a leer su año; el botón flotante
+       «Continuar ▸» le lleva a Decidir cuando quiera (Carlos, 19-sep). El resto de veces, a Decidir. */
+    if(S && S._deckResumen){ S._deckResumen=false; deckIr("tlPanel"); deckGoPinta(); return; }
+    deckIr("decisionBox"); return; }   // 📱 la mudanza
   if(window.innerWidth>980) return;
   const el=$("decisionBox"); if(!el) return;
   requestAnimationFrame(()=>{
@@ -7232,7 +7786,7 @@ function renderOffers(offers, withRetire){
     const mate = o.team.cat==="F1"&&_sl1
       ? (Array.isArray(_sl1)&&_sl1.length<2 && !_sl1.some(x=>x==="PLAYER")
           ? ` · ${L("Coche único: correrías solo","One-car team: you'd race alone",{pt:"Carro único: você correria sozinho"})}`
-          : ` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: `+mateIfJoin(o.team.name).name)
+          : (m=>` · ${L("Compañero","Teammate",{pt:"Companheiro"})}: ${(m&&m.flag)?flg(m.flag)+" ":""}${(m&&m.name)||""}`)(mateIfJoin(o.team.name)))
       : "";
     let trendLine="", carLine="", profileLine="";
     if(isF1seat){ const ti=trendInfo(o.team.name); trendLine=`<span class="otrend ${ti.c}">${L("TENDENCIA","TREND",{pt:"TENDÊNCIA"})}: ${ti.a} ${ti.t}</span>`; }
@@ -7248,10 +7802,14 @@ function renderOffers(offers, withRetire){
     // note/profile aceptan par [es,en] para poder repintarse al cambiar de idioma
     const noteTxt = Array.isArray(o.note) ? LA(o.note) : o.note;
     const subNote = (noteTxt && !o.profile) ? " · "+noteTxt : "";
+    /* 🎨 la línea «F4 · 2029» fuera y las estrellas EN su sitio (Carlos, 23-sep): el nombre ya dice
+       el equipo, el título de la pantalla dice la categoría, y sin el bloque de la derecha el texto
+       respira en pantallas pequeñas. */
+    /* 🎨 junto al logo solo el nombre y las estrellas; todo lo demás (compañero, tendencia, coche,
+       descripción) son filas a TODO el ancho de la tarjeta (Carlos, 23-sep: los sangrados). */
     b.innerHTML=`${badge(o.team,"dot")}
       <span class="info"><span class="name">${o.team.name}${roleChip}</span>
-      <span class="sub" style="display:block">${catLbl} · ${yearNow()}</span>${(mate||subNote)?`<span class="sub" style="display:block">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}${profileLine}</span>
-      <span class="perfwrap"><span class="perf">${stars}</span></span>`;
+      <span class="sub perfsub" style="display:block"><span class="perf">${stars}</span></span></span>${(mate||subNote)?`<span class="sub fw">${(mate||"").replace(/^ · /,"")}${mate&&subNote?subNote:(subNote||"").replace(/^ · /,"")}</span>`:""}${trendLine}${carLine}${profileLine}`;
     b.onclick=()=>signContract(o);
     box.appendChild(b);
   });
@@ -7425,7 +7983,14 @@ function startSeasonRun(){
     }
     try{ refreshCard(); }catch(e){}
     if(S.retired) return;
+    S._deckResumen=true;   // 📱 la primera pantalla tras simular lleva al RESUMEN, no a Decidir
     setTimeout(nextOffers, 180);
+    /* 📱 en el CLÁSICO la pantalla siguiente no siempre pasa por scrollToDecision (las del jefe sí),
+       y el salto al Resumen se quedaba sin consumir (cazado el 22-sep). Si a los 340ms el flag sigue
+       vivo, se consume aquí; en escritorio se apaga sin viaje. */
+    setTimeout(()=>{ try{ if(S && S._deckResumen){
+      if(document.body.classList.contains("deck-movil")) scrollToDecision();
+      else S._deckResumen=false; } }catch(e){} }, 340);
   }, 160);
 }
 
@@ -11041,6 +11606,16 @@ function trackRanks(driverOrder, teamOrder){
   S.rankDPrev=prevD; S.rankCPrev=prevC;   // 🔼 persistidos: el desplegable pinta flechas en TODAS las filas
   S.rankD={}; driverOrder.forEach((n,i)=>{S.rankD[n]=i+1;});
   S.rankC={}; teamOrder.forEach((t,i)=>{S.rankC[t]=i+1;});
+  /* 📜 FOTO DEL AÑO para «Años anteriores» (Carlos, 19-sep: «ver mediante un desplegable la parrilla
+     completa de ese año»). Nombre y equipo de cada clasificado; ligera (≤45 años guardados). */
+  try{
+    const _tm={}, _fl={};
+    Object.entries(S.seats||{}).forEach(([t,sl])=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER"&&d.name){ _tm[d.name]=t; _fl[d.name]=d.flag||""; } }));
+    if(S.team&&S.team.name){ _tm["__ME__"]=S.team.name; } _fl["__ME__"]=sel.flag||"";
+    (S.dpool||[]).forEach(d=>{ if(d&&d.name&&!_fl[d.name]) _fl[d.name]=d.flag||""; });
+    (S.rankHist=S.rankHist||[]).push({y:yearNow(), d:driverOrder.slice(0,28).map(n=>[n,_tm[n]||"",_fl[n]||""]), c:teamOrder.slice()});
+    if(S.rankHist.length>45) S.rankHist.shift();
+  }catch(e){}
   return {
     mvD:(n,rank)=>{const p=prevD[n]; return p==null?null:p-rank;},
     mvC:(t,rank)=>{const p=prevC[t]; return p==null?null:p-rank;}
@@ -11098,14 +11673,17 @@ function hallRows(){
 function renderF1State(){
   /* la visibilidad del ▾ se decide ANTES del early return: si no, al pasar de una carrera clásica a
      una de jefe el botón se quedaba oculto del modo anterior hasta que corriera una temporada entera */
-  { const _tp=fsPuedeDesplegar();
-    const _bd=document.getElementById("fsMoreD"), _bc=document.getElementById("fsMoreC");
-    if(_bd) _bd.style.display=_tp?"":"none";
-    if(_bc) _bc.style.display=_tp?"":"none";
-    if(!_tp){ FS_OPEN.d=false; FS_OPEN.c=false; } }
+  /* 🎨 la clasificación del año va ENTERA en LOS DOS modos (Carlos, 22-sep: «deberíamos mostrar toda
+     la clasificación en el año actual también, como el modo TP» — revierte la decisión del 16-ago). */
+  { const _bd=document.getElementById("fsMoreD"), _bc=document.getElementById("fsMoreC");
+    FS_OPEN.d=FS_OPEN.c=true;
+    if(_bd) _bd.style.display="none"; if(_bc) _bc.style.display="none"; }
   if(!S.lastTop3) return;
   $("f1state").style.display="block";
-  $("fsYear").textContent=S.lastTop3.year;
+  /* 🗓️ el año encabeza la tarjeta como en «Años anteriores» (Carlos, 23-sep) y los títulos de las
+     dos columnas quedan a una línea, sin año */
+  try{ const _fss=$("fsSeason"); if(_fss) _fss.textContent=L("Temporada","Season",{pt:"Temporada"})+" "+S.lastTop3.year; }catch(e){}
+  $("fsYear").textContent="";
   const medal=["🥇","🥈","🥉"];
   const dly=i=>`style="animation-delay:${i*70}ms"`;
   // insignia y clase de movimiento (sube/baja respecto al año pasado)
@@ -11113,18 +11691,45 @@ function renderF1State(){
   const mvCls=mv=> mv>0?" mv-up":mv<0?" mv-down":"";
   const _mio=(x)=>x.me || (S.cat==="TP" && x.team===S.tpTeam);   // 🧑‍💼 en el muro, los TUYOS destacan
   let dHtml=S.lastTop3.d.map((x,i)=>`<div class="srow${_mio(x)?" me":""}${mvCls(x.mv)}" ${dly(i)}><span class="nm">${medal[i]} ${flg(x.me?sel.flag:x.flag)} ${x.me?L("TÚ","YOU",{pt:"TU"}):x.n}</span><span class="rt2">${mvB(x.mv)}${teamBadge(x.team)}</span></div>`).join("");
-  if(S.lastTop3.myPos!=null && S.lastTop3.myPos>3)
-    dHtml+=`<div class="srow me${mvCls(S.lastTop3.myPosMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myPos}º</b> ${flg(sel.flag)} ${L("TÚ","YOU",{pt:"TU"})}</span><span class="rt2">${mvB(S.lastTop3.myPosMv)}${teamBadge(S.team?.name)}</span></div>`;
+  /* 🧹 la fila suelta «24º TÚ» tras el podio era del modo top3+tú: con la clasificación completa
+     (Carlos, 23-sep) TÚ sale EN su puesto dentro de la lista (fsResto pinta el «__ME__»). */
   if(FS_OPEN.d) dHtml+=fsResto("d");
   $("fsDrivers").innerHTML=dHtml;
   const cmv=S.lastTop3.cmv||[];
   // en la clasificación mostramos solo el movimiento de posición (▲/▼ vs el año pasado);
   // la tendencia del PROYECTO (coche al alza/declive) va en las ofertas, no aquí (confundía)
-  let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${S.cat==="F1"&&S.team&&x===S.team.name?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}</span>${mvB(cmv[i])}</div>`).join("");
-  if(S.lastTop3.myConstr!=null && S.lastTop3.myConstr>3 && S.team)
-    cHtml+=`<div class="srow me${mvCls(S.lastTop3.myConstrMv)}" ${dly(3)}><span class="nm"><b>${S.lastTop3.myConstr}º</b> ${teamBadge(S.team.name)} ${S.team.name}</span>${mvB(S.lastTop3.myConstrMv)}</div>`;
+  let cHtml=S.lastTop3.c.map((x,i)=>`<div class="srow${(S.cat==="F1"&&S.team&&x===S.team.name)||(S.cat==="TP"&&tpManaged(x))?" me":""}${mvCls(cmv[i])}" ${dly(i)}><span class="nm">${medal[i]} ${teamBadge(x)} ${x}</span>${mvB(cmv[i])}</div>`).join("");
+  /* 🧹 ídem con tu constructor: su fila de la lista completa ya va marcada en .me */
   if(FS_OPEN.c) cHtml+=fsResto("c");
   $("fsTeams").innerHTML=cHtml;
+  /* 📜 LOS AÑOS ANTERIORES, debajo (la mudanza, 13-sep: «bajando, ver años anteriores»). Cada fila de
+     temporada guarda el podio de pilotos y de constructores de SU año; se enseña solo el podio, que es
+     lo que el público ya ve en la trayectoria. */
+  try{
+    let pv=document.getElementById("fsPrev");
+    if(!pv){ pv=document.createElement("div"); pv.id="fsPrev"; pv.className="fs-prev"; $("f1state").appendChild(pv); }
+    const nm=x=>typeof x==="string"?x:((x&&(x.n||x.name))||"");
+    const vistos=new Set([S.lastTop3.year]);
+    const filas=(S.seasons||[]).slice().reverse().filter(r=>r && r.top3d && r.top3c && !vistos.has(r.year) && vistos.add(r.year));
+    pv.style.display = filas.length ? "" : "none";
+    pv.innerHTML = filas.length ? `<h5>${L("📜 Años anteriores","📜 Previous seasons",{pt:"📜 Anos anteriores"})}</h5>` + filas.map(r=>{
+      const _yo=n=>["TÚ","YOU","TU"].includes(String(n||"").trim());
+      const _miEq=(r.team&&r.team.name)||r.team;
+      const cab=`<b>${L("Temporada","Season",{pt:"Temporada"})} ${r.year}</b><br>👑 ${r.top3d.map(x=>{const h=`${(x&&typeof x==="object"&&x.t)?(teamBadge(x.t,r.year)||"")+"&nbsp;":""}${surname(nm(x))}`; return _yo(nm(x))?`<b>${h}</b>`:h;}).join(" · ")}<br><span style="color:var(--muted)">🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return t===_miEq?`<b>${h}</b>`:h;}).join(" · ")}</span>`;
+      /* 📜 con foto del año guardada, el año es un desplegable con su parrilla completa */
+      const H=(S.rankHist||[]).find(h=>h.y===r.year);
+      if(!H) return `<div class="fp">${cab}</div>`;
+      /* 🏳️ posición · logo · bandera · nombre (Carlos, 22-sep). Las fotos viejas no traen bandera:
+         se busca por nombre entre los pilotos vivos de la partida. */
+      const _flagDe=n=>{ try{ const all=[...(S.dpool||[]),...(S.retiredPool||[]),...(S.freeAgents||[]),...Object.values(S.seats||{}).flat()];
+        const d=all.find(x=>x&&x!=="PLAYER"&&x.name===n); return (d&&d.flag)||""; }catch(e){ return ""; } };
+      const dLis=H.d.map((x,i)=>{ const [n,t]=x, fl=(n==="__ME__"?sel.flag:(x[2]||_flagDe(n)));
+        const nom=n==="__ME__" ? `<b>${L("TÚ","YOU",{pt:"TU"})}</b>` : surname(n);
+        return `<div class="fpr"><span class="fpn">${i+1}º</span>${t?`<span class="fpt">${teamBadge(t,r.year)||""}</span> `:""}${fl?flg(fl)+" ":""}${nom}</div>`; }).join("");
+      const cLis=H.c.map((t,i)=>`<div class="fpr"><span class="fpn">${i+1}º</span>${teamBadge(t,r.year)||""} ${t}</div>`).join("");
+      return `<details class="fp"${filas.indexOf(r)===0?" open":""}><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
+    }).join("") : "";
+  }catch(e){}
 }
 
 /* 🔽 DESPLEGAR LA CLASIFICACIÓN ENTERA (petición de Carlos, 14-ago). El panel enseñaba el top-3 y tu
@@ -11167,6 +11772,8 @@ function fsResto(cual){
        top 3»). El año anterior vive en S.rankDPrev desde trackRanks. */
     const _mvB=(prev,p)=> prev==null?"":prev>p?`<span class="mv up">▲${prev-p}</span>`:prev<p?`<span class="mv down">▼${p-prev}</span>`:`<span class="mv eq">=</span>`;
     return orden.map(([n,p])=>{
+      const _pv0=(S.rankDPrev||{})[n], _cls0=_pv0==null?"":_pv0>p?" mv-up":_pv0<p?" mv-down":"";
+      if(n==="__ME__") return `<div class="srow extra me${_cls0}"><span class="nm">${p}º ${flg(sel.flag)} <b>${L("TÚ","YOU",{pt:"TU"})}</b></span><span class="rt2">${_mvB(_pv0,p)}${S.team?teamBadge(S.team.name):""}</span></div>`;
       const fl=buscaFlag(n);
       // el equipo con el que corrió ESE año; si no consta, se rebusca entre los asientos de ahora
       const eqAnual=(S.rankDTeam||{})[n];
@@ -11662,8 +12269,13 @@ function esperarTrasQuiebraOption(exEquipo){
 function specialOfferBtn(o){
   const b=document.createElement("button"); b.className="offer";
   b.style.border="2px solid "+(o.team? o.team.color : (o.color||"#888")); b.style.borderLeftWidth="6px";
+  /* ⭐ si la oferta trae un equipo de F1 (la promesa de probador+asiento), sus estrellas también
+     se enseñan (Carlos, 23-sep); y el texto va a todo el ancho, como en las ofertas normales. */
+  const _sp=o.team && S.f1perf && S.f1perf[o.team.name]!=null
+    ? (S.regUnknown ? "❓" : (n=>"★".repeat(n)+"☆".repeat(5-n))(Math.max(1,Math.min(5,Math.round(1+4*((S.f1perf[o.team.name]??75)-60)/36)))))
+    : null;
   b.innerHTML=`${o.team ? badge(o.team,"dot") : `<span class="team-dot dot" style="background:${o.color||'#888'}">${o.em||"🌎"}</span>`}
-    <span class="info"><span class="name">${o.name}</span><span class="sub" style="display:block">${o.sub||""}</span></span>`;
+    <span class="info"><span class="name">${o.name}</span>${_sp?`<span class="sub perfsub" style="display:block"><span class="perf">${_sp}</span></span>`:""}</span><span class="sub fw">${o.sub||""}</span>`;
   b.onclick=o.onClick; return b;
 }
 function renderSpecialOptions(opts){ const box=$("offerList"); box.innerHTML=""; opts.forEach(o=>box.appendChild(specialOfferBtn(o))); }
@@ -12623,24 +13235,17 @@ function tpConfianza(hoy){
 }
 function tpVerdictLine(r){
   const objetivo=r.tpGoalTxt||"";
-  const cumple=(r.constrPos===1?"1º":(r.constrPos||"?")+"º");
   /* ⚖️ UNA TEMPORADA ANULADA AÑOS DESPUÉS. El juicio del crashgate puede retirarte los puntos de
      constructores de un año que ya jugaste, así que esa fila de la trayectoria cambia de significado
      mucho tiempo después de haberla vivido. Va antes del switch porque manda sobre el veredicto que
      tuviera: da igual que aquel año cumplieras, si te lo han quitado. */
-  if(r.tpDQ) return L(`🎯 Objetivo: ${objetivo} → ⚖️ ANULADO: la FIA os retiró los puntos de constructores`,
-                      `🎯 Target: ${objetivo} → ⚖️ VOIDED: the FIA stripped your constructors' points`,
-                      {pt:`🎯 Meta: ${objetivo} → ⚖️ ANULADO: a FIA retirou os pontos de construtores`});
+  if(r.tpDQ) return `🎯⚖️: ${objetivo}`;
   switch(r.tpVerdict){
-    case "titulo": return L(`🎯 Objetivo: ${objetivo} → 🏆 rescatado por el título de pilotos`,`🎯 Target: ${objetivo} → 🏆 saved by the drivers' title`,{pt:`🎯 Meta: ${objetivo} → 🏆 salvo pelo título de pilotos`});
-    case "ok":     return L(`🎯 Objetivo: ${objetivo} → ✅ cumplido`,`🎯 Target: ${objetivo} → ✅ met`,{pt:`🎯 Meta: ${objetivo} → ✅ cumprida`});
-    case "gracia": return L(`🎯 Objetivo: ${objetivo} → 🛡️ fallado, pero el consejo te da un año más`,`🎯 Target: ${objetivo} → 🛡️ missed, but the board gives you one more year`,{pt:`🎯 Objetivo: ${objetivo} → 🛡️ falhado, mas o conselho te dá mais um ano`});
-    /* 🚪 ya no siempre es «el segundo año»: con el consejo con memoria puedes caer al tercero o al
-       cuarto si tu historial te ha ido comprando indultos. La línea dice lo que es verdad siempre. */
-    case "fuera":  return r.tpFallo1
-      ? L(`🎯 Objetivo: ${objetivo} → 🚪 fallado: destituido`,`🎯 Target: ${objetivo} → 🚪 missed: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada: demitido`})
-      : L(`🎯 Objetivo: ${objetivo} → 🚪 fallado otra vez: destituido`,`🎯 Target: ${objetivo} → 🚪 missed again: sacked`,{pt:`🎯 Meta: ${objetivo} → 🚪 falhada de novo: demitido`});
-    default:       return L(`🎯 Objetivo: ${objetivo} → ❌ no cumplido, el consejo aprieta`,`🎯 Target: ${objetivo} → ❌ missed, the board tightens`,{pt:`🎯 Meta: ${objetivo} → ❌ não cumprida, o conselho aperta`});
+    case "titulo": return `🎯🏆: ${objetivo}`;   // dorado: el título de pilotos lo rescató
+    case "ok":     return `🎯✅: ${objetivo}`;
+    case "gracia": return `🎯🛡️: ${objetivo}`;   // ámbar: fallado, pero con indulto
+    case "fuera":  return `🎯🚪: ${objetivo}`;   // rojo intenso: destituido
+    default:       return `🎯❌: ${objetivo}`;
   }
 }
 function renderTimeline(){
@@ -12657,8 +13262,9 @@ function renderTimeline(){
       c[3].style.display = _tp ? "none" : "";     // 🏁 los pilotos ya no tienen columna propia:
       c[4].style.display = _tp ? "none" : "";     //    van con su color en la línea del equipo
       if(_tp){
-        c[5].textContent = L("Constr.","Constr.",{pt:"Constr."});
+        c[5].style.display="none";   // ⭕ el puesto va en su círculo, junto al escudo
       } else {
+        c[5].style.display="";
         c[3].textContent = L("V","W",{pt:"V"});
         c[4].textContent = L("Pod","Pod",{pt:"Pód"});
         c[5].textContent = L("Camp.","Champ.",{pt:"Camp."});
@@ -12697,7 +13303,7 @@ function renderTimeline(){
     const constr=r.constrPos?`🏭 ${L("Constructores","Constructors",{pt:"Construtores"})}: ${r.constrPos===1?"1º":r.constrPos+"º"}`:"";
     const subBestTxt=raced&&r.subBest?` · ${L("mejor","best",{pt:"melhor"})} ${r.subBest===1?"1º 🏆":r.subBest+"º"}`:"";
     const ptsTxt=r.cat==="TP"?tpLinea()   // 🧑‍💼 debajo del equipo, tus dos pilotos con su puesto y su color
-      :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} pts`:L(yearNow()>=2005?"FP1 + simulador":"Test privados",yearNow()>=2005?"FP1 + simulator":"Private testing",{pt:yearNow()>=2005?"TL1 + simulador":"Testes privados"})):r.cat==="ADV"?"":`${r.pts} pts`;
+      :r.cat==="TEST"?(raced?`${r.subRaces} ${L("GP sustituto","sub GPs",{pt:"GP substituto"})}${subBestTxt} · ${r.pts} ${L("puntos","points",{pt:"pontos"})}`:L(yearNow()>=2005?"FP1 + simulador":"Test privados",yearNow()>=2005?"FP1 + simulator":"Private testing",{pt:yearNow()>=2005?"TL1 + simulador":"Testes privados"})):r.cat==="ADV"?"":`${r.pts} ${L("puntos","points",{pt:"pontos"})}`;
     // en "Camp." el probador no tiene puesto de campeonato → "—" (su mejor carrera va en el detalle);
     // la aventura muestra su puesto de campeonato de la serie (🏆 si ganó la carrera mítica)
     const advR=r.advResult;
@@ -12715,22 +13321,37 @@ function renderTimeline(){
     const nameWithBadge=(x)=> (x && typeof x==="object")
       ? `${teamBadge(x.t, r.year)||""}&nbsp;${x.n}` : x;
     // 👑 pilotos y 🏭 constructores en dos líneas pero UNA sola tarjeta (afinado con Carlos)
-    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(nameWithBadge).join(" · ")}<br>🏭 ${r.top3c.map(t=>`${teamBadge(t, r.year)||""}&nbsp;${t}`).join(" · ")}</span>`:"";
-    div.innerHTML=`
-      <span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${esTP
-        ? `<span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}`
-        : r.age}</span>
-      <span class="club">${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}
-        <span><span class="nm">${r.team2
-            ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
-            : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><br><span class="cat">${[ptsTxt,constr].filter(Boolean).join(" · ")||"&nbsp;"}</span></span></span>
-      ${esTP ? "" : `<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`}
-      ${esTP ? "" : `<span class="num vcol ${r.wins>0?"w":""}">${r.cat==="ADV"?(advR&&advR.win?"🏆":"—"):r.cat==="TEST"&&!raced?"—":r.wins}</span>`}
-      ${esTP ? "" : `<span class="num pcol ${r.pods>0?"p":""}">${r.cat==="ADV"?"—":r.cat==="TEST"&&!raced?"—":r.pods}</span>`}
-      <span class="pos ${posCls}">${posLab}</span>
+    /* 🧑‍💼 en el modo jefe, TUS pilotos y TU equipo van en negrita dentro del top-3 (Carlos, 21-sep):
+       se compara por apellido —el top-3 puede llevar inicial («M. Verstappen») y tpDrv no. */
+    const _ap=x=>String(x||"").split(" ").pop();
+    const _mios=esTP?(r.tpDrv||[]).map(d=>_ap(d.n)):[];
+    const _soyYo=n=>["TÚ","YOU","TU"].includes(String(n||"").trim());
+    const top3=r.top3d?`<span class="ev top3">👑 ${r.top3d.map(x=>{const h=nameWithBadge(x); const n=(x&&typeof x==="object")?x.n:x; return ((esTP&&_mios.includes(_ap(n)))||(!esTP&&_soyYo(n)))?`<b>${h}</b>`:h;}).join(" · ")}<br>🏭 ${r.top3c.map(t=>{const h=`${teamBadge(t, r.year)||""}&nbsp;${t}`; return (t===((r.team&&r.team.name)||r.team))?`<b>${h}</b>`:h;}).join(" · ")}</span>`:"";
+    /* ⭕ el puesto de constructores del jefe vive como CÍRCULO al lado del escudo (Carlos, 21-sep);
+       el 🏆 del campeón no cabe en el círculo: el dorado de p1 ya lo dice. */
+    const circPos=esTP?`<span class="pos circ ${posCls}">${r.pos!=null?r.pos+"º":"—"}</span>`:"";
+    div.innerHTML= esTP ? `
+      <span class="tph"><span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}"><span class="lbl">${L("Temporada","Season",{pt:"Temporada"})}</span> ${r.age}</span><span class="tpnm">${teamDisp(r.team, r.year)} · ${r.year}</span></span>
+      <span class="tpb">${badge(r.team,"",r.year)}${circPos}<span class="cat">${ptsTxt}</span></span>
       ${top3}
-      ${r.cat==="TP"&&r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
-      ${(r.events&&r.events.length)?`<span class="ev">${r.events.join(" · ")}</span>`:""}`;
+      ${r.tpVerdict?`<span class="tp-verdict ${r.tpVerdict}">${tpVerdictLine(r)}</span>`:""}
+      ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`
+    : (()=>{
+      const _w=r.cat==="ADV"?(advR&&advR.win?"🏆":null):r.cat==="TEST"&&!raced?null:r.wins;
+      const _p=r.cat==="ADV"?null:r.cat==="TEST"&&!raced?null:r.pods;
+      const _grpWP=[_w==null?null:`<span class="clw">🏆 ${_w} ${L("Victorias","Wins",{pt:"Vitórias"})}</span>`,
+        _p==null?null:`<span class="clp">🥉 ${_p} ${L("Podios","Podiums",{pt:"Pódios"})}</span>`].filter(Boolean).join(" · ");
+      const _grpPts=[ptsTxt, constr].filter(Boolean).join(" · ");
+      /* 📱 en móvil victorias y podios bajan a su propia línea (Carlos, 23-sep): el separador
+         intermedio lleva su clase para poder esconderse y .clgrp pasa a block por CSS */
+      const linea2=[_grpPts, _grpWP?`<span class="clsep"> · </span><span class="clgrp">${_grpWP}</span>`:null].filter(Boolean).join("");
+      return `
+      <span class="tph"><span class="age" title="${L("Temporada","Season",{pt:"Temporada"})} ${r.year}">${r.age}</span>${r.ovr!=null?`<span class="ovrcell" style="background:${ovrColor(r.ovr)}">${r.ovr}</span>`:""}${r.team2 ? badge(r.team,"",r.year)+badge(r.team2,"",r.year) : badge(r.team,"",r.year)}<span class="tpnm">${r.team2
+            ? `${teamDisp(r.team, r.year)} → ${teamDisp(r.team2, r.year)} · ${r.year} · ${catLbl}`
+            : `${teamDisp(r.team, r.year)} · ${r.year}${catLbl?" · "+catLbl:""}`}</span><span class="pos posr ${posCls}">${posLab}</span></span>
+      ${linea2?`<span class="clin">${linea2}</span>`:""}
+      ${top3}
+      ${(r.events&&r.events.length)?`<span class="ev">${r.events.map(e=>`<span class="evi">${e}</span>`).join("")}</span>`:""}`; })();
     b.appendChild(div);
   });
 }
@@ -13724,6 +14345,7 @@ function tpOwnerLabel(){ return (S.tpOwner&&S.tpOwner.lab)?S.tpOwner.lab():""; }
 /* tarjeta del jefe: prestigio en vez de OVR, humor del consejo en vez de fama, dueño en vez de estilo */
 function tpRefreshCard(){
   window._tpUiDirty=true;
+  try{ pintaColorEquipo(F1_TEAMS.find(t=>t.name===S.tpTeam)); deckActualiza(); }catch(e){}   // 🎨 la mudanza
   /* 🚗 LA INSIGNIA REDONDA ES EL COCHE (Carlos, 20-ago: «¿cambiamos la fama por el OVR del coche?»).
      Es el número que de verdad miras cada invierno, y ovrColor le da una escala de color con sentido.
      La fama no desaparece: baja a un chip ⭐, porque sigue moviendo las ofertas que recibes. */
@@ -13788,6 +14410,7 @@ function tpRefreshCard(){
     else _tc.style.display="none";
   }
   try{ $("driverCard").classList.add("tp"); }catch(e){}
+  try{ renderTPPanel(_carP, mood, _soyDueno?L("Cuentas","Books",{pt:"Contas"}):L("Consejo","Board",{pt:"Conselho"})); if(S._garMode) panelGaraje(S._garMode); }catch(e){}
   $("valV").textContent=mood[0]; $("valV").style.color=mood[1]; $("valV").style.webkitTextFillColor=mood[1]; $("valV").style.background="none";
   const ks=document.querySelectorAll("#driverCard .stats-row .k");
   if(ks[0]) ks[0].textContent=L("Temporadas","Seasons",{pt:"Temporadas"});
@@ -13820,6 +14443,8 @@ function tpRefreshCard(){
 /* pantalla de arranque: CUALQUIERA de los proyectos de 2026 — la libertad se paga en exigencia */
 function tpChooseTeam(){
   const box=$("offerList");
+  try{ refreshCard(); }catch(e){}   /* 🧑‍💼 la tarjeta del jefe VACÍA desde el primer segundo (Carlos, 22-sep:
+     el panel salía con la carta clásica del piloto —edad, GP, poles— y «se transformaba» al elegir equipo) */
   setDecision(L("🧑‍💼 Elige tu escudería","🧑‍💼 Choose your team",{pt:"🧑‍💼 Escolha a sua equipe"}),
     L("Cualquiera de los "+F1_TEAMS.length+" proyectos de "+yearNow()+" puede ser tuyo. Ojo: la exigencia del consejo escala con el coche — en un grande es el título o la calle; en un colista te darán tiempo.",
       "Any of the "+F1_TEAMS.length+" projects on the "+yearNow()+" grid can be yours. Careful: the board's demands scale with the car — at a giant it's title-or-sack; at a backmarker they'll give you time.",
@@ -14289,6 +14914,76 @@ function tpAsientoLinea(i){
     : `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)} · ${d.age} · 📜${Math.max(0,d.tpc||0)}`;
   return `<span class="gar-chip" style="border-color:${col}">${cuerpo}</span>`;
 }
+/* 🧑‍🔧 EL GARAJE EN EL PANEL (Stitch de Carlos, 20-sep; rediseño del 20 por la tarde): tus pilotos
+   como tarjetas —nombre y estrellas arriba; edad y contrato debajo; sin el «Nº1», que ya se ve por el
+   orden— con borde fino y el canto izquierdo del color del equipo. `mode` dice si el botón de invertir
+   tiene sentido en la pantalla actual ("m" mercado · "r" rumbo/ejes · "x" sin invertir · "" fuera). */
+function panelGaraje(mode){
+  const card=document.getElementById("driverCard"); if(!card) return;
+  let g=document.getElementById("panelGaraje");
+  if(!mode){ S._garMode=null; if(g){ g.innerHTML=""; g.style.display="none"; } return; }
+  if(!g){ g=document.createElement("div"); g.id="panelGaraje"; card.appendChild(g); }
+  S._garMode=mode;
+  const filas=[];
+  const sl=S.seats[S.tpTeam]||[];
+  [0,1].forEach(i=>{
+    const d=sl[i];
+    if(!d || d==="PLAYER"){ filas.push(`<div class="gpil libre">${L("ASIENTO LIBRE","OPEN SEAT",{pt:"VAGA LIVRE"})}</div>`); return; }
+    const vencido=(d.tpc||0)<=0 && !(S._tpRenovados||{})[d.name];
+    filas.push(`<div class="gpil">
+      <div class="gp1">${d.flag||"🏁"} ${surname(d.name)} ${tpEtiqueta(d)}</div>
+      <div class="gp2">${d.age} ${L("años","yo",{pt:"anos"})} · ${vencido?`<b>${L("vencido","expired",{pt:"vencido"})}</b>`:"📜"+Math.max(0,d.tpc||0)}</div></div>`);
+  });
+  const _r=S.tpReserva;
+  filas.push(_r
+    ? `<div class="gpil res"><div class="gp1">🧢 ${_r.flag||"🏁"} ${surname(_r.name)} ${tpEtiqueta(_r)}</div><div class="gp2">${_r.age} ${L("años","yo",{pt:"anos"})}${(_r.tpc||0)>0?" · 📜"+_r.tpc:""}</div></div>`
+    : `<div class="gpil res libre">🧢 ${L("SIN PROBADOR","NO RESERVE",{pt:"SEM RESERVA"})}</div>`);
+  if(mode==="m"||mode==="r"){
+    const _sw=((sl[0]&&sl[0]!=="PLAYER")||(sl[1]&&sl[1]!=="PLAYER"));
+    if(_sw) filas.push(`<div class="gpil gswap" role="button" onclick="garSwap('${mode}')">↔️ ${L("invertir orden pilotos","swap driver order",{pt:"inverter ordem dos pilotos"})}</div>`);
+  }
+  g.style.display=""; g.innerHTML=filas.join("");
+}
+/* ↔️ INVERTIR DESDE EL PANEL SIN CAMBIAR DE PANTALLA (Carlos, 22-sep: «cada vez que le doy a
+   invertir pilotos me lleva a otra pantalla»). tpSwapSeats repinta la pantalla de decisión y su
+   scrollToDecision te llevaba a Decidir: si estabas en el Panel del deck, se vuelve a él. */
+function garSwap(mode){
+  const vuelta=document.body.classList.contains("deck-movil") ? deckPanelActivo() : null;
+  tpSwapSeats(mode==="r" ? "rumbo" : undefined);
+  if(vuelta && vuelta!=="decisionBox") requestAnimationFrame(()=>deckIr(vuelta));
+}
+/* 🧑‍💼 LAS NUEVE LÍNEAS DEL PANEL DEL JEFE en escritorio (Carlos, 20-sep): nombre+país+fama · coche+
+   equipo+contrato · pilotos · CEO · consejo · objetivo · temporada · números · vitrina. Las dos
+   primeras y las de la 4 a la 7 viven en estos bloques; el resto son las piezas de siempre, reordenadas
+   por CSS. Solo se ve ≥1280 con la tarjeta .tp: en móvil y en el clásico no cambia nada. */
+function renderTPPanel(carP, mood, moodLbl){
+  const card=document.getElementById("driverCard"); if(!card) return;
+  let A=document.getElementById("tpPanelA"), B=document.getElementById("tpPanelB");
+  if(!A){ A=document.createElement("div"); A.id="tpPanelA"; card.insertBefore(A, card.firstChild); }
+  if(!B){ B=document.createElement("div"); B.id="tpPanelB"; card.appendChild(B); }
+  const eq=F1_TEAMS.find(t=>t.name===S.tpTeam);
+  const contrato=(S.tpTeam && S.tpContract!=null && S.tpContract>0)
+    ? `<div class="tpl-con">📄 ${S.tpContract} ${S.tpContract===1?L("año restante","yr left",{pt:"ano restante"}):L("años restantes","yrs left",{pt:"anos restantes"})}</div>` : "";
+  /* 🕳️ SIN EQUIPO TODAVÍA (pantalla de elegir escudería): la misma estructura, con huecos —
+     chip del coche en gris con «—» y el sitio del equipo diciéndote qué falta. */
+  const _l2=S.tpTeam
+    ? `<span class="tpl-car" style="background:${ovrColor(carP)}"><span class="n">${carP}</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span><div class="tpl-l2r"><div class="tpl-l2a">${eq?badge(eq,"dot"):""}<b class="tpl-team">${S.tpTeam||""}</b></div>${contrato}</div>`
+    : `<span class="tpl-car" style="background:linear-gradient(135deg,#a7adb5,#7c828a)"><span class="n">—</span><span class="l">${L("COCHE","CAR",{pt:"CARRO"})}</span></span><div class="tpl-l2r"><div class="tpl-l2a"><b class="tpl-team" style="color:var(--muted)">${L("Elige tu escudería","Choose your team",{pt:"Escolha a sua equipe"})}</b></div></div>`;
+  A.innerHTML=`
+    <div class="tpl-l1"><b>${(sel.name||"").toUpperCase()}</b><span class="tpl-nat">${natLabel()}</span><span class="tpl-right">⭐ ${L("Fama","Fame",{pt:"Fama"})} ${S.tpPrest??50}</span></div>
+    <div class="tpl-l2">${_l2}</div>`;
+  const obj=(S.tpGoal && S.tpGoal.target!=null)
+    ? `<div class="tpl-kv">🎯 <span class="k">${L("Objetivo","Target",{pt:"Meta"})} ${S.tpGoal.year||yearNow()}:</span> <b>${S.tpGoal.target===1?L("título","title",{pt:"título"}):S.tpGoal.target+"º"}</b></div>` : "";
+  const cap=(S.tpCapricho && S.tpOwner && S.tpOwner.k==="show") ? `<div class="tpl-kv">${tpCaprichoChip(S.tpCapricho)}</div>` : "";
+  B.innerHTML=(S.tpTeam?`
+    <div class="tpl-kv">${tpOwnerLabel()||""}</div>
+    <div class="tpl-kv"><span class="k">${moodLbl}:</span> <b style="color:${mood[1]}">${mood[0]}</b></div>
+    ${obj}${cap}`:"");
+  B.style.display=S.tpTeam?"":"none";
+  let C=document.getElementById("tpSeasonHead");
+  if(!C){ C=document.createElement("div"); C.id="tpSeasonHead"; card.insertBefore(C, B.nextSibling); }
+  C.innerHTML=`<span class="k">${L("Temporada","Season",{pt:"Temporada"})}</span> <b>${S.age+1}</b>`;
+}
 function tpMercado(){
   if(S.retired) return;
   const abiertos=tpAbiertos();
@@ -14308,7 +15003,7 @@ function tpMercado(){
     `<span class="gar-chip" style="border-color:${_colG}">🧢 ${S.tpReserva?surname(S.tpReserva.name)+" "+tpEtiqueta(S.tpReserva):L("LIBRE","OPEN",{pt:"LIVRE"})}</span>`].join(" ")+_swap;
   /* ⚠️ setDecision escribe con textContent: el HTML de la cabecera del garaje (los <b>, el <br>)
      salía LITERAL en pantalla. Se pasa el texto plano a setDecision y el HTML se pinta después. */
-  setDecision(L(`✍️ El mercado · ${yearNow()}`,`✍️ The market · ${yearNow()}`,{pt:`✍️ O mercado · ${yearNow()}`})+" · "+S.tpTeam,
+  setDecision(L(`✍️ El mercado · ${yearNow()}`,`✍️ The market · ${yearNow()}`,{pt:`✍️ O mercado · ${yearNow()}`}),
     "");
   /* 👋 quién de los tuyos se ha retirado este invierno (ver tpApuntaRetiro) */
   const _ret=(S._tpRetiros && S._tpRetiros.y===yearNow()) ? S._tpRetiros.l : [];
@@ -14321,7 +15016,8 @@ function tpMercado(){
           `👋 ${_ret.map(x=>x.n).join(" and ")} hang up their helmets: their seats are open.`,
           {pt:`👋 ${_ret.map(x=>x.n).join(" e ")} penduram o capacete: as vagas deles ficam livres.`})
     : "";
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+garaje+"<br>"+(nAb>1
+  try{ panelGaraje("m"); }catch(e){}
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+`<span class="garwrap">${garaje}<br></span>`+(nAb>1
       ? L("Dos huecos por cubrir: llama a quien quieras, y tú decides en qué asiento se sienta cada uno.",
           "Two seats to fill: call whoever you want, and you decide which seat each one takes.",
           {pt:"Duas vagas para cobrir: ligue para quem quiser, e você decide em qual assento cada um senta."})
@@ -14377,37 +15073,37 @@ function tpMercado(){
     }
     if(c.kind==="renew"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
-      sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${tpAniosPide(c.d)} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
+      sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
       const _ro=tpRenovarOdds(c.d); if(_ro.motivo) sub2+=" · "+tpOddsTag(_ro.p,"renov");
       dotTxt="🤝";
     } else if(c.kind==="probador"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;   // el 🧢 ya lo pone el punto de color: dos gorras eran una errata
-      sub1=L("Tu probador","Your reserve driver",{pt:"O seu reserva"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
-      sub2=`📜${tpAniosPide(c.d)} · `+L("por fin sería titular","would finally get his shot",{pt:"finalmente seria titular"});
+      sub1=L("Tu probador","Your reserve driver",{pt:"O seu reserva"})+` · ${tpEtiqueta(c.d)}`;
+      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})} · `+L("por fin sería titular","would finally get his shot",{pt:"finalmente seria titular"});
       dotTxt="🧢";
     } else if(c.kind==="libre"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
-      sub1=L("Agente libre","Free agent",{pt:"Agente livre"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${tpAniosPide(c.d)} · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`;
+      sub1=L("Agente libre","Free agent",{pt:"Agente livre"})+` · ${tpEtiqueta(c.d)}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})} · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`;
     } else if(c.kind==="amigo"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
-      sub1=tpEtiqueta(c.d)+` · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${tpAniosPide(c.d)} · `+L("el CEO lo ha convencido","the CEO has talked him into it",{pt:"o CEO o convenceu"});
+      sub1=tpEtiqueta(c.d)+`${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})} · `+L("el CEO lo ha convencido","the CEO has talked him into it",{pt:"o CEO o convenceu"});
       dotTxt="🤝";
     } else if(c.kind==="cross"){
       nm=`🌎 ${c.d.flag||"🏁"} ${c.d.name}`;
-      sub1=L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
-      sub2=`📜${tpAniosPide(c.d)} · `+tpOddsTag(c.odds||.7);
+      sub1=L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})+` · ${tpEtiqueta(c.d)}`;
+      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})} · `+tpOddsTag(c.odds||.7);
     } else if(c.kind==="fichar"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
-      sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${tpAniosPide(c.d)} · `+tpOddsTag(c.odds||.5);
+      sub1=L(`Llega de ${c.from}`,`Joins from ${c.from}`,{pt:`Chega da ${c.from}`})+` · ${tpEtiqueta(c.d)}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
+      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})} · `+tpOddsTag(c.odds||.5);
     } else {
       /* sin 🎓 en el nombre: el punto de color ya lo lleva y salía dos veces seguidas */
       nm=L("Apostar por la cantera","Bet on the academy",{pt:"Apostar na base"})+(c.d?` · ${c.d.flag||"🏁"} ${c.d.name}`:"");
-      sub1=(c.d?`${c.d.age} ${L("años","yo",{pt:"anos"})} · `:"")+L("nivel por confirmar, techo por descubrir","level unproven, ceiling unknown",{pt:"nível a confirmar, teto a descobrir"});
-      sub2="📜3 · "+L("debutante","rookie deal",{pt:"estreante"});
+      sub1=L("nivel por confirmar, techo por descubrir","level unproven, ceiling unknown",{pt:"nível a confirmar, teto a descobrir"});
+      sub2="📜3 · "+(c.d?`${c.d.age} ${L("años","yo",{pt:"anos"})} · `:"")+L("debutante","rookie deal",{pt:"estreante"});
       dotTxt="🎓";
     }
     b.innerHTML=`${dotHTML || `<span class="team-dot dot" style="${dotStyle}">${dotTxt}</span>`}
@@ -14432,8 +15128,9 @@ function tpElegirAsiento(c, ab){
      garaje, que sí se pinta con innerHTML. */
   setDecision(L(`✍️ ${c.d?c.d.name:L("El debutante","The rookie",{pt:"O estreante"})} acepta · ¿dónde lo sientas?`,
                 `✍️ ${c.d?c.d.name:"The rookie"} accepts · which seat?`,
-                {pt:`✍️ ${c.d?c.d.name:"O estreante"} aceita · onde ele senta?`})+" · "+S.tpTeam, "");
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=[tpAsientoLinea(0), tpAsientoLinea(1)].join(" "); }catch(e){}
+                {pt:`✍️ ${c.d?c.d.name:"O estreante"} aceita · onde ele senta?`}), "");
+  try{ const _g=[tpAsientoLinea(0), tpAsientoLinea(1)].join(" "); panelGaraje("x");
+       const _d=$("decSub"); if(_d) _d.innerHTML=`<span class="garwrap">${_g}</span>`; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   [...ab].sort((x,y)=>x.i-y.i).forEach(h=>{   // 🪑 el Nº1 primero: es la jerarquía, no una lista
@@ -14612,7 +15309,7 @@ function tpPoolScreen(){
   const tn=S.tpTeam, yr=yearNow();
   const ab=tpAbiertos();
   if(!ab.length){ tpMercado(); return; }
-  setDecision("🔭 "+L(`La bolsa · ${yr}`,`The pool · ${yr}`,{pt:`O pool · ${yr}`})+" · "+tn,
+  setDecision("🔭 "+L(`La bolsa · ${yr}`,`The pool · ${yr}`,{pt:`O pool · ${yr}`}),
     L("Reservas y cantera. Los niveles de los jóvenes varían cada año; las promesas sin debutar son a ciegas.",
       "Reserves & academy. Youngsters' levels shift every year; undebuted prospects are a blind bet.",
       {pt:"Reservas e base. O nível dos jovens varia a cada ano; promessas sem estreia são às cegas."}));
@@ -14733,7 +15430,7 @@ function tpProbadorHueco(){
     cg._ciego=true;
     S._probCands={y:yearNow(), list, ciego:cg};
   }
-  setDecision(L(`🧢 El banquillo está vacío · ${yearNow()}`,`🧢 The bench is empty · ${yearNow()}`,{pt:`🧢 O banco está vazio · ${yearNow()}`})+" · "+S.tpTeam,
+  setDecision(L(`🧢 El banquillo está vacío · ${yearNow()}`,`🧢 The bench is empty · ${yearNow()}`,{pt:`🧢 O banco está vazio · ${yearNow()}`}),
     vet
     ? L("Necesitas un probador. Jóvenes con hambre… o un viejo conocido del paddock que ya no encuentra volante.",
         "You need a reserve. Hungry youngsters… or an old paddock hand who can't find a drive any more.",
@@ -15287,7 +15984,7 @@ function tpGanarYa(){
   S._ganarYaVisto=true;
   const tn=S.tpTeam, u=(S.seasons||[]).at(-1)||{};
   const anos=Math.max(2,S.tpSinExprimir||2);
-  setDecision("🏛️ "+L("«Queremos ganar YA»","\"We want to win NOW\"",{pt:"«Queremos vencer JÁ»"})+" · "+tn,
+  setDecision("🏛️ "+L("«Queremos ganar YA»","\"We want to win NOW\"",{pt:"«Queremos vencer JÁ»"}),
     L(`El consejo te ha citado sin avisar. Sobre la mesa, el acta de la última junta y tu plan de desarrollo. «Te pedimos el título. Quedaste ${u.pos}º. Y llevas ${anos} años diciéndonos que el año que viene, que el año que viene. El coche está ahí, ${tn} está ahí, y nos hemos cansado de mirar cómo otro levanta la copa que pagamos nosotros. Este año se vuelca todo en el coche que corre. Todo.»`,
       `The board summons you unannounced. On the table, the minutes of the last meeting and your development plan. "We asked for the title. You finished P${u.pos}. And for ${anos} years you've been telling us next year, next year. The car is there, ${tn} is there, and we're tired of watching someone else lift the trophy we pay for. This year everything goes into the car that races. Everything."`,
       {pt:`O conselho te convoca sem avisar. Sobre a mesa, a ata da última reunião e o seu plano de desenvolvimento. «Pedimos o título. Você terminou em ${u.pos}º. E há ${anos} anos você nos diz que no ano que vem, que no ano que vem. O carro está aí, a ${tn} está aí, e cansamos de ver outro levantar a taça que nós pagamos. Este ano tudo vai para o carro que corre. Tudo.»`}));
@@ -15549,13 +16246,14 @@ function tpRumboScreen(){
   /* ⭐ el nivel del coche en ESTRELLAS y la tendencia como chip de color (Carlos, 20-ago: fuera el
      número pelado y el «proyecto estable» en texto plano) */
   const _chipTr=`<span class="tr-chip ${ti.c}">${ti.a} ${ti.t}</span>`;
-  setDecision(L(`🔧 El rumbo del coche · ${yearNow()}`,`🔧 The car's direction · ${yearNow()}`,{pt:`🔧 O rumo do carro · ${yearNow()}`})+" · "+tn, "");
+  setDecision(L(`🔧 El rumbo del coche · Temporada\u00A0${yearNow()}`,`🔧 The car's direction · Season\u00A0${yearNow()}`,{pt:`🔧 O rumo do carro · Temporada\u00A0${yearNow()}`}), "");
   // setDecision escapa el HTML (lección del mercado): el chip se pinta por innerHTML
+  try{ panelGaraje("r"); }catch(e){}
   try{ const _d=$("decSub"); if(_d) _d.innerHTML=
-    tpAvisoHTML()+tpPilotosHTML()+
-    L(`Tu coche: ${tpStars(tn)} ${_chipTr}. Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
-      `Your car: ${tpStars(tn)} ${_chipTr}. Where you push the factory shows over 2-3 seasons.`,
-      {pt:`O seu carro: ${tpStars(tn)} ${_chipTr}. Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}); }catch(e){}
+    tpAvisoHTML()+`<span class="garwrap">${tpPilotosHTML()}</span>`+
+    L(`Tu coche: ${tpStars(tn)} ${_chipTr}.<br>Hacia dónde empujas la fábrica se nota a lo largo de 2-3 temporadas.`,
+      `Your car: ${tpStars(tn)} ${_chipTr}.<br>Where you push the factory shows over 2-3 seasons.`,
+      {pt:`O seu carro: ${tpStars(tn)} ${_chipTr}.<br>Para onde você empurra a fábrica aparece ao longo de 2-3 temporadas.`}); }catch(e){}
   /* ✍️ el fichaje recién hecho se confirma AQUÍ: antes saltabas al rumbo sin saber si cuajó (Carlos) */
   if(S._tpFirmadoTxt){ try{ const _d=$("decSub")||document.querySelector("#decision .sub"); if(_d) _d.innerHTML=S._tpFirmadoTxt+"<br>"+_d.innerHTML; }catch(e){} S._tpFirmadoTxt=null; }
   $("decRecap").style.display="none";
@@ -15685,11 +16383,12 @@ function tpRepartoScreen(){
      coche —dónde metes el dinero de más y de dónde lo quitas—, que es lo que esta pantalla decide. */
   /* separador de RAYA y no de punto: el «·» ya es el marcador del presupuesto neutro, y al quitar
      las estrellas quedaba «Motor · presupuesto normal · Fiabilidad», imposible de leer. */
-  setDecision(L(`🔧 ¿Qué quieres desarrollar más este año? · ${yearNow()}`,`🔧 What do you want to develop most this year? · ${yearNow()}`,{pt:`🔧 O que você quer desenvolver mais este ano? · ${yearNow()}`})+" · "+tn,
+  setDecision(L(`🔧 ¿Qué quieres desarrollar más este año? · ${yearNow()}`,`🔧 What do you want to develop most this year? · ${yearNow()}`,{pt:`🔧 O que você quer desenvolver mais este ano? · ${yearNow()}`}),   /* sin el equipo: ya está en el panel (Carlos, 20-sep) */
     /* 🗣️ una sola frase (Carlos, 29-ago: «eso ya lo vemos» — los chips de cada tarjeta ya cuentan
        el estado, no hace falta repetirlo arriba). `resumen` muere aquí. */
     L("Selecciona tu prioridad para este año.","Pick your priority for this year.",{pt:"Selecione a sua prioridade para este ano."}));
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=tpAvisoHTML()+tpPilotosHTML()+_d.innerHTML; }catch(e){}
+  try{ panelGaraje("r"); }catch(e){}
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=tpAvisoHTML()+`<span class="garwrap">${tpPilotosHTML()}</span>`+_d.innerHTML; }catch(e){}
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
@@ -15896,7 +16595,7 @@ function tpAnnounce(){
      tarjeta todo el año y el veredicto (✅/❌) ya lo repite al cerrar. Tres veces era una de más. */
   /* 📣 y, si tu CEO es el showman, su capricho debajo: son dos cosas distintas y se ve que lo son */
   const _cap=S.tpCapricho;
-  setDecision(L(`🎯 El consejo fija el listón · ${yearNow()}`,`🎯 The board sets the bar · ${yearNow()}`,{pt:`🎯 O conselho fixa a meta · ${yearNow()}`})+" · "+S.tpTeam,
+  setDecision(L(`🎯 El consejo fija el listón · ${yearNow()}`,`🎯 The board sets the bar · ${yearNow()}`,{pt:`🎯 O conselho fixa a meta · ${yearNow()}`}),
     g.txt + (_cap ? " " + L(`📣 Y el CEO quiere lo suyo: ${tpCaprichoTxt(_cap)}.`,
                             `📣 And the CEO wants his: ${tpCaprichoTxt(_cap)}.`,
                             {pt:`📣 E o CEO quer o dele: ${tpCaprichoTxt(_cap)}.`}) : ""));
