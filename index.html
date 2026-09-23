@@ -1225,6 +1225,7 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil .tl-row .ev:not(.top3){padding-top:0}
   body.deck-movil .tl-row .ev .evi:first-child{margin-top:0}
   /* 🔍 en el deck sobra ancho: el nombre y la fama del jefe suben de cuerpo (Carlos, 22-sep) */
+  body.deck-movil #driverCard:not(.tp) .agev{padding-right:0}   /* EDAD/FAMA al borde (Carlos, 23-sep): arrastraba 46px de padding del layout viejo */
   body.deck-movil .tpl-l1{font-size:14px}
   body.deck-movil .tpl-l1>b{font-size:17px}
   body.deck-movil .tpl-nat{font-size:13px}
@@ -1792,7 +1793,10 @@ function deckIr(id){ const g=document.querySelector("#career .career-grid"), el=
   if(_deckIrTimer) clearTimeout(_deckIrTimer);
   _deckIrTimer=setTimeout(()=>{ _deckIrTimer=null; g.style.scrollSnapType="";
     /* umbral a 2px (era 40): un desvío de 10-20px dejaba la tarjeta con el borde comido (Carlos, 23-sep) */
-    if(Math.abs(g.scrollLeft-dest())>2) g.scrollLeft=dest(); }, _lejos?650:450);
+    if(Math.abs(g.scrollLeft-dest())>2) g.scrollLeft=dest();
+    /* …y un SEGUNDO remate: al restaurar el imán, Brave re-snapea un frame después y volvía a
+       torcer el panel ~20px (Carlos, 23-sep, «se ven raras todas las pestañas») */
+    setTimeout(()=>{ if(!_deckIrTimer && Math.abs(g.scrollLeft-dest())>2) g.scrollLeft=dest(); }, 150); }, _lejos?650:450);
 }
 function deckPanelActivo(){
   /* 📐 por POSICIÓN REAL del carrusel, no por la pestaña subrayada: el subrayado lo pinta el evento
