@@ -614,6 +614,12 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .intro-links{margin-top:14px;font-size:13px;color:var(--muted)}
 .intro-links a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none}
 .intro-links .il-sep{margin:0 8px;opacity:.55}
+/* 📱 en pantalla estrecha cada enlace en SU línea (Carlos, 23-sep): juntos partían por la mitad
+   («Muro de / mecenas»). En escritorio caben de sobra y siguen en una sola línea. */
+@media(max-width:560px){
+  .intro-links a{display:block;margin:5px 0}
+  .intro-links .il-sep{display:none}
+}
 /* 📲 aviso de «añádelo como app»: discreto, ancho del menú, con su aspa para cerrarlo */
 #installHint{display:none;flex-direction:column;gap:8px;max-width:430px;margin:16px auto 0;padding:10px 12px;
   background:var(--panel2,rgba(127,127,127,.10));border:1px solid var(--line);border-radius:12px;
