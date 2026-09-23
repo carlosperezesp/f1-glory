@@ -6106,6 +6106,14 @@ function npcSeason(row){
         slots[i]=null; return;
       }
       if(mktMoved(d)) return;   // acaba de firmar un traspaso anunciado: no se retira el mismo invierno
+      /* 📜 UN CONTRATO EN VIGOR SE RESPETA (Carlos, 23-sep, queja de un jugador: «¿qué sentido tiene
+         que si a un piloto le doy un contrato de 3 años se me retire al año 1?»). Medido con las
+         curvas: un piloto de 32 con tres años firmados se iba antes de acabarlos 1 de cada 5 veces,
+         y uno de 35 más de la mitad. Mientras le queden años CONTIGO no cuelga el casco por la curva
+         de edad. Dos cosas que siguen mandando por encima: la retirada ANUNCIADA (`_ultima`, arriba
+         — te lo dijo a la cara y es vinculante) y el resto de la parrilla, que envejece como siempre:
+         esto es TU contrato, no una ley de la F1. */
+      if(S.cat==="TP" && teamName===S.tpTeam && (d.tpc||0)>0) return;
       if(ch(pRet)){
         // 👋 un campeón del mundo no desaparece de la parrilla en silencio (lo pidió Carlos al perder
         // a Senna de vista sin enterarse de por qué)
