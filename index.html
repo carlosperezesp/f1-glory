@@ -826,12 +826,13 @@ body.conBeta #topBtns{top:44px}
   box-shadow:0 2px 8px rgba(20,25,40,.14)}
 #cogToggle:hover,#topBtns.open #cogToggle{opacity:1}
 #topBtns.open #cogToggle{transform:rotate(90deg)}
-#topBtns:not(.open) #langToggle,#topBtns:not(.open) #themeToggle{display:none}
+#topBtns:not(.open) #langToggle,#topBtns:not(.open) #themeToggle,#topBtns:not(.open) #viewToggle{display:none}
 #langToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;padding:6px 13px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;white-space:nowrap}
 #langToggle:hover{background:#fff}
-#themeToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
+#themeToggle,#viewToggle{background:rgba(255,255,255,.92);border:1px solid var(--line);
   border-radius:999px;width:34px;height:34px;flex:0 0 34px;font-size:16px;line-height:1;box-shadow:0 3px 10px rgba(20,25,40,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}
+@media(min-width:981px){ #viewToggle{display:none} }   /* el deck solo existe en móvil: en escritorio el botón no significa nada */
 @media print{#topBtns{display:none}}
 /* 📱 LAS DOS TARJETAS en pantallas estrechas: los chips y la edad/fama no se pisan.
    Esto nació sólo para la del jefe (`.card.tp`) y la de carrera clásica se quedó fuera, así que
@@ -985,7 +986,14 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 .mode-card{border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow)}
 .mode-txt b{font-family:var(--f-disp);font-weight:700;font-size:16px}
 .mode-txt small{font-size:10.5px;text-transform:none;letter-spacing:.02em}
-#themeToggle,#langToggle,[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+#themeToggle,#langToggle,#viewToggle,[data-theme="dark"] #themeToggle,[data-theme="dark"] #langToggle,[data-theme="dark"] #viewToggle{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+/* 🫧 CUERPO PROPIO AL DESPLEGARSE (Carlos, 23-sep): abiertos se posan ENCIMA de la tarjeta —sobre
+   EDAD/FAMA— y con el mismo color que ella parecían iconos sueltos flotando sobre el texto. Un aro
+   y una sombra de verdad los separan del fondo en los dos temas. */
+#topBtns.open #langToggle,#topBtns.open #themeToggle,#topBtns.open #viewToggle{
+  box-shadow:0 0 0 1px var(--line), 0 8px 22px rgba(10,12,20,.30)}
+[data-theme="dark"] #topBtns.open #langToggle,[data-theme="dark"] #topBtns.open #themeToggle,[data-theme="dark"] #topBtns.open #viewToggle{
+  box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 8px 22px rgba(0,0,0,.55)}
 
 /* 🖥️ TRES COLUMNAS EN ESCRITORIO — 2ª versión (Carlos, 19-sep: «demasiado grande el panel mío», «una
    cagada que las elecciones estén abajo a la izquierda», «pilotos y constructores a la par», «un Edad y
@@ -1189,7 +1197,9 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   body.deck-movil #deckTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 42px;gap:4px;position:sticky;top:0;z-index:30;
     background:var(--bg);padding:8px 0 0;margin:0 0 10px;
     box-shadow:0 10px 12px -12px rgba(20,22,28,.4)}   /* a todo el ancho; la sombrita hace que el contenido que pasa por debajo se lea como corte, no como «me tapa» */
-  body.deck-movil #deckTabs button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
+  /* `>button`: SOLO las pestañas. #topBtns vive dentro de la barra, así que sus botones heredaban
+     este `background:none` y salían transparentes sobre la tarjeta (Carlos, 23-sep). */
+  body.deck-movil #deckTabs>button{appearance:none;border:0;background:none;padding:8px 2px 9px;font-family:var(--f-mono);
     font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:3px solid var(--line)}
   body.deck-movil #deckTabs button.on{color:var(--team-ink);border-bottom-color:var(--team-ink)}
   body.deck-movil #deckTabs button[hidden]{display:none}
@@ -1214,9 +1224,10 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
   /* ⚙️ el desplegable en VOLADIZO (Carlos, 22-sep: «cuando salen las opciones el menú se hace más
      largo»): idioma y tema se posicionan en absoluto bajo el engranaje y la barra no crece. */
   body.deck-movil #topBtns{position:relative;top:0;right:0;grid-column:5;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding:2px 0}   /* top/right a cero: el relative heredaba el top:44px del modo banner y el ⚙️ se caía de la barra */
-  body.deck-movil #topBtns.open #langToggle,body.deck-movil #topBtns.open #themeToggle{position:absolute;right:2px;z-index:35;box-shadow:0 4px 12px rgba(20,22,28,.18)}
-  body.deck-movil #topBtns.open #langToggle{top:44px}
-  body.deck-movil #topBtns.open #themeToggle{top:90px}
+  body.deck-movil #topBtns.open #langToggle,body.deck-movil #topBtns.open #themeToggle,body.deck-movil #topBtns.open #viewToggle{position:absolute;right:2px;z-index:35}
+  body.deck-movil #topBtns.open #viewToggle{top:44px}
+  body.deck-movil #topBtns.open #langToggle{top:90px}
+  body.deck-movil #topBtns.open #themeToggle{top:136px}
   body.deck-movil #cogToggle{background:transparent;border:0;box-shadow:none;width:32px;height:32px;opacity:.75;filter:grayscale(1)}
   body.deck-movil #topBtns.open #cogToggle{background:var(--panel2);border:1px solid var(--line);opacity:1}
   /* 🎨 sombras planas en el deck (Carlos, 22-sep: «el fondo sigue teniendo otro color»): la sombra
@@ -1270,6 +1281,9 @@ h1,h2,h3,.decision h3,#intro h1{font-family:var(--f-disp);font-weight:800;letter
 <div id="topBtns">
   <button id="themeToggle" onclick="setTheme(THEME==='dark'?'light':'dark')" title="Modo claro/oscuro">🌙</button>
   <button id="langToggle" onclick="nextLang()" title="Language / Idioma">EN</button>
+  <!-- 📱 VISTA DEL MÓVIL (Carlos, 23-sep): pestañas (lo de serie) o todo en una página, para los
+       jugadores que echaban de menos la interfaz de antes. Solo aparece en móvil. -->
+  <button id="viewToggle" onclick="toggleVista()" title="Ver todo en una página">📄</button>
   <!-- ⚙️ AJUSTES (Carlos, 19-sep: los dos botones flotantes eran «un puto estorbo»): idioma y tema
        viven plegados detrás de este engranaje pequeño y translúcido. column-reverse → va el último
        en el HTML para pintarse ARRIBA. -->
@@ -1840,10 +1854,33 @@ function deckGoPinta(){
   go.textContent = L("Continuar ▸","Continue ▸",{pt:"Continuar ▸"});
   deckMasPinta();
 }
+/* 📱 DOS VISTAS EN EL MÓVIL (Carlos, 23-sep: «varios usuarios dicen que prefieren el anterior,
+   todo en una sola pestaña»). El deck de pestañas sigue siendo lo de serie; quien prefiera la
+   página única lo dice en el engranaje y se recuerda en este aparato.
+   ⚠️ Es SOLO la distribución: las tarjetas de temporada, el panel del jefe y las clasificaciones
+   completas se quedan en las DOS vistas. Nada de mantener dos diseños en paralelo. */
+let VISTA_1PAG = (function(){ try{ return localStorage.getItem("f1g_vista")==="1pag"; }catch(e){ return false; } })();
+function vistaPinta(){
+  const b=document.getElementById("viewToggle"); if(!b) return;
+  b.textContent = VISTA_1PAG ? "🗂️" : "📄";
+  b.title = VISTA_1PAG ? L("Ver en pestañas","Show as tabs",{pt:"Ver em abas"})
+                       : L("Ver todo en una página","Show all on one page",{pt:"Ver tudo numa página"});
+}
+function toggleVista(){
+  VISTA_1PAG=!VISTA_1PAG;
+  try{ localStorage.setItem("f1g_vista", VISTA_1PAG?"1pag":"deck"); }catch(e){}
+  /* 📊 cuánta gente la usa DE VERDAD: en un mes dirá si merece la pena mantener las dos (Carlos) */
+  try{ track("vista_movil",{a: VISTA_1PAG?"1pag":"deck"}); }catch(e){}
+  vistaPinta();
+  const tb=document.getElementById("topBtns"); if(tb) tb.classList.remove("open");
+  try{ deckActualiza(); }catch(e){}
+  try{ const c=document.getElementById("career"); if(c && getComputedStyle(c).display!=="none") c.scrollIntoView({block:"start"}); }catch(e){}
+}
 function deckActualiza(){
   const _car=document.getElementById("career");
   const on = typeof S!=="undefined" && S && S.cat && _car && getComputedStyle(_car).display!=="none"
-             && window.matchMedia("(max-width:980px)").matches;
+             && window.matchMedia("(max-width:980px)").matches
+             && !VISTA_1PAG;   /* 📱 el jugador puede pedir la página única desde el engranaje */
   document.body.classList.toggle("deck-movil", !!on);
   /* 📐 re-encaje del carrusel (Carlos, 22-sep: el panel salía «comido hacia la izquierda»): si el
      scroll quedó a medio camino entre paneles —snap desalineado tras un cambio de pantalla o un
@@ -1913,6 +1950,7 @@ function deckActualiza(){
   if(db) db.addEventListener("scroll", deckMasPinta, {passive:true});
   const ol=document.getElementById("offerList");
   if(ol && window.MutationObserver) new MutationObserver(()=>deckGoPinta()).observe(ol,{childList:true});
+  try{ vistaPinta(); }catch(e){}   /* 📱 el selector de vista arranca con el icono que toca */
   /* ⚙️ el menú de ajustes se cierra al tocar cualquier otra cosa */
   document.addEventListener("pointerdown",e=>{ const tb=document.getElementById("topBtns");
     if(tb && tb.classList.contains("open") && !tb.contains(e.target)) tb.classList.remove("open"); });
