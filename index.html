@@ -4609,6 +4609,19 @@ const TESTS = {
     era:"2026", tp:true, tpDilema:"tpGomas",
     run(){ return null; }
   },
+  /* 📜 EL ÚLTIMO AÑO, EN BANDEJA (el ejemplo de Carlos, 24-sep): Aston Martin 2026, Alonso de Nº1 con
+     un solo año firmado y Stroll con tres. Pasas el invierno y Alonso te pide irse. En la rama B se
+     prueba la segunda pasada: ascender al probador (y fichar otro) o tirar de la bolsa, y luego
+     invertir el orden en la pantalla de cierre. */
+  jefeUltimoAno: {
+    t:["Jefe · El último año","Boss · The final year"],
+    d:["Aston Martin en 2026: Alonso es tu Nº1 con un solo año firmado; Stroll tiene tres. Pasas el invierno y, antes de correr, Alonso te pide irse. Si le dejas, vuelves al mercado —el último— a cubrir su asiento con tu probador o con lo que quede, y antes de salir decides quién es el Nº1. El resto de dilemas del jefe están apagados.",
+       "Aston Martin in 2026: Alonso is your No.1 with a single year left; Stroll has three. You get through the winter and, before the racing starts, Alonso asks to leave. Let him go and you're back in the market —last in line— to fill his seat with your reserve or whatever's left, and before you race you decide who your No.1 is. Every other boss dilemma is switched off."],
+    era:"2026", tp:true, team:"Aston Martin", tpDilema:"tpUltimoAno",
+    run(){ return null; },
+    after(){ (S.seats["Aston Martin"]||[]).forEach(d=>{ if(!d || d==="PLAYER") return;
+      if(/Alonso/.test(d.name)){ d.tpc=1; d._ultima=null; } else d.tpc=3; }); }
+  },
   favor: {
     t:["El favor del veterano","The veteran's favour"],
     d:["Segunda temporada en la F1, sin títulos y con un coche de media tabla. En el mejor coche hay un campeón de 36 años que viene de ganar el Mundial y este año se lo vuelve a jugar. Acepta la oferta y te buscará en el paddock. El resto de dilemas están apagados.",
@@ -4749,6 +4762,9 @@ function setupTest(T){
     $("identity").style.display="none"; $("career").style.display="block";
     S.pendingEvents.push("🧪 "+LA(T.d));
     tpSignTeam(F1_TEAMS.find(x=>x.name===T.team) || F1_TEAMS[0], "start");
+    /* 🧪 `after` también en el jefe: tpSignTeam reparte los contratos al empezar y pisaría lo que
+       el escenario fije en run() */
+    if(T.after && !S._testAfter){ S._testAfter=true; try{ T.after(); }catch(e){} }
     return;
   }
   const t=T.run();
@@ -6049,6 +6065,52 @@ function tpApuntaRetiro(teamName, d, row){
   const y=(row&&row.year!=null ? row.year : yearNow())+1;   // el mercado es el del invierno siguiente
   if(!S._tpRetiros || S._tpRetiros.y!==y) S._tpRetiros={y, l:[]};
   S._tpRetiros.l.push({n:surname(d.name), age:d.age, titles:d.titles||0});
+}
+/* 🔁 «EL ÚLTIMO AÑO» — LA SEGUNDA PASADA POR EL MERCADO (Carlos, 24-sep-2026). El dilema
+   `tpUltimoAno` salta cuando ya habías cerrado tu mercado: si dejas irse al veterano, estás
+   jodido y vuelves al mercado de ese mismo invierno, el ÚLTIMO, con lo que haya quedado
+   (tu probador, los agentes libres que nadie cogió). Si ascientes al probador, el banquillo
+   te obliga a fichar otro, como siempre. Y al terminar no se repite el invierno entero: una
+   pantalla de cierre para decidir quién es tu Nº1 y a correr. */
+function tpSueltaVeterano(d){
+  const sl=S.seats[S.tpTeam]||[], i=sl.indexOf(d);
+  if(i<0) return;
+  if(((d.titles||0)>=1 || (d.skill||0)>=86) && !(S.retiredPool||[]).some(r=>r && r.name===d.name))
+    (S.retiredPool=S.retiredPool||[]).push({name:d.name, skill:d.skill, age:d.age, titles:d.titles||0, flag:d.flag, retiredYear:yearNow()});
+  /* el mercado de ESTE invierno dice por qué hay hueco (tpApuntaRetiro apunta al siguiente) */
+  if(!S._tpRetiros || S._tpRetiros.y!==yearNow()) S._tpRetiros={y:yearNow(), l:[]};
+  S._tpRetiros.l.push({n:surname(d.name), age:d.age, titles:d.titles||0});
+  if(S._tpRenovados) delete S._tpRenovados[d.name];
+  sl[i]=null;
+  S._tpSegunda=true;
+}
+function tpCierreSegunda(){
+  if(S.retired) return;
+  setDecision(L(`✍️ Así sale tu equipo · ${yearNow()}`,`✍️ Your line-up · ${yearNow()}`,{pt:`✍️ Assim sai a sua equipe · ${yearNow()}`}), "");
+  try{ panelGaraje("r"); }catch(e){}
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(S._tpFirmadoTxt?S._tpFirmadoTxt+"<br>":"")+
+    L("Mercado cerrado a la carrera. Antes de salir a pista, decide quién es tu Nº1.",
+      "The market closed in a rush. Before you go racing, decide who your No.1 is.",
+      {pt:"Mercado fechado às pressas. Antes de ir para a pista, decida quem é o seu Nº1."});
+    S._tpFirmadoTxt=null; }catch(e){}
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const sl=S.seats[S.tpTeam]||[];
+  /* ↔️ el orden de siempre (tpSwapSeats), a la vista: vuelve a esta misma pantalla */
+  if(sl[0] && sl[0]!=="PLAYER" && sl[1] && sl[1]!=="PLAYER"){
+    const b=document.createElement("button"); b.className="offer";
+    b.innerHTML=`<span class="team-dot dot" style="background:#71717c">↔️</span>
+      <span class="info"><span class="name">${L("Invertir el orden","Swap the order",{pt:"Inverter a ordem"})}</span>
+      <span class="sub" style="display:block">${L(`Nº1: ${surname(sl[1].name)} · Nº2: ${surname(sl[0].name)}`,`No.1: ${surname(sl[1].name)} · No.2: ${surname(sl[0].name)}`,{pt:`Nº1: ${surname(sl[1].name)} · Nº2: ${surname(sl[0].name)}`})}</span></span>`;
+    b.onclick=()=>tpSwapSeats("rumbo");
+    box.appendChild(b);
+  }
+  const go=document.createElement("button"); go.className="offer dilemma";
+  go.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
+    <span class="info"><span class="name">${L("Empezar la temporada","Start the season",{pt:"Começar a temporada"})}</span></span>`;
+  go.onclick=()=>{ S._tpSegunda=false; try{ tpOrdenConfirma(); }catch(e){} startSeasonRun(); };
+  box.appendChild(go);
+  scrollToDecision();
 }
 function npcSeason(row){
   /* 🎂 UN CUMPLEAÑOS POR TEMPORADA, Y SOLO UNO (19-sep-2026, lo cazó Carlos con Bottas: 36 → 38 en un
@@ -10310,7 +10372,9 @@ function renderDilemma(dl, repintar){
          rápido: esto es el suelo de quien no lo pulsa, no una espera obligatoria. */
       const espera=Math.min(14000, Math.max(3500, 1200+String(txt).length*45));
       let ido=false, tmr=0;
-      const seguir=()=>{ if(ido) return; ido=true; clearTimeout(tmr); startSeasonRun(); };
+      const seguir=()=>{ if(ido) return; ido=true; clearTimeout(tmr);
+        if(S && S._tpSegunda){ tpMercado(); return; }   // 🔁 «El último año»: vuelta al mercado
+        startSeasonRun(); };
       tmr=setTimeout(seguir, espera);
       const cont=document.createElement("button"); cont.className="offer dilemma";
       cont.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3f8f4f,#256030);font-size:20px;line-height:1;text-indent:2px">▶</span>
@@ -15086,7 +15150,7 @@ function tpMercado(){
           {pt:`👋 ${_ret.map(x=>x.n).join(" e ")} penduram o capacete: as vagas deles ficam livres.`})
     : "";
   try{ panelGaraje("m"); }catch(e){}
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+`<span class="garwrap">${garaje}<br></span>`+(nAb>1
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+(S._tpSegunda?`<i>🏃 ${L("Nadie esperaba esto: el mercado ya se ha movido y llegas el último.","Nobody saw this coming: the market has already moved and you're the last to arrive.",{pt:"Ninguém esperava isso: o mercado já andou e você chega por último."})}</i><br>`:"")+`<span class="garwrap">${garaje}<br></span>`+(nAb>1
       ? L("Dos huecos por cubrir: llama a quien quieras, y tú decides en qué asiento se sienta cada uno.",
           "Two seats to fill: call whoever you want, and you decide which seat each one takes.",
           {pt:"Duas vagas para cobrir: ligue para quem quiser, e você decide em qual assento cada um senta."})
@@ -16305,6 +16369,7 @@ function tpRumboScreen(){
      invertir vive en esta pantalla desde el 31-ago y vuelve a pintarla, así que cada clic pasaba por
      aquí y escribía su noticia — justo lo que `tpOrdenConfirma` existía para evitar. La confirmación
      es el CIERRE del invierno: probar un orden no lo es. */
+  if(S._tpSegunda){ _ordenDesdeSwap=false; tpCierreSegunda(); return; }   // 🔁 segunda pasada: sin repetir rumbo ni dilema
   if(!_ordenDesdeSwap) tpOrdenConfirma();
   _ordenDesdeSwap=false;
   if(S.retired) return;
@@ -21151,6 +21216,55 @@ const TP_DILEMAS=[
          return L(`Te escucha hasta el final, sonríe, y dice que no: cuando uno lo sabe, lo sabe. Y le duele que no lo entendieras a la primera. −su moral este año`,
                   `He hears you out, smiles, and says no: when a man knows, he knows. And it hurts him that you didn't understand the first time. −his morale this year`,
                   {pt:`Ele te escuta até o fim, sorri, e diz que não: quando a pessoa sabe, sabe. E dói nele que você não tenha entendido de primeira. −a moral dele este ano`}); }]); }}]}
+ ,
+ /* 📜 «EL ÚLTIMO AÑO» (Carlos, 24-sep-2026). Desde el 23-sep un contrato en vigor se respeta: tus
+    pilotos ya no cuelgan el casco a mitad por la curva de edad. Este dilema es la ÚNICA puerta por
+    la que uno se va antes — y deja de ser un dado para ser una decisión tuya. No pisa a
+    `tpSeRetiraContigo` (ese es el campeón de toda la vida que se retira AL ACABAR el año). */
+ {id:"tpUltimoAno",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+    /* 🎲 se sortea UNA vez por invierno: el cond se consulta varias veces */
+    if(S._ultAno && S._ultAno.y===yearNow()) return !!S._ultAno.d;
+    const cand=tpDrvs().filter(d=>d && d.name && (d.tpc||0)===1 && (d.age||0)>=36 && d._ultima==null);
+    const _T=testNow(), forzado=!!(_T && _T.tpDilema==="tpUltimoAno");
+    const d=(cand.length && (forzado || ch(.10))) ? cand.sort((a,b)=>(b.skill||0)-(a.skill||0))[0] : null;
+    S._ultAno={y:yearNow(), d}; return !!d; },
+  t:()=>{ const d=S._ultAno&&S._ultAno.d; const sn=d?surname(d.name):"Tu veterano";
+    return L(`${sn} quiere renunciar a su último año`,`${sn} wants to give up his final year`,{pt:`${sn} quer abrir mão do último ano`}); },
+  d:()=>{ const d=S._ultAno&&S._ultAno.d; const sn=d?surname(d.name):"tu veterano";
+    return L(`${sn} te pide veinte minutos a solas, sin nadie delante. Le queda un año firmado y lo sabe: no viene a pedir dinero ni un coche mejor. Viene a decirte que ya está. Lo ha pensado todo el invierno y prefiere no arrastrar una temporada más solo porque hay una firma de por medio. Te pide irse ahora, renunciando a lo que le queda por cobrar.`,
+             `${sn} asks you for twenty minutes alone, nobody else in the room. He has one year left on his contract and he knows it: he isn't here for money or a better car. He's here to tell you he's done. He's thought about it all winter and would rather not drag himself through one more season just because there's a signature on a page. He asks to leave now, giving up what he's still owed.`,
+             {pt:`${sn} te pede vinte minutos a sós, sem ninguém por perto. Ele tem um ano de contrato e sabe disso: não veio pedir dinheiro nem um carro melhor. Veio dizer que acabou. Pensou nisso o inverno todo e prefere não arrastar mais uma temporada só porque há uma assinatura no meio. Pede para sair agora, abrindo mão do que ainda tem a receber.`}); },
+  opts:[
+   {l:()=>L("«Quedan cosas por hacer aquí. Acábalas conmigo.»","«There's still work to do here. Finish it with me.»",{pt:"«Ainda há coisas por fazer aqui. Termine-as comigo.»"}),
+    r:()=>{ const d=S._ultAno&&S._ultAno.d; if(!d) return ""; const sn=surname(d.name);
+      return roll(
+       [50,()=>{ tpDrvSkill(d.name, 1); TPRE(rnd(.4,.9));
+         return L(`No le hablas del contrato: le hablas de por qué vino. Algo se le enciende en la mirada. ${sn} se queda y corre el mejor año de su veteranía. +su nivel este año, +prestigio`,
+                  `You don't talk about the contract: you talk about why he came. Something lights up in his eyes. ${sn} stays and drives the best year of his veteran days. +his level this year, +prestige`,
+                  {pt:`Você não fala do contrato: fala do motivo pelo qual ele veio. Algo se acende no olhar dele. ${sn} fica e corre o melhor ano da sua fase de veterano. +o nível dele este ano, +prestígio`}); }],
+       [50,()=>{ tpDrvSkill(d.name, -1);
+         return L(`Se queda, porque lo firmó. Pero se le nota: cumple sin alma, y en el garaje todos saben que tiene la cabeza en otra parte. −su nivel este año`,
+                  `He stays, because he signed. But it shows: he goes through the motions, and everyone in the garage knows his mind is elsewhere. −his level this year`,
+                  {pt:`Ele fica, porque assinou. Mas dá para ver: cumpre sem alma, e todos na garagem sabem que a cabeça dele está em outro lugar. −o nível dele este ano`}); }]); }},
+   {l:()=>L("«Vete. Lo que no cobres, lo pongo en el coche.»","«Go. What you don't collect goes into the car.»",{pt:"«Pode ir. O que você não receber vai para o carro.»"}),
+    r:()=>{ const d=S._ultAno&&S._ultAno.d; if(!d) return "";
+      /* 💰 soltar a un crack libera un pastón (idea de Carlos): el bono sale de su nivel */
+      const sk=d.skill||80; TPCAR(sk>=88?2:sk>=84?1.5:1); tpSueltaVeterano(d);
+      return L(`Os dais la mano y se va con la cabeza alta. Su sueldo del último año va entero al desarrollo. Ahora tienes un asiento libre y un mercado que ya se ha movido sin ti: te toca volver, y llegas el último. +coche`,
+               `You shake hands and he leaves with his head held high. His final-year salary goes straight into development. Now you've got an empty seat and a market that has already moved on without you: back you go, and you're the last to arrive. +car`,
+               {pt:`Vocês apertam as mãos e ele vai embora de cabeça erguida. O salário do último ano vai inteiro para o desenvolvimento. Agora você tem uma vaga livre e um mercado que já andou sem você: é hora de voltar, e você chega por último. +carro`}); }},
+   {l:()=>L("«Un año más, pero te vas por la puerta grande.»","«One more year, but you leave through the front door.»",{pt:"«Mais um ano, mas você sai pela porta da frente.»"}),
+    r:()=>{ const d=S._ultAno&&S._ultAno.d; if(!d) return "";
+      return roll(
+       [50,()=>{ d._ultima=yearNow(); TPRE(rnd(.6,1.2));
+         return L(`No le pides que aguante: le ofreces una despedida. Lo anunciáis juntos en enero —será su último año— y cada circuito le dirá adiós a su manera. Acepta. Así se tienen que ir los grandes. +prestigio`,
+                  `You don't ask him to hang on: you offer him a farewell. You announce it together in January —it'll be his last year— and every circuit will say goodbye in its own way. He accepts. That's how the great ones should leave. +prestige`,
+                  {pt:`Você não pede que ele aguente: oferece uma despedida. Vocês anunciam juntos em janeiro —será o último ano dele— e cada circuito vai se despedir do seu jeito. Ele aceita. É assim que os grandes devem sair. +prestígio`}); }],
+       [50,()=>{ TPRE(-rnd(.4,.9)); tpSueltaVeterano(d);
+         return L(`Le pones la alfombra roja cuando lo que te pedía era que le escucharas. Se va igual, y dolido: ni despedida ni sueldo que aprovechar, porque la salida acaba en manos de los abogados. Te toca volver al mercado, el último. −prestigio`,
+                  `You roll out the red carpet when what he wanted was to be heard. He leaves anyway, and hurt: no farewell and no salary to put to use, because the exit ends up in the lawyers' hands. Back to the market you go, last in line. −prestige`,
+                  {pt:`Você estende o tapete vermelho quando o que ele pedia era ser ouvido. Ele vai embora mesmo assim, magoado: nem despedida nem salário para aproveitar, porque a saída acaba nas mãos dos advogados. Volta ao mercado, por último. −prestígio`}); }]); }}]}
  ,
  /* ═══ CUATRO EVERGREEN UNIVERSALES (12-sep-2026, de la biblioteca de Carlos — «todos los años,
     todos los equipos, todas las situaciones»). Chapman #71 y #82, Horner #156 y #167. ═══ */
