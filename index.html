@@ -1906,7 +1906,9 @@ function deckActualiza(){
   deckGoPinta();
   const tabs=document.getElementById("deckTabs"); if(!tabs) return;
   const _act=deckPanelActivo();   /* 🖍️ y el subrayado se repinta aquí también: no siempre hay un evento scroll que lo haga */
-  [...tabs.children].forEach(b=>{ const el=document.getElementById(b.dataset.p);
+  /* ⚠️ solo las PESTAÑAS: #topBtns vive dentro de esta barra desde el 19-sep, no tiene `data-p` y el
+     DECK_PANELES.find(...)[1] reventaba al llegar a él (error sin capturar en cada redimensionado) */
+  [...tabs.children].filter(b=>b.dataset.p).forEach(b=>{ const el=document.getElementById(b.dataset.p);
     b.hidden = !el || getComputedStyle(el).display==="none"; b.textContent=LA(DECK_PANELES.find(x=>x[0]===b.dataset.p)[1]);
     b.classList.toggle("on", b.dataset.p===_act); });
 }
@@ -15186,7 +15188,10 @@ function tpMercado(){
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
-  tpMercadoPool(abiertos).forEach(c=>{
+  /* 🔁 en la segunda pasada («El último año») solo quien NO tiene equipo (Carlos, 25-sep: «no tiene
+     sentido robarle a Sainz a Williams si ya tiene contrato»): fuera los pilotos de otros equipos y
+     las estrellas de otras categorías. Quedan tu probador, los libres, la cantera y la bolsa. */
+  tpMercadoPool(abiertos).filter(c=>!S._tpSegunda || (c.kind!=="fichar" && c.kind!=="cross")).forEach(c=>{
     const b=document.createElement("button"); b.className="offer";
     let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️",dotHTML=null;
     /* 🎨 inmersión (Carlos): el redondel es el ESCUDO del equipo de origen; y lo tuyo —renovaciones y
