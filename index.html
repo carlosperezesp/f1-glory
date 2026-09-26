@@ -355,6 +355,18 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 #decRecap .rp{font-weight:800;padding:1px 8px;border-radius:7px;margin-right:2px}
 .offers{display:flex;flex-direction:column;gap:10px}
 .offer{background:linear-gradient(135deg,#eef3ff,#e6ecfb);border:1.5px solid #d4dff3;border-radius:16px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;text-align:left;color:var(--text);transition:all .15s;width:100%;box-shadow:var(--shadow);animation:fadeUp .4s both;position:relative;overflow:hidden}
+/* 🏗️ fundar tu equipo (modo jefe 2026) */
+.fund{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-card,16px);padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.fund-l{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fund-in{font:inherit;font-size:17px;font-weight:700;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.fund-in:focus{outline:2px solid var(--accent);outline-offset:1px}
+.fund-pal{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px}
+.fund-sw{border:2px solid transparent;background:none;border-radius:50%;padding:3px;cursor:pointer;line-height:0}
+.fund-sw .team-dot{width:44px;height:44px}
+.fund-sw.on{border-color:var(--text)}
+.fund-mix .team-dot{display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--panel2);border:1.5px dashed var(--muted)}
+.fund-err{font-size:13px;color:var(--accent);min-height:0}
+.fund-err:empty{display:none}
 .offer:nth-child(2){animation-delay:.07s}.offer:nth-child(3){animation-delay:.14s}.offer:nth-child(4){animation-delay:.21s}
 .offer:hover{border-color:#15151e;transform:translateY(-2px);box-shadow:0 14px 30px rgba(21,21,30,.14)}
 .offer .dot{width:42px;height:42px;font-size:12px}
@@ -14598,6 +14610,7 @@ function tpChooseTeam(){
   $("decRecap").style.display="none";
   box.innerHTML="";
   box.appendChild(tpGridBtn());
+  if(tpFundarPuede()) box.appendChild(tpFundarBtn());
   [...F1_TEAMS].sort((a,b)=>(S.f1perf[b.name]||0)-(S.f1perf[a.name]||0)).forEach(t=>{
     const b=document.createElement("button"); b.className="offer";
     b.style.border="2px solid "+t.color; b.style.borderLeftWidth="6px";
@@ -14611,6 +14624,161 @@ function tpChooseTeam(){
     box.appendChild(b);
   });
   scrollToDecision();
+}
+/* 🏗️ TU PROPIO EQUIPO (Carlos, 27-sep-2026). Solo en el modo jefe de 2026. Nombre libre; el
+   escudo es su INICIAL sobre una de las ocho paletas de las marcas nuevas —la misma pieza que dibuja
+   a Kharvex y compañía— y no evoluciona en toda la partida. El CEO lo eliges tú. Entra en la parrilla
+   como un equipo más (mercado, clasificaciones, dilemas, reglamentos): empieza con el PEOR coche,
+   vacío y con el mercado de la temporada ya cerrado, así que los dos pilotos salen de la bolsa. */
+/* 🎨 LAS COMBINACIONES. Las ocho primeras son las familias distintas de PALETAS, tal cual; detrás, todas
+   las parejas que salen de cruzar sus colores entre sí con contraste suficiente para que la letra se lea
+   (el botón 🔀 de Carlos, 27-sep: «que mostrara nuevas combinaciones»). */
+let _fundCombos=null;
+function tpFundCombos(){
+  if(_fundCombos) return _fundCombos;
+  const hex=g=>{ const m=String(g).match(/#([0-9a-fA-F]{6})/); return m?m[1]:"777777"; };
+  const lum=g=>{ const h=hex(g); const c=[0,2,4].map(i=>parseInt(h.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));
+    return .2126*c[0]+.7152*c[1]+.0722*c[2]; };
+  const out=PALETAS.slice(0,8).map(p=>({c1:p.c1,c2:p.c2}));
+  const grads=[...new Set(PALETAS.flatMap(p=>[p.c1,p.c2]))];
+  const clave=new Set(out.map(o=>o.c1+"|"+o.c2));
+  grads.forEach(a=>grads.forEach(b=>{
+    if(a===b || clave.has(a+"|"+b)) return;
+    const la=lum(a), lb=lum(b), ratio=(Math.max(la,lb)+.05)/(Math.min(la,lb)+.05);
+    if(ratio<3.2) return;
+    clave.add(a+"|"+b); out.push({c1:a,c2:b});
+  }));
+  return (_fundCombos=out);
+}
+function tpFundarPuede(){ return TP_MODE && SELECTED_ERA==="2026" && !CHALLENGE && yearNow()===2026 && !S.tpTeam
+  && F1_TEAMS.length < ((ERAS[SELECTED_ERA]&&ERAS[SELECTED_ERA].maxGrid)||13); }
+function tpFundada(){ return !!(S.tpFundador && S.tpTeam && S.tpTeam===S.tpFundador.team); }
+function tpFundLetra(n){ const m=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[A-Za-z]/); return m?m[0].toUpperCase():null; }
+function tpFundEscudo(letra, ci){ const p=tpFundCombos()[ci]||PALETAS[0]; return {c1:p.c1, c2:p.c2, sil:"mono_"+letra.toLowerCase()+".png"}; }
+function tpFundarBtn(){
+  const b=document.createElement("button"); b.className="offer";
+  b.style.border="2px dashed var(--muted)"; b.style.borderLeftWidth="6px";
+  b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3a3f4b,#15151e);color:#fff">＋</span>
+    <span class="info"><span class="name">${L("Crea tu propio equipo","Create your own team",{pt:"Crie a sua própria equipe"})}</span>
+    <span class="sub" style="display:block">${L("Tu nombre, tus colores y tu CEO. Empiezas el último y con los asientos vacíos.","Your name, your colours and your CEO. You start last, with empty seats.",{pt:"O seu nome, as suas cores e o seu CEO. Você começa em último e com os assentos vazios."})}</span></span>`;
+  b.onclick=()=>tpFundarScreen();
+  return b;
+}
+function tpFundError(n){
+  if(n.length<2) return L("Ponle un nombre de al menos dos letras.","Give it a name of at least two letters.",{pt:"Dê um nome de pelo menos duas letras."});
+  if(!tpFundLetra(n)) return L("El nombre necesita alguna letra: de ahí sale el escudo.","The name needs a letter: that's where the crest comes from.",{pt:"O nome precisa de alguma letra: é dela que sai o escudo."});
+  /* 🚫 ni los de la parrilla ni los que pueden llegar después (expansiones, APXGP, marcas nuevas):
+     una entrada con tu mismo nombre pisaría tu coche y tus asientos */
+  const low=n.toLowerCase();
+  const usados=[...F1_TEAMS.map(t=>t.name), ...(S.expansion||[]).map(e=>e&&e.team&&e.team.name),
+    (typeof APXGP!=="undefined"&&APXGP)?APXGP.name:null, ...((typeof MARCAS_NUEVAS!=="undefined")?MARCAS_NUEVAS.map(m=>m.n):[])];
+  if(usados.some(x=>x && String(x).toLowerCase()===low))
+    return L("Ese nombre ya lo lleva un equipo de la F1.","An F1 team already has that name.",{pt:"Uma equipe da F1 já tem esse nome."});
+  return "";
+}
+function tpFundarScreen(){
+  const d=S._fund=S._fund||{n:"",set:[0,1,2,3,4,5,6,7],p:irnd(0,7)};
+  setDecision(L("🏗️ Tu propio equipo","🏗️ Your own team",{pt:"🏗️ A sua própria equipe"}),
+    L("Una escudería nueva y tuya. Ponle nombre y elige sus colores: el escudo será su inicial.",
+      "A brand-new team of your own. Name it and pick its colours: the crest will be its initial.",
+      {pt:"Uma equipe nova e sua. Dê um nome e escolha as cores: o escudo será a inicial."}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const w=document.createElement("div"); w.className="fund";
+  w.innerHTML=`<label class="fund-l" for="fundNom">${L("Nombre del equipo","Team name",{pt:"Nome da equipe"})}</label>
+    <input id="fundNom" class="fund-in" maxlength="22" autocomplete="off" spellcheck="false" placeholder="${L("p. ej. Pérez GP","e.g. Smith GP",{pt:"ex. Silva GP"})}">
+    <div class="fund-l">${L("Colores","Colours",{pt:"Cores"})}</div>
+    <div class="fund-pal" id="fundPal" role="group"></div>
+    <div class="fund-err" id="fundErr" aria-live="polite"></div>`;
+  box.appendChild(w);
+  const inp=w.querySelector("#fundNom"); inp.value=d.n;
+  const pinta=()=>{
+    const l=tpFundLetra(inp.value), pal=w.querySelector("#fundPal"); pal.innerHTML="";
+    d.set.forEach((ci,k)=>{
+      const b=document.createElement("button"); b.type="button"; b.className="fund-sw"+(ci===d.p?" on":"");
+      b.setAttribute("aria-pressed", String(ci===d.p));
+      b.setAttribute("aria-label", L("Combinación ","Colour set ",{pt:"Combinação "})+(k+1));
+      b.innerHTML = l ? spBadgeHTML(tpFundEscudo(l,ci),"team-dot") : `<span class="team-dot" style="background:${tpFundCombos()[ci].c1}"></span>`;
+      b.onclick=()=>{ d.p=ci; pinta(); };
+      pal.appendChild(b);
+    });
+    /* 🔀 el noveno: ocho combinaciones nuevas, sin repetir las que ya estás viendo */
+    const r=document.createElement("button"); r.type="button"; r.className="fund-sw fund-mix";
+    r.setAttribute("aria-label", L("Otras combinaciones","Other colour sets",{pt:"Outras combinações"}));
+    r.title=L("Otras combinaciones","Other colour sets",{pt:"Outras combinações"});
+    r.innerHTML=`<span class="team-dot">🔀</span>`;
+    r.onclick=()=>{
+      const all=tpFundCombos().map((_,i)=>i), fuera=all.filter(i=>d.set.indexOf(i)<0);
+      const bolsa=(fuera.length>=8?fuera:all).slice(); const nuevo=[];
+      while(nuevo.length<8 && bolsa.length) nuevo.push(bolsa.splice(irnd(0,bolsa.length-1),1)[0]);
+      d.set=nuevo; d.p=nuevo[0]; pinta();
+    };
+    pal.appendChild(r);
+  };
+  inp.oninput=()=>{ d.n=inp.value; pinta(); w.querySelector("#fundErr").textContent=""; };
+  pinta();
+  const sigue=()=>{
+    const n=inp.value.trim().replace(/\s+/g," "); const err=tpFundError(n);
+    if(err){ w.querySelector("#fundErr").textContent=err; inp.focus(); return; }
+    d.n=n; tpFundarCeo();
+  };
+  inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); sigue(); } };
+  const go=document.createElement("button"); go.className="offer";
+  go.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">🧑‍💼</span>
+    <span class="info"><span class="name">${L("Siguiente: elige a tu CEO","Next: choose your CEO",{pt:"Próximo: escolha o seu CEO"})}</span></span>`;
+  go.onclick=sigue; box.appendChild(go);
+  const vuelve=document.createElement("button"); vuelve.className="offer";
+  vuelve.innerHTML=`<span class="team-dot dot" style="background:#71717c">←</span>
+    <span class="info"><span class="name">${L("Mejor un equipo de la parrilla","A team from the grid instead",{pt:"Melhor uma equipe do grid"})}</span></span>`;
+  vuelve.onclick=()=>tpChooseTeam(); box.appendChild(vuelve);
+  scrollToDecision();
+}
+function tpFundarCeo(){
+  const d=S._fund; if(!d) return tpFundarScreen();
+  const l=tpFundLetra(d.n);
+  setDecision(L(`🧑‍💼 ¿Quién llevará ${d.n}?`,`🧑‍💼 Who will run ${d.n}?`,{pt:`🧑‍💼 Quem vai comandar a ${d.n}?`}),
+    L("El equipo es tuyo, pero el listón de cada año lo pone el CEO. Elige bien: si no cumples, puede echarte de tu propio equipo.",
+      "The team is yours, but the CEO sets the bar every year. Choose well: if you fall short, he can throw you out of your own team.",
+      {pt:"A equipe é sua, mas quem fixa a meta de cada ano é o CEO. Escolha bem: se não cumprir, ele pode te tirar da sua própria equipe."}));
+  const box=$("offerList"); box.innerHTML="";
+  /* sin el de fábrica: un CEO de fábrica responde ante un constructor, y un equipo recién nacido no es de nadie más */
+  TP_OWNERS.filter(o=>o.k!=="brand").forEach(o=>{
+    const b=document.createElement("button"); b.className="offer";
+    b.innerHTML=`${spBadgeHTML(tpFundEscudo(l,d.p),"team-dot dot")}
+      <span class="info"><span class="name">${o.lab()}</span>
+      <span class="sub" style="display:block">${o.intro()}</span></span>`;
+    b.onclick=()=>tpFundar(o.k);
+    box.appendChild(b);
+  });
+  const vuelve=document.createElement("button"); vuelve.className="offer";
+  vuelve.innerHTML=`<span class="team-dot dot" style="background:#71717c">←</span>
+    <span class="info"><span class="name">${L("Cambiar el nombre o los colores","Change the name or colours",{pt:"Mudar o nome ou as cores"})}</span></span>`;
+  vuelve.onclick=()=>tpFundarScreen(); box.appendChild(vuelve);
+  scrollToDecision();
+}
+function tpFundar(ownerK){
+  const d=S._fund; if(!d||!d.n) return tpFundarScreen();
+  if(tpFundError(d.n)) return tpFundarScreen();
+  const nm=d.n, l=tpFundLetra(nm), esc=tpFundEscudo(l,d.p);
+  const pri=x=>{ const m=String(x||"").match(/#([0-9a-fA-F]{6})/); return m?m[0]:null; };
+  const abbr=(nm.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z]/g,"").slice(0,3)||l).toUpperCase();
+  const t={name:nm, abbr, color:pri(esc.c1)||"#15151e", color2:pri(esc.c2)||"#c9a227", perf:60, cat:"F1", propio:true};
+  /* 🚗 EL ÚLTIMO COCHE DE LA PARRILLA: un poco por debajo del peor, para que el fondo sea tuyo de verdad */
+  const peor=Math.min(...F1_TEAMS.map(x=>S.f1perf[x.name]??75));
+  const perf=Math.max(58, Math.round((peor-rnd(1.5,3.5))*10)/10);
+  F1_TEAMS.push(t);
+  S.f1perf[nm]=perf; S.f1target[nm]=perf+rnd(0,4); S.f1char[nm]=CHARS[irnd(0,2)];
+  S.cache[nm]=40;                                          // sin pedigrí: el caché se gana en pista
+  if(S.f1prof) S.f1prof[nm]=profNuevo();
+  S.seats[nm]=[null,null];                                 // vacío: se llena en el mercado, con la bolsa
+  (S.llegadaExp=S.llegadaExp||{})[nm]=yearNow();           // 🛌 recién nacido: ni gigante dormido ni palmarés
+  try{ palmSeedTeam(nm, S.baseYear); }catch(e){}
+  SPONSOR_BADGE[nm]=esc;                                   // 🛡️ la inicial; futEvoluciona no toca a quien lleva escudo propio
+  S.tpFundador={team:nm, y:yearNow(), pal:d.p};
+  S._tpFundacion=yearNow();                                // el mercado de este año: solo la bolsa
+  S._fund=null;
+  try{ track("tp_equipo_propio",{ceo:ownerK, pal:d.p}); }catch(e){}
+  tpSignTeam(t,"start",ownerK);
 }
 /* 🏷️ EL NIVEL DE UN PILOTO, EN PALABRAS. Un jefe de equipo no lee «93» en ninguna parte: lee informes.
    Se parte en DOS lecturas porque son decisiones distintas (petición de Carlos): lo que rinde HOY y
@@ -14677,7 +14845,7 @@ function tpTierLabel(tn){
   if(p>=n-2) return L("🎯 Proyecto: sacar al equipo del fondo, con tiempo","🎯 Project: lift the team off the floor, with time",{pt:"🎯 Projeto: tirar a equipe do fundo, com tempo"});
   return L("🎯 Media tabla: puntos, podios y cabeza","🎯 Midfield: points, podiums and a cool head",{pt:"🎯 Meio do grid: pontos, pódios e cabeça"});
 }
-function tpSignTeam(t, how){
+function tpSignTeam(t, how, ownerK){
   /* 🌾 LA HUCHA SE QUEDA EN LA FÁBRICA QUE LA SEMBRÓ. Estaba puesto en los dos sitios que YO veía
      —el fichaje normal y el arranque— y la verificación encontró 20 casos en los que seguía viajando:
      hay más caminos para cambiar de escudería (el rescate tras un despido, entre otros). Aquí, que es
@@ -14716,7 +14884,7 @@ function tpSignTeam(t, how){
   S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
   S.tpTeam=S.team.name;
   const _po=tpOwnersPosibles(S.tpTeam,false);
-  S.tpOwner=_po[irnd(0,_po.length-1)]; S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0;   // 🏢 el de fábrica solo de inicio en equipos-marca
+  S.tpOwner=(ownerK && TP_OWNERS.find(o=>o.k===ownerK)) || _po[irnd(0,_po.length-1)];   // 🏗️ en tu equipo, el CEO lo eliges tú S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0;   // 🏢 el de fábrica solo de inicio en equipos-marca
   tpAmigoNuevo();   // 🤝 y su agenda, si es el showman
   S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S.tpIndultos=0; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
@@ -14740,8 +14908,11 @@ function tpSignTeam(t, how){
        verdad hasta que eliges escudería, y hasta entonces no hay equipo ni CEO que contar.
        ⚠️ El campo `ceo` se había añadido el 3-sep y se perdió en el trasplante de la beta del 4-sep,
        donde solo se reinyectaron seis piezas y ésta no estaba. Vuelve aquí. */
-    track("career_started",{mode:"tp", team:S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?", lang:LANG, era:S.era||"2026"});
-    S.pendingEvents.push(L(`🧑‍💼 ${S.tpTeam} te presenta como su nuevo Team Principal. ${S.tpOwner.intro()}`,
+    track("career_started",{mode:"tp", team:tpFundada()?"propio":S.tpTeam, ceo:(S.tpOwner&&S.tpOwner.k)||"?", lang:LANG, era:S.era||"2026"});
+    if(tpFundada()) S.pendingEvents.push(L(`🏗️ ${S.tpTeam} nace hoy: una fábrica recién pintada, dos asientos vacíos y el último coche de la parrilla. ${S.tpOwner.intro()}`,
+      `🏗️ ${S.tpTeam} is born today: a freshly painted factory, two empty seats and the slowest car on the grid. ${S.tpOwner.intro()}`,
+      {pt:`🏗️ A ${S.tpTeam} nasce hoje: uma fábrica recém-pintada, dois assentos vazios e o último carro do grid. ${S.tpOwner.intro()}`}));
+    else S.pendingEvents.push(L(`🧑‍💼 ${S.tpTeam} te presenta como su nuevo Team Principal. ${S.tpOwner.intro()}`,
       `🧑‍💼 ${S.tpTeam} unveils you as their new Team Principal. ${S.tpOwner.intro()}`,
       {pt:`🧑‍💼 A ${S.tpTeam} te apresenta como novo Team Principal. ${S.tpOwner.intro()}`}));
   } else {
@@ -14858,7 +15029,7 @@ function tpYearStart(){
      inviernos. Pequeño y constante —lo bastante para que en una etapa larga se note, no tanto como
      para regalarte el campeonato—. `tpSubirCoche` respeta el techo y el tope del filial. */
   if(S.tpTeam && S.tpOwner && S.tpOwner.k==="brand") tpSubirCoche(S.tpTeam, rnd(TP_MARCA[0],TP_MARCA[1]));
-  if(S.tpTeam && S.tpOwner && S.tpOwner.k!=="self" && !isRBJr(S.tpTeam)){   // 🐂 el filial no cambia de cúpula
+  if(S.tpTeam && S.tpOwner && S.tpOwner.k!=="self" && !isRBJr(S.tpTeam) && !tpFundada()){   // 🐂 el filial no cambia de cúpula · 🏗️ ni el CEO que elegiste en tu equipo
     S.tpOwnerY=(S.tpOwnerY||0)+1;
     /* 📣 el showman aburrido tres años seguidos vende SIN esperar al dado: se va porque se aburre,
        no porque toque. La bandera la pone el veredicto del capricho. */
@@ -15163,7 +15334,7 @@ function tpMercado(){
           {pt:`👋 ${_ret.map(x=>x.n).join(" e ")} penduram o capacete: as vagas deles ficam livres.`})
     : "";
   try{ panelGaraje("m"); }catch(e){}
-  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+(S._tpSegunda?`<i>🏃 ${L("Nadie esperaba esto: el mercado ya se ha movido y llegas el último.","Nobody saw this coming: the market has already moved and you're the last to arrive.",{pt:"Ninguém esperava isso: o mercado já andou e você chega por último."})}</i><br>`:"")+`<span class="garwrap">${garaje}<br></span>`+(nAb>1
+  try{ const _d=$("decSub"); if(_d) _d.innerHTML=(_retTxt?`<b>${_retTxt}</b><br>`:"")+(S._tpSegunda?`<i>🏃 ${L("Nadie esperaba esto: el mercado ya se ha movido y llegas el último.","Nobody saw this coming: the market has already moved and you're the last to arrive.",{pt:"Ninguém esperava isso: o mercado já andou e você chega por último."})}</i><br>`:"")+(S._tpFundacion===yearNow()&&tpFundada()?`<i>🏗️ ${L("El mercado ya se ha cerrado para todos menos para ti: tus pilotos saldrán de la bolsa.","The market has closed for everyone but you: your drivers will come from the pool.",{pt:"O mercado já fechou para todos menos para você: os seus pilotos sairão do pool."})}</i><br>`:"")+`<span class="garwrap">${garaje}<br></span>`+(nAb>1
       ? L("Dos huecos por cubrir: llama a quien quieras, y tú decides en qué asiento se sienta cada uno.",
           "Two seats to fill: call whoever you want, and you decide which seat each one takes.",
           {pt:"Duas vagas para cobrir: ligue para quem quiser, e você decide em qual assento cada um senta."})
@@ -15202,7 +15373,9 @@ function tpMercado(){
   /* 🔁 en la segunda pasada («El último año») solo quien NO tiene equipo (Carlos, 25-sep: «no tiene
      sentido robarle a Sainz a Williams si ya tiene contrato»): fuera los pilotos de otros equipos y
      las estrellas de otras categorías. Quedan tu probador, los libres, la cantera y la bolsa. */
-  tpMercadoPool(abiertos).filter(c=>!S._tpSegunda || (c.kind!=="fichar" && c.kind!=="cross")).forEach(c=>{
+  /* 🏗️ …y lo mismo el año en que fundas tu equipo: el mercado de la temporada ya se ha cerrado */
+  const _soloBolsa = S._tpSegunda || (S._tpFundacion===yearNow() && tpFundada());
+  tpMercadoPool(abiertos).filter(c=>!_soloBolsa || (c.kind!=="fichar" && c.kind!=="cross")).forEach(c=>{
     const b=document.createElement("button"); b.className="offer";
     let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️",dotHTML=null;
     /* 🎨 inmersión (Carlos): el redondel es el ESCUDO del equipo de origen; y lo tuyo —renovaciones y
@@ -16940,6 +17113,10 @@ function simTP(row){
         `💚 Hitting the bar as your own owner has an accounting reward: the books balance again and the red ink is behind you.`,
         {pt:`💚 Bater a meta sendo o próprio dono tem prêmio contábil: as contas voltam a fechar e o vermelho fica para trás.`}));
     }
+  } else if(S.tpFundador && S.tpFundador.team===tn && row.year < S.tpFundador.y+2 && !_promesaRota){
+    /* 🏗️ UN EQUIPO RECIÉN NACIDO: las dos primeras temporadas el CEO mira pero no apunta (Carlos,
+       27-sep: «la presión es poca al principio»). A partir de la tercera, cuenta como en cualquier sitio. */
+    S.tpLastMet=false;
   } else if(S.tpGrace && !_promesaRota){
     S.tpGrace=false; S.tpLastMet=false;
     /* 🧹 el chip ya dice «fallado, pero el consejo te da un año más» */
@@ -17962,7 +18139,7 @@ const TP_DILEMAS=[
    {l:()=>L("Que lo decida la pista","Let the track decide",{pt:"Que a pista decida"}),r:()=>roll(
      [5,()=>(TPRE(2),L("La rivalidad interna eleva a los dos y tu equipo es el espectáculo del año. +prestigio","The internal rivalry lifts them both and your team is the show of the season. +prestige",{pt:"A rivalidade interna eleva os dois e a sua equipe é o show do ano. +prestígio"}))],
      [4,()=>(TPRE(-2),L("Sin jerarquía, las estrategias se pisan y los puntos se escapan entre los dos boxes. −prestigio","With no pecking order, strategies collide and points leak between the two garages. −prestige",{pt:"Sem hierarquia, as estratégias se atropelam e os pontos escapam entre os dois boxes. −prestígio"}))])}]},
- {id:"tpFabricante", cond:()=>S.age>=3 && (S.cache[S.tpTeam]||60)<86 && !(S.tpOwner&&S.tpOwner.k==="self")
+ {id:"tpFabricante", cond:()=>S.age>=3 && !tpFundada() && (S.cache[S.tpTeam]||60)<86 && !(S.tpOwner&&S.tpOwner.k==="self")
     && !(S.tpOwner&&S.tpOwner.k==="brand") && !isRBJr(S.tpTeam),   // 🏭 ya es de una marca / el filial no se vende
   t:()=>L("El fabricante quiere comprar","The manufacturer wants to buy",{pt:"A montadora quer comprar"}),
   d:()=>L("Un gigante del automóvil ofrece comprar el equipo: fábrica nueva, presupuesto de otro planeta… y sus propias ideas sobre quién manda aquí.",
@@ -18606,7 +18783,7 @@ const TP_DILEMAS=[
    contrato desaparece de la tarjeta… y cada agujero lo pagas tú. El acto 3 es tpComprarGloria:
    si algún día lo vendes campeón, la fortuna es tuya. */
  {id:"tpAcciones",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam) || tpFundada()) return false;   // 🏗️ tu equipo no se vende ni se renombra
     if(S.tpOwner && S.tpOwner.k==="self") return false;
     if((S.seasons||[]).filter(r=>r.cat==="TP").length<2) return false;
     const u=(S.seasons||[]).at(-1);
@@ -18649,7 +18826,7 @@ const TP_DILEMAS=[
    (Sauber→Audi); a un equipo-marca (Alpine ES Renault) lo compra un conglomerado ficticio y el
    nombre se queda — los Dorilton de la vida no borran el escudo que gana. */
  {id:"tpComprarGloria",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam) || tpFundada()) return false;   // 🏗️ tu equipo no se vende ni se renombra
     if((S.seasons||[]).filter(r=>r.cat==="TP").length<3) return false;
     const u=(S.seasons||[]).at(-1);
     if(!u || u.cat!=="TP" || u.pos!==1) return false;
@@ -19077,7 +19254,7 @@ const TP_DILEMAS=[
     cadena de linaje pendiente (la quiebra de Haas, Alpine→Renault), el renombrado la ARRASTRA:
     la historia persigue al nombre nuevo en vez de quedarse huérfana. */
  {id:"tpUltimoDinero",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam)) return false;
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam) || tpFundada()) return false;   // 🏗️ tu equipo no se vende ni se renombra
     const tn=S.tpTeam;
     // ya lleva una marca pegada, delante o detrás: no se encadenan dos
     if(PATROCINADORES.some(p=>tn.indexOf(p.n+" ")===0 || tn.lastIndexOf(" "+p.n)===tn.length-p.n.length-1)) return false;
@@ -20994,7 +21171,7 @@ const TP_DILEMAS=[
     de su equipo B— y el que es su propio dueño.
     🌲 EVERGREEN, y vale para cualquier equipo. */
  {id:"tpDuenoSeJubila",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || !S.tpOwner || S.tpOwner.k==="self" || isRBJr(S.tpTeam)) return false;
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || !S.tpOwner || S.tpOwner.k==="self" || isRBJr(S.tpTeam) || tpFundada()) return false;
     if((S.tpOwnerY||0)<10) return false;
     S._jub={fab:S.tpOwner.k==="brand", n:S.tpOwnerY}; return true; },
   t:()=>L("El dueño se jubila","The owner retires",{pt:"O dono se aposenta"}),
@@ -21048,7 +21225,7 @@ const TP_DILEMAS=[
     veredicto (S._placa), una sola vez, y solo si sigues en ese equipo.
     🌲 EVERGREEN: sin años ni eras. Una vez por partida. No sale si el dueño eres tú. */
  {id:"tpPuerta",
-  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self") || isRBJr(S.tpTeam)) return false;   // 🐂 «tu nombre en la puerta no tiene sentido en el filial» (Carlos, 12-sep)
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || (S.tpOwner && S.tpOwner.k==="self") || isRBJr(S.tpTeam) || tpFundada()) return false;   // 🏗️ el nombre ya lo pusiste tú · 🐂 «tu nombre en la puerta no tiene sentido en el filial» (Carlos, 12-sep)
     if(tpAniosAqui()<8) return false;
     const GIG=["Ferrari","Mercedes","McLaren","Red Bull"];
     if(GIG.indexOf(S.tpTeam)>=0 || (S.tpAlias||[]).some(a=>GIG.indexOf(a)>=0)) return false;
