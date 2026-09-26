@@ -7898,6 +7898,15 @@ function renderOffers(offers, withRetire){
     let roleChip="";
     if(o.team.cat==="F1"&&o.role) roleChip=`<span class="role ${o.role==="1"?"r1":"r2"}">${L("PILOTO Nº","DRIVER No.",{pt:"PILOTO N.º"})}${o.role}</span>`;
     if(o.team.cat==="TEST") roleChip=`<span class="role rt">${L("PROBADOR","RESERVE",{pt:"PILOTO DE TESTES"})}</span>`;
+    /* 🏷️ LA CATEGORÍA, DE VUELTA EN UNA ETIQUETA (un jugador por Twitter, 27-sep). Al quitar la línea
+       «F4 · 2029» (23-sep) contábamos con que el nombre la llevara, y en 2026 la lleva («Hitech F3»);
+       pero en las eras retro los equipos junior se llaman como de verdad —First Racing, Super Nova— y
+       en una lista mezclada (F3 británica o alemana, F3000 o F3) no se sabía cuál era cuál.
+       Si el nombre ya la dice, no se repite. */
+    if(["KART","F4","F3","FR","F2"].includes(o.team.cat)){
+      const cn=catName(o.team.cat), nm=o.team.name;
+      if(cn && !nm.includes(cn) && !new RegExp("(^|\\s)"+o.team.cat+"($|\\s)").test(nm)) roleChip+=`<span class="role r2 rc">${cn}</span>`;
+    }
     const _sl1=S.seats[o.team.name];
     const mate = o.team.cat==="F1"&&_sl1
       ? (Array.isArray(_sl1)&&_sl1.length<2 && !_sl1.some(x=>x==="PLAYER")
@@ -11845,7 +11854,9 @@ function renderF1State(){
         const nom=n==="__ME__" ? `<b>${L("TÚ","YOU",{pt:"TU"})}</b>` : surname(n);
         return `<div class="fpr"><span class="fpn">${i+1}º</span>${t?`<span class="fpt">${teamBadge(t,r.year)||""}</span> `:""}${fl?flg(fl)+" ":""}${nom}</div>`; }).join("");
       const cLis=H.c.map((t,i)=>`<div class="fpr"><span class="fpn">${i+1}º</span>${teamBadge(t,r.year)||""} ${t}</div>`).join("");
-      return `<details class="fp"${filas.indexOf(r)===0?" open":""}><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
+      /* 📁 todas plegadas: la temporada recién jugada ya está arriba, entera, y abrir además la anterior
+         obligaba a ir cerrándolas (lo pidió un jugador por Twitter, 27-sep) */
+      return `<details class="fp"><summary>${cab}</summary><div class="fpg"><div>${dLis}</div><div>${cLis}</div></div></details>`;
     }).join("") : "";
   }catch(e){}
 }
