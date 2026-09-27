@@ -2330,18 +2330,18 @@ const CROSSOVERS = [
    no tienen volante este año. Solo se ofrecen en la bolsa del año en que FUNDAS tu equipo (Carlos,
    27-sep: «veteranos, o gente mayor de otras categorías relacionada con la F1 recientemente»).
    Los techos cuadran con los que ya llevan en las llegadas de las eras retro. */
-const SIN_ASIENTO_2026 = [
-  {name:"Y. Tsunoda", flag:"🇯🇵", born:2000, base:81, ceil:84},
-  {name:"J. Doohan", flag:"🇦🇺", born:2003, base:77, ceil:83},
-  {name:"G. Zhou", flag:"🇨🇳", born:1999, base:78, ceil:80},
-  {name:"Mick Schumacher", flag:"🇩🇪", born:1999, base:77, ceil:80},
-  {name:"F. Drugovich", flag:"🇧🇷", born:2000, base:77, ceil:80},
-  {name:"N. de Vries", flag:"🇳🇱", born:1995, base:76, ceil:78},
-  {name:"S. Vandoorne", flag:"🇧🇪", born:1992, base:77, ceil:78},
-  {name:"A. Giovinazzi", flag:"🇮🇹", born:1993, base:76, ceil:77},
-  {name:"L. Sargeant", flag:"🇺🇸", born:2000, base:74, ceil:76},
-  {name:"P. Fittipaldi", flag:"🇧🇷", born:1996, base:75, ceil:76},
-  {name:"K. Maini", flag:"🇮🇳", born:2000, base:75, ceil:78},
+const SIN_ASIENTO_2026 = [   // edad a la salida de 2026 (como GRID2026) · nacimiento en el comentario
+  {name:"Y. Tsunoda", flag:"🇯🇵", age:25, base:81, ceil:84},          // 11-may-2000 · reserva de Red Bull
+  {name:"J. Doohan", flag:"🇦🇺", age:23, base:77, ceil:83},           // 20-ene-2003 · perdió el Alpine en 2025
+  {name:"G. Zhou", flag:"🇨🇳", age:26, base:78, ceil:80},             // 30-may-1999
+  {name:"Mick Schumacher", flag:"🇩🇪", age:26, base:77, ceil:80},     // 22-mar-1999
+  {name:"F. Drugovich", flag:"🇧🇷", age:25, base:77, ceil:80},        // 23-dic-2000
+  {name:"N. de Vries", flag:"🇳🇱", age:31, base:76, ceil:78},         // 6-feb-1995
+  {name:"S. Vandoorne", flag:"🇧🇪", age:33, base:77, ceil:78},        // 26-mar-1992
+  {name:"A. Giovinazzi", flag:"🇮🇹", age:32, base:76, ceil:77},       // 14-dic-1993
+  {name:"L. Sargeant", flag:"🇺🇸", age:25, base:74, ceil:76},         // 31-dic-2000
+  {name:"P. Fittipaldi", flag:"🇧🇷", age:29, base:75, ceil:76},       // 16-jun-1996
+  {name:"K. Maini", flag:"🇮🇳", age:25, base:75, ceil:78},            // 22-sep-2000 · reserva de Alpine
 ];
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
@@ -14829,7 +14829,7 @@ function tpFundVeteranos(){
   const enJuego=n=>(S.dpool||[]).some(d=>d&&d.name===n);
   const baraja=a=>{ const c=a.slice(); for(let i=c.length-1;i>0;i--){ const j=irnd(0,i); [c[i],c[j]]=[c[j],c[i]]; } return c; };
   const sin=SIN_ASIENTO_2026.filter(v=>!enJuego(v.name)).map(v=>({kind:"vuelve", tipo:"sin",
-    d:{name:v.name, flag:v.flag, age:yr-v.born, skill:v.base, ceil:v.ceil, titles:0}, odds:.75}));
+    d:{name:v.name, flag:v.flag, age:v.age+(yr-2026), skill:v.base, ceil:v.ceil, titles:0}, odds:.75}));
   const ret=(S.retiredPool||[]).filter(d=>d && d.name && (d.age||99)<=41 && !enJuego(d.name)).map(d=>({kind:"vuelve", tipo:"ret", d,
     odds:(d.titles||0)>=2 ? .2 : (d.titles||0)>=1 ? .3 : .45}));
   const cross=(S.crossovers||[]).filter(c=>{ const a=yr-c.born; return a>=23 && a<=37 && !enJuego(c.name); }).map(c=>({kind:"cross", tipo:"cross",
@@ -14971,7 +14971,9 @@ function tpSignTeam(t, how, ownerK){
      mitad) y el síntoma era feo: al cambiar de equipo seguías con el RELOJ del anterior — un contrato
      de 4 años en Cadillac vencía según lo que quedara del de McLaren. Cazado al revisar anclajes. */
   tpFirmarContrato(S.tpTeam);
-  tpCrearProbador(true);        // 🧢 y cada etapa trae su probador
+  /* 🧢 y cada etapa trae su probador… salvo tu equipo recién fundado, que nace VACÍO del todo
+     (Carlos, 27-sep): el banquillo lo llenas tú, después de los titulares. */
+  if(!tpFundada()) tpCrearProbador(true);
   if(how==="start"){
     /* 📊 este SUSTITUYE al `career_started` genérico de la ficha: de jefe la partida no empieza de
        verdad hasta que eliges escudería, y hasta entonces no hay equipo ni CEO que contar.
