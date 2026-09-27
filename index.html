@@ -2330,19 +2330,38 @@ const CROSSOVERS = [
    no tienen volante este año. Solo se ofrecen en la bolsa del año en que FUNDAS tu equipo (Carlos,
    27-sep: «veteranos, o gente mayor de otras categorías relacionada con la F1 recientemente»).
    Los techos cuadran con los que ya llevan en las llegadas de las eras retro. */
-const SIN_ASIENTO_2026 = [   // edad a la salida de 2026 (como GRID2026) · nacimiento en el comentario
-  {name:"Y. Tsunoda", flag:"🇯🇵", age:25, base:81, ceil:84},          // 11-may-2000 · reserva de Red Bull
-  {name:"J. Doohan", flag:"🇦🇺", age:23, base:77, ceil:83},           // 20-ene-2003 · perdió el Alpine en 2025
-  {name:"G. Zhou", flag:"🇨🇳", age:26, base:78, ceil:80},             // 30-may-1999
-  {name:"Mick Schumacher", flag:"🇩🇪", age:26, base:77, ceil:80},     // 22-mar-1999
-  {name:"F. Drugovich", flag:"🇧🇷", age:25, base:77, ceil:80},        // 23-dic-2000
-  {name:"N. de Vries", flag:"🇳🇱", age:31, base:76, ceil:78},         // 6-feb-1995
-  {name:"S. Vandoorne", flag:"🇧🇪", age:33, base:77, ceil:78},        // 26-mar-1992
-  {name:"A. Giovinazzi", flag:"🇮🇹", age:32, base:76, ceil:77},       // 14-dic-1993
-  {name:"L. Sargeant", flag:"🇺🇸", age:25, base:74, ceil:76},         // 31-dic-2000
-  {name:"P. Fittipaldi", flag:"🇧🇷", age:29, base:75, ceil:76},       // 16-jun-1996
-  {name:"K. Maini", flag:"🇮🇳", age:25, base:75, ceil:78},            // 22-sep-2000 · reserva de Alpine
+const SIN_ASIENTO_2026 = [   // edad a la salida de 2026 (como GRID2026) · `hoy` = dónde está de verdad en 2026 (revisado en la web el 28-sep)
+  {name:"Y. Tsunoda", flag:"🇯🇵", age:25, base:81, ceil:84, hoy:["Reserva de Red Bull","Red Bull reserve","Reserva da Red Bull"]},          // 11-may-2000
+  {name:"J. Doohan", flag:"🇦🇺", age:23, base:77, ceil:83, hoy:["Reserva de Haas","Haas reserve","Reserva da Haas"]},                      // 20-ene-2003
+  {name:"G. Zhou", flag:"🇨🇳", age:26, base:78, ceil:80, hoy:["Reserva de Cadillac","Cadillac reserve","Reserva da Cadillac"]},              // 30-may-1999
+  {name:"F. Vesti", flag:"🇩🇰", age:24, base:77, ceil:81, hoy:["Reserva de Mercedes","Mercedes reserve","Reserva da Mercedes"]},            // 13-ene-2002
+  {name:"J. Crawford", flag:"🇺🇸", age:20, base:76, ceil:84, hoy:["Reserva de Aston Martin","Aston Martin reserve","Reserva da Aston Martin"]}, // 2-ago-2005
+  {name:"Mick Schumacher", flag:"🇩🇪", age:26, base:77, ceil:80, hoy:["Corre en IndyCar","Racing in IndyCar","Corre na IndyCar"]},          // 22-mar-1999
+  {name:"F. Drugovich", flag:"🇧🇷", age:25, base:77, ceil:80, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},   // 23-dic-2000
+  {name:"N. de Vries", flag:"🇳🇱", age:31, base:76, ceil:78, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},    // 6-feb-1995
+  {name:"S. Vandoorne", flag:"🇧🇪", age:33, base:77, ceil:78, hoy:["Reserva de Aston Martin","Aston Martin reserve","Reserva da Aston Martin"]}, // 26-mar-1992
+  {name:"A. Giovinazzi", flag:"🇮🇹", age:32, base:76, ceil:77, hoy:["Reserva de Ferrari","Ferrari reserve","Reserva da Ferrari"]},         // 14-dic-1993
+  {name:"L. Sargeant", flag:"🇺🇸", age:25, base:74, ceil:76, hoy:["Corre en el WEC","Racing in the WEC","Corre no WEC"]},                  // 31-dic-2000
+  {name:"P. Fittipaldi", flag:"🇧🇷", age:29, base:75, ceil:76, hoy:["Simulador de Cadillac","Cadillac sim driver","Simulador da Cadillac"]}, // 16-jun-1996
+  {name:"K. Maini", flag:"🇮🇳", age:25, base:75, ceil:78, hoy:["Reserva de Alpine","Alpine reserve","Reserva da Alpine"]},                 // 22-sep-2000
 ];
+/* 🎂 LA BOLSA DE TU EQUIPO USA SU EDAD Y SU VIDA DE VERDAD EN 2026. Los crossovers y el bolsillo de
+   retirados cuentan «año − nacimiento» (regla del clásico, que no se toca): aquí, que solo existe en
+   2026, se usa la edad a la salida de la temporada y dónde corre cada uno hoy. */
+const FUND_2026 = {
+  "A. Palou":{age:28, hoy:["Corre en IndyCar","Racing in IndyCar","Corre na IndyCar"]},
+  "C. Herta":{age:25, hoy:["F2 y probador de Cadillac","F2 and Cadillac test driver","F2 e piloto de testes da Cadillac"]},
+  "P. O'Ward":{age:26, hoy:["IndyCar y reserva de McLaren","IndyCar and McLaren reserve","IndyCar e reserva da McLaren"]},
+  "K. Kirkwood":{age:27, hoy:["Corre en IndyCar","Racing in IndyCar","Corre na IndyCar"]},
+  "A. Iwasa":{age:24, hoy:["Super Fórmula y reserva de Racing Bulls","Super Formula and Racing Bulls reserve","Super Fórmula e reserva da Racing Bulls"]},
+  "C. Lundgaard":{age:24, hoy:["Corre en IndyCar","Racing in IndyCar","Corre na IndyCar"]},
+  "O. Rowland":{age:34, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},
+  "P. Wehrlein":{age:31, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},
+  "J. Dennis":{age:30, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},
+  "M. Evans":{age:31, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},
+  "R. Hirakawa":{age:32, hoy:["Reserva de Haas y WEC","Haas reserve and WEC","Reserva da Haas e WEC"]},
+  "S. Vettel":{age:38}, "D. Ricciardo":{age:36}, "K. Magnussen":{age:33}, "R. Grosjean":{age:39}, "R. Kubica":{age:41},
+};
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
 /* 💸 LA PARRILLA DE 2026 TAMBIÉN PUEDE PERDER A ALGUIEN. Hasta ahora el modo clásico tenía el linaje
@@ -14829,15 +14848,16 @@ function tpFundVeteranos(){
   const enJuego=n=>(S.dpool||[]).some(d=>d&&d.name===n);
   const baraja=a=>{ const c=a.slice(); for(let i=c.length-1;i>0;i--){ const j=irnd(0,i); [c[i],c[j]]=[c[j],c[i]]; } return c; };
   const sin=SIN_ASIENTO_2026.filter(v=>!enJuego(v.name)).map(v=>({kind:"vuelve", tipo:"sin",
-    d:{name:v.name, flag:v.flag, age:v.age+(yr-2026), skill:v.base, ceil:v.ceil, titles:0}, odds:.75}));
+    d:{name:v.name, flag:v.flag, age:v.age+(yr-2026), skill:v.base, ceil:v.ceil, titles:0}, hoy:v.hoy, odds:.75}));
   /* ⚠️ ficha NUEVA, como hace el amigo del CEO: los del bolsillo de retirados no llevan techo, y sin
      techo la progresión anual deja el nivel en NaN (cazado en la prueba de Carlos del 27-sep:
      «¿cumplen años y progresan normal?» — Magnussen se rompía al segundo invierno) */
   const ret=(S.retiredPool||[]).filter(d=>d && d.name && (d.age||99)<=41 && !enJuego(d.name)).map(d=>({kind:"vuelve", tipo:"ret",
-    d:{name:d.name, flag:d.flag||"🏁", age:d.age, titles:d.titles||0, skill:Math.round(d.skill||78), ceil:Math.round(d.skill||78)},
+    d:{name:d.name, flag:d.flag||"🏁", age:(FUND_2026[d.name]&&FUND_2026[d.name].age)||d.age, titles:d.titles||0, skill:Math.round(d.skill||78), ceil:Math.round(d.skill||78)},
     odds:(d.titles||0)>=2 ? .2 : (d.titles||0)>=1 ? .3 : .45}));
   const cross=(S.crossovers||[]).filter(c=>{ const a=yr-c.born; return a>=23 && a<=37 && !enJuego(c.name); }).map(c=>({kind:"cross", tipo:"cross",
-    d:{name:c.name, age:yr-c.born, skill:c.base, ceil:c.ceil, titles:0, flag:c.flag}, odds:.45}));
+    d:{name:c.name, age:(FUND_2026[c.name]&&FUND_2026[c.name].age)||(yr-c.born), skill:c.base, ceil:c.ceil, titles:0, flag:c.flag},
+    hoy:FUND_2026[c.name]&&FUND_2026[c.name].hoy, odds:.45}));
   const todos=[...sin,...ret,...cross];
   const out=[];
   // 1 · tus compatriotas (hasta dos), vengan de donde vengan
@@ -15741,8 +15761,8 @@ function tpPoolScreen(){
   if(S._tpFundacion===yr && tpFundada()){
     tpFundVeteranos().filter(c=>!seated.has(c.d.name) && noY[c.d.name]!==yr).forEach(c=>{
       const b=document.createElement("button"); b.className="offer";
-      const d=c.d, tipo = c.tipo==="sin" ? L("Sin asiento este año","No seat this year",{pt:"Sem assento este ano"})
-        : c.tipo==="ret" ? L("Retirado: volvería","Retired: would come back",{pt:"Aposentado: voltaria"})
+      const d=c.d, tipo = c.hoy ? LA(c.hoy) : c.tipo==="sin" ? L("Sin asiento este año","No seat this year",{pt:"Sem assento este ano"})
+        : c.tipo==="ret" ? L("Retirado de la F1: volvería","Retired from F1: would come back",{pt:"Aposentado da F1: voltaria"})
         : c.tipo==="cross" ? L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})
         : L("Joven sin asiento","Young and seatless",{pt:"Jovem sem assento"});
       const icono = c.tipo==="ret" ? "🔁" : c.tipo==="cross" ? "🌎" : c.tipo==="sin" ? "🧭" : "🌱";
