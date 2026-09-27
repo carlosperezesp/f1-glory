@@ -14687,6 +14687,9 @@ function tpFundarBtn(){
 }
 function tpFundError(n){
   if(n.length<2) return L("Ponle un nombre de al menos dos letras.","Give it a name of at least two letters.",{pt:"Dê um nome de pelo menos duas letras."});
+  /* ✂️ 15 como mucho (Carlos, 27-sep: con 22 se salía de la columna de constructores en el móvil).
+     Es lo que mide el nombre de F1 más largo del juego, «Scuderia Italia». */
+  if(n.length>15) return L("Como mucho 15 caracteres: si no, no cabe en las clasificaciones.","15 characters at most, or it won't fit in the standings.",{pt:"No máximo 15 caracteres: senão não cabe nas classificações."});
   if(!tpFundLetra(n)) return L("El nombre necesita alguna letra: de ahí sale el escudo.","The name needs a letter: that's where the crest comes from.",{pt:"O nome precisa de alguma letra: é dela que sai o escudo."});
   /* 🚫 ni los de la parrilla ni los que pueden llegar después (expansiones, APXGP, marcas nuevas):
      una entrada con tu mismo nombre pisaría tu coche y tus asientos */
@@ -14707,7 +14710,7 @@ function tpFundarScreen(){
   const box=$("offerList"); box.innerHTML="";
   const w=document.createElement("div"); w.className="fund";
   w.innerHTML=`<label class="fund-l" for="fundNom">${L("Nombre del equipo","Team name",{pt:"Nome da equipe"})}</label>
-    <input id="fundNom" class="fund-in" maxlength="22" autocomplete="off" spellcheck="false" placeholder="${L("p. ej. Pérez GP","e.g. Smith GP",{pt:"ex. Silva GP"})}">
+    <input id="fundNom" class="fund-in" maxlength="15" autocomplete="off" spellcheck="false" placeholder="${L("p. ej. Pérez GP","e.g. Smith GP",{pt:"ex. Silva GP"})}">
     <div class="fund-l">${L("Colores","Colours",{pt:"Cores"})}</div>
     <div class="fund-pal" id="fundPal" role="group"></div>
     <div class="fund-err" id="fundErr" aria-live="polite"></div>`;
