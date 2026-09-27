@@ -15472,7 +15472,9 @@ function tpMercado(){
     if(c.kind==="renew"){
       nm=`${c.d.flag||"🏁"} ${c.d.name}`;
       sub1=L("Renovar","Renew",{pt:"Renovar"})+` · ${tpEtiqueta(c.d)}${c.d.titles?` · 👑×${c.d.titles}`:""}`;
-      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})} · `+L(`renovaría en su asiento ${c.i+1}`,`would renew in seat ${c.i+1}`,{pt:`renovaria no assento ${c.i+1}`});
+      /* 🪑 sin «renovaría en su asiento N» (Carlos, 28-sep): no es una garantía — tras negociar los
+         años puedes sentarlo en el otro asiento, así que la línea prometía algo que no era verdad */
+      sub2=`📜${tpAniosPide(c.d)} · ${c.d.age} ${L("años","yo",{pt:"anos"})}`;
       const _ro=tpRenovarOdds(c.d); if(_ro.motivo) sub2+=" · "+tpOddsTag(_ro.p,"renov");
       dotTxt="🤝";
     } else if(c.kind==="probador"){
