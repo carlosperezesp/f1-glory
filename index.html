@@ -15302,8 +15302,8 @@ function tpAsientoLinea(i){
   /* ⭐ con estrellas y edad (Carlos, 30-ago: «¡muéstrame mis pilotos en todo momento! así sé sus
      estrellas y si quiero fichar a otro, o ponerlo de primero o de segundo») */
   const cuerpo = (!d || d==="PLAYER") ? `<b>${tag}</b> ${L("LIBRE","OPEN",{pt:"LIVRE"})}`
-    : ((d.tpc||0)<=0 && !S._tpRenovados[d.name]) ? `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)}${d.titles?` 👑×${d.titles}`:""} · ${d.age} · ${L("vencido","expired",{pt:"vencido"})}`
-    : `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)}${d.titles?` 👑×${d.titles}`:""} · ${d.age} · 📜${Math.max(0,d.tpc||0)}`;   /* 👑 los Mundiales vuelven (un jugador, 28-sep: se perdieron con el garaje de la mudanza) */
+    : ((d.tpc||0)<=0 && !S._tpRenovados[d.name]) ? `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)} · ${d.age}${d.titles?` · 👑×${d.titles}`:""} · ${L("vencido","expired",{pt:"vencido"})}`
+    : `<b>${tag}</b> ${surname(d.name)} ${tpEtiqueta(d)} · ${d.age}${d.titles?` · 👑×${d.titles}`:""} · 📜${Math.max(0,d.tpc||0)}`;   /* 👑 los Mundiales vuelven (un jugador, 28-sep: se perdieron con el garaje de la mudanza) */
   return `<span class="gar-chip" style="border-color:${col}">${cuerpo}</span>`;
 }
 /* 🧑‍🔧 EL GARAJE EN EL PANEL (Stitch de Carlos, 20-sep; rediseño del 20 por la tarde): tus pilotos
@@ -15323,12 +15323,12 @@ function panelGaraje(mode){
     if(!d || d==="PLAYER"){ filas.push(`<div class="gpil libre">${L("ASIENTO LIBRE","OPEN SEAT",{pt:"VAGA LIVRE"})}</div>`); return; }
     const vencido=(d.tpc||0)<=0 && !(S._tpRenovados||{})[d.name];
     filas.push(`<div class="gpil">
-      <div class="gp1">${d.flag||"🏁"} ${surname(d.name)} ${tpEtiqueta(d)}${d.titles?` 👑×${d.titles}`:""}</div>
-      <div class="gp2">${d.age} ${L("años","yo",{pt:"anos"})} · ${vencido?`<b>${L("vencido","expired",{pt:"vencido"})}</b>`:"📜"+Math.max(0,d.tpc||0)}</div></div>`);
+      <div class="gp1">${d.flag||"🏁"} ${surname(d.name)} ${tpEtiqueta(d)}</div>
+      <div class="gp2">${d.age} ${L("años","yo",{pt:"anos"})} · ${d.titles?`👑×${d.titles} · `:""}${vencido?`<b>${L("vencido","expired",{pt:"vencido"})}</b>`:"📜"+Math.max(0,d.tpc||0)}</div></div>`);
   });
   const _r=S.tpReserva;
   filas.push(_r
-    ? `<div class="gpil res"><div class="gp1">🧢 ${_r.flag||"🏁"} ${surname(_r.name)} ${tpEtiqueta(_r)}${_r.titles?` 👑×${_r.titles}`:""}</div><div class="gp2">${_r.age} ${L("años","yo",{pt:"anos"})}${(_r.tpc||0)>0?" · 📜"+_r.tpc:""}</div></div>`
+    ? `<div class="gpil res"><div class="gp1">🧢 ${_r.flag||"🏁"} ${surname(_r.name)} ${tpEtiqueta(_r)}</div><div class="gp2">${_r.age} ${L("años","yo",{pt:"anos"})}${_r.titles?` · 👑×${_r.titles}`:""}${(_r.tpc||0)>0?" · 📜"+_r.tpc:""}</div></div>`
     : `<div class="gpil res libre">🧢 ${L("SIN PROBADOR","NO RESERVE",{pt:"SEM RESERVA"})}</div>`);
   if(mode==="m"||mode==="r"){
     const _sw=((sl[0]&&sl[0]!=="PLAYER")||(sl[1]&&sl[1]!=="PLAYER"));
