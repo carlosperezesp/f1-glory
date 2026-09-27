@@ -2459,15 +2459,17 @@ const TEAMS_2010 = [
   {name:"HRT",          abbr:"HRT", color:"#8A8D90", color2:"#B01B2E", perf:58},
 ];
 // [nombre, edad, nivel, techo, títulos(antes de 2010), bandera]
+/* 🎂 edades a la salida de la temporada (14-mar-2010), como el resto: revisado el 27-sep con el reto de
+   Loeb — Vettel, Massa, Barrichello y Alguersuari llevaban el año que cumplían DURANTE la temporada */
 const GRID2010 = {
-  "Red Bull":[["S. Vettel",23,90,96,0,"🇩🇪"],["M. Webber",33,87,89,0,"🇦🇺"]],
+  "Red Bull":[["S. Vettel",22,90,96,0,"🇩🇪"],["M. Webber",33,87,89,0,"🇦🇺"]],
   "McLaren":[["L. Hamilton",25,92,95,1,"🇬🇧"],["J. Button",30,88,90,1,"🇬🇧"]],
-  "Ferrari":[["F. Alonso",28,93,95,2,"🇪🇸"],["F. Massa",29,85,88,0,"🇧🇷"]],
+  "Ferrari":[["F. Alonso",28,93,95,2,"🇪🇸"],["F. Massa",28,85,88,0,"🇧🇷"]],
   "Mercedes GP":[["M. Schumacher",41,84,88,7,"🇩🇪"],["N. Rosberg",24,85,91,0,"🇩🇪"]],
   "Renault":[["R. Kubica",25,88,93,0,"🇵🇱"],["V. Petrov",25,76,83,0,"🇷🇺"]],
-  "Williams":[["R. Barrichello",38,82,85,0,"🇧🇷"],["N. Hülkenberg",22,78,90,0,"🇩🇪"]],
+  "Williams":[["R. Barrichello",37,82,85,0,"🇧🇷"],["N. Hülkenberg",22,78,90,0,"🇩🇪"]],
   "Force India":[["A. Sutil",27,80,84,0,"🇩🇪"],["V. Liuzzi",28,77,81,0,"🇮🇹"]],
-  "Toro Rosso":[["S. Buemi",21,78,85,0,"🇨🇭"],["J. Alguersuari",20,77,85,0,"🇪🇸"]],
+  "Toro Rosso":[["S. Buemi",21,78,85,0,"🇨🇭"],["J. Alguersuari",19,77,85,0,"🇪🇸"]],
   "Sauber":[["K. Kobayashi",23,80,87,0,"🇯🇵"],["P. de la Rosa",39,78,81,0,"🇪🇸"]],
   "Lotus":[["J. Trulli",35,80,83,0,"🇮🇹"],["H. Kovalainen",28,80,84,0,"🇫🇮"]],
   "Virgin":[["T. Glock",28,80,84,0,"🇩🇪"],["L. di Grassi",25,74,82,0,"🇧🇷"]],
@@ -4503,13 +4505,14 @@ const CHALLENGES = {
     who:{ age:36, ovr:84, ceil:88, flag:"🇫🇷", country:"Francia", style:"consistente", num:"17",
           fameBase:120 },
     repSobre:true,
+    vetMargen:3,   // 👴 el paddock le trata como a uno de 33 y el declive llega tres años más tarde (ver edadMercado)
     t:["La superlicencia","The super licence","A superlicença"],
     sub:["El papel que la FIA no firmó · 2010 · 36 años",
          "The licence the FIA wouldn't sign · 2010 · aged 36",
          "A licença que a FIA não assinou · 2010 · 36 anos"],
-    d:["Eres Sébastien Loeb. En noviembre de 2008 te subiste al Red Bull en Barcelona y acabaste octavo del día. Estuviste muy cerca —lo contaste tú mismo— de correr la última carrera de 2009 con Toro Rosso, en Abu Dabi. El 22 de octubre la FIA no te dio la superlicencia; tres días después ganabas en Gales tu sexto Mundial de rallies, por un punto. Aquí la FIA firma. El volante de Toro Rosso es tuyo, tienes 36 años y ni una sola carrera de Fórmula 1 detrás. ¿Hasta dónde llegas antes de que se te acabe el tiempo?",
-       "You are Sébastien Loeb. In November 2008 you drove the Red Bull in Barcelona and finished eighth fastest on the day. You came very close — your own words — to racing the last round of 2009 for Toro Rosso, in Abu Dhabi. On 22 October the FIA refused you the super licence; three days later you won your sixth world rally title in Wales, by a single point. Here the FIA signs. The Toro Rosso seat is yours, you are 36, and you don't have a single Formula 1 race behind you. How far can you go before time runs out?",
-       "Você é Sébastien Loeb. Em novembro de 2008 você andou com a Red Bull em Barcelona e foi o oitavo mais rápido do dia. Esteve muito perto — palavras suas — de correr a última prova de 2009 pela Toro Rosso, em Abu Dhabi. Em 22 de outubro a FIA negou a sua superlicença; três dias depois você ganhava no País de Gales o seu sexto Mundial de rali, por um ponto. Aqui a FIA assina. O volante da Toro Rosso é seu, você tem 36 anos e nem uma única corrida de Fórmula 1 nas costas. Até onde você chega antes que o tempo acabe?"],
+    d:["Eres Sébastien Loeb. En noviembre de 2008 te subiste al Red Bull en Barcelona y acabaste octavo del día. Estuviste muy cerca —lo contaste tú mismo— de correr la última carrera de 2009 con Toro Rosso, en Abu Dabi. El 22 de octubre la FIA no te dio la superlicencia; tres días después ganabas en Gales tu sexto Mundial de rallies, por un punto. Aquí la FIA firma. El volante de Toro Rosso es tuyo, tienes 36 años y ni una sola carrera de Fórmula 1 detrás. No hay tiempo para una carrera larga: el reto es ganar carreras. Un Mundial sería otra historia.",
+       "You are Sébastien Loeb. In November 2008 you drove the Red Bull in Barcelona and finished eighth fastest on the day. You came very close — your own words — to racing the last round of 2009 for Toro Rosso, in Abu Dhabi. On 22 October the FIA refused you the super licence; three days later you won your sixth world rally title in Wales, by a single point. Here the FIA signs. The Toro Rosso seat is yours, you are 36, and you don't have a single Formula 1 race behind you. There's no time for a long career: the challenge is to win races. A world title would be another story.",
+       "Você é Sébastien Loeb. Em novembro de 2008 você andou com a Red Bull em Barcelona e foi o oitavo mais rápido do dia. Esteve muito perto — palavras suas — de correr a última prova de 2009 pela Toro Rosso, em Abu Dhabi. Em 22 de outubro a FIA negou a sua superlicença; três dias depois você ganhava no País de Gales o seu sexto Mundial de rali, por um ponto. Aqui a FIA assina. O volante da Toro Rosso é seu, você tem 36 anos e nem uma única corrida de Fórmula 1 nas costas. Não há tempo para uma carreira longa: o desafio é vencer corridas. Um Mundial seria outra história."],
     champ:"J. Button",   // 👑 campeón del mundo de 2009
     persona:"LOEB",
     at:"2026-09-28T10:00:00Z",
@@ -4851,6 +4854,11 @@ function maybeCampos(){
 }
 let CHALLENGE = null;
 function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
+/* 👴 LA EDAD QUE VE EL MERCADO. En los retos que empiezan ya mayor (`vetMargen`, Loeb con 36), el
+   paddock te trata como si tuvieras esos años menos: sin esto la carrera moría en dos o tres
+   temporadas y el reto se quedaba corto (Carlos, 27-sep: «estirar un poco más el chicle»). Fuera de
+   esos retos es la edad de siempre. */
+function edadMercado(){ const c=challengeNow(); return S.age - ((c&&c.vetMargen)||0); }
 /* «Reto I · El Nano»: el número sale del orden en el registro, así los siguientes se numeran solos.
    ⚠️ SALTÁNDOSE LOS HUECOS RESERVADOS (lo cazó Carlos, 24-ago): `reto3` es un sitio guardado sin
    publicar, y al contarlo se comía el III — Valentino salía anunciado como «Reto IV» cuando el
@@ -10787,7 +10795,7 @@ function simSeason(){
     else {
       // fase madura: el declive arranca ~3 años DESPUÉS de tu pico (picas tarde → declinas tarde),
       // con pendiente según estilo (el agresivo se apaga antes; el consistente envejece como Alonso).
-      const declineStart = Math.max(30, (S.peakAge||28)+3);
+      const declineStart = Math.max(30, (S.peakAge||28)+3) + (((challengeNow()||{}).vetMargen)||0);   // 👴 ver edadMercado
       const past = Math.max(0, S.age - declineStart);
       // desgaste anual del declive: el agresivo se apaga antes, el consistente envejece como Alonso.
       // Suavizado (antes 0.5/0.8/1.15 → se hacía un precipicio a los pocos años).
@@ -12681,8 +12689,9 @@ function nOffers(){
     const ped=(typeof juniorPedigree==="function")?juniorPedigree():0;
     return ped>=5 ? 3 : ped>=3 ? 2 : (ch(.55)?2:1);
   }
-  if(S.age>=36) return ult<=6 ? 2 : (ch(.5)?2:1);
-  if(S.age>=33) return ult<=8 ? 3 : 2;
+  const _em=edadMercado();
+  if(_em>=36) return ult<=6 ? 2 : (ch(.5)?2:1);
+  if(_em>=33) return ult<=8 ? 3 : 2;
   return 3;
 }
 function nextOffers(){
@@ -12990,7 +12999,8 @@ function nextOffers(){
     // sigues con buen OVR, los equipos te quieren (no te jubilan por demostrar que eres bueno)
     const lastS = S.seasons.at(-1)||{};
     const stillWanted = (lastS.pos??20)<=6 || (lastS.wins||0)>0 || S.ovr>=83;
-    const pOut = stillWanted ? 0 : (S.age>=40?.4 : S.age>=38?.25 : S.age>=36?.12 : 0);
+    const _em = edadMercado();   // 👴 en el reto de Loeb el paddock le quita años
+    const pOut = stillWanted ? 0 : (_em>=40?.4 : _em>=38?.25 : _em>=36?.12 : 0);
     if(Math.random()<pOut){
       setDecision(L("El paddock pasa página","The paddock moves on",{pt:"O paddock vira a página"}),L("Los años pesan y los resultados ya no acompañan: esta vez el teléfono no suena.","The years weigh and the results no longer follow: this time the phone doesn't ring.",{pt:"Os anos pesam e os resultados já não acompanham: desta vez o telefone não toca."}));
       $("offerList").innerHTML="";
@@ -13001,7 +13011,7 @@ function nextOffers(){
     // (un piloto mediático atrae a los equipos por los patrocinadores, pero solo un empujón acotado)
     // pedigrí: los equipos dan cuerda a un rookie hypeado sus primeros 3 años aunque tarde en rendir (luego mandan sus resultados de F1)
     const pedRep = S.f1Seasons<=3 ? juniorPedigree()*1.5 : 0;
-    let rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(S.age>=35?5:0)+Math.min(6,fameScore()/180)+pedRep;
+    let rep=S.ovr+S.titles.f1*4+(S.seasons.at(-1).pos<=4?4:0)-(_em>=35?5:0)+Math.min(6,fameScore()/180)+pedRep;
     // 🎤 castigo por conformista: un proyecto ganador te descarta esta temporada (te sales de la élite)
     /* 🌟 el bono de sobre-rendimiento del reto (ver `repSobre`): «lo que toca» con tu coche es el
        puesto que da su sitio en la parrilla (el 8º coche → 15º-16º), y cada puesto por encima cuenta.
@@ -13014,7 +13024,7 @@ function nextOffers(){
       else S._repSobre=0;
     }
     if(S.tooHumble){ rep-=6; S.tooHumble=false; sub=L("😐 Un proyecto ganador te descarta: dudan de tu ambición. ","😐 A winning project passes on you: they doubt your ambition. ",{pt:"😐 Um projeto vencedor te descarta: duvidam da sua ambição. "}); }
-    if(rep<68&&S.age>=33){ endCareer(); return; }
+    if(rep<68&&_em>=33){ endCareer(); return; }
     // el perdón llega con los años; a un CAMPEÓN se le vuelve a llamar antes (2 años vs 4) y más fácil
     const champ=(S.titles.f1||0)>0;
     Object.entries(S.burned).forEach(([tm,age])=>{
@@ -13118,7 +13128,7 @@ function nextOffers(){
       title=L("Mercado de fichajes ","Silly season ",{pt:"Mercado de transferências "})+(yearNow());
       sub=(sub||"")+L("Silly season: los contratos están sobre la mesa.","Silly season: the contracts are on the table.",{pt:"Silly season: os contratos estão em cima da mesa."});
       // 🪑 veteranos: si la rep flaquea, un grande te ofrece cerrar como probador/mentor (retirada digna)
-      if(S.age>=36 && rep<80 && ch(.5)){
+      if(edadMercado()>=36 && rep<80 && ch(.5)){
         const grand=[...F1_TEAMS].sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name])[irnd(0,2)];
         if(grand && !o.some(x=>x.team.name===grand.name && x.team.cat==="TEST"))
           o.push({team:{...grand,cat:"TEST"}, note:["Probador y mentor: cerrar con los grandes","Reserve & mentor: bow out with the big boys"]});
