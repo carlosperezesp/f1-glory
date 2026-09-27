@@ -2362,6 +2362,8 @@ const FUND_2026 = {
   "R. Hirakawa":{age:32, hoy:["Reserva de Haas y WEC","Haas reserve and WEC","Reserva da Haas e WEC"]},
   "S. Vettel":{age:38}, "D. Ricciardo":{age:36}, "K. Magnussen":{age:33}, "R. Grosjean":{age:39}, "R. Kubica":{age:41},
 };
+/* la edad de marzo de cualquier año a partir de la de 2026 (vale igual hacia delante y hacia atrás) */
+function edadFund(nombre, siNo){ const f=FUND_2026[nombre]; return (f&&f.age!=null) ? f.age+(yearNow()-2026) : siNo; }
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
 /* 💸 LA PARRILLA DE 2026 TAMBIÉN PUEDE PERDER A ALGUIEN. Hasta ahora el modo clásico tenía el linaje
@@ -14853,10 +14855,10 @@ function tpFundVeteranos(){
      techo la progresión anual deja el nivel en NaN (cazado en la prueba de Carlos del 27-sep:
      «¿cumplen años y progresan normal?» — Magnussen se rompía al segundo invierno) */
   const ret=(S.retiredPool||[]).filter(d=>d && d.name && (d.age||99)<=41 && !enJuego(d.name)).map(d=>({kind:"vuelve", tipo:"ret",
-    d:{name:d.name, flag:d.flag||"🏁", age:(FUND_2026[d.name]&&FUND_2026[d.name].age)||d.age, titles:d.titles||0, skill:Math.round(d.skill||78), ceil:Math.round(d.skill||78)},
+    d:{name:d.name, flag:d.flag||"🏁", age:edadFund(d.name, d.age), titles:d.titles||0, skill:Math.round(d.skill||78), ceil:Math.round(d.skill||78)},
     odds:(d.titles||0)>=2 ? .2 : (d.titles||0)>=1 ? .3 : .45}));
   const cross=(S.crossovers||[]).filter(c=>{ const a=yr-c.born; return a>=23 && a<=37 && !enJuego(c.name); }).map(c=>({kind:"cross", tipo:"cross",
-    d:{name:c.name, age:(FUND_2026[c.name]&&FUND_2026[c.name].age)||(yr-c.born), skill:c.base, ceil:c.ceil, titles:0, flag:c.flag},
+    d:{name:c.name, age:edadFund(c.name, yr-c.born), skill:c.base, ceil:c.ceil, titles:0, flag:c.flag},
     hoy:FUND_2026[c.name]&&FUND_2026[c.name].hoy, odds:.45}));
   const todos=[...sin,...ret,...cross];
   const out=[];
@@ -15688,7 +15690,7 @@ function tpMercadoPool(abiertos){
       return a>=27 && a<=37 && !S.dpool.some(d=>d.name===c.name) && noY[c.name]!==yr; });
     if(elig.length){
       const c0=elig[irnd(0,elig.length-1)];
-      fuera.push({kind:"cross", d:{name:c0.name, age:yr-c0.born, skill:c0.base, ceil:c0.ceil, titles:0, flag:c0.flag}, odds:.7});
+      fuera.push({kind:"cross", d:{name:c0.name, age:edadFund(c0.name, yr-c0.born), skill:c0.base, ceil:c0.ceil, titles:0, flag:c0.flag}, odds:.7});   // 🎂 misma edad que en la bolsa
     }
   }
   const floor = (S._tpNos||0)>=2 ? 0.45 : 0.12;
