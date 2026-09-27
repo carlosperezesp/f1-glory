@@ -451,6 +451,8 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .tp-verdict.ok{background:rgba(18,146,63,.13);color:#12923f}
 .tp-verdict.titulo{background:linear-gradient(90deg,rgba(230,179,37,.2),transparent);color:#b3860a}
 .tp-verdict.gracia{background:rgba(201,138,30,.14);color:#b47417}
+.tp-verdict.fundacion{background:rgba(18,146,63,.10);color:#3d7a52}
+[data-theme="dark"] .tp-verdict.fundacion{color:#7cc79a}
 .tp-verdict.fallo{background:rgba(225,6,0,.10);color:#c62222}
 .tp-verdict.fuera{background:rgba(225,6,0,.16);color:#c62222}
 [data-theme="dark"] .tp-verdict.ok{color:#4cd07f}
@@ -2323,6 +2325,23 @@ const CROSSOVERS = [
   // llegó a rumorearse en serio. Nacido en 1979 → solo puede aparecer entre 2006 y 2016, así que es
   // un cameo exclusivo de las eras retro. Rápido y taquillero, pero no candidato al título: otro mundo.
   {name:"V. Rossi", flag:"🇮🇹", born:1979, base:79, ceil:84},
+];
+/* 🏗️ SIN ASIENTO EN 2026: pilotos que han corrido en la F1 hace poco (o eran reservas oficiales) y
+   no tienen volante este año. Solo se ofrecen en la bolsa del año en que FUNDAS tu equipo (Carlos,
+   27-sep: «veteranos, o gente mayor de otras categorías relacionada con la F1 recientemente»).
+   Los techos cuadran con los que ya llevan en las llegadas de las eras retro. */
+const SIN_ASIENTO_2026 = [
+  {name:"Y. Tsunoda", flag:"🇯🇵", born:2000, base:81, ceil:84},
+  {name:"J. Doohan", flag:"🇦🇺", born:2003, base:77, ceil:83},
+  {name:"G. Zhou", flag:"🇨🇳", born:1999, base:78, ceil:80},
+  {name:"Mick Schumacher", flag:"🇩🇪", born:1999, base:77, ceil:80},
+  {name:"F. Drugovich", flag:"🇧🇷", born:2000, base:77, ceil:80},
+  {name:"N. de Vries", flag:"🇳🇱", born:1995, base:76, ceil:78},
+  {name:"S. Vandoorne", flag:"🇧🇪", born:1992, base:77, ceil:78},
+  {name:"A. Giovinazzi", flag:"🇮🇹", born:1993, base:76, ceil:77},
+  {name:"L. Sargeant", flag:"🇺🇸", born:2000, base:74, ceil:76},
+  {name:"P. Fittipaldi", flag:"🇧🇷", born:1996, base:75, ceil:76},
+  {name:"K. Maini", flag:"🇮🇳", born:2000, base:75, ceil:78},
 ];
 // escuderías que se incorporan a mitad de carrera (parrilla en expansión).
 // El AÑO de entrada se sortea por partida dentro de `range` → no siempre es el mismo.
@@ -5956,8 +5975,9 @@ function mkRookie(noCross, forTeam){
   // 🇬🇧🇮🇳 el tirón de la cantera: este asiento es de un equipo con identidad nacional viva
   // (el ancla es el arranque de la ERA, no S.baseYear: advanceEraTo lo reescribe en cada salto)
   const _era0 = (typeof ERAS!=="undefined" && ERAS[S.era] && ERAS[S.era].baseYear) || S.baseYear || _yr;
-  const _pais = (forTeam && CANTERA_PAIS[forTeam] && (_yr-_era0)>=8 && ch(.45))
-              ? CANTERA_PAIS[forTeam] : null;
+  const _paisF=S._forcePais; S._forcePais=null;   // 🏗️ el compatriota que garantiza la bolsa de tu equipo nuevo
+  const _pais = _paisF || ((forTeam && CANTERA_PAIS[forTeam] && (_yr-_era0)>=8 && ch(.45))
+              ? CANTERA_PAIS[forTeam] : null);
   // …y si en la bolsa curada no hay compatriotas, el tirón salta directo al bote genérico,
   // que es donde nacen los regens del país (el «mini pool» de una Force India longeva)
   const _saltaAlBote = _pais && !_avail.some(j=>S.rookies[j][1]===_pais);
@@ -13402,6 +13422,7 @@ function tpVerdictLine(r){
     case "titulo": return `🎯🏆: ${objetivo}`;   // dorado: el título de pilotos lo rescató
     case "ok":     return `🎯✅: ${objetivo}`;
     case "gracia": return `🎯🛡️: ${objetivo}`;   // ámbar: fallado, pero con indulto
+    case "fundacion": return `🌱 ${L("Año de fundación","Founding year",{pt:"Ano de fundação"})} · 🎯 ${objetivo}`;   // tu equipo recién nacido: el CEO no apunta
     case "fuera":  return `🎯🚪: ${objetivo}`;   // rojo intenso: destituido
     default:       return `🎯❌: ${objetivo}`;
   }
@@ -14774,11 +14795,46 @@ function tpFundar(ownerK){
   (S.llegadaExp=S.llegadaExp||{})[nm]=yearNow();           // 🛌 recién nacido: ni gigante dormido ni palmarés
   try{ palmSeedTeam(nm, S.baseYear); }catch(e){}
   SPONSOR_BADGE[nm]=esc;                                   // 🛡️ la inicial; futEvoluciona no toca a quien lleva escudo propio
-  S.tpFundador={team:nm, y:yearNow(), pal:d.p};
+  S.tpFundador={team:nm, y:yearNow(), pal:d.p, flag:sel.flag||null};
+  /* 🇪🇸 LA ESCUDERÍA ES DE TU PAÍS (Carlos, 27-sep): entra en la tabla de canteras nacionales, así que
+     con los años tirará de compatriotas como una Force India o un HRT. */
+  if(sel.flag) CANTERA_PAIS[nm]=sel.flag;
   S._tpFundacion=yearNow();                                // el mercado de este año: solo la bolsa
   S._fund=null;
   try{ track("tp_equipo_propio",{ceo:ownerK, pal:d.p}); }catch(e){}
   tpSignTeam(t,"start",ownerK);
+}
+/* 🧭 LA BOLSA DEL AÑO DE FUNDACIÓN (Carlos, 27-sep). Además de la cantera: pilotos que se han quedado
+   sin asiento este año, retirados recientes que volverían y estrellas de otras categorías — y SIEMPRE
+   algún compatriota tuyo, «realista en estos primeros años»: primero se busca uno de verdad en esas
+   listas o en la cantera real; solo si no hay ninguno se genera uno con un apellido de tu país. Las
+   probabilidades de que acepten son las de un equipo que acaba de nacer: los consagrados se lo piensan. */
+function tpFundVeteranos(){
+  const yr=yearNow();
+  if(S._fundVet && S._fundVet.y===yr) return S._fundVet.l;
+  const pais=S.tpFundador&&S.tpFundador.flag;
+  const enJuego=n=>(S.dpool||[]).some(d=>d&&d.name===n);
+  const baraja=a=>{ const c=a.slice(); for(let i=c.length-1;i>0;i--){ const j=irnd(0,i); [c[i],c[j]]=[c[j],c[i]]; } return c; };
+  const sin=SIN_ASIENTO_2026.filter(v=>!enJuego(v.name)).map(v=>({kind:"vuelve", tipo:"sin",
+    d:{name:v.name, flag:v.flag, age:yr-v.born, skill:v.base, ceil:v.ceil, titles:0}, odds:.75}));
+  const ret=(S.retiredPool||[]).filter(d=>d && d.name && (d.age||99)<=41 && !enJuego(d.name)).map(d=>({kind:"vuelve", tipo:"ret", d,
+    odds:(d.titles||0)>=2 ? .2 : (d.titles||0)>=1 ? .3 : .45}));
+  const cross=(S.crossovers||[]).filter(c=>{ const a=yr-c.born; return a>=23 && a<=37 && !enJuego(c.name); }).map(c=>({kind:"cross", tipo:"cross",
+    d:{name:c.name, age:yr-c.born, skill:c.base, ceil:c.ceil, titles:0, flag:c.flag}, odds:.45}));
+  const todos=[...sin,...ret,...cross];
+  const out=[];
+  // 1 · tus compatriotas (hasta dos), vengan de donde vengan
+  if(pais) baraja(todos.filter(c=>c.d.flag===pais)).slice(0,2).forEach(c=>{ c.odds=Math.min(.95,c.odds+.15); out.push(c); });
+  // 2 · y de cada grupo, algo: dos sin asiento, dos de fuera, uno que vuelve
+  [[sin,2],[cross,2],[ret,1]].forEach(([g,n])=>baraja(g.filter(c=>out.indexOf(c)<0)).slice(0,n).forEach(c=>out.push(c)));
+  // 3 · si no hay compatriota ni aquí ni en la cantera real, se genera uno (joven, con apellido de tu país)
+  const hayEnCantera=pais && (S.rookies||[]).some(r=>r[1]===pais && (!r[2]||yr>=r[2]) && (!r[3] || (yr-r[3]>=17 && yr-r[3]<=30)));
+  if(pais && !out.some(c=>c.d.flag===pais) && !hayEnCantera){
+    try{ S._forcePais=pais; const d=mkRookie(true, S.tpTeam); S._forcePais=null;
+      if(d && d.flag===pais){ d.age=Math.max(d.age||19,19); out.unshift({kind:"libre", tipo:"joven", d, odds:.85}); } }catch(e){ S._forcePais=null; }
+  }
+  S._fundVet={y:yr, l:out};
+  return out;
 }
 /* 🏷️ EL NIVEL DE UN PILOTO, EN PALABRAS. Un jefe de equipo no lee «93» en ninguna parte: lee informes.
    Se parte en DOS lecturas porque son decisiones distintas (petición de Carlos): lo que rinde HOY y
@@ -15375,7 +15431,8 @@ function tpMercado(){
      las estrellas de otras categorías. Quedan tu probador, los libres, la cantera y la bolsa. */
   /* 🏗️ …y lo mismo el año en que fundas tu equipo: el mercado de la temporada ya se ha cerrado */
   const _soloBolsa = S._tpSegunda || (S._tpFundacion===yearNow() && tpFundada());
-  tpMercadoPool(abiertos).filter(c=>!_soloBolsa || (c.kind!=="fichar" && c.kind!=="cross")).forEach(c=>{
+  const _fundHoy = S._tpFundacion===yearNow() && tpFundada();
+  tpMercadoPool(abiertos).filter(c=>!_soloBolsa || (c.kind!=="fichar" && (c.kind!=="cross" || _fundHoy))).forEach(c=>{
     const b=document.createElement("button"); b.className="offer";
     let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️",dotHTML=null;
     /* 🎨 inmersión (Carlos): el redondel es el ESCUDO del equipo de origen; y lo tuyo —renovaciones y
@@ -15659,11 +15716,29 @@ function tpPoolScreen(){
       `📜2 · <span class="odds o4">${L("sin equipo: acepta","no seat: accepts",{pt:"sem equipe: aceita"})}</span>`,
       {kind:"libre", d});
   });
+  // 🏗️ el año en que fundas tu equipo: veteranos, gente de fuera y un compatriota (ver tpFundVeteranos)
+  if(S._tpFundacion===yr && tpFundada()){
+    tpFundVeteranos().filter(c=>!seated.has(c.d.name) && noY[c.d.name]!==yr).forEach(c=>{
+      const b=document.createElement("button"); b.className="offer";
+      const d=c.d, tipo = c.tipo==="sin" ? L("Sin asiento este año","No seat this year",{pt:"Sem assento este ano"})
+        : c.tipo==="ret" ? L("Retirado: volvería","Retired: would come back",{pt:"Aposentado: voltaria"})
+        : c.tipo==="cross" ? L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})
+        : L("Joven sin asiento","Young and seatless",{pt:"Jovem sem assento"});
+      const icono = c.tipo==="ret" ? "🔁" : c.tipo==="cross" ? "🌎" : c.tipo==="sin" ? "🧭" : "🌱";
+      b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3d8bd4,#1d5b94)">${icono}</span>
+        <span class="info"><span class="name">${d.flag||"🏁"} ${d.name}</span>
+        <span class="sub" style="display:block">${tipo} · ${tpEtiqueta(d)} · ${d.age} ${L("años","yo",{pt:"anos"})}${d.titles?` · 👑×${d.titles}`:""}</span>
+        <span class="sub" style="display:block">📜${tpAniosPide(d)} · ${tpOddsTag(c.odds)}</span></span>`;
+      b.onclick=()=>tpNegociar(c, ()=>tpLlamada(c));
+      box.appendChild(b);
+    });
+  }
   // 2 · jóvenes del bote con nivel a la vista (aún sin asiento en la parrilla)
   // ⚠️ tu probador NO sale aquí: tiene su propia oferta en el mercado y ficharlo dos veces lo duplicaría
   (S.dpool||[]).filter(d=>d&&d.name&&!seated.has(d.name)&&(d.age||99)<=28&&(d.skill||0)>=74
       && noY[d.name]!==yr && !(S.freeAgents||[]).some(f=>f.name===d.name)
-      && !(S.tpReserva && S.tpReserva.name===d.name))
+      && !(S.tpReserva && S.tpReserva.name===d.name)
+      && !(S._fundVet && S._fundVet.y===yr && S._fundVet.l.some(c=>c.d.name===d.name)))   // 🏗️ ya salió arriba
     .sort((a,b)=>(b.skill||0)-(a.skill||0)).slice(0,4).forEach(d=>{
     mk("🌱", `${d.flag||"🏁"} ${d.name}`,
       L("Joven sin asiento","Young and seatless",{pt:"Jovem sem assento"})+` · ${tpEtiqueta(d)} · ${d.age} ${L("años","yo",{pt:"anos"})}`,
@@ -15671,7 +15746,9 @@ function tpPoolScreen(){
       {kind:"libre", d, odds:.85});
   });
   // 3 · promesas sin debutar: a ciegas — el fichaje las materializa (mkRookie con nombre forzado)
-  (S.rookies||[]).filter(r=>(!r[2]||yr>=r[2]) && !(S.dpool||[]).some(d=>d.name===r[0])).slice(0,5).forEach(r=>{
+  const _paisF=(S._tpFundacion===yr && tpFundada() && S.tpFundador.flag) || null;   // 🏗️ tus compatriotas, delante
+  (S.rookies||[]).filter(r=>(!r[2]||yr>=r[2]) && !(S.dpool||[]).some(d=>d.name===r[0]) && !(_paisF && r[3] && yr-r[3]<17))
+    .sort((a,b)=>(_paisF && b[1]===_paisF ? 1:0)-(_paisF && a[1]===_paisF ? 1:0)).slice(0,5).forEach(r=>{
     const edad=r[3]?` · ${yr-r[3]} ${L("años","yo",{pt:"anos"})}`:"";
     mk("🎓", `${r[1]||"🏁"} ${r[0]}`,
       L("Promesa de la cantera","Academy prospect",{pt:"Promessa da base"})+` · <span class="st-c">★</span><span class="st-e">????</span>`+edad,
@@ -16184,6 +16261,15 @@ function tpSignDriver(i,c){
     S.pendingEvents.push(L(`🤝 ${surname(d.name)} vuelve a la parrilla con vosotros: el CEO lo ha convencido.`,
       `🤝 ${surname(d.name)} is back on the grid with you: the CEO talked him into it.`,
       {pt:`🤝 ${surname(d.name)} volta ao grid com vocês: o CEO o convenceu.`}));
+  } else if(c.kind==="vuelve"){
+    /* 🧭 el que se había quedado sin asiento, o el retirado que vuelve (la bolsa de tu equipo nuevo) */
+    d=c.d; d.tpc=c._anios||2; d.yrs=0;
+    if(!S.dpool.some(x=>x&&x.name===d.name)) S.dpool.push(d);
+    S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!==d.name);
+    S.freeAgents=(S.freeAgents||[]).filter(x=>x && x.name!==d.name);
+    S.pendingEvents.push(c.tipo==="ret"
+      ? L(`🔁 ${surname(d.name)} vuelve de la retirada para correr con vosotros.`,`🔁 ${surname(d.name)} comes out of retirement to race for you.`,{pt:`🔁 ${surname(d.name)} volta da aposentadoria para correr com vocês.`})
+      : L(`🧭 ${surname(d.name)} vuelve a la parrilla: el asiento que nadie le dio se lo das tú.`,`🧭 ${surname(d.name)} is back on the grid: the seat nobody gave him, you do.`,{pt:`🧭 ${surname(d.name)} volta ao grid: a vaga que ninguém lhe deu, você dá.`}));
   } else if(c.kind==="cross"){
     d=c.d; d.tpc=c._anios||2; d.yrs=0; S.dpool.push(d);   // entra al mundo: el bote de crossovers ya no lo re-ofrece
     S.pendingEvents.push(L(`🌎 Bombazo: ${surname(d.name)} deja su categoría y cruza a la F1 con tu equipo.`,
@@ -17116,7 +17202,7 @@ function simTP(row){
   } else if(S.tpFundador && S.tpFundador.team===tn && row.year < S.tpFundador.y+2 && !_promesaRota){
     /* 🏗️ UN EQUIPO RECIÉN NACIDO: las dos primeras temporadas el CEO mira pero no apunta (Carlos,
        27-sep: «la presión es poca al principio»). A partir de la tercera, cuenta como en cualquier sitio. */
-    S.tpLastMet=false;
+    S.tpLastMet=false; row.tpVerdict="fundacion";
   } else if(S.tpGrace && !_promesaRota){
     S.tpGrace=false; S.tpLastMet=false;
     /* 🧹 el chip ya dice «fallado, pero el consejo te da un año más» */
