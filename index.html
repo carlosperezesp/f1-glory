@@ -14830,7 +14830,11 @@ function tpFundVeteranos(){
   const baraja=a=>{ const c=a.slice(); for(let i=c.length-1;i>0;i--){ const j=irnd(0,i); [c[i],c[j]]=[c[j],c[i]]; } return c; };
   const sin=SIN_ASIENTO_2026.filter(v=>!enJuego(v.name)).map(v=>({kind:"vuelve", tipo:"sin",
     d:{name:v.name, flag:v.flag, age:v.age+(yr-2026), skill:v.base, ceil:v.ceil, titles:0}, odds:.75}));
-  const ret=(S.retiredPool||[]).filter(d=>d && d.name && (d.age||99)<=41 && !enJuego(d.name)).map(d=>({kind:"vuelve", tipo:"ret", d,
+  /* ⚠️ ficha NUEVA, como hace el amigo del CEO: los del bolsillo de retirados no llevan techo, y sin
+     techo la progresión anual deja el nivel en NaN (cazado en la prueba de Carlos del 27-sep:
+     «¿cumplen años y progresan normal?» — Magnussen se rompía al segundo invierno) */
+  const ret=(S.retiredPool||[]).filter(d=>d && d.name && (d.age||99)<=41 && !enJuego(d.name)).map(d=>({kind:"vuelve", tipo:"ret",
+    d:{name:d.name, flag:d.flag||"🏁", age:d.age, titles:d.titles||0, skill:Math.round(d.skill||78), ceil:Math.round(d.skill||78)},
     odds:(d.titles||0)>=2 ? .2 : (d.titles||0)>=1 ? .3 : .45}));
   const cross=(S.crossovers||[]).filter(c=>{ const a=yr-c.born; return a>=23 && a<=37 && !enJuego(c.name); }).map(c=>({kind:"cross", tipo:"cross",
     d:{name:c.name, age:yr-c.born, skill:c.base, ceil:c.ceil, titles:0, flag:c.flag}, odds:.45}));
@@ -16279,6 +16283,7 @@ function tpSignDriver(i,c){
   } else if(c.kind==="vuelve"){
     /* 🧭 el que se había quedado sin asiento, o el retirado que vuelve (la bolsa de tu equipo nuevo) */
     d=c.d; d.tpc=c._anios||2; d.yrs=0;
+    if(d.ceil==null || isNaN(d.ceil)) d.ceil=Math.round(d.skill||78);   // red: sin techo, la progresión da NaN
     if(!S.dpool.some(x=>x&&x.name===d.name)) S.dpool.push(d);
     S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!==d.name);
     S.freeAgents=(S.freeAgents||[]).filter(x=>x && x.name!==d.name);
