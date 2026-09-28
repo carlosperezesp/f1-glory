@@ -4579,6 +4579,38 @@ const CHALLENGES = {
     persona:"LOEB",
     at:"2026-09-28T10:00:00Z",
   },
+  /* 🇩🇪 RETO VIII · NO ME VOY (Carlos, 28-sep-2026; el más pedido por la gente, ×3). Lo de aquí pasó,
+     verificado en la web: el 10-sep-2006 ganó en Monza y anunció en la rueda de prensa que lo dejaba
+     a final de año; ese mismo día Ferrari presentó a Räikkönen como sustituto. En Suzuka se le rompió
+     el motor yendo líder; en Interlagos salió 10º (presión de combustible en la Q3), pinchó en la
+     vuelta 7 tras un toque con Fisichella, cayó al 19º y acabó 4º. Alonso campeón por 13 (134-121).
+     🦋 Decisiones de Carlos: Räikkönen se queda de compañero y el asiento que ocupas es el de Massa
+        (`hueco`: sigue en el mundo, sin volante); McLaren queda como fue, Alonso y Hamilton novato.
+        Los siete Mundiales CUENTAN (`who.titles`, ver setupChallenge) salvo en los puntos del ranking.
+        Tres años de margen de veterano (`vetMargen`), como Loeb.
+     ⚠️ LO QUE EL TEXTO NO AFIRMA: si le empujaron a irse (la versión de Montezemolo y la de otras
+        crónicas no coinciden). Y Massa no «vuelve a ser probador»: el juego no modela eso. */
+  schumacher: {
+    id:"schumacher", era:"2000", year:2007, team:"Ferrari", role:"1", secret:true,
+    teams: TEAMS_2007, grid: GRID2007,
+    drop:["M. Schumacher"],   // el real no puede estar en ningún bote: el Schumacher eres tú
+    hueco:"F. Massa",
+    nota:["Tu 17ª temporada","Your 17th season","A sua 17ª temporada"],   // debutó en 1991 (Spa, Jordan)
+    who:{ age:38, ovr:93, ceil:95, flag:"🇩🇪", country:"Alemania", style:"tecnico", num:"5",
+          titles:7,
+          fameBase:495 },   // sus 91 victorias, 154 podios y 68 poles hasta 2006, con la misma vara que fameScore
+    vetMargen:3,
+    t:["No me voy","I'm not leaving","Eu não vou embora"],
+    sub:["La retirada que no fue · 2007 · 38 años",
+         "The retirement that never was · 2007 · aged 38",
+         "A aposentadoria que não aconteceu · 2007 · 38 anos"],
+    d:["Eres Michael Schumacher. El 10 de septiembre de 2006 ganaste en Monza y, en la rueda de prensa, anunciaste que lo dejabas a final de año; ese mismo día Ferrari presentó a Räikkönen como tu sustituto. El título se te escapó en Suzuka, con el motor roto yendo líder, y en Interlagos remontaste del 19º al 4º tras un pinchazo: Alonso fue campeón por trece puntos. Aquí no te vas. Sigues en Ferrari, con Räikkönen al otro lado del box, y en McLaren esperan Alonso y un novato llamado Hamilton. Tienes 38 años y siete Mundiales. ¿Llega el octavo?",
+       "You are Michael Schumacher. On 10 September 2006 you won at Monza and, in the press conference, announced you would stop at the end of the year; that same day Ferrari unveiled Räikkönen as your replacement. The title slipped away at Suzuka, with your engine blowing while you led, and at Interlagos you fought back from 19th to 4th after a puncture: Alonso was champion by thirteen points. Here you don't leave. You stay at Ferrari, with Räikkönen on the other side of the garage, and at McLaren Alonso and a rookie called Hamilton are waiting. You are 38, with seven world titles. Will the eighth come?",
+       "Você é Michael Schumacher. Em 10 de setembro de 2006 você venceu em Monza e, na coletiva, anunciou que pararia no fim do ano; naquele mesmo dia a Ferrari apresentou Räikkönen como seu substituto. O título escapou em Suzuka, com o motor quebrando quando você liderava, e em Interlagos você se recuperou do 19º ao 4º depois de um furo: Alonso foi campeão por treze pontos. Aqui você não vai embora. Continua na Ferrari, com Räikkönen do outro lado do box, e na McLaren esperam Alonso e um estreante chamado Hamilton. Você tem 38 anos e sete Mundiais. Vem o oitavo?"],
+    champ:"F. Alonso",   // 👑 campeón del mundo de 2006
+    persona:"M. SCHUMACHER",
+    at:"2026-10-05T10:00:00Z",
+  },
 };
 // el nombre del monstruo se fija AL CREARLO, en el idioma de la partida (como los eventos del historial)
 function beastName(){ return L("La Bestia","The Beast",{pt:"A Fera"}); }
@@ -5079,6 +5111,10 @@ function setupChallenge(CH){
        para no repetir a nadie, y al primer equipo de la lista le sacaba un piloto que estaba escrito
        en un equipo de MÁS ABAJO. Cazado montando la parrilla de 2009: el segundo Brawn salía siendo
        Bourdais, que estaba a la vez en Toro Rosso. */
+    /* 🪑 EL HUECO CON NOMBRE (reto VIII, Schumacher): el real no está en la parrilla —se había
+       retirado—, así que no deja hueco propio; el asiento que ocupas es el de `hueco` (Massa), que
+       no desaparece del mundo: se queda sin volante, disponible para el mercado. */
+    if(CH.hueco) (S.seats[CH.team]||[]).forEach(d=>{ if(d && d!=="PLAYER" && d.name===CH.hueco) d._huecoReto=true; });
     Object.keys(CH.grid).forEach(team=>{
       while((S.seats[team]||[]).length<2){ const _r=mkRookie(false, team); if(team===CH.team) _r._huecoReto=true; S.seats[team].push(_r); }   // 🪑 idem: el hueco que dejó el real
     });
@@ -5150,12 +5186,24 @@ function setupChallenge(CH){
      esa etiqueta no es decorativa: protege de que te echen de tu propio garaje, manda en la
      jerarquía del equipo y la mira `alphaClash`. Va fuera del bloque de la parrilla propia, que así
      vale también para los retos que no traen la suya. */
+  /* 👤 EL QUE ERES TÚ NO PUEDE SEGUIR POR AHÍ COMO OTRO: ni en el bolsillo de retirados (Schumacher
+     «se retiró» en 2006 en esas listas y volvería contra ti) ni en las leyendas del récord (serías el
+     plusmarquista y a la vez una leyenda aparte con tus mismos 7). */
+  if((S.chDrop||[]).length){
+    S.retiredPool=(S.retiredPool||[]).filter(r=>r && !S.chDrop.includes(r.name));
+    if(S.legends) S.legends=S.legends.filter(x=>!S.chDrop.includes(x[0]));
+  }
   if(CH.champ) S.lastChampName = CH.champ;
   // 3) tu ficha. Si el reto trae año de nacimiento, la edad SALE DEL AÑO que haya tocado: con una
   //    ventana de años, tener la edad escrita a mano haría que en 2006 y en 2007 tuvieras la misma.
   const _edad = CH.who.born ? (_ano - CH.who.born) : CH.who.age;
   S.age = _edad; S.startAge = _edad; S.peakAge = _edad;
   S.ovr = CH.who.ovr;
+  /* 🏆 LLEGAR CON MUNDIALES (Carlos, 28-sep: «empieza con siete»). Cuentan en TODO el juego —vitrina,
+     reputación, ofertas, récord, pantalla final— pero no en los PUNTOS del ranking: el servidor
+     rechaza más títulos que temporadas y la global se inflaría 120 puntos por cada uno regalado.
+     `titulosPrevios` se resta solo en gloriaScore y en lo que se envía. */
+  if(CH.who.titles){ S.titles.f1 = CH.who.titles; S.titulosPrevios = CH.who.titles; }
   // 🌟 llegar siendo ya famoso por otra cosa
   if(CH.who.fameBase) S.fameBase = CH.who.fameBase;
   // 4) a su asiento de F1, sin pasar por el karting
@@ -5178,7 +5226,7 @@ function setupChallenge(CH){
   renderOffers(
     puertas.length
       ? puertas.map(x=>({team:x.t, role:CH.role||roleFor(x.t.name), note:x.note}))
-      : [{team, role:CH.role||roleFor(team.name), note:["Tu debut","Your debut","A sua estreia"]}],
+      : [{team, role:CH.role||roleFor(team.name), note: CH.nota || ["Tu debut","Your debut","A sua estreia"]}],   // 🏆 quien llega hecho no debuta: el reto trae su nota
     false);
 }
 function initSecretChallenges(){
@@ -13814,7 +13862,7 @@ function bestMarqueeWin(){
 
 /* ================= 🏆 RANKING (oculto tras PREVIEW) ================= */
 // puntuación = "Puntos de leyenda" (la misma que se ve en la pantalla final)
-function gloriaScore(){ return S.titles.f1*120 + S.titles.constr*30 + S.wins*3 + S.podiums + S.poles + S.subcamp*15; }
+function gloriaScore(){ return (S.titles.f1-(S.titulosPrevios||0))*120 + S.titles.constr*30 + S.wins*3 + S.podiums + S.poles + S.subcamp*15; }
 function f1gPid(){ try{ let id=localStorage.getItem("f1g_pid"); if(!id){ id="p"+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem("f1g_pid",id); } return id; }catch(e){ return "p0"; } }
 /* 📮 COLA DE REENVÍO. Antes se apuntaba tu mejor marca en el móvil ANTES de saber si el servidor la
    había recibido: si el envío se caía —sin cobertura, la pestaña cerrada nada más terminar, el sitio
@@ -13921,7 +13969,7 @@ function submitScore(){
       ns: (S.seasons||[]).length,                              // nº total de temporadas (junior+F1)
       /* ⚠️ `seasons` EN EL MODO JEFE. `S.f1Seasons` cuenta TUS temporadas como piloto, y de jefe son
          CERO: el servidor recibía «2 títulos con 0 temporadas» y lo rechazaba por stats incoherentes. */
-      b: esTP ? tpStatsB() : { f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp,
+      b: esTP ? tpStatsB() : { f1:S.titles.f1-(S.titulosPrevios||0), constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp,
           seasons:S.f1Seasons } };
     // ⚠️ la cola PRIMERO: si el móvil se queda sin conexión justo aquí (o cierras la pestaña al ver la
     // pantalla final), la carrera ya está a salvo para reintentarla. Se limpia sola al confirmarse.
@@ -14137,7 +14185,7 @@ function endCareer(){
   try{ if(!PREVIEW && !TEST_MODE && new Date() >= new Date("2026-08-01T00:00:00")) submitScore(); }catch(e){}
   // guarda la carrera también en local: respaldo del ranking si no hay conexión
   localBoardAdd({n:pName(), f:sel.flag, g:score, d:yearNow(),
-    b:{ f1:S.titles.f1, constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons }});
+    b:{ f1:S.titles.f1-(S.titulosPrevios||0), constr:S.titles.constr, wins:S.wins, podiums:S.podiums, poles:S.poles, subcamp:S.subcamp, seasons:S.f1Seasons }});
   // ¿dominaste tu era? Se cuentan SOLO los mundiales que tus rivales ganaron DENTRO de tu época en la
   // élite: desde tu debut en F1 (eraStartT) hasta que la dejaste (eraEndT). Si te fuiste a Indy/NASCAR y
   // ellos siguieron ganando después, eso ya es SU era, no la tuya.
