@@ -2330,6 +2330,13 @@ const CROSSOVERS = [
    no tienen volante este año. Solo se ofrecen en la bolsa del año en que FUNDAS tu equipo (Carlos,
    27-sep: «veteranos, o gente mayor de otras categorías relacionada con la F1 recientemente»).
    Los techos cuadran con los que ya llevan en las llegadas de las eras retro. */
+/* 🏁 QUÉ CORRE CADA PROMESA DE LA CANTERA EN 2026 (Carlos, 28-sep: «"Promesa de la cantera" no tiene
+   sentido. Pon la competición principal que estén disputando este año»). Sacado de las tablas de
+   inscritos de Wikipedia de cada campeonato de 2026 (F2, F3, FRECA, GB3, F4, Super Fórmula, Indy NXT,
+   IndyCar, Fórmula E, WEC, ELMS), el 28-sep-2026; si sale en varios, el principal (nunca el de
+   invierno). Los que no aparecen en ninguna lista (sobre todo karting) no están: su categoría la da
+   la edad, y desde 2027 todas avanzan un peldaño por año (ver serieJoven). */
+const SERIE_2026 = {"A. Dunne": "F2",  "N. Tsolov": "F2",  "R. Camara": "F2",  "U. Ugochukwu": "F3",  "D. Beganovic": "F2",  "L. Browning": "Super Fórmula",  "S. Montoya": "F2",  "J. Edgar": "WEC",  "J. Dürksen": "F2",  "R. Verschoor": "ELMS",  "C. Collet": "IndyCar",  "N. León": "F2",  "O. Goethe": "F2",  "R. Villagómez": "F2",  "M. Stenshorne": "F2",  "T. Barnard": "Fórmula E",  "J. Wharton": "F3",  "C. Costoya": "F4",  "F. Slater": "F3",  "T. Taponen": "F3",  "E. Deligny": "F3",  "B. Badoer": "F3",  "K. Nakamura-Berta": "FRECA",  "E. Giltaire": "Super Fórmula Lights",  "M. Colnaghi": "F3",  "T. Pourchaire": "WEC",  "V. Martins": "WEC",  "P. Martí": "Fórmula E",  "E. Rivera": "F3",  "N. Bedrin": "GB3",  "M. Molnár": "GB3",  "S. Wheldon": "FRECA",  "R. Al Dhaheri": "FRECA",  "E. Olivieri": "FRECA",  "A. Powell": "F3",  "R. Lammers": "FRECA",  "E. Masson": "WEC",  "A. Aksoy": "F4",  "K. Craigie": "F4",  "D. Van Langendonck": "F4",  "R. Coronel": "F4",  "N. Monteiro": "Indy NXT",  "K. Schormans": "F4",  "B. Łyżeń": "F4",  "M. Jakobsen": "WEC",  "M. Jaubert": "WEC",  "S. Lindblom": "F4",  "T. Harfield": "F4",  "L. Sammalisto": "F4",  "T. Strauven": "FRECA"};
 const SIN_ASIENTO_2026 = [   // edad a la salida de 2026 (como GRID2026) · `hoy` = dónde está de verdad en 2026 (revisado en la web el 28-sep)
   {name:"Y. Tsunoda", flag:"🇯🇵", age:25, base:81, ceil:84, hoy:["Reserva de Red Bull","Red Bull reserve","Reserva da Red Bull"]},          // 11-may-2000
   {name:"J. Doohan", flag:"🇦🇺", age:23, base:77, ceil:83, hoy:["Reserva de Haas","Haas reserve","Reserva da Haas"]},                      // 20-ene-2003
@@ -14894,6 +14901,110 @@ function tpReservaHoy(r){
   if(r.hoy && yearNow()===2026) return LA(r.hoy);
   return L("Reserva sin volante","Reserve without a race seat",{pt:"Reserva sem volante"});
 }
+/* 🪜 la categoría de un joven en un año dado: el dato real de 2026 y, después, un peldaño por año */
+const ESCALERA_JR=["Karting","F4","FRECA","F3","F2"];
+function serieJoven(nombre, edad, yr){
+  const base=SERIE_2026[nombre];
+  if(base && yr<=2026) return base;
+  if(base){
+    const i=ESCALERA_JR.indexOf(base==="GB3"?"FRECA":base);
+    if(i<0) return base;                                   // Fórmula E, IndyCar, WEC, Super Fórmula…: se queda
+    return ESCALERA_JR[Math.min(ESCALERA_JR.length-1, i+(yr-2026))];
+  }
+  return edad<=15?"Karting": edad<=16?"F4": edad<=17?"FRECA": edad<=19?"F3":"F2";
+}
+/* 🗂️ LAS BOLSAS DEL PRIMER MERCADO DE TU EQUIPO (Carlos, 28-sep: «podemos hacer varias bolsas, y
+   agruparlos por tipo… Me puedes dar 2 del país en cuestión + esas bolsas. Si elijo un país raro pues
+   nada, directamente las bolsas… En cada una de esas bolsas, dame 4 opciones más un "shuffle"… algo
+   como "Buscar nuevos candidatos"». Solo AL INICIO, para fichar tus pilotos iniciales; luego el mercado
+   es el de siempre). Tres bolsas —veteranos, jóvenes, otras categorías—; los reservas se reparten por
+   edad, y los que ya corren en otra categoría van con los de fuera. */
+const FUND_BOLSAS=[
+  {k:"vet", ic:"🎖️", t:["Veteranos","Veterans","Veteranos"], sub:["Retirados que volverían y reservas con experiencia","Retired drivers who'd come back and seasoned reserves","Aposentados que voltariam e reservas experientes"]},
+  {k:"jov", ic:"🌱", t:["Jóvenes","Youngsters","Jovens"], sub:["Reservas jóvenes y promesas de F2, F3 y las fórmulas de promoción","Young reserves and prospects from F2, F3 and the feeder series","Reservas jovens e promessas da F2, F3 e fórmulas de base"]},
+  {k:"otras", ic:"🌎", t:["Otras categorías","Other series","Outras categorias"], sub:["IndyCar, Fórmula E, WEC…: pilotos que cruzarían a la F1","IndyCar, Formula E, WEC…: drivers who'd cross over to F1","IndyCar, Fórmula E, WEC…: pilotos que cruzariam para a F1"]},
+];
+function tpFundGrupos(){
+  const yr=yearNow();
+  const enJuego=n=>(S.dpool||[]).some(d=>d&&d.name===n);
+  const g={vet:[], jov:[], otras:[]};
+  (S.reservas||[]).filter(r=>r&&r.reserva&&!enJuego(r.name)).forEach(r=>{
+    const c={kind:"vuelve", tipo:"sin", d:r, hoy:r.hoy, odds:.75};
+    const fuera=r.hoy && /^Corre en/.test(r.hoy[0]);
+    (fuera ? g.otras : (r.age||30)<=26 ? g.jov : g.vet).push(c); });
+  (S.retiredPool||[]).filter(d=>d && d.name && (d.age||99)<=41 && !enJuego(d.name)).forEach(d=>g.vet.push({kind:"vuelve", tipo:"ret",
+    d:{name:d.name, flag:d.flag||"🏁", age:edadFund(d.name, d.age), titles:d.titles||0, skill:Math.round(d.skill||78), ceil:Math.round(d.skill||78)},
+    odds:(d.titles||0)>=2 ? .2 : (d.titles||0)>=1 ? .3 : .45}));
+  (S.crossovers||[]).filter(c=>{ const a=yr-c.born; return a>=23 && a<=37 && !enJuego(c.name); }).forEach(c=>g.otras.push({kind:"cross", tipo:"cross",
+    d:{name:c.name, age:edadFund(c.name, yr-c.born), skill:c.base, ceil:c.ceil, titles:0, flag:c.flag},
+    hoy:FUND_2026[c.name]&&FUND_2026[c.name].hoy, odds:.45}));
+  // jóvenes: las promesas por debutar (a ciegas: el fichaje las materializa) con su categoría de este año
+  (S.rookies||[]).filter(r=>(!r[2]||yr>=r[2]) && !enJuego(r[0]) && r[3] && yr-r[3]>=17 && yr-r[3]<=26).forEach(r=>g.jov.push({kind:"rookie", _force:r[0],
+    d:{name:r[0], flag:r[1]||"🏁", age:yr-r[3]}, ciego:true, serie:serieJoven(r[0], yr-r[3], yr)}));
+  // orden de la primera tirada: por nivel (las promesas, a ciegas, detrás de los que tienen nivel a la vista)
+  Object.values(g).forEach(l=>l.sort((a,b)=>(b.ciego?0:1)-(a.ciego?0:1) || (b.d.skill||0)-(a.d.skill||0)));
+  return g;
+}
+/* una tarjeta de candidato, igual en las tres bolsas y en la fila de compatriotas */
+function tpFundCandBtn(c){
+  const b=document.createElement("button"); b.className="offer";
+  const d=c.d;
+  const tipo = c.ciego ? `${c.serie} · <span class="st-c">★</span><span class="st-e">????</span>`
+    : (c.hoy ? LA(c.hoy) : c.tipo==="ret" ? L("Retirado de la F1: volvería","Retired from F1: would come back",{pt:"Aposentado da F1: voltaria"})
+      : c.tipo==="cross" ? L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})
+      : L("Sin asiento este año","No seat this year",{pt:"Sem assento este ano"}))+` · ${tpEtiqueta(d)}`;
+  const icono = c.ciego ? "🎓" : c.tipo==="ret" ? "🔁" : c.tipo==="cross" ? "🌎" : "🧢";
+  const linea2 = c.ciego ? "📜3 · "+L("nivel por descubrir al firmar","level revealed when you sign",{pt:"nível revelado ao assinar"})
+    : `📜${tpAniosPide(d)} · ${tpOddsTag(c.odds)}`;
+  b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3d8bd4,#1d5b94)">${icono}</span>
+    <span class="info"><span class="name">${d.flag||"🏁"} ${d.name}</span>
+    <span class="sub" style="display:block">${tipo} · ${d.age} ${L("años","yo",{pt:"anos"})}${d.titles?` · 👑×${d.titles}`:""}</span>
+    <span class="sub" style="display:block">${linea2}</span></span>`;
+  b.onclick=()=>tpNegociar(c, ()=>tpLlamada(c));
+  return b;
+}
+/* en el primer mercado: tus compatriotas (hasta dos, los de más nivel) y un botón por bolsa */
+function tpFundMercado(box){
+  const pais=S.tpFundador&&S.tpFundador.flag, g=tpFundGrupos(), noY=S._tpNo||{}, yr=yearNow();
+  const todos=[...g.vet,...g.otras,...g.jov].filter(c=>noY[c.d.name]!==yr);
+  if(pais) todos.filter(c=>c.d.flag===pais).slice(0,2).forEach(c=>{ c.odds=Math.min(.95,(c.odds||.75)+.15); box.appendChild(tpFundCandBtn(c)); });
+  FUND_BOLSAS.forEach(bo=>{
+    const n=g[bo.k].filter(c=>noY[c.d.name]!==yr).length; if(!n) return;
+    const b=document.createElement("button"); b.className="offer";
+    b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#c9a227,#8a6a10)">${bo.ic}</span>
+      <span class="info"><span class="name">${L(bo.t[0],bo.t[1],{pt:bo.t[2]})}</span>
+      <span class="sub" style="display:block">${L(bo.sub[0],bo.sub[1],{pt:bo.sub[2]})}</span></span>`;
+    b.onclick=()=>tpFundBolsa(bo.k);
+    box.appendChild(b);
+  });
+}
+/* dentro de una bolsa: cuatro candidatos y «Buscar nuevos candidatos», que pasa a los cuatro siguientes */
+function tpFundBolsa(k){
+  if(S.retired) return;
+  const ab=tpAbiertos(); if(!ab.length){ tpMercado(); return; }
+  const bo=FUND_BOLSAS.find(x=>x.k===k), yr=yearNow(), noY=S._tpNo||{};
+  const l=tpFundGrupos()[k].filter(c=>noY[c.d.name]!==yr);
+  S._fundPag=S._fundPag||{};
+  const nPag=Math.max(1,Math.ceil(l.length/4)), pag=(S._fundPag[k]||0)%nPag;
+  setDecision(`${bo.ic} ${L(bo.t[0],bo.t[1],{pt:bo.t[2]})} · ${yr}`, L(bo.sub[0],bo.sub[1],{pt:bo.sub[2]}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  l.slice(pag*4, pag*4+4).forEach(c=>box.appendChild(tpFundCandBtn(c)));
+  if(l.length>4){
+    const sh=document.createElement("button"); sh.className="offer";
+    sh.innerHTML=`<span class="team-dot dot" style="background:#3a3a3a">🔀</span>
+      <span class="info"><span class="name">${L("Buscar nuevos candidatos","Look for new candidates",{pt:"Buscar novos candidatos"})}</span>
+      <span class="sub" style="display:block">${L(`Otros cuatro de esta bolsa (${pag+1}/${nPag})`,`Another four from this pool (${pag+1}/${nPag})`,{pt:`Outros quatro deste grupo (${pag+1}/${nPag})`})}</span></span>`;
+    sh.onclick=()=>{ S._fundPag[k]=pag+1; tpFundBolsa(k); };
+    box.appendChild(sh);
+  }
+  const v=document.createElement("button"); v.className="offer retire";
+  v.innerHTML=`<span class="team-dot dot" style="background:#71717c">↩️</span>
+    <span class="info"><span class="name">${L("Volver al mercado","Back to the market",{pt:"Voltar ao mercado"})}</span></span>`;
+  v.onclick=()=>tpMercado();
+  box.appendChild(v);
+  scrollToDecision();
+}
 /* 🧭 LA BOLSA DEL AÑO DE FUNDACIÓN (Carlos, 27-sep). Además de la cantera: pilotos que se han quedado
    sin asiento este año, retirados recientes que volverían y estrellas de otras categorías — y SIEMPRE
    algún compatriota tuyo, «realista en estos primeros años»: primero se busca uno de verdad en esas
@@ -15545,6 +15656,7 @@ function tpMercado(){
   /* 🏗️ …y lo mismo el año en que fundas tu equipo: el mercado de la temporada ya se ha cerrado */
   const _soloBolsa = S._tpSegunda || (S._tpFundacion===yearNow() && tpFundada());
   const _fundHoy = S._tpFundacion===yearNow() && tpFundada();
+  if(_fundHoy && !S._tpSegunda){ tpFundMercado(box); scrollToDecision(); return; }   // 🗂️ las bolsas del primer mercado
   tpMercadoPool(abiertos).filter(c=>!_soloBolsa || (c.kind!=="fichar" && (c.kind!=="cross" || _fundHoy))).forEach(c=>{
     const b=document.createElement("button"); b.className="offer";
     let nm,sub1,sub2,dotStyle="background:linear-gradient(135deg,#c9a227,#8a6a10)",dotTxt="✍️",dotHTML=null;
@@ -15902,7 +16014,7 @@ function tpPoolScreen(){
     .sort((a,b)=>(_paisF && b[1]===_paisF ? 1:0)-(_paisF && a[1]===_paisF ? 1:0)).slice(0,5).forEach(r=>{
     const edad=r[3]?` · ${yr-r[3]} ${L("años","yo",{pt:"anos"})}`:"";
     mk("🎓", `${r[1]||"🏁"} ${r[0]}`,
-      L("Promesa de la cantera","Academy prospect",{pt:"Promessa da base"})+` · <span class="st-c">★</span><span class="st-e">????</span>`+edad,
+      serieJoven(r[0], r[3]?yr-r[3]:19, yr)+` · <span class="st-c">★</span><span class="st-e">????</span>`+edad,
       "📜3 · "+L("se desvela al firmar","revealed when you sign",{pt:"se revela ao assinar"}),
       {kind:"rookie", _force:r[0]});
   });
