@@ -15715,8 +15715,11 @@ function tpMercadoPool(abiertos){
      Si hay joya guardada, la tarjeta la nombra y ficha a ELLA. */
   /* 🤝 el amigo del CEO: entra en la lista mientras haya asiento libre y no se haya gastado. Su
      probabilidad es alta diga lo que diga tu coche — es lo que lo hace útil en un equipo malo. */
+  /* 🐞 (28-sep-2026) sentado en CUALQUIER coche, no solo en el tuyo: la carta guarda una copia del
+     retirado del día en que llegó el CEO, y si entre medias volvía por otra vía (el bombazo, un rival)
+     la carta lo traía otra vez — el robot vio a Verstappen en Williams y en Audi a la vez. */
   if(S.tpAmigo && S.tpOwner && S.tpOwner.k==="show"
-     && !(S.seats[S.tpTeam]||[]).some(d=>d&&d!=="PLAYER"&&d.name===S.tpAmigo.name))
+     && !Object.values(S.seats||{}).some(sl=>Array.isArray(sl) && sl.some(d=>d&&d!=="PLAYER"&&d.name===S.tpAmigo.name)))
     cands.push({kind:"amigo", d:S.tpAmigo, odds:.9});
   /* 🎓 la carta suelta de «Apostar por la cantera» ya NO se ofrece para un asiento titular
      (Carlos, 12-sep: «para fichar a un 1º o 2º piloto no tiene sentido ese botón» — en la F1 real
