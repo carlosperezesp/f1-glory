@@ -6671,6 +6671,9 @@ function npcMercadoOrdinario(row){
   });
   // 🔁 vía Albon: los agentes libres del año pasado (buenos que se quedaron sin asiento) reentran en la bolsa
   (S.freeAgents||[]).forEach(d=>{ d.yrs=0; bolsa.push(d); }); S.freeAgents=[];
+  /* 🧢 y en el jefe, algunos reservas del paddock se asoman al mercado (ver tpReservasSembrar) */
+  if(S.cat==="TP" && S.reservas){ tpReservasInvierno();
+    S.reservas.forEach(r=>{ if(ch(RES_ENTRA) && !bolsa.includes(r)) bolsa.push(r); }); }
   huecos.sort((a,b)=>perf(b.tm)-perf(a.tm));   // el mejor coche elige primero
   /* 🅰️🅱️🅲️ EL INVIERNO POR FASES · SOLO EN EL MODO JEFE (diseño de Carlos, 30-ago-2026).
      Antes la parrilla se llenaba ENTERA antes de que tú salieras al mercado, así que todo lo bueno
@@ -6728,6 +6731,14 @@ function mktRellenar(row, huecos, bolsa, cerrar){
     bolsa.splice(bolsa.indexOf(eleg),1);
     eleg.yrs=0; if(S.cat==="TP") eleg.tpc=tpContratoPara(eleg,h.tm);
     S.seats[h.tm][h.i]=eleg;
+    if(eleg.reserva){   // 🧢 un reserva del paddock consigue volante
+      delete eleg.reserva; delete eleg.hoy;
+      S.reservas=(S.reservas||[]).filter(x=>x!==eleg);
+      if(!(S.dpool||[]).includes(eleg)) S.dpool.push(eleg);
+      if(row && row.events) row.events.push(L(`🧢 ${h.tm} le da volante a ${surname(eleg.name)}, que esperaba su oportunidad como reserva.`,
+        `🧢 ${h.tm} hands a race seat to ${surname(eleg.name)}, who had been waiting for his chance as a reserve.`,
+        {pt:`🧢 A ${h.tm} dá um volante a ${surname(eleg.name)}, que esperava a sua chance como reserva.`}));
+    }
   });
   if(!cerrar) return;   // 🅰️ la fase A solo coloca: el mercado lo cierra la fase C, tras el tuyo
   /* 🔁 los buenos que se quedan sin asiento no se esfuman: esperan en la nevera a la próxima ventana.
@@ -6735,7 +6746,7 @@ function mktRellenar(row, huecos, bolsa, cerrar){
      27 años y 84 desaparecía del mundo por ser el CUARTO de una nevera de tres; Ocon con 80, por no
      llegar al corte de 84). La nevera se ensancha (82+, ≤35, hasta cuatro) y quien de verdad sale de
      la F1 se despide en el resumen — una línea agrupada, como las retiradas. */
-  const _quedan=bolsa.filter(d=>(d.skill||0)>=82 && (d.age||0)<=35)
+  const _quedan=bolsa.filter(d=>!d.reserva && (d.skill||0)>=82 && (d.age||0)<=35)   // 🧢 los reservas vuelven a su sitio, no a la nevera
     .sort((a,b)=>(b.skill||0)-(a.skill||0));
   S.freeAgents = _quedan.slice(0,4);
   /* 🚪 EL QUE SALE DE TU GARAJE NO SE EVAPORA (7-sep-2026). La nevera se queda con cuatro y el resto se
@@ -14389,6 +14400,7 @@ function initTPState(){
     S.regAviso=2025; S.regAvisado=false; S.regRecordado=true; S.regGorda=false;
   }
   initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
+  tpReservasSembrar();        // 🧢 los reservas y probadores de 2026 existen en el mundo
   /* 🎲 OVR VARIABLE POR PARTIDA (idea de Carlos, 18-ago). El nivel de los titulares venía FIJO del
      dato de la era (solo el techo se sorteaba); en el modo jefe eso hacía cada partida demasiado
      parecida: siempre los mismos buenos. ±2 por piloto, sin pasar su techo. SOLO aquí: el clásico
@@ -14842,6 +14854,46 @@ function tpFundar(ownerK){
   try{ track("tp_equipo_propio",{ceo:ownerK, pal:d.p}); }catch(e){}
   tpSignTeam(t,"start",ownerK);
 }
+/* 🧢 LOS RESERVAS DEL PADDOCK (Carlos, 28-sep-2026: «¿los probadores no existen en el mundo de TP
+   normal? Deberían ser fichables, y no solo eso, deberían entrar de vez en cuando… Tsunoda debería
+   poder ser fichable por Haas como 2º piloto o incluso como probador»). Hasta hoy los 13 sin asiento
+   de 2026 (SIN_ASIENTO_2026) solo existían en la bolsa del equipo propio, y solo el año de fundación.
+   Ahora viven en `S.reservas`: cumplen años, progresan poco, cada invierno algunos se asoman al
+   mercado de la IA (`npcMercadoOrdinario`) y tú los ves en la bolsa y en el hueco del probador. Nadie
+   espera eternamente: con 37 años o cinco inviernos sin volante, se van sin ruido. Solo en el jefe. */
+const RES_ENTRA=.30;          // prob. de que un reserva se ofrezca en el mercado de la IA cada invierno
+const RES_MAX_EDAD=37, RES_MAX_ANIOS=5;
+function tpReservasSembrar(){
+  S.reservas=[];
+  if(S.era!=="2026") return;
+  const enJuego=n=>(S.dpool||[]).some(d=>d&&d.name===n);
+  SIN_ASIENTO_2026.forEach(v=>{ if(enJuego(v.name)) return;
+    S.reservas.push({name:v.name, flag:v.flag, age:v.age, skill:v.base, ceil:v.ceil, titles:0, hoy:v.hoy,
+                     reserva:true, resY:0}); });
+  // nadie puede existir dos veces: un reserva no es además una promesa por debutar
+  const _n=new Set(S.reservas.map(r=>r.name));
+  S.rookies=(S.rookies||[]).filter(r=>!_n.has(r[0]));
+  S._resY=yearNow();
+}
+/* un invierno más para los reservas: un cumpleaños, algo de progresión, y los que se cansan se van */
+function tpReservasInvierno(){
+  if(!S.reservas || S._resY===yearNow()) return;
+  S._resY=yearNow();
+  const sentados=new Set(); Object.values(S.seats||{}).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") sentados.add(d); }));
+  S.reservas=S.reservas.filter(r=>{
+    if(!r || !r.reserva || sentados.has(r) || (S.tpReserva===r)
+       || (S.dpool||[]).some(d=>d===r || (d&&d.name===r.name))) return false;   // ya tiene sitio (o alguien con su nombre entró por otra vía)
+    r.age=(r.age||25)+1; r.resY=(r.resY||0)+1;
+    if(r.age<=26) r.skill=Math.min(r.ceil||r.skill, (r.skill||74)+rnd(0,1.5));
+    else if(r.age>=31) r.skill=Math.max(70, (r.skill||74)-rnd(0,1));
+    return r.age<RES_MAX_EDAD && r.resY<RES_MAX_ANIOS;
+  });
+}
+/* qué hace ahora: el dato real solo vale el primer año; después, «reserva sin volante» */
+function tpReservaHoy(r){
+  if(r.hoy && yearNow()===2026) return LA(r.hoy);
+  return L("Reserva sin volante","Reserve without a race seat",{pt:"Reserva sem volante"});
+}
 /* 🧭 LA BOLSA DEL AÑO DE FUNDACIÓN (Carlos, 27-sep). Además de la cantera: pilotos que se han quedado
    sin asiento este año, retirados recientes que volverían y estrellas de otras categorías — y SIEMPRE
    algún compatriota tuyo, «realista en estos primeros años»: primero se busca uno de verdad en esas
@@ -14849,12 +14901,14 @@ function tpFundar(ownerK){
    probabilidades de que acepten son las de un equipo que acaba de nacer: los consagrados se lo piensan. */
 function tpFundVeteranos(){
   const yr=yearNow();
-  if(S._fundVet && S._fundVet.y===yr) return S._fundVet.l;
+  if(S._fundVet && S._fundVet.y===yr && S._fundVet.t===(S._fundTirada||0)) return S._fundVet.l;
   const pais=S.tpFundador&&S.tpFundador.flag;
   const enJuego=n=>(S.dpool||[]).some(d=>d&&d.name===n);
   const baraja=a=>{ const c=a.slice(); for(let i=c.length-1;i>0;i--){ const j=irnd(0,i); [c[i],c[j]]=[c[j],c[i]]; } return c; };
-  const sin=SIN_ASIENTO_2026.filter(v=>!enJuego(v.name)).map(v=>({kind:"vuelve", tipo:"sin",
-    d:{name:v.name, flag:v.flag, age:v.age+(yr-2026), skill:v.base, ceil:v.ceil, titles:0}, hoy:v.hoy, odds:.75}));
+  /* 🧢 los «sin asiento» son ahora los reservas vivos del mundo (el mismo objeto: si firma contigo,
+     deja de ser reserva — ver el embudo de tpSignDriver) */
+  const sin=(S.reservas||[]).filter(r=>r&&r.reserva&&!enJuego(r.name)).map(r=>({kind:"vuelve", tipo:"sin",
+    d:r, hoy:r.hoy, odds:.75}));
   /* ⚠️ ficha NUEVA, como hace el amigo del CEO: los del bolsillo de retirados no llevan techo, y sin
      techo la progresión anual deja el nivel en NaN (cazado en la prueba de Carlos del 27-sep:
      «¿cumplen años y progresan normal?» — Magnussen se rompía al segundo invierno) */
@@ -14866,17 +14920,27 @@ function tpFundVeteranos(){
     hoy:FUND_2026[c.name]&&FUND_2026[c.name].hoy, odds:.45}));
   const todos=[...sin,...ret,...cross];
   const out=[];
+  /* 🔀 LA PRIMERA TIRADA VA POR PAÍS Y NIVEL; «Ver más» baraja otra (Carlos, 28-sep: «un botón que te
+     vaya reiniciando la tirada… así en un par de tiradas te puede salir Tsunoda. Y sí, priorizando en
+     esa primera tirada país y nivel»). Las siguientes tiradas son al azar y evitan repetir caras
+     hasta que se acaban. */
+  const tir=S._fundTirada||0;
+  S._fundVisto=S._fundVisto||new Set();
+  if(tir===0) S._fundVisto=new Set();
+  const nuevos=g=>{ const f=g.filter(c=>!S._fundVisto.has(c.d.name)); return f.length?f:g; };
+  const elige=(g,n)=>(tir===0 ? [...g].sort((a,b)=>(b.d.skill||0)-(a.d.skill||0)) : baraja(nuevos(g))).slice(0,n);
   // 1 · tus compatriotas (hasta dos), vengan de donde vengan
-  if(pais) baraja(todos.filter(c=>c.d.flag===pais)).slice(0,2).forEach(c=>{ c.odds=Math.min(.95,c.odds+.15); out.push(c); });
+  if(pais) elige(todos.filter(c=>c.d.flag===pais),2).forEach(c=>{ c.odds=Math.min(.95,c.odds+.15); out.push(c); });
   // 2 · y de cada grupo, algo: dos sin asiento, dos de fuera, uno que vuelve
-  [[sin,2],[cross,2],[ret,1]].forEach(([g,n])=>baraja(g.filter(c=>out.indexOf(c)<0)).slice(0,n).forEach(c=>out.push(c)));
+  [[sin,2],[cross,2],[ret,1]].forEach(([g,n])=>elige(g.filter(c=>out.indexOf(c)<0),n).forEach(c=>out.push(c)));
+  out.forEach(c=>S._fundVisto.add(c.d.name));
   // 3 · si no hay compatriota ni aquí ni en la cantera real, se genera uno (joven, con apellido de tu país)
   const hayEnCantera=pais && (S.rookies||[]).some(r=>r[1]===pais && (!r[2]||yr>=r[2]) && (!r[3] || (yr-r[3]>=17 && yr-r[3]<=30)));
   if(pais && !out.some(c=>c.d.flag===pais) && !hayEnCantera){
     try{ S._forcePais=pais; const d=mkRookie(true, S.tpTeam); S._forcePais=null;
       if(d && d.flag===pais){ d.age=Math.max(d.age||19,19); out.unshift({kind:"libre", tipo:"joven", d, odds:.85}); } }catch(e){ S._forcePais=null; }
   }
-  S._fundVet={y:yr, l:out};
+  S._fundVet={y:yr, t:tir, l:out};
   return out;
 }
 /* 🏷️ EL NIVEL DE UN PILOTO, EN PALABRAS. Un jefe de equipo no lee «93» en ninguna parte: lee informes.
@@ -15786,6 +15850,39 @@ function tpPoolScreen(){
       b.onclick=()=>tpNegociar(c, ()=>tpLlamada(c));
       box.appendChild(b);
     });
+    /* 🔀 otra tirada de candidatos (ver tpFundVeteranos) */
+    const vm=document.createElement("button"); vm.className="offer";
+    vm.innerHTML=`<span class="team-dot dot" style="background:#3a3a3a">🔀</span>
+      <span class="info"><span class="name">${L("Ver más candidatos","See more candidates",{pt:"Ver mais candidatos"})}</span></span>`;
+    vm.onclick=()=>{ S._fundTirada=(S._fundTirada||0)+1; tpPoolScreen(); };
+    box.appendChild(vm);
+  }
+  /* 🧢 1b · LOS RESERVAS DEL PADDOCK (ver tpReservasSembrar). El año de fundación ya salen arriba,
+     en su tirada; el resto de años, aquí: tres de cada vez y «Ver más» para pasar la página. */
+  if(!(S._tpFundacion===yr && tpFundada())){
+    const res=(S.reservas||[]).filter(r=>r&&r.reserva&&!seated.has(r.name)&&noY[r.name]!==yr
+      && !(S.tpReserva && S.tpReserva.name===r.name))
+      .sort((a,b)=>(b.skill||0)-(a.skill||0));
+    if(res.length){
+      const pag=(S._resPag||0)%Math.ceil(res.length/3);
+      res.slice(pag*3, pag*3+3).forEach(r=>{
+        const c={kind:"vuelve", tipo:"sin", d:r, odds:.8};
+        const b=document.createElement("button"); b.className="offer";
+        b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3d8bd4,#1d5b94)">🧢</span>
+          <span class="info"><span class="name">${r.flag||"🏁"} ${r.name}</span>
+          <span class="sub" style="display:block">${tpReservaHoy(r)} · ${tpEtiqueta(r)} · ${r.age} ${L("años","yo",{pt:"anos"})}</span>
+          <span class="sub" style="display:block">📜${tpAniosPide(r)} · ${tpOddsTag(c.odds)}</span></span>`;
+        b.onclick=()=>tpNegociar(c, ()=>tpLlamada(c));
+        box.appendChild(b);
+      });
+      if(res.length>3){
+        const vm=document.createElement("button"); vm.className="offer";
+        vm.innerHTML=`<span class="team-dot dot" style="background:#3a3a3a">🔀</span>
+          <span class="info"><span class="name">${L("Ver más reservas","See more reserves",{pt:"Ver mais reservas"})}</span></span>`;
+        vm.onclick=()=>{ S._resPag=(S._resPag||0)+1; tpPoolScreen(); };
+        box.appendChild(vm);
+      }
+    }
   }
   // 2 · jóvenes del bote con nivel a la vista (aún sin asiento en la parrilla)
   // ⚠️ tu probador NO sale aquí: tiene su propia oferta en el mercado y ficharlo dos veces lo duplicaría
@@ -15917,6 +16014,26 @@ function tpProbadorHueco(){
         {pt:`🎓 Você aposta às cegas em ${cg.name}: ninguém sabe o que há, nem você.`}));
       tpRumboScreen(); };
     box.appendChild(b3);
+  }
+  /* 🧢 …o un reserva del paddock: experiencia de F1 a mano, sin ser un veterano acabado */
+  const _rp=(S.reservas||[]).filter(r=>r&&r.reserva&&(S._tpNo||{})[r.name]!==yearNow()&&(!vet||r.name!==vet.name)&&!isRBJr(S.tpTeam))
+    .sort((a,b)=>(b.skill||0)-(a.skill||0))[0];
+  if(_rp){
+    const b4=document.createElement("button"); b4.className="offer";
+    b4.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3d8bd4,#1d5b94)">🧢</span>
+      <span class="info"><span class="name">${_rp.flag||"🏁"} ${_rp.name}</span>
+      <span class="sub" style="display:block">${tpReservaHoy(_rp)} · ${tpEtiqueta(_rp)} · ${_rp.age} ${L("años","yo",{pt:"anos"})}</span></span>`;
+    b4.onclick=()=>{
+      S.reservas=(S.reservas||[]).filter(x=>x!==_rp); delete _rp.hoy; delete _rp.reserva;
+      if(!(S.dpool||[]).includes(_rp)) S.dpool.push(_rp);
+      S.freeAgents=(S.freeAgents||[]).filter(x=>x!==_rp);
+      _rp.probador=true; S.tpReserva=_rp; S._probCands=null;
+      S.pendingEvents.push(L(`🧢 ${_rp.name} es tu nuevo probador: conoce el paddock y quiere su oportunidad.`,
+        `🧢 ${_rp.name} is your new reserve driver: he knows the paddock and wants his chance.`,
+        {pt:`🧢 ${_rp.name} é o seu novo reserva: conhece o paddock e quer a sua chance.`}));
+      tpRumboScreen();
+    };
+    box.appendChild(b4);
   }
   if(vet){
     const b2=document.createElement("button"); b2.className="offer";
@@ -16429,6 +16546,10 @@ function tpSignDriver(i,c){
         {pt:`🚪 ${surname(_prev.name)} fica sem assento: ninguém renovou o contrato.`}));
     }
   }
+  /* 🧢 si era un reserva del paddock, deja de serlo: sale de `S.reservas` y entra en el mundo */
+  if(d && d!=="PLAYER" && d.reserva){ delete d.reserva; delete d.hoy;
+    S.reservas=(S.reservas||[]).filter(x=>x!==d);
+    if(!(S.dpool||[]).includes(d)) S.dpool.push(d); }
   /* 🧷 red del embudo: el que firmas no puede seguir sentado en OTRO coche (ver el 🐞 de «fichar»).
      Por identidad del objeto, no por nombre: dos regens pueden llamarse igual y ser dos personas. */
   if(d && d!=="PLAYER") Object.entries(S.seats).forEach(([t2,s2])=>{ if(!Array.isArray(s2)) return;
