@@ -6840,7 +6840,11 @@ function maybeComeback(row){
   if(wi<0) return;
   const org=S.dpool.find(d=>d.name===r.name);
   const back = org || {name:r.name, flag:r.flag, titles:r.titles};
-  back.age=r.age; back.skill=skill;   // 🎂 la edad del bolsillo ya está al día: sumarle `fuera` la contaría dos veces back.ceil=Math.max(back.ceil||0, skill+1); back.yrs=0;
+  back.age=r.age; back.skill=skill;   // 🎂 la edad del bolsillo ya está al día: sumarle `fuera` la contaría dos veces
+  /* 🐞 (28-sep-2026) el comentario de arriba se tragó esta media línea el 9-sep: el que volvía sin
+     ficha en dpool se quedaba SIN techo y a la temporada siguiente su nivel era NaN (lo cazó el robot
+     de resistencia: Magnussen, Villeneuve…). */
+  back.ceil=Math.max(back.ceil||0, skill+1); back.yrs=0;
   if(!org) S.dpool.push(back);
   sl[wi]=back;
   S.retiredPool=S.retiredPool.filter(x=>x!==r);
