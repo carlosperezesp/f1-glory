@@ -6171,7 +6171,7 @@ function tpCierreSegunda(){
   const go=document.createElement("button"); go.className="offer dilemma";
   go.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
     <span class="info"><span class="name">${L("Empezar la temporada","Start the season",{pt:"Começar a temporada"})}</span></span>`;
-  go.onclick=()=>{ S._tpSegunda=false; try{ tpOrdenConfirma(); }catch(e){} startSeasonRun(); };
+  go.onclick=()=>{ S._tpSegunda=false; try{ panelGaraje("x"); }catch(e){} try{ tpOrdenConfirma(); }catch(e){} startSeasonRun(); };
   box.appendChild(go);
   scrollToDecision();
 }
@@ -15369,6 +15369,7 @@ function panelGaraje(mode){
    invertir pilotos me lleva a otra pantalla»). tpSwapSeats repinta la pantalla de decisión y su
    scrollToDecision te llevaba a Decidir: si estabas en el Panel del deck, se vuelve a él. */
 function garSwap(mode){
+  if((S._garMode||"")!==mode) return;   // chip viejo de otra pantalla: no hace nada (ver 🐞 del rumbo)
   const vuelta=document.body.classList.contains("deck-movil") ? deckPanelActivo() : null;
   tpSwapSeats(mode==="r" ? "rumbo" : undefined);
   if(vuelta && vuelta!=="decisionBox") requestAnimationFrame(()=>deckIr(vuelta));
@@ -17078,7 +17079,12 @@ function tpAnnounce(){
   const b=document.createElement("button"); b.className="offer dilemma";
   b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
     <span class="info"><span class="name">${L("Empezar la temporada","Start the season",{pt:"Começar a temporada"})}</span></span>`;
-  b.onclick=()=>{ tpRegPantalla(()=>{
+  b.onclick=()=>{
+    /* 🐞 (28-sep-2026) al empezar, el garaje deja de ofrecer «invertir orden»: el chip se pintaba en
+       el rumbo y seguía vivo durante el dilema y la temporada; pulsarlo te devolvía al rumbo (salías
+       del dilema y se sorteaba otro) y desde ahí se podía lanzar una segunda temporada sin invierno */
+    try{ panelGaraje("x"); }catch(e){}
+    tpRegPantalla(()=>{
     /* 🧭 el concepto va DESPUÉS de las pantallas del reglamento (el aviso que lo provoca) y ANTES
        del dilema del año: es la decisión fija de cada ciclo, no compite con el sorteo */
     const _sig=()=>{ const dl=pickTPDilemma(); if(dl) renderDilemma(dl); else startSeasonRun(); };
@@ -17652,11 +17658,22 @@ function tpFiredScreen(){
     .sort((a,b)=>(S.f1perf[b.name]||70)-(S.f1perf[a.name]||70));
   let offers=[];
   const pickN=(arr,n)=>{const c=[...arr];const o=[];while(o.length<n&&c.length){o.push(c.splice(irnd(0,c.length-1),1)[0]);}return o;};
-  if(S.tpPrest>=58) offers=pickN(cands.filter(t=>(S.f1perf[t.name]||70)<=myPerf+4),2);
-  else if(S.tpPrest>=42) offers=pickN(cands.slice(-4),1);
+  /* ⏳ EL TOPE TAMBIÉN VALE PARA EL DESPEDIDO (robot de resistencia, 28-sep-2026). El tope de
+     TP_TOPE temporadas se aplicaba solo al FIRMAR contrato; si te echaban con el tope ya cumplido,
+     aquí te llegaba otra oferta y cada despido sumaba una temporada más (medido: partidas de 31 a 46
+     temporadas en el muro). Con el tope cumplido, el despido cierra la etapa. */
+  const _topeCumplido = S.age>=TP_TOPE;
+  if(!_topeCumplido){
+    if(S.tpPrest>=58) offers=pickN(cands.filter(t=>(S.f1perf[t.name]||70)<=myPerf+4),2);
+    else if(S.tpPrest>=42) offers=pickN(cands.slice(-4),1);
+  }
   if(!offers.length){
     setDecision(L("🚪 Despedido","🚪 Sacked",{pt:"🚪 Demitido"}),
-      S._quebro
+      _topeCumplido
+      ? L(`${from} prescinde de ti y esta vez no esperas a que suene el teléfono: ${S.age} temporadas en el muro son una vida entera. Tu etapa de Team Principal acaba aquí.`,
+          `${from} lets you go, and this time you don't wait for the phone: ${S.age} seasons on the pit wall are a whole life. Your Team Principal era ends here.`,
+          {pt:`A ${from} dispensa você e desta vez você não espera o telefone tocar: ${S.age} temporadas no muro são uma vida inteira. A sua era de Team Principal acaba aqui.`})
+      : S._quebro
       ? L(`Tu equipo ya no existe y el teléfono no suena: al que hunde su propia casa no lo llama nadie. Tu etapa de Team Principal acaba aquí.`,
           `Your team no longer exists and the phone stays silent: nobody calls the man who sank his own house. Your Team Principal era ends here.`,
           {pt:`A sua equipe já não existe e o telefone não toca: ninguém liga para quem afundou a própria casa. A sua era de Team Principal acaba aqui.`})
