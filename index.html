@@ -16334,8 +16334,19 @@ function tpSignDriver(i,c){
       {pt:`✍️ Você contrata o agente livre ${surname(d.name)}: ele esperava essa ligação há tempo.`}));
   } else if(c.kind==="fichar"){
     d=c.d;
+    /* 🐞 UN PILOTO EN DOS EQUIPOS (cazado por el robot de resistencia, 28-sep-2026). La lista del
+       invierno se guarda en caché con el equipo y el ASIENTO de origen (`c.from`, `c.j`) para que un
+       portazo no la rebaraje, pero los asientos se mueven entre medias (otro fichaje, un rival que
+       caza a tu campeón, cambiar tú de equipo ese mismo invierno…). Con el índice viejo se vaciaba el
+       asiento equivocado y el fichado seguía TAMBIÉN en su equipo, el mismo objeto en dos coches, y
+       así años. Ahora se busca dónde está él AHORA. */
+    let _de=null, _dj=-1;
+    Object.entries(S.seats).forEach(([t2,s2])=>{ if(_de || !Array.isArray(s2)) return;
+      const k=s2.indexOf(d);   // por IDENTIDAD: los regens pueden repetir nombre
+      if(k>=0 && !(t2===tn && k===i)){ _de=t2; _dj=k; } });
     // su equipo tapa el hueco con un canterano (mismo patrón que el desplazado de occupySeat)
-    S.seats[c.from][c.j]=mkRookie(isRBJr(c.from), c.from);
+    if(_de) S.seats[_de][_dj] = (_de===tn) ? null : mkRookie(isRBJr(_de), _de);
+    c={...c, from:_de||c.from};
     d.tpc=c._anios||(((d.age||30)<=24 && (d.ceil||0)>=88)?3:2); d.yrs=0;
     /* ⏱️ EN PRESENTE. Este evento se escribe en el INVIERNO pero se guarda en pendingEvents y se
        vuelca en la fila de la temporada que viene a continuación: cuando el jugador lo lee, esa
@@ -16414,6 +16425,10 @@ function tpSignDriver(i,c){
         {pt:`🚪 ${surname(_prev.name)} fica sem assento: ninguém renovou o contrato.`}));
     }
   }
+  /* 🧷 red del embudo: el que firmas no puede seguir sentado en OTRO coche (ver el 🐞 de «fichar»).
+     Por identidad del objeto, no por nombre: dos regens pueden llamarse igual y ser dos personas. */
+  if(d && d!=="PLAYER") Object.entries(S.seats).forEach(([t2,s2])=>{ if(!Array.isArray(s2)) return;
+    s2.forEach((x,k)=>{ if(x===d && !(t2===tn && k===i)) s2[k] = (t2===tn) ? null : mkRookie(isRBJr(t2), t2); }); });
   sl[i]=d;
   S._tpFirmadoTxt=S.pendingEvents[S.pendingEvents.length-1]||null;   // la confirmación viaja al rumbo
   tpMercado();
