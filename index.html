@@ -14983,7 +14983,10 @@ function tpSignTeam(t, how, ownerK){
   S.team=F1_TEAMS.find(x=>x.name===t.name)||t;
   S.tpTeam=S.team.name;
   const _po=tpOwnersPosibles(S.tpTeam,false);
-  S.tpOwner=(ownerK && TP_OWNERS.find(o=>o.k===ownerK)) || _po[irnd(0,_po.length-1)];   // 🏗️ en tu equipo, el CEO lo eliges tú S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0;   // 🏢 el de fábrica solo de inicio en equipos-marca
+  S.tpOwner=(ownerK && TP_OWNERS.find(o=>o.k===ownerK)) || _po[irnd(0,_po.length-1)];   // 🏗️ en tu equipo, el CEO lo eliges tú
+  /* 🐞 (28-sep-2026) igual que en la vuelta del retiro: el comentario de arriba se comió esta media
+     línea el 27-sep y al fichar por otro equipo el dueño nuevo heredaba los años y los caprichos del viejo */
+  S.tpOwnerY=0; S.tpCapNivel=0; S.tpCapFallos=0;   // 🏢 el de fábrica solo de inicio en equipos-marca
   tpAmigoNuevo();   // 🤝 y su agenda, si es el showman
   S.tpMissStreak=0; S.tpLastMet=null; S.tpGrace=false; S.tpIndultos=0; S._tpPromesa=null; S.tpCosecha=[];   /* 🌾 la hucha se queda en la fábrica que la sembró: ni te llevas la cosecha ni arrastras la deuda */ S.tpFired=false; S.tpFiredBy=null; S.tpTopYears=0;
   /* ⚫ EL CRASHGATE NO SE LIMPIA AQUÍ, Y ES A PROPÓSITO. Esta función corre cada vez que FIRMAS con un
