@@ -4608,20 +4608,18 @@ const TESTS = {
      Firmas la renovación y el dilema salta en el acto. */
   veto: {
     t:["El veto","The veto"],
-    d:["Renuevas como Nº1 en un buen equipo en el que ya llevas un año, con un compañero bastante más flojo que tú. Al firmar, el equipo te cuenta que quiere cambiarlo por un crack… y tu contrato te da la última palabra.",
-       "You renew as No.1 at a good team where you've already spent a year, with a teammate well below you. Once you sign, the team tells you it wants to replace him with a star… and your contract gives you the final say."],
+    d:["Corres 2026 de Nº1 en un buen equipo, con un compañero bastante más flojo que tú. Corre el año y, en el invierno, elige equipo como siempre: si renuevas, el equipo te contará que quiere cambiar a tu compañero por un crack… y tu contrato te da la última palabra.",
+       "You race 2026 as No.1 at a good team, with a teammate well below you. Race the year and, in the winter, choose your team as usual: if you renew, the team will tell you it wants to replace your teammate with a star… and your contract gives you the final say."],
     era:"2026", cat:"F1", dilema:"veto",
     run(){
-      // 2027: segundo año en el equipo (startAge = edad − 1 → yearNow() = 2026 + 1)
-      S.age=28; S.startAge=27; S.ovr=90; S.peakAge=28; S.cat="F1"; S.f1Seasons=4; S.yearsAtTeam=1;
+      S.age=27; S.startAge=27; S.ovr=90; S.peakAge=27; S.cat="F1"; S.f1Seasons=3;
       const orden=[...F1_TEAMS].filter(t=>S.f1perf[t.name]!=null).sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
       const t=orden[1]||orden[0];
       /* el compañero que se queda (el que ves en la oferta) es flojo; el otro asiento es el tuyo */
       const sl=S.seats[t.name]||[]; if(sl[0]&&sl[0]!=="PLAYER") sl[0].skill=80; if(sl[1]&&sl[1]!=="PLAYER") sl[1].skill=70;
-      S.seasons.push({age:S.age-1, year:yearNow()-1, team:{...t}, cat:"F1", pos:4, wins:2, pods:7, pts:220, events:[]});
       return t;
     },
-    after(){ S.role="1"; S.yearsAtTeam=Math.max(2,S.yearsAtTeam||1); }
+    after(){ S.role="1"; }
   },
   jefeEstrella: {
     t:["Jefe · Vienen a por tu estrella","Boss · They come for your star"],
@@ -4885,7 +4883,7 @@ function setupTest(T){
 /* 🧪 un escenario de prueba puede REDUCIR el catálogo a los dilemas que se quieren mirar: así se lee
    el que interesa sin que compita con los otros 128. Fuera del modo pruebas no cambia nada. */
 const DIL_SOLO={ favor:["favorVeterano"], gigante:["gigante"], gomas:["gomas1","jetlag"],
-  jefeVeterano:["tpVeterano"], jefeGomas:["tpGomas"] };
+  jefeVeterano:["tpVeterano"], jefeGomas:["tpGomas"], veto:["veto"] };
 function dilAllowed(id){ const solo=DIL_SOLO[TEST_MODE]; return !solo || solo.indexOf(id)>=0; }
 /* 🇪🇸 ¿Y SI CAMPOS NO HUBIERA VENDIDO? (historia alternativa, idea de Carlos)
    En la realidad, Adrián Campos montó el proyecto «Campos Meta 1» para 2010 pero no llegó al inicio de
