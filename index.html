@@ -4621,6 +4621,19 @@ const TESTS = {
     },
     after(){ S.role="1"; }
   },
+  /* ⬇️ «AL BANQUILLO», DESDE EL AÑO ANTERIOR: Aston Martin 2026 con Alonso y Stroll (11 puntos de
+     diferencia) y un probador a la altura de Stroll. Corres 2026 y el dilema salta al empezar 2027. */
+  jefeBanquillo: {
+    t:["Jefe · Al banquillo","Boss · To the bench"],
+    d:["Te sientas en el muro de Aston Martin en 2026: Alonso tira del coche y Stroll va muy por detrás, con un probador en casa que ya va igual de rápido. Corre el año; al empezar 2027 tendrás que decidir si lo bajas al banquillo.",
+       "You take over the Aston Martin pit wall in 2026: Alonso carries the car and Stroll trails well behind, with a reserve at home who's already just as quick. Race the year; as 2027 begins you'll have to decide whether to bench him."],
+    era:"2026", tp:true, team:"Aston Martin", tpDilema:"tpBanquillo",
+    run(){ return null; },
+    after(){ const sl=S.seats[S.tpTeam]||[];
+      sl.forEach(d=>{ if(d && d!=="PLAYER") d.tpc=3; });   // contratos largos: el invierno no toca el garaje
+      const st=sl.find(d=>d && d!=="PLAYER" && d.name==="L. Stroll");
+      if(S.tpReserva){ S.tpReserva.skill=(st&&st.skill)||76; S.tpReserva.ceil=Math.max(S.tpReserva.ceil||0, 86); delete S.tpReserva._ciego; S.tpReserva.resYrs=0; } }   // resYrs 0: que su contrato no venza este invierno
+  },
   jefeEstrella: {
     t:["Jefe · Vienen a por tu estrella","Boss · They come for your star"],
     d:["Te sientas en el muro de Williams en 2026, con Sainz en el coche y Ferrari —que tiene bastante mejor coche que tú— mirándolo de cerca. Pasa la pantalla de rumbo y llegará la llamada: le dejas ir cobrando el traspaso, le bloqueas con el contrato o igualas la oferta. Si le dejas ir, corre esta temporada contigo y el año que viene lo verás en la parrilla de Ferrari.",
@@ -4883,7 +4896,7 @@ function setupTest(T){
 /* 🧪 un escenario de prueba puede REDUCIR el catálogo a los dilemas que se quieren mirar: así se lee
    el que interesa sin que compita con los otros 128. Fuera del modo pruebas no cambia nada. */
 const DIL_SOLO={ favor:["favorVeterano"], gigante:["gigante"], gomas:["gomas1","jetlag"],
-  jefeVeterano:["tpVeterano"], jefeGomas:["tpGomas"], veto:["veto"] };
+  jefeVeterano:["tpVeterano"], jefeGomas:["tpGomas"], veto:["veto"], jefeBanquillo:["tpBanquillo"] };
 function dilAllowed(id){ const solo=DIL_SOLO[TEST_MODE]; return !solo || solo.indexOf(id)>=0; }
 /* 🇪🇸 ¿Y SI CAMPOS NO HUBIERA VENDIDO? (historia alternativa, idea de Carlos)
    En la realidad, Adrián Campos montó el proyecto «Campos Meta 1» para 2010 pero no llegó al inicio de
@@ -6207,7 +6220,7 @@ function tpCierreSegunda(){
   const go=document.createElement("button"); go.className="offer dilemma";
   go.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#12923f,#0a5b26)">▶️</span>
     <span class="info"><span class="name">${L("Empezar la temporada","Start the season",{pt:"Começar a temporada"})}</span></span>`;
-  go.onclick=()=>{ S._tpSegunda=false; try{ panelGaraje("x"); }catch(e){} try{ tpOrdenConfirma(); }catch(e){} startSeasonRun(); };
+  go.onclick=()=>{ S._tpSegunda=false; try{ panelGaraje("x"); }catch(e){} try{ tpBanqEsperaCheck(); }catch(e){} try{ tpOrdenConfirma(); }catch(e){} startSeasonRun(); };
   box.appendChild(go);
   scrollToDecision();
 }
@@ -11747,12 +11760,15 @@ function bgF1Season(row){
        no anuncie unos GP que nadie corrió (salía en 2 de cada 8 casos al verificarlo). */
     if(_iT<0) S.tpSustituto=null;
     if(_iT>=0){
+      /* ⬇️ «Al banquillo»: el titular corre las primeras y el sustituto, desde la carrera `desde` */
+      if(_sus.desde!=null) rows[_iT].hasta=_sus.desde; else
       rows[_iT].falta=_sus.n;                       // el titular se pierde las N primeras
       const _w=drvW(), _pr=S.f1prof && S.f1prof[S.tpTeam];
       const _coche=(S.f1perf[S.tpTeam]||75) + (_pr ? _pr.motor*2.2 + _pr.aero*1.1 : 0) + .75;   // conduce el asiento 1 (mismos coeficientes cortos del ritmo)
       const _disp=3.4 + (_pr ? _pr.aero*0.9 : 0);
       const _sc=(_sus.sub.skill||75)*_w + _coche*(1-_w) + gauss()*Math.max(1.2,_disp);
-      rows.push({d:_sus.sub, team:S.tpTeam, score:_sc, solo:_sus.n});
+      rows.push(_sus.desde!=null ? {d:_sus.sub, team:S.tpTeam, score:_sc, desde:_sus.desde}
+                                 : {d:_sus.sub, team:S.tpTeam, score:_sc, solo:_sus.n});
     }
   }
   /* 🏁 SE CORRE LA TEMPORADA, Y DE AHÍ SALEN LAS DOS TABLAS.
@@ -11819,6 +11835,8 @@ function bgF1Season(row){
       const _r=rows[i];
       if(_r.solo!=null && _gp>=_r.solo) continue;             // 🚑 el sustituto: solo sus N carreras
       if(_r.falta!=null && _gp<_r.falta) continue;            // 🚑 el lesionado: esas se las pierde
+      if(_r.hasta!=null && _gp>=_r.hasta) continue;           // ⬇️ el que baja al banquillo: desde ahí, fuera
+      if(_r.desde!=null && _gp<_r.desde) continue;            // ⬇️ …y su relevo entra a partir de ahí
       if(ch(Math.min(.45, _dnf*(_fbMult[_r.team]||1)*(_criMult[_r.team]||1)))){   // abandono: ni acaba ni puntúa (🛡️ según TU fiabilidad; tope 45%: ni el desastre acaba CERO carreras)
         if(S._dnfDbg) S._dnfDbg.n[_r.team]=(S._dnfDbg.n[_r.team]||0)+1;
         continue;
@@ -17445,6 +17463,7 @@ function tpAnnounce(){
        el rumbo y seguía vivo durante el dilema y la temporada; pulsarlo te devolvía al rumbo (salías
        del dilema y se sorteaba otro) y desde ahí se podía lanzar una segunda temporada sin invierno */
     try{ panelGaraje("x"); }catch(e){}
+    try{ tpBanqEsperaCheck(); }catch(e){}
     tpRegPantalla(()=>{
     /* 🧭 el concepto va DESPUÉS de las pantallas del reglamento (el aviso que lo provoca) y ANTES
        del dilema del año: es la decisión fija de cada ciclo, no compite con el sorteo */
@@ -17489,7 +17508,7 @@ function simTP(row){
     /* 🚑 (petición de Carlos) la ambulancia va en EL QUE SE ROMPE, no en el que le sustituye:
        la primera versión la ponía delante del sustituto y se leía justo al revés. */
     const _les=(S.tpSustituto && S.tpSustituto.year===row.year) ? S.tpSustituto : null;
-    parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º${(_les && _les.tit===d.name)?" 🚑":""}`);
+    parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º${(_les && _les.tit===d.name)?(_les.desde!=null?" ⬇️":" 🚑"):""}`);
     /* 🔁 EL SUSTITUTO VA PEGADO A QUIEN SUSTITUYE (Carlos, 27-ago), no siempre al final. Si se
        rompe el primero, su relevo va segundo y el compañero cierra; si se rompe el segundo, el
        relevo cierra. Así la línea se lee sola: cada 🚑 tiene su 🔁 al lado. */
@@ -17816,8 +17835,56 @@ function tpFirmarContrato(tn){
   S.tpContract=años; S.tpContractTotal=años; S.tpFreshY=yearNow();
   return años;
 }
+/* ⬇️ el invierno de «Al banquillo»: el cambio se hace firme, y el que bajó cumple su contrato en el banquillo */
+function tpBanqInvierno(){
+  const b=S._tpBanq; const sl=S.seats[S.tpTeam]||[];
+  if(b && b.year===yearNow()-1){
+    S._tpBanq=null;
+    const i=sl.findIndex(d=>d && d!=="PLAYER" && d.name===b.y), pr=S.tpReserva;
+    if(i>=0 && pr && pr.name===b.pr){
+      const y=sl[i];
+      delete pr.probador; pr.tpc=2; pr.yrs=0; sl[i]=pr; S.tpReserva=null;
+      if(!(S.dpool||[]).includes(pr)) S.dpool.push(pr);
+      S.pendingEvents.push(L(`⬇️ El cambio se hace firme: ${surname(pr.name)} firma su primer contrato de titular, por dos años.`,
+        `⬇️ The switch becomes permanent: ${surname(pr.name)} signs his first race-seat contract, for two years.`,
+        {pt:`⬇️ A troca vira definitiva: ${surname(pr.name)} assina o seu primeiro contrato de titular, por dois anos.`}));
+      if(b.sale){
+        const dest=tpColocaYa(y); if(!dest){ S.freeAgents=S.freeAgents||[]; S.freeAgents.push(y); }
+        S.pendingEvents.push(dest
+          ? L(`🚪 ${surname(y.name)} sale con el finiquito y firma con ${dest}.`,`🚪 ${surname(y.name)} leaves with his severance and signs for ${dest}.`,{pt:`🚪 ${surname(y.name)} sai com a rescisão e assina com a ${dest}.`})
+          : L(`🚪 ${surname(y.name)} sale con el finiquito.`,`🚪 ${surname(y.name)} leaves with his severance.`,{pt:`🚪 ${surname(y.name)} sai com a rescisão.`}));
+      } else {
+        y.probador=true; y._banqFin=yearNow()+Math.max(0,(y.tpc||1)-1); S.tpReserva=y;
+        S.pendingEvents.push(L(`🧢 ${surname(y.name)} pasa al banquillo: le queda contrato y lo cumplirá como probador.`,
+          `🧢 ${surname(y.name)} moves to the bench: he still has a contract and will see it out as a reserve.`,
+          {pt:`🧢 ${surname(y.name)} vai para o banco: ainda tem contrato e vai cumpri-lo como reserva.`}));
+      }
+    }
+  }
+  // …y el que bajó al banquillo, al acabar su contrato, se va
+  const r=S.tpReserva;
+  if(r && r._banqFin!=null && yearNow()>r._banqFin){
+    S.tpReserva=null; S.freeAgents=S.freeAgents||[]; S.freeAgents.push(r); delete r.probador; delete r._banqFin;
+    S.pendingEvents.push(L(`🚪 ${surname(r.name)} cumple su contrato en el banquillo y se va sin despedirse.`,
+      `🚪 ${surname(r.name)} sees out his contract on the bench and leaves without a goodbye.`,
+      {pt:`🚪 ${surname(r.name)} cumpre o contrato no banco e vai embora sem se despedir.`}));
+  }
+}
+/* ⬇️ «Aguantar»: el probador impaciente, si al empezar el año siguiente sigue sin volante, se va */
+function tpBanqEsperaCheck(){
+  const e=S._tpBanqEspera; if(!e || yearNow()<=e.year) return;
+  S._tpBanqEspera=null;
+  const r=S.tpReserva;
+  if(r && r.name===e.name){
+    S.tpReserva=null; delete r.probador; S.freeAgents=S.freeAgents||[]; S.freeAgents.push(r);
+    S.pendingEvents.push(L(`🚪 ${surname(r.name)} se cansa de esperar un volante que no llega y deja el equipo.`,
+      `🚪 ${surname(r.name)} tires of waiting for a seat that never comes and leaves the team.`,
+      {pt:`🚪 ${surname(r.name)} cansa de esperar um volante que não chega e deixa a equipe.`}));
+  }
+}
 function tpWinter(){
   if(S.retired) return;
+  try{ tpBanqInvierno(); }catch(e){}
   /* 🏦 VENTA FORZOSA (antes quiebra; lo corrigió Carlos, 28-ago: «¿tu equipo ya no existe? ¿por qué,
      si es mío? En todo caso me apartan, pero el equipo sí existe»). Tenía razón y además es lo real
      —los equipos en administración se venden: Force India '18—. El equipo SE QUEDA en la parrilla con
@@ -18650,6 +18717,58 @@ const TP_DILEMAS=[
      return L(`Te comes la rueda de prensa por él. ${nm} se deja el alma por ti el resto del año. −prestigio, +su rendimiento`,`You take the press conference bullets for him. ${nm} drives his heart out for you all year. −prestige, +his level`,{pt:`Você segura a coletiva por ele. ${nm} se entrega por você o resto do ano. −prestígio, +rendimento dele`}); }},
    {l:()=>L("Multa y disculpa pública","Fine him and force an apology",{pt:"Multa e desculpa pública"}),r:()=>{ const nm=S._dilVars&&S._dilVars.tpLia; const d=tpDrvs().find(x=>surname(x.name)===nm); if(d) tpDrvSkill(d.name,-1); TPRE(1.5);
      return L(`El consejo aplaude tu mano firme. ${nm} paga, se disculpa… y te tacha de su lista de Navidad. +prestigio, −su rendimiento`,`The board applauds your firm hand. ${nm} pays, apologises… and crosses you off his Christmas list. +prestige, −his level`,{pt:`O conselho aplaude a mão firme. ${nm} paga, pede desculpas… e te risca da lista de Natal. +prestígio, −rendimento dele`}); }}]},
+ /* ⬇️ AL BANQUILLO (biblioteca de Carlos, #149 de Horner, versión dentro del equipo; la del filial es
+    otra tarjeta). Uno de tus titulares va 5+ puntos por debajo de su compañero, no es campeón, y tu
+    probador (con nivel a la vista) está a su altura. Hacer el cambio: el probador corre desde la
+    7ª carrera en su coche (S.tpSustituto con `desde`) y en el invierno se hace firme (tpBanqInvierno):
+    el probador firma 2 años de titular y el otro baja al banquillo con SU contrato —o se va con el
+    finiquito si no lo traga—. Siempre queda picado (tpRencor «apartado»). Aguantar: si el probador no
+    tiene volante el año siguiente, se va (tpBanqEsperaCheck). */
+ {id:"tpBanquillo",
+  cond:()=>{ if(S.cat!=="TP" || !S.tpTeam) return false;
+    if((S.seasons||[]).filter(r=>r.cat==="TP").length<1) return false;
+    const pr=S.tpReserva; if(!pr || !pr.name || pr.skill==null || pr._ciego) return false;
+    const a=tpDrvs(); if(a.length<2) return false;
+    const y=(a[0].skill||0)<=(a[1].skill||0)?a[0]:a[1], o=y===a[0]?a[1]:a[0];
+    if((o.skill||0)-(y.skill||0)<5 || (y.titles||0)>0 || y.beast) return false;
+    if((pr.skill||0)<(y.skill||0)-1) return false;
+    S._banq={y:y.name, yN:surname(y.name), oN:surname(o.name), pr:pr.name, prN:surname(pr.name), prFlag:pr.flag||"🧢", yr:yearNow()};
+    return true; },
+  t:()=>L("Al banquillo","To the bench",{pt:"Para o banco"}),
+  d:()=>{ const c=S._banq||{};
+    return L(`Seis carreras de ${c.yr}. ${c.yN} no está dando la talla: ${c.oN} le saca medio segundo cada sábado, y en el garaje todos miran de reojo a ${c.prN}, que en el simulador va igual de rápido. Cambiarles a mitad de temporada sería brutalmente visible.`,
+             `Six races into ${c.yr}. ${c.yN} isn't delivering: ${c.oN} is half a second clear of him every Saturday, and the whole garage keeps glancing at ${c.prN}, who's just as quick in the simulator. Swapping them mid-season would be brutally public.`,
+             {pt:`Seis corridas de ${c.yr}. ${c.yN} não está rendendo: ${c.oN} tira meio segundo dele todo sábado, e na garagem todos olham de canto para ${c.prN}, que no simulador é tão rápido quanto. Trocá-los no meio da temporada seria brutalmente visível.`}); },
+  opts:[
+   {l:()=>L("Hacer el cambio","Make the switch",{pt:"Fazer a troca"}),r:()=>{
+     const c=S._banq||{}; const sl=S.seats[S.tpTeam]||[];
+     const y=sl.find(d=>d && d!=="PLAYER" && d.name===c.y), pr=S.tpReserva;
+     if(!y || !pr || pr.name!==c.pr) return L("Al final no hace falta: la situación ha cambiado.","In the end it isn't needed: things have changed.",{pt:"No fim não é preciso: a situação mudou."});
+     const total=racesIn(yearNow())||24;
+     S.tpSustituto={year:yearNow(), tit:y.name, desde:6, n:Math.max(1,total-6), subN:c.prN, subFlag:c.prFlag,
+                    sub:{name:pr.name, flag:pr.flag, skill:pr.skill, sustituto:true}};
+     y.tpRencor=true; y.tpRencorPor={motivo:"apartado", year:yearNow(), team:S.tpTeam};
+     S._tpBanq={year:yearNow(), y:y.name, pr:pr.name, sale:false};
+     return roll(
+       [4,()=>{ y.skill=Math.max(70,(y.skill||75)-2);
+         return L(`${c.prN} se sube al coche a partir de la séptima carrera. ${c.yN} se hunde: no levanta cabeza ni en el simulador. −nivel. Y no olvidará quién le bajó.`,
+                  `${c.prN} takes the car from the seventh race. ${c.yN} sinks: he can't pick himself up, not even in the simulator. −level. And he won't forget who dropped him.`,
+                  {pt:`${c.prN} assume o carro a partir da sétima corrida. ${c.yN} afunda: não levanta a cabeça nem no simulador. −nível. E não vai esquecer quem o tirou.`}); }],
+       [4,()=>L(`${c.prN} se sube al coche a partir de la séptima carrera. ${c.yN} lo acepta y trabaja callado… pero no olvidará quién le bajó.`,
+                `${c.prN} takes the car from the seventh race. ${c.yN} accepts it and works in silence… but he won't forget who dropped him.`,
+                {pt:`${c.prN} assume o carro a partir da sétima corrida. ${c.yN} aceita e trabalha calado… mas não vai esquecer quem o tirou.`})],
+       [2,()=>{ S._tpBanq.sale=true;
+         return L(`${c.prN} se sube al coche a partir de la séptima carrera. ${c.yN} no lo traga: en cuanto acabe el año, se va del equipo con el finiquito.`,
+                  `${c.prN} takes the car from the seventh race. ${c.yN} won't swallow it: as soon as the year ends, he leaves the team with his severance.`,
+                  {pt:`${c.prN} assume o carro a partir da sétima corrida. ${c.yN} não engole: assim que o ano acabar, sai da equipe com a rescisão.`}); }]); }},
+   {l:()=>L("Aguantar hasta final de año","Stick with him to the end of the year",{pt:"Segurar até o fim do ano"}),r:()=>{
+     const c=S._banq||{};
+     return roll(
+       [4,()=>{ tpDrvSkill(c.y,1);
+         return L(`${c.yN} se sabe señalado y responde. +su nivel`,`${c.yN} knows he's in the spotlight and responds. +his level`,{pt:`${c.yN} sabe que está na mira e responde. +nível dele`}); }],
+       [4,()=>L(`Todo sigue igual. Los puntos que se pierdan, se pierden en la pista.`,`Nothing changes. Whatever points are lost, are lost on track.`,{pt:`Tudo segue igual. Os pontos que se perderem, se perdem na pista.`})],
+       [2,()=>{ S._tpBanqEspera={name:c.pr, year:yearNow()};
+         return L(`${c.prN} se cansa de esperar: si el año que viene no tiene volante, se va.`,`${c.prN} is tired of waiting: if he doesn't get a race seat next year, he's gone.`,{pt:`${c.prN} cansa de esperar: se no ano que vem não tiver volante, vai embora.`}); }]); }}]},
  {id:"tpSustituto", cond:()=>S.tpMissStreak>=1 && !(S.tpOwner&&S.tpOwner.k==="self"),
   t:()=>L("El consejo busca sustituto","The board shops for your successor",{pt:"O conselho procura substituto"}),
   d:()=>L("Un periodista de confianza te enseña un mensaje: tu consejo ha sondeado a otro Team Principal «por si acaso». Todavía no es oficial. Todavía.",
@@ -22321,6 +22440,7 @@ function pickTPDilemma(){
     const d=TP_DILEMAS.find(x=>x.id===_T.tpDilema);
     if(d && (!d.cond || d.cond())) return d;
   }
+  if(DIL_SOLO[TEST_MODE]) return null;   // 🧪 prueba de un solo dilema: ningún otro se cruza
   // 👑 la exigencia de galones no espera al sorteo: si tu Nº2 te iguala, esa conversación ocurre
   /* 🪑 el heredero tampoco espera al sorteo (Carlos: «forzar la entrada hacia el final»): cuando
      se cumple su condición, entra la mitad de los inviernos. Con cinco inviernos de ventana, casi seguro. */
