@@ -13640,7 +13640,7 @@ function renderTimeline(){
       const chip=(d)=>`<span class="pos ${posClass(d.pos)}">${d.fl} ${d.n} ${d.pos===1?"🏆 1º":d.pos+"º"}</span>`;
       const out=[];
       ds.forEach(d=>{
-        out.push(chip(d)+(sub && sub.titN===d.n ? " 🚑" : ""));
+        out.push(chip(d)+(sub && sub.titN===d.n && !sub.banq ? " 🚑" : ""));   // en «Al banquillo» solo el 🔁 del cambio
         if(sub && sub.titN===d.n) out.push(`🔁 ${sub.fl} ${sub.n} ${sub.gp} GP`);
       });
       return out.join(" · ");
@@ -17508,7 +17508,7 @@ function simTP(row){
     /* 🚑 (petición de Carlos) la ambulancia va en EL QUE SE ROMPE, no en el que le sustituye:
        la primera versión la ponía delante del sustituto y se leía justo al revés. */
     const _les=(S.tpSustituto && S.tpSustituto.year===row.year) ? S.tpSustituto : null;
-    parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º${(_les && _les.tit===d.name)?(_les.desde!=null?" ⬇️":" 🚑"):""}`);
+    parts.push(`${d.flag||"🏁"} ${surname(d.name)} ${r}º${(_les && _les.tit===d.name)?(_les.desde!=null?"":" 🚑"):""}`);
     /* 🔁 EL SUSTITUTO VA PEGADO A QUIEN SUSTITUYE (Carlos, 27-ago), no siempre al final. Si se
        rompe el primero, su relevo va segundo y el compañero cierra; si se rompe el segundo, el
        relevo cierra. Así la línea se lee sola: cada 🚑 tiene su 🔁 al lado. */
@@ -17516,7 +17516,7 @@ function simTP(row){
       parts.push(`🔁 ${_les.subFlag} ${_les.subN} ${_les.n} GP`);
       /* 📦 y el DATO, que es lo que pinta la trayectoria. El texto de arriba se conserva como
          respaldo para partidas viejas; lo que se dibuja con color sale de aquí. */
-      row.tpSub={titN:surname(d.name), n:_les.subN, fl:_les.subFlag, gp:_les.n};
+      row.tpSub={titN:surname(d.name), n:_les.subN, fl:_les.subFlag, gp:_les.n, banq:_les.desde!=null};   // banq: sin 🚑, no está lesionado
     }
     (row.tpDrv=row.tpDrv||[]).push({n:surname(d.name), fl:d.flag||"🏁", pos:r});
     if(r===1) champDrv=d;
