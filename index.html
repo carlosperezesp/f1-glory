@@ -2337,6 +2337,18 @@ const CROSSOVERS = [
    invierno). Los que no aparecen en ninguna lista (sobre todo karting) no están: su categoría la da
    la edad, y desde 2027 todas avanzan un peldaño por año (ver serieJoven). */
 const SERIE_2026 = {"A. Dunne": "F2",  "N. Tsolov": "F2",  "R. Camara": "F2",  "U. Ugochukwu": "F3",  "D. Beganovic": "F2",  "L. Browning": "Super Fórmula",  "S. Montoya": "F2",  "J. Edgar": "WEC",  "J. Dürksen": "F2",  "R. Verschoor": "ELMS",  "C. Collet": "IndyCar",  "N. León": "F2",  "O. Goethe": "F2",  "R. Villagómez": "F2",  "M. Stenshorne": "F2",  "T. Barnard": "Fórmula E",  "J. Wharton": "F3",  "C. Costoya": "F4",  "F. Slater": "F3",  "T. Taponen": "F3",  "E. Deligny": "F3",  "B. Badoer": "F3",  "K. Nakamura-Berta": "FRECA",  "E. Giltaire": "Super Fórmula Lights",  "M. Colnaghi": "F3",  "T. Pourchaire": "WEC",  "V. Martins": "WEC",  "P. Martí": "Fórmula E",  "E. Rivera": "F3",  "N. Bedrin": "GB3",  "M. Molnár": "GB3",  "S. Wheldon": "FRECA",  "R. Al Dhaheri": "FRECA",  "E. Olivieri": "FRECA",  "A. Powell": "F3",  "R. Lammers": "FRECA",  "E. Masson": "WEC",  "A. Aksoy": "F4",  "K. Craigie": "F4",  "D. Van Langendonck": "F4",  "R. Coronel": "F4",  "N. Monteiro": "Indy NXT",  "K. Schormans": "F4",  "B. Łyżeń": "F4",  "M. Jakobsen": "WEC",  "M. Jaubert": "WEC",  "S. Lindblom": "F4",  "T. Harfield": "F4",  "L. Sammalisto": "F4",  "T. Strauven": "FRECA"};
+/* 🎖️ EX PILOTOS DE F1 QUE EN 2026 SIGUEN CORRIENDO FUERA (Carlos, 29-sep: «¿solo esos veteranos?»).
+   Solo para la bolsa de 🎖️ Veteranos del primer mercado de tu equipo. Comprobado en las tablas de
+   inscritos de Wikipedia de 2026 y fechas de Wikidata (Rossi, del dato del juego: 25-sep-1991).
+   Edad a la salida de 2026, como SIN_ASIENTO_2026. */
+const VETS_FUERA_2026 = [
+  {name:"M. Ericsson",  flag:"🇸🇪", age:35, base:78, ceil:79, hoy:["Corre en IndyCar","Racing in IndyCar","Corre na IndyCar"]},           // 2-sep-1990
+  {name:"J-É. Vergne",  flag:"🇫🇷", age:35, base:79, ceil:80, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]}, // 25-abr-1990
+  {name:"S. Buemi",     flag:"🇨🇭", age:37, base:78, ceil:78, hoy:["Fórmula E y WEC","Formula E and WEC","Fórmula E e WEC"]},             // 31-oct-1988
+  {name:"D. Kvyat",     flag:"🇷🇺", age:31, base:78, ceil:80, hoy:["Corre en Super GT","Racing in Super GT","Corre na Super GT"]},         // 26-abr-1994
+  {name:"B. Hartley",   flag:"🇳🇿", age:36, base:76, ceil:77, hoy:["Corre en el WEC","Racing in the WEC","Corre no WEC"]},                // 10-nov-1989
+  {name:"A. Rossi",     flag:"🇺🇸", age:34, base:79, ceil:80, hoy:["Corre en IndyCar","Racing in IndyCar","Corre na IndyCar"]},           // 25-sep-1991
+];
 const SIN_ASIENTO_2026 = [   // edad a la salida de 2026 (como GRID2026) · `hoy` = dónde está de verdad en 2026 (revisado en la web el 28-sep)
   {name:"Y. Tsunoda", flag:"🇯🇵", age:25, base:81, ceil:84, hoy:["Reserva de Red Bull","Red Bull reserve","Reserva da Red Bull"]},          // 11-may-2000
   {name:"J. Doohan", flag:"🇦🇺", age:23, base:77, ceil:83, hoy:["Reserva de Haas","Haas reserve","Reserva da Haas"]},                      // 20-ene-2003
@@ -14920,9 +14932,9 @@ function serieJoven(nombre, edad, yr){
    es el de siempre). Tres bolsas —veteranos, jóvenes, otras categorías—; los reservas se reparten por
    edad, y los que ya corren en otra categoría van con los de fuera. */
 const FUND_BOLSAS=[
-  {k:"vet", ic:"🎖️", t:["Veteranos","Veterans","Veteranos"], sub:["Retirados que volverían y reservas con experiencia","Retired drivers who'd come back and seasoned reserves","Aposentados que voltariam e reservas experientes"]},
+  {k:"vet", ic:"🎖️", t:["Veteranos","Veterans","Veteranos"], sub:["Ex pilotos de F1: retirados que volverían, reservas con experiencia y los que corren en otras categorías","Former F1 drivers: retirees who'd come back, seasoned reserves and those racing elsewhere","Ex-pilotos de F1: aposentados que voltariam, reservas experientes e os que correm em outras categorias"]},
   {k:"jov", ic:"🌱", t:["Jóvenes","Youngsters","Jovens"], sub:["Reservas jóvenes y promesas de F2, F3 y las fórmulas de promoción","Young reserves and prospects from F2, F3 and the feeder series","Reservas jovens e promessas da F2, F3 e fórmulas de base"]},
-  {k:"otras", ic:"🌎", t:["Otras categorías","Other series","Outras categorias"], sub:["IndyCar, Fórmula E, WEC…: pilotos que cruzarían a la F1","IndyCar, Formula E, WEC…: drivers who'd cross over to F1","IndyCar, Fórmula E, WEC…: pilotos que cruzariam para a F1"]},
+  {k:"otras", ic:"🌎", t:["Otras categorías","Other series","Outras categorias"], sub:["IndyCar, Fórmula E, WEC…: pilotos y jóvenes que cruzarían a la F1","IndyCar, Formula E, WEC…: drivers and youngsters who'd cross over to F1","IndyCar, Fórmula E, WEC…: pilotos e jovens que cruzariam para a F1"]},
 ];
 function tpFundGrupos(){
   const yr=yearNow();
@@ -14938,23 +14950,48 @@ function tpFundGrupos(){
   (S.crossovers||[]).filter(c=>{ const a=yr-c.born; return a>=23 && a<=37 && !enJuego(c.name); }).forEach(c=>g.otras.push({kind:"cross", tipo:"cross",
     d:{name:c.name, age:edadFund(c.name, yr-c.born), skill:c.base, ceil:c.ceil, titles:0, flag:c.flag},
     hoy:FUND_2026[c.name]&&FUND_2026[c.name].hoy, odds:.45}));
-  // jóvenes: las promesas por debutar (a ciegas: el fichaje las materializa) con su categoría de este año
-  (S.rookies||[]).filter(r=>(!r[2]||yr>=r[2]) && !enJuego(r[0]) && r[3] && yr-r[3]>=17 && yr-r[3]<=26).forEach(r=>g.jov.push({kind:"rookie", _force:r[0],
-    d:{name:r[0], flag:r[1]||"🏁", age:yr-r[3]}, ciego:true, serie:serieJoven(r[0], yr-r[3], yr)}));
-  // orden de la primera tirada: por nivel (las promesas, a ciegas, detrás de los que tienen nivel a la vista)
-  Object.values(g).forEach(l=>l.sort((a,b)=>(b.ciego?0:1)-(a.ciego?0:1) || (b.d.skill||0)-(a.d.skill||0)));
+  // 🎖️ ex pilotos de F1 que siguen corriendo en otras categorías (solo el año de 2026)
+  if(yr===2026) VETS_FUERA_2026.filter(v=>!enJuego(v.name)).forEach(v=>g.vet.push({kind:"vuelve", tipo:"sin", hoy:v.hoy, odds:.5,
+    d:(S._fundVets=S._fundVets||{})[v.name] || (S._fundVets[v.name]={name:v.name, flag:v.flag, age:v.age, skill:v.base, ceil:v.ceil, titles:0})}));
+  /* 🎓 las promesas, CON su nivel a la vista (Carlos, 29-sep: «las promesas a ciegas, no las hagas a
+     ciegas en ese momento»). El nivel se sortea una vez por partida con el mismo sorteo que mkRookie
+     (tpNivelPromesa) y se respeta al firmar. Las que ya corren en una categoría grande (Fórmula E,
+     IndyCar, WEC…) van con los de fuera, no con los jóvenes. */
+  const GRANDES=new Set(["Fórmula E","IndyCar","WEC","ELMS","Super Fórmula","Indy NXT","Super Fórmula Lights"]);
+  (S.rookies||[]).filter(r=>(!r[2]||yr>=r[2]) && !enJuego(r[0]) && r[3] && yr-r[3]>=17 && yr-r[3]<=26).forEach(r=>{
+    const serie=serieJoven(r[0], yr-r[3], yr), niv=tpNivelPromesa(r);
+    (GRANDES.has(serie) ? g.otras : g.jov).push({kind:"rookie", _force:r[0], _nivel:niv, promesa:true, serie,
+      d:{name:r[0], flag:r[1]||"🏁", age:niv.age, skill:niv.skill, ceil:niv.ceil, gen:niv.gen, titles:0}}); });
+  // orden de la primera tirada: por nivel
+  Object.values(g).forEach(l=>l.sort((a,b)=>(b.d.skill||0)-(a.d.skill||0)));
   return g;
+}
+/* 🎲 el nivel de una promesa, sorteado UNA vez por partida con las mismas reglas que mkRookie (edad,
+   techo del dato con su temblor, fenómeno generacional) para poder enseñarlo antes de firmar */
+function tpNivelPromesa(r){
+  S._promNivel=S._promNivel||{};
+  if(S._promNivel[r[0]]) return S._promNivel[r[0]];
+  const born=r[3]||null, tech=r[4]||null;
+  const age = born ? Math.max(18,Math.min(34,yearNow()-born)) : irnd(18,21);
+  const td = tech ? Math.round(Math.max(78, Math.min(97, tech + gauss()*3))) : null;
+  const gen = !td && age<=21 && ch(0.11);
+  const n = gen ? {skill:rnd(84,88), ceil:irnd(95,97), gen:true}
+    : td ? {skill:rnd(age>=26?75:74, Math.min(81,td-3)), ceil:td, gen:td>=94}
+    : age>=26 ? {skill:rnd(75,81), ceil:Math.round(rnd(82,88)), gen:false}
+    : {skill:rnd(74,81), ceil:Math.round(rnd(81,91)), gen:false};
+  n.age=age;
+  return (S._promNivel[r[0]]=n);
 }
 /* una tarjeta de candidato, igual en las tres bolsas y en la fila de compatriotas */
 function tpFundCandBtn(c){
   const b=document.createElement("button"); b.className="offer";
   const d=c.d;
-  const tipo = c.ciego ? `${c.serie} · <span class="st-c">★</span><span class="st-e">????</span>`
+  const tipo = c.promesa ? `${c.serie} · ${tpEtiqueta(d)}`
     : (c.hoy ? LA(c.hoy) : c.tipo==="ret" ? L("Retirado de la F1: volvería","Retired from F1: would come back",{pt:"Aposentado da F1: voltaria"})
       : c.tipo==="cross" ? L("Estrella fuera de la F1","Star from outside F1",{pt:"Estrela fora da F1"})
       : L("Sin asiento este año","No seat this year",{pt:"Sem assento este ano"}))+` · ${tpEtiqueta(d)}`;
-  const icono = c.ciego ? "🎓" : c.tipo==="ret" ? "🔁" : c.tipo==="cross" ? "🌎" : "🧢";
-  const linea2 = c.ciego ? "📜3 · "+L("nivel por descubrir al firmar","level revealed when you sign",{pt:"nível revelado ao assinar"})
+  const icono = c.promesa ? "🎓" : c.tipo==="ret" ? "🔁" : c.tipo==="cross" ? "🌎" : "🧢";
+  const linea2 = c.promesa ? "📜3 · "+L("debutaría contigo","would make his debut with you",{pt:"estrearia com você"})
     : `📜${tpAniosPide(d)} · ${tpOddsTag(c.odds)}`;
   b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,#3d8bd4,#1d5b94)">${icono}</span>
     <span class="info"><span class="name">${d.flag||"🏁"} ${d.name}</span>
@@ -16595,6 +16632,7 @@ function tpSignDriver(i,c){
        JOVEN por definición: noCross=true salta los crossovers y limita el bote a ≤26. */
     if(c._force) S._forceRookie=c._force;   // la promesa elegida a dedo en la bolsa
     d=mkRookie(true, tn); d.tpc=3;
+    if(c._nivel){ d.skill=c._nivel.skill; d.ceil=c._nivel.ceil; d.gen=c._nivel.gen; d.age=c._nivel.age; }   // 🎓 el nivel que viste en la bolsa
     {
       S.pendingEvents.push(L(`🎓 Apuestas por la cantera: debuta ${d.name}. Los informes lo ven ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`,
         `🎓 You bet on the academy: ${d.name} debuts. The reports read him as ${tpNivel(d).toLowerCase()}${tpProy(d)?", "+tpProy(d).replace(/^\S+\s/,"").toLowerCase():""}.`,
