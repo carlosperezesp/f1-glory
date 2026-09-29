@@ -4604,6 +4604,25 @@ const TESTS = {
       return t;
     }
   },
+  /* 🚫 «EL VETO», EN BANDEJA: segundo año de Nº1 en un buen equipo, con un compañero flojo al lado.
+     Firmas la renovación y el dilema salta en el acto. */
+  veto: {
+    t:["El veto","The veto"],
+    d:["Renuevas como Nº1 en un buen equipo en el que ya llevas un año, con un compañero bastante más flojo que tú. Al firmar, el equipo te cuenta que quiere cambiarlo por un crack… y tu contrato te da la última palabra.",
+       "You renew as No.1 at a good team where you've already spent a year, with a teammate well below you. Once you sign, the team tells you it wants to replace him with a star… and your contract gives you the final say."],
+    era:"2026", cat:"F1", dilema:"veto",
+    run(){
+      // 2027: segundo año en el equipo (startAge = edad − 1 → yearNow() = 2026 + 1)
+      S.age=28; S.startAge=27; S.ovr=90; S.peakAge=28; S.cat="F1"; S.f1Seasons=4; S.yearsAtTeam=1;
+      const orden=[...F1_TEAMS].filter(t=>S.f1perf[t.name]!=null).sort((a,b)=>S.f1perf[b.name]-S.f1perf[a.name]);
+      const t=orden[1]||orden[0];
+      /* el compañero que se queda (el que ves en la oferta) es flojo; el otro asiento es el tuyo */
+      const sl=S.seats[t.name]||[]; if(sl[0]&&sl[0]!=="PLAYER") sl[0].skill=80; if(sl[1]&&sl[1]!=="PLAYER") sl[1].skill=70;
+      S.seasons.push({age:S.age-1, year:yearNow()-1, team:{...t}, cat:"F1", pos:4, wins:2, pods:7, pts:220, events:[]});
+      return t;
+    },
+    after(){ S.role="1"; S.yearsAtTeam=Math.max(2,S.yearsAtTeam||1); }
+  },
   jefeEstrella: {
     t:["Jefe · Vienen a por tu estrella","Boss · They come for your star"],
     d:["Te sientas en el muro de Williams en 2026, con Sainz en el coche y Ferrari —que tiene bastante mejor coche que tú— mirándolo de cerca. Pasa la pantalla de rumbo y llegará la llamada: le dejas ir cobrando el traspaso, le bloqueas con el contrato o igualas la oferta. Si le dejas ir, corre esta temporada contigo y el año que viene lo verás en la parrilla de Ferrari.",
@@ -6731,7 +6750,8 @@ function mktRellenar(row, huecos, bolsa, cerrar){
     const nuevo=()=>{ const r=mkRookie(isRBJr(h.tm), h.tm); if(S.cat==="TP") r.tpc=tpContratoPara(r,h.tm); S.seats[h.tm][h.i]=r; };
     // el filial de Red Bull no ficha veteranos ni campeones tampoco por esta vía;
     // y un galáctico en su prime solo firma donde hay CACHÉ (el crepuscular va donde quiera)
-    const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=27 || (d.titles||0)>0)) && canLureStar(h.tm,d);
+    const apto=d=>!(isRBJr(h.tm) && (d.crossover || (d.age||0)>=27 || (d.titles||0)>0)) && canLureStar(h.tm,d)
+      && !vetoActivo(h.tm, d.name);   // 🚫 el veto del jugador dura también el mercado siguiente
     const cand=bolsa.filter(apto);
     if(!cand.length){ nuevo(); return; }
     const pos=Math.max(0,ord.indexOf(h.tm)), tramo=pos/Math.max(1,ord.length-1);
@@ -7100,6 +7120,36 @@ function seatEnemyAsTeammate(){
   }
   S.roleMate=enemy.name;
 }
+/* 🚫 EL VETO (biblioteca de Carlos, #65 del modo carrera · Senna veta a Warwick en Lotus, 1986; la
+   cláusula de Prost contra Senna en Williams, 1993). Eres el Nº1, llevas al menos un año en el equipo
+   (el dilema salta DESPUÉS de firmar: nunca vetas a alguien en un equipo al que acabas de llegar ni
+   te vas después de vetarlo) y tu compañero está claramente por debajo: el equipo quiere cambiarlo
+   por un crack que no viene de un coche claramente mejor. Lo que dice el texto, pasa: si lo fichan,
+   el intercambio de asientos se hace en el acto (seatEnemyAsTeammate); si no, el veto se apunta y
+   tu equipo no puede ficharlo en el mercado siguiente (S.veto, ver mktRellenar). */
+function vetoCand(){
+  if(S.cat!=="F1" || !S.team || isRBJr(S.team.name) || S.role!=="1" || (S.yearsAtTeam||1)<2) return null;
+  const my=S.seats[S.team.name]; if(!Array.isArray(my)) return null;
+  const y=my.find(d=>d && d!=="PLAYER"); if(!y || y.beast || (y.skill||0)>(S.ovr||0)-4) return null;
+  const miPerf=S.f1perf[S.team.name]??75, feuds=new Set((S.feuds||[]).map(f=>f.name));
+  const c=[];
+  Object.entries(S.seats).forEach(([tn,sl])=>{
+    if(tn===S.team.name || !Array.isArray(sl) || (S.f1perf[tn]??75)>miPerf+2) return;
+    sl.forEach(d=>{ if(!d || d==="PLAYER" || d.beast || feuds.has(d.name) || (d.age||30)>34) return;
+      if((d.skill||0)>=(S.ovr||0)-2 || ((d.titles||0)>=1 && (d.skill||0)>=85)) c.push({x:d.name, xt:tn, y:y.name}); });
+  });
+  c.sort((a,b)=>((seatedPool().find(d=>d.name===b.x)||{}).skill||0)-((seatedPool().find(d=>d.name===a.x)||{}).skill||0));
+  return c[0]||null;
+}
+/* el fichaje se consuma: X a tu garaje, tu compañero a su equipo (o fuera, si ese equipo es el filial y
+   no ficha veteranos). Devuelve la frase de a dónde va tu excompañero, que es lo que cuenta el texto. */
+function vetoFichar(v){
+  S._seqEnemy=v.x; seatEnemyAsTeammate(); S._seqEnemy=null;
+  const va=(S.seats[v.xt]||[]).some(d=>d && d!=="PLAYER" && d.name===v.y);
+  return va ? L(`${surname(v.y)} hace las maletas: se va a ${v.xt}, en un intercambio.`,`${surname(v.y)} packs his bags: he goes to ${v.xt} in a swap.`,{pt:`${surname(v.y)} faz as malas: vai para a ${v.xt}, numa troca.`})
+            : L(`${surname(v.y)} hace las maletas y sale del equipo.`,`${surname(v.y)} packs his bags and leaves the team.`,{pt:`${surname(v.y)} faz as malas e sai da equipe.`});
+}
+function vetoActivo(tm, nombre){ const v=S.veto; return !!(v && v.team===tm && v.name===nombre && yearNow()+1<=v.hasta); }
 // desenlace de "call-up": te quedas el asiento este año; si no se puede, al menos aceleras
 function reserveCallup(){
   if(promoteFromReserve()) return L("🏎️ El equipo te sienta en el coche el resto del año: ¡pasas a piloto de F1!","🏎️ The team puts you in the car for the rest of the year: you're an F1 driver!",{pt:"🏎️ A equipe te coloca no carro pelo resto do ano: você vira piloto de F1!"});
@@ -8698,6 +8748,44 @@ const DILEMAS=[
      [3,()=>L("Firme: unos te llaman frío, otros te respetan. Sin cambios.","Firm: some call you cold, others respect you. No change.",{pt:"Firme: uns te chamam de frio, outros te respeitam. Sem mudanças."})],
      [3,()=>(VAL(.93),L("La prensa te pinta de villano. −fama leve","The press paints you as the villain. slight −fame",{pt:"A imprensa te pinta como vilão. −fama leve"}))],
      [2,()=>(VAL(1.06),L("Impones respeto por no achantarte. +fama leve","You command respect by standing your ground. slight +fame",{pt:"Você impõe respeito por não se acovardar. +fama leve"}))])}]},
+ // 🚫 El veto (ver vetoCand)
+ {id:"veto",stage:"f1",cond:()=>!!vetoCand(),t:()=>L("El veto","The veto",{pt:"O veto"}),
+  d:()=>{ const v=dilVar("veto",()=>vetoCand())||{}; const tm=(S.team&&S.team.name)||"";
+    return L(`${tm} no está contento con ${surname(v.y||"")} y tiene atado a ${v.x} para sustituirle en ${yearNow()}. Tu contrato de Nº1 te da algo que tienen muy pocos pilotos: la última palabra sobre tu compañero. Fuera del despacho nadie sabe que puedes decir que no.`,
+             `${tm} aren't happy with ${surname(v.y||"")} and have ${v.x} lined up to replace him in ${yearNow()}. Your No.1 contract gives you something very few drivers have: the final say on your teammate. Outside that office, nobody knows you can say no.`,
+             {pt:`A ${tm} não está contente com ${surname(v.y||"")} e tem ${v.x} amarrado para substituí-lo em ${yearNow()}. O seu contrato de Nº1 te dá algo que pouquíssimos pilotos têm: a última palavra sobre o seu companheiro. Fora daquela sala, ninguém sabe que você pode dizer não.`}); },
+  opts:[
+   {l:()=>L("«No lo quiero en mi garaje»","«I don't want him in my garage»",{pt:"«Não o quero na minha garagem»"}),r:()=>{
+     const v=(S._dilVars&&S._dilVars.veto)||{}; if(!v.x) return "";
+     const reinante=(S.seasons.filter(x=>x.cat==="F1").at(-1)||{}).pos===1;
+     const pCaso=Math.min(.95, .75 + (S.titles.f1>=1?.1:0) + (reinante?.1:0));
+     S.feuds=S.feuds||[];
+     if(ch(pCaso)){
+       if(!S.feuds.some(f=>f.name===v.x)) S.feuds.push({name:v.x, year:yearNow()});
+       S.veto={team:S.team.name, name:v.x, hasta:yearNow()+1};
+       return roll(
+         [6,()=>L(`Lo venden como una decisión técnica: el equipo no puede con dos coches punteros. ${surname(v.y)} se queda a tu lado otro año. ${surname(v.x)} se entera de por qué.`,
+                  `It's sold as a technical decision: the team can't run two front-running cars. ${surname(v.y)} stays alongside you for another year. ${surname(v.x)} finds out why.`,
+                  {pt:`Vendem como uma decisão técnica: a equipe não dá conta de dois carros de ponta. ${surname(v.y)} fica ao seu lado mais um ano. ${surname(v.x)} descobre o porquê.`})],
+         [4,()=>(VAL(.9),L(`${surname(v.y)} se queda a tu lado otro año… pero la prensa lo cuenta con pelos y señales. Te llaman cobarde. −fama. ${surname(v.x)} no lo olvidará.`,
+                  `${surname(v.y)} stays alongside you for another year… but the press tells the whole story. They call you a coward. −fame. ${surname(v.x)} won't forget it.`,
+                  {pt:`${surname(v.y)} fica ao seu lado mais um ano… mas a imprensa conta tudo com detalhes. Te chamam de covarde. −fama. ${surname(v.x)} não vai esquecer.`}))]);
+     }
+     const sale=vetoFichar(v);
+     if(!S.feuds.some(f=>f.name===v.x)) S.feuds.push({name:v.x, year:yearNow(), mate:true});
+     return L(`No te hacen caso: fichan a ${surname(v.x)} igual… y sabe que intentaste cerrarle la puerta. ${sale}`,
+              `They don't listen: they sign ${surname(v.x)} anyway… and he knows you tried to shut the door on him. ${sale}`,
+              {pt:`Não te dão ouvidos: contratam ${surname(v.x)} mesmo assim… e ele sabe que você tentou fechar a porta. ${sale}`}); }},
+   {l:()=>L("«Que venga. El sitio me lo gano en la pista»","«Let him come. I'll earn my place on track»",{pt:"«Que venha. O lugar eu ganho na pista»"}),r:()=>{
+     const v=(S._dilVars&&S._dilVars.veto)||{}; if(!v.x) return "";
+     const sale=vetoFichar(v);
+     return roll(
+       [6,()=>(VAL(1.06),L(`${surname(v.x)} será tu compañero. ${sale} El paddock toma nota: no te escondes de nadie. +fama leve`,
+                `${surname(v.x)} will be your teammate. ${sale} The paddock takes note: you hide from no one. slight +fame`,
+                {pt:`${surname(v.x)} será o seu companheiro. ${sale} O paddock anota: você não se esconde de ninguém. +fama leve`}))],
+       [4,()=>L(`${surname(v.x)} será tu compañero. ${sale} Desde el primer test se ve que va a ser una guerra.`,
+                `${surname(v.x)} will be your teammate. ${sale} From the very first test, it's clear this will be a war.`,
+                {pt:`${surname(v.x)} será o seu companheiro. ${sale} Desde o primeiro teste dá para ver que vai ser uma guerra.`})]); }}]},
  // secuela: tu equipo quiere fichar al piloto con quien te enemistaste (≥1 año después). Te hacen más caso si tienes galones.
  {id:"fichajeEnemigo",stage:"f1",cond:()=>S.cat==="F1"&&!!enemySignable(),t:()=>L("El fichaje del enemigo","Signing the enemy",{pt:"A contratação do inimigo"}),
   d:()=>{const e=eligibleEnemy(); S._seqEnemy=e?e.name:null; const tm=(S.team&&S.team.name)||L("Tu equipo","Your team",{pt:"A sua equipe"}); return L(`${tm} quiere fichar a ${e?surname(e.name):"un viejo rival"}, con quien te llevas a matar desde vuestra pelea en ${e?e.year:"su día"}. Te preguntan por tu opinión:`,`${tm} wants to sign ${e?surname(e.name):"an old rival"}, whom you've been at war with since your clash in ${e?e.year:"the past"}. They ask for your opinion:`,{pt:`A ${tm} quer contratar ${e?surname(e.name):"um velho rival"}, com quem você se dá muito mal desde a briga de vocês em ${e?e.year:"outros tempos"}. Perguntam a sua opinião:`});},opts:[
@@ -10057,7 +10145,8 @@ let P_GOMAS=.5, P_TOQUE=.06;
 /* 🤝 el favor del veterano vive en una ventana de DOS temporadas (eres novato, sin títulos y en media
    tabla) y compitiendo con los ~56 dilemas de F1 salía 1 vez cada 60 carreras: o va con prioridad o no
    existe. Como constante, para poder medirla A/B como las demás. */
-let P_FAVOR=.12;   // .3 salía en el 31,5% de los sorteos de su ventana; a .12 sale en el 13,4%
+let P_FAVOR=.12;
+let P_VETO=.35;    // 🚫 «El veto»: la situación ya es rara (Nº1 + compañero flojo + un crack a tiro), así que cuando se da, sale a menudo   // .3 salía en el 31,5% de los sorteos de su ventana; a .12 sale en el 13,4%
 let P_BLANCO=.45;   // ⏸️ cada cuánto asoma la oferta del año en blanco en la puerta de la F1
 let P_DEBUT=.2, P_PATRON=.26, P_CHAVAL=.12, P_MALETIN=.5;   // al exigir un chaval del top-3 cayó al 8%: se compensa   // el mecenas: .55 -> 48% de las carreras, .5 -> 21%. Sigue siendo demasiado para «la llamada que te cambia la vida»: se busca ~1 de cada 10
 function pickDilemma(){
@@ -10082,7 +10171,7 @@ function pickDilemma(){
   }
   // 🛞💥 los dos dilemas de 2026-08: sin prioridad se los comía el tope de 5 dilemas por carrera
   //     (medido: gomas 0,3% de las partidas, toque 6%). Con esto quedan en una banda visible.
-  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL],["favorVeterano",P_FAVOR],["maletin",P_MALETIN]]){
+  for(const [id,pr] of [["gomas",P_GOMAS],["toqueMate",P_TOQUE],["debutGrande",P_DEBUT],["patronContrato",P_PATRON],["elChaval",P_CHAVAL],["favorVeterano",P_FAVOR],["maletin",P_MALETIN],["veto",P_VETO]]){
     if(S.usedDilemmas[id]) continue;
     if((S.age-S.lastDilemmaAge<1) && id!=="debutGrande" && id!=="patronContrato") continue;
     const d=DILEMAS.find(x=>x.id===id);
