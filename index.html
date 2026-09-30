@@ -10580,6 +10580,9 @@ function renderDilemma(dl, repintar){
       let ido=false, tmr=0;
       const seguir=()=>{ if(ido) return; ido=true; clearTimeout(tmr);
         if(S && S._tpSegunda){ tpMercado(); return; }   // 🔁 «El último año»: vuelta al mercado
+        /* 🏷️ acabas de comprar el equipo: el nombre se elige AHORA, no el invierno que viene (Carlos,
+           30-sep: «le doy a comprarlo yo y no sale nada»). Tras elegirlo, sigue la temporada. */
+        if(S && S.cat==="TP" && S._bautizo){ S._bautizoYa=true; tpBautizo(); return; }
         startSeasonRun(); };
       tmr=setTimeout(seguir, espera);
       const cont=document.createElement("button"); cont.className="offer dilemma";
@@ -16908,7 +16911,7 @@ function tpBautizo(){
     const b=document.createElement("button"); b.className="offer dilemma";
     b.innerHTML=`<span class="team-dot dot" style="background:linear-gradient(135deg,${col},${col2})">${dot}</span>
       <span class="info"><span class="name">${nm}</span><span class="sub" style="display:block">${sub}</span></span>`;
-    b.onclick=()=>{ fn(); S._bautizo=false; tpRumboScreen(); };
+    b.onclick=()=>{ fn(); S._bautizo=false; tpTrasBautizo(); };
     box.appendChild(b);
   };
   /* 🏆 los TRES escudos de Glory GP (Carlos los puso en la carpeta el 23-ago): se sortea uno y los
@@ -16962,7 +16965,12 @@ function tpBautizoAplica(){
   if(!tpRebautiza(S.tpTeam, d.n, {color:pri(esc.c1), color2:pri(esc.c2)})) return tpFundarScreen(true);
   SPONSOR_BADGE[d.n]=esc;   // 🛡️ la inicial, como un equipo recién fundado: manda sobre cualquier logo
   S._fundB=null; S._bautizo=false;
-  tpRumboScreen();
+  tpTrasBautizo();
+}
+/* después de bautizar: si venías del dilema de la compra, arranca la temporada; si no, al rumbo */
+function tpTrasBautizo(){
+  if(S._bautizoYa){ S._bautizoYa=false; startSeasonRun(); }
+  else tpRumboScreen();
 }
 /* 🌾 LA HUCHA DE LA FÁBRICA (diseño de Carlos, 27-ago). Antes el rumbo movía un OBJETIVO y
    `evolveF1` recorría el 28% de esa distancia al año. Problema medido: al volver a elegir cada
