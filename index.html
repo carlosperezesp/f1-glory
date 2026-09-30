@@ -13393,7 +13393,11 @@ function nextOffers(){
   // 🇪🇸 «Correr con Alonso» (huevo de pascua SIN texto): si un PRODIGIO ESPAÑOL recibe su PRIMERA oferta de
   // F1 muy pronto (≤5 temporadas), en un pequeño % el PEOR coche (si NO es Racing Bulls, que no ficha veteranos)
   // le ofrece asiento con Fernando Alonso de compañero, que aguanta ahí su última temporada. Se descubre en la oferta.
-  if(S.f1Seasons===0 && !S._alonsoCameoDone && sel.country==="España" && S.era==="2026"
+  /* 🐞 (30-sep) …SALVO QUE EL ALONSO DE VERDAD SIGA CORRIENDO. Este Alonso se crea nuevo, y si el real
+     aún tenía asiento salían DOS (robot de resistencia: 3 de cada 150 carreras de 2026 jugando como
+     español, siempre hacia 2029-30 — desde que su retirada se estiró, coincide mucho más). */
+  const _alonsoCorre = Object.values(S.seats||{}).some(sl=>Array.isArray(sl) && sl.some(x=>x && x!=="PLAYER" && x.name==="F. Alonso"));
+  if(S.f1Seasons===0 && !S._alonsoCameoDone && !_alonsoCorre && sel.country==="España" && S.era==="2026"
      && (S.age-(S.startAge??16))<=5 && o.some(x=>x.team && x.team.cat==="F1")){
     const worst=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]??75)-(S.f1perf[b.name]??75))[0];
     const slots=worst?S.seats[worst.name]:null;
@@ -13403,6 +13407,8 @@ function nextOffers(){
       const weaker = (((slots[0]&&slots[0].skill)||0) <= ((slots[1]&&slots[1].skill)||0)) ? slots[0] : slots[1];
       const al={name:"F. Alonso", age:Math.max(46,yearNow()-1981), skill:Math.max(82,((weaker&&weaker.skill)||0)+1), ceil:87, titles:2, flag:"🇪🇸", alonsoCameo:true};
       slots[0]=al; slots[1]=weaker; (S.dpool=S.dpool||[]).push(al);
+      /* y deja de estar retirado: fuera del bolsillo, o podría volver también como sustituto (como Hayes) */
+      S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!=="F. Alonso");
       if(!o.some(x=>x.team && x.team.name===worst.name)) o.unshift({team:worst, role:"2"});
       S._alonsoCameoDone=true;
     }
