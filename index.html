@@ -10288,10 +10288,11 @@ function pickDilemma(){
 /* 🏁 ADELANTAR EN «LA GOMA NO LLEGA» SUMA DE VERDAD. Antes el texto decía «la posición es tuya» y
    ahí se acababa todo: ni victoria ni podio llegaban al palmarés (lo cazó Carlos). Ahora se calcula
    el puesto resultante y se acredita: 1º cuenta como victoria (y podio), 2º y 3º como podio. */
+/* 🐞 (30-sep) el 2º cobraba los puntos del 3º: esto apuntaba un podio suelto (que paga el 3º) y no la
+   diferencia. Ahora acredita como «Desde el fondo», con los puntos exactos del puesto (ver dilAcreditar). */
 function gomaGana(){
   const p=Math.max(1, (dilVar("pos",()=>irnd(2,6))||3)-1);
-  if(p===1) S.dilWin=(S.dilWin||0)+1;
-  else if(p<=3) S.dilPod=(S.dilPod||0)+1;
+  dilAcreditar(p);
   return p;
 }
 function gomaRemate(p){
