@@ -2437,6 +2437,7 @@ const LINEAGE_2026 = [
     del reglamento, del que el filial está excluido— y SOLO ENTONCES la casa madre se vuelve
     vendible. Realista: Red Bull es una marca de bebidas, no un fabricante. */
  {key:"Racing Bulls", steps:[{w:[2040,2052], p:.60, siFondoDe:"Red Bull", to:function(cur){
+    if(retoTP()) return null;   // 🐂 «El filial»: Red Bull no lo vende mientras lo dirijas tú
     const d=nombreParaVenta(cur); if(!d) return null;
     S.rbVendioFilial=true;
     delete JUNIOR_OF[cur];                    // 🔓 deja de ser filial: ya no le limita la casa madre
@@ -4611,6 +4612,24 @@ const CHALLENGES = {
     persona:"M. SCHUMACHER",
     at:"2026-10-05T10:00:00Z",
   },
+  /* 🐂 RETO IX · EL FILIAL (Carlos, 30-sep-2026). El PRIMER reto del modo jefe (`tp:true`): empiezas
+     en 2026 al mando de Racing Bulls y de ahí no te mueves —ni ofertas de fuera, ni tentaciones, ni
+     ascenso a Red Bull, ni comprar el equipo—. Si te echan o no te renuevan, se acaba el reto: «así
+     no te tiras toda la puta vida ahí». Red Bull sigue con SUS reglas (te sube a los buenos, nadie
+     pasa de los 29 en el filial). Lo que se relaja es el techo del coche: fuera del reto el filial
+     nunca supera a la madre; aquí no hay tope (ver RETO_FILIAL_TECHO), porque «la gracia es que
+     consigas ganar 1 o 2 mundiales en 30 años si juegas bien». Ranking propio, en la escala del jefe. */
+  filial: {
+    id:"filial", era:"2026", year:2026, team:"Racing Bulls", tp:true,
+    t:["El filial","The feeder team","A equipe B"],
+    sub:["Racing Bulls · 2026 · de aquí no te mueves",
+         "Racing Bulls · 2026 · you're not going anywhere",
+         "Racing Bulls · 2026 · daqui você não sai"],
+    d:["Eres el nuevo Team Principal de Racing Bulls, el filial de Red Bull. En Faenza se forman pilotos para otro: cuando uno brilla, la casa madre se lo lleva, y a los 29 nadie puede seguir en el equipo B. De aquí no te mueves: ni ofertas de otros equipos ni ascenso a Red Bull. Si te echan o no te renuevan, se acaba el reto. Esta vez, eso sí, el coche no tiene techo: el filial puede ganarle a la madre. Tienes treinta temporadas para ganar un Mundial con el equipo B.",
+       "You are the new Team Principal of Racing Bulls, Red Bull's feeder team. In Faenza they train drivers for someone else: when one shines, the parent team takes him, and nobody over 29 can stay in the B team. You're not going anywhere: no offers from other teams and no promotion to Red Bull. If you're sacked or not renewed, the challenge is over. This time, though, the car has no ceiling: the feeder team can beat the parent. You have thirty seasons to win a World Championship with the B team.",
+       "Você é o novo Team Principal da Racing Bulls, a equipe B da Red Bull. Em Faenza se formam pilotos para outro: quando um brilha, a matriz o leva, e ninguém com mais de 29 pode ficar na equipe B. Daqui você não sai: nada de ofertas de outras equipes nem de subir para a Red Bull. Se te demitirem ou não renovarem, o desafio acaba. Desta vez, porém, o carro não tem teto: a equipe B pode vencer a matriz. Você tem trinta temporadas para ganhar um Mundial com a equipe B."],
+    at:"2026-10-12T10:00:00Z",
+  },
 };
 // el nombre del monstruo se fija AL CREARLO, en el idioma de la partida (como los eventos del historial)
 function beastName(){ return L("La Bestia","The Beast",{pt:"A Fera"}); }
@@ -4978,6 +4997,8 @@ function maybeCampos(){
 }
 let CHALLENGE = null;
 function challengeNow(){ return CHALLENGE ? CHALLENGES[CHALLENGE] : null; }
+/* 🐂 ¿la partida en curso es un reto del MODO JEFE? (hoy solo «El filial») */
+function retoTP(){ const c=(typeof S!=="undefined" && S && S.challenge) ? CHALLENGES[S.challenge] : null; return !!(c && c.tp); }
 /* 👴 LA EDAD QUE VE EL MERCADO. En los retos que empiezan ya mayor (`vetMargen`, Loeb con 36), el
    paddock te trata como si tuvieras esos años menos: sin esto la carrera moría en dos o tres
    temporadas y el reto se quedaba corto (Carlos, 27-sep: «estirar un poco más el chicle»). Fuera de
@@ -5002,7 +5023,7 @@ function pName(){
 }
 function startChallengeFlow(id){
   if(!CHALLENGES[id]) return;
-  TP_MODE=false;
+  TP_MODE=!!CHALLENGES[id].tp;   // 🐂 un reto de jefe se juega en el muro
   CHALLENGE = id; SELECTED_ERA = CHALLENGES[id].era;
   track("challenge_selected", {challenge:id});
   showIdentity();
@@ -5563,8 +5584,8 @@ function showIdentity(){
   if(TP_MODE){ sel.style="consistente"; $("inNum").value="1"; }
   // con dos tarjetas la rejilla de tres columnas deja todo descolgado a la izquierda
   const _g=document.querySelector(".id-grid");
-  _g.classList.toggle("duo", suplanta||TP_MODE); // 2 tarjetas: identidad + reto (o identidad + país en TP)
-  _g.classList.toggle("cuatro", !!CH && !suplanta); // 4 tarjetas: + país y estilo → 2×2
+  _g.classList.toggle("duo", suplanta||(TP_MODE&&!CH)); // 2 tarjetas: identidad + reto (o identidad + país en TP)
+  _g.classList.toggle("cuatro", !!CH && !suplanta && !TP_MODE); // 4 tarjetas: + país y estilo → 2×2 (el reto de jefe son 3: sin estilo)
   $("identity").classList.toggle("challenge", !!CH);
   if(CH){
     $("chTitle").textContent = "📅 "+challengeLabel(CH);
@@ -5586,6 +5607,8 @@ function showIdentity(){
         styleLabel(CH.who.style), (_chEq?_chEq+" · ":"")+_chAno].filter(Boolean).map(chip).join("");
       sel.country=CH.who.country; sel.flag=CH.who.flag; sel.style=CH.who.style;
       $("inNum").value=CH.who.num; $("helmetNum").textContent=CH.who.num;
+    } else if(CH.tp){
+      $("chFixed").innerHTML = ["🧑‍💼 Team Principal", CH.team+" · "+CH.year].map(chip).join("");
     } else {
       $("chFixed").innerHTML = [L("Desde el karting","From karting",{pt:"Desde o karting"}), L("Tú eliges quién eres","You choose who you are",{pt:"Você escolhe quem é"})].map(chip).join("");
     }
@@ -5819,7 +5842,7 @@ function startCareer(){
      de verdad y la inercia del ranking arranque desde lo real, no desde el vacío. Va DESPUÉS de sembrar los asientos (el primer intento corría antes y casaba 0 nombres). Se casa por
      APELLIDO contra la parrilla sembrada, así que un nombre que no esté (rookies de 2026) se queda
      sin posición: correcto, no corrieron 2025. ⚠️ TABLA A REVISAR POR CARLOS. */
-  if(ERA.id==="2026" && !CHALLENGE){
+  if(ERA.id==="2026" && (!CHALLENGE || TP_MODE)){   // 🐂 el reto de jefe arranca del 2025 real, como el jefe libre
     /* 📄 tabla FINAL real de 2025 (Wikipedia, PDF de Carlos, 29-ago) — pilotos 1º→21º */
     const _R25=["Norris","Verstappen","Piastri","Russell","Leclerc","Hamilton","Antonelli","Albon",
                 "Sainz","Alonso","Hulkenberg","Hadjar","Bearman","Lawson","Ocon","Stroll",
@@ -5836,7 +5859,7 @@ function startCareer(){
   }
   /* 🕰️ …y lo mismo para la era 2025, con la tabla FINAL real de 2024: el punto de partida del que
      salen las flechas del primer año y los rivales directos. Vigente: Verstappen. */
-  if(ERA.id==="2025" && !CHALLENGE){
+  if(ERA.id==="2025" && (!CHALLENGE || TP_MODE)){
     const _R24=["Verstappen","Norris","Leclerc","Piastri","Sainz","Russell","Hamilton","Perez","Alonso",
                 "Hulkenberg","Gasly","Tsunoda","Stroll","Ocon","Magnussen","Albon","Ricciardo","Bearman",
                 "Colapinto","Zhou","Lawson","Bottas","Sargeant","Doohan"];
@@ -5866,6 +5889,11 @@ function startCareer(){
     initTPState();
     const _TT=testNow();
     if(_TT && _TT.tp){ setupTest(_TT); return; }   // 🧪 escenario de jefe: equipo ya elegido
+    /* 🐂 reto de jefe: no se elige escudería, te sientas en la suya */
+    const _CHtp=challengeNow();
+    if(_CHtp && _CHtp.tp){ S.challenge=_CHtp.id;
+      const _t=F1_TEAMS.find(t=>t.name===_CHtp.team);
+      if(_t){ tpSignTeam(_t,"start"); return; } }
     tpChooseTeam(); return;
   }
   // 📅 RETO que revive a alguien: en vez del karting, arrancas directamente en su asiento.
@@ -5941,7 +5969,8 @@ function ajustaBotonRepetir(){
   const b=document.getElementById("againBtn"); if(!b) return;
   const esJefe = !!(S && S.cat==="TP");
   const reto = S && S.challenge && CHALLENGES[S.challenge];
-  b.textContent = esJefe ? L("🔁 Otra etapa de jefe","🔁 Another spell in charge",{pt:"🔁 Outra etapa de chefe"})
+  b.textContent = (esJefe && reto) ? L("🔁 Repetir el reto","🔁 Replay the challenge",{pt:"🔁 Repetir o desafio"})
+    : esJefe ? L("🔁 Otra etapa de jefe","🔁 Another spell in charge",{pt:"🔁 Outra etapa de chefe"})
     : reto ? L("🔁 Repetir el reto","🔁 Replay the challenge",{pt:"🔁 Repetir o desafio"})
            : L("🔁 Mismo piloto","🔁 Same driver",{pt:"🔁 Mesmo piloto"});
   b.title = esJefe ? L("Vuelve a empezar en el muro, eligiendo escudería","Start again on the pit wall, picking a team",{pt:"Recomeça no muro, escolhendo equipe"})
@@ -11064,11 +11093,15 @@ function simSeason(){
    agravaba: en TP el rumbo de tu equipo se salta el dado de evolveF1, así que invirtiendo podías pasar
    a Red Bull. Este tope corta eso venga de donde venga —evolución NPC o inversión del jugador—: el B
    se queda 4 puntos por debajo del A como mucho. */
+/* 🐂 en el reto «El filial», el TUYO no tiene ese tope: null = sin techo; un número = madre + ese número */
+let RETO_FILIAL_TECHO = null;
 function tpCapFilial(){
   F1_TEAMS.forEach(t=>{
     const madre=JUNIOR_OF[t.name];
     if(!madre || !jrParentAlive(t.name)) return;
-    const techoMadre=(S.f1perf[madre]??96)-4;
+    const _libre = retoTP() && tpManaged(t.name);
+    if(_libre && RETO_FILIAL_TECHO==null) return;
+    const techoMadre=(S.f1perf[madre]??96)-(_libre ? -RETO_FILIAL_TECHO : 4);
     if(S.f1perf[t.name]>techoMadre) S.f1perf[t.name]=techoMadre;
     if((S.f1target[t.name]??0)>((S.f1target[madre]??96))) S.f1target[t.name]=S.f1target[madre];
   });
@@ -11171,6 +11204,7 @@ function evolveF1(row){
   });
   // equipo filial: claramente por debajo de la marca madre y con techo de midfield
   Object.entries(JUNIOR_OF).forEach(([junior,parent])=>{
+    if(retoTP() && tpManaged(junior)) return;   // 🐂 «El filial»: el tuyo lo recorta tpCapFilial, con la regla del reto
     if(S.f1perf[junior]!=null && S.f1perf[parent]!=null){
       S.f1perf[junior]=Math.min(S.f1perf[junior], S.f1perf[parent]-6, 83);
       S.f1target[junior]=Math.min(S.f1target[junior], S.f1target[parent]-6, 83);
@@ -13951,13 +13985,13 @@ function submitScore(){
        contra una mediana de 90 en el clásico. */
     const esTP = S.cat==="TP";
     /* 🧑‍💼 el jefe que empieza en 2025 tiene SU tabla (Carlos, 30-sep): «quizá mejor separado» */
-    const era=esTP ? (S.era==="2025" ? "tp2025" : "tp") : (S.era||"2026"), ch=esTP ? null : (S.challenge||null);
+    const era=esTP ? (S.era==="2025" ? "tp2025" : "tp") : (S.era||"2026"), ch=S.challenge||null;   // 🐂 el jefe también juega retos («El filial»)
     const kEra="e"+era, kCh=ch?("c"+ch):null;
     const gBest=best.g||0, wBest=(best.w===wk)?(best.wg||0):0;
     const eBest=best[kEra]||0, cBest=kCh?(best[kCh]||0):0;
     /* 🧑‍💼 el jefe SOLO mira y apunta su tabla: el servidor no lo mete ni en la global ni en la semanal,
        y si apuntara ahí sus puntos, una carrera clásica que sí mejoraba tu global se quedaría sin enviar. */
-    const mejora = esTP ? score>eBest : (score>gBest || score>wBest || (kCh ? score>cBest : score>eBest));
+    const mejora = esTP ? (kCh ? score>cBest : score>eBest) : (score>gBest || score>wBest || (kCh ? score>cBest : score>eBest));
     if(!mejora){ _rankSubmit=null; return Promise.resolve(null); }
     const nb=esTP ? {...best} : {...best, g:Math.max(gBest,score), w:wk, wg:Math.max(wBest,score)};
     if(kCh) nb[kCh]=Math.max(cBest,score); else nb[kEra]=Math.max(eBest,score);
@@ -13993,7 +14027,7 @@ function openRanking(){
   // tras terminar una carrera, se abre en la tabla que le corresponde: la del reto si jugabas un reto,
   // si no la de su época — es donde el jugador quiere verse a sí mismo.
   if(typeof S!=="undefined" && S){
-    if(S.cat==="TP") rankScope=(S.era==="2025") ? "e:tp2025" : "e:tp";   // 🧑‍💼 su tabla, no la de 2026
+    if(S.cat==="TP") rankScope=S.challenge ? "c:"+S.challenge : (S.era==="2025") ? "e:tp2025" : "e:tp";   // 🧑‍💼 su tabla, no la de 2026 (🐂 o la de su reto)
     else if(S.challenge) rankScope="c:"+S.challenge;
     else if(S.era) rankScope="e:"+S.era;
   }
@@ -18094,7 +18128,8 @@ function tpContratoScreen(){
   /* 🅱️ ASCENSO DESDE EL FILIAL (playtest de Carlos: «Racing Bulls es filial de Red Bull, te podrían
      fichar ellos también»). Si diriges el equipo B y cumpliste, la marca madre te sube al primer
      equipo — el camino real de un jefe de Toro Rosso a Red Bull. Va SIEMPRE en la lista, por delante. */
-  if(isRBJr(tn) && cumpliste){
+  if(retoTP()) fuera=[];   // 🐂 «El filial»: ni ofertas de fuera ni ascenso
+  if(isRBJr(tn) && cumpliste && !retoTP()){
     const madre=F1_TEAMS.find(t=>t.name===JUNIOR_OF[tn]);
     if(madre && !fuera.some(t=>t.name===madre.name)){
       fuera=[madre, ...fuera].slice(0,2);
@@ -18102,9 +18137,9 @@ function tpContratoScreen(){
     }
   }
   setDecision(L(`📄 Se acaba tu contrato con ${tn}`,`📄 Your contract with ${tn} is up`,{pt:`📄 Acaba o seu contrato com a ${tn}`}),
-    L(`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} al mando y el papel se acaba. ${_salvadoPorHistorial?"El último año no salió, pero tu etapa entera pesa más que un mal diciembre.":cumpliste?"Cumpliste, y eso se sabe en el paddock.":"No cumpliste, y eso también se sabe."} Decide dónde sigues.`,
-      `${S.tpContractTotal} season${S.tpContractTotal===1?"":"s"} in charge and the paper runs out. ${_salvadoPorHistorial?"The last year didn't work out, but your whole spell weighs more than one bad December.":cumpliste?"You delivered, and the paddock knows it.":"You didn't deliver, and the paddock knows that too."} Decide where you go next.`,
-      {pt:`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} no comando e o papel acaba. ${_salvadoPorHistorial?"O último ano não saiu, mas a sua passagem inteira pesa mais que um dezembro ruim.":cumpliste?"Você cumpriu, e isso se sabe no paddock.":"Você não cumpriu, e isso também se sabe."} Decida onde continua.`}));
+    L(`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} al mando y el papel se acaba. ${_salvadoPorHistorial?"El último año no salió, pero tu etapa entera pesa más que un mal diciembre.":cumpliste?"Cumpliste, y eso se sabe en el paddock.":"No cumpliste, y eso también se sabe."} ${retoTP()?"En Faenza no hay otra puerta: o sigues aquí, o se acaba.":"Decide dónde sigues."}`,
+      `${S.tpContractTotal} season${S.tpContractTotal===1?"":"s"} in charge and the paper runs out. ${_salvadoPorHistorial?"The last year didn't work out, but your whole spell weighs more than one bad December.":cumpliste?"You delivered, and the paddock knows it.":"You didn't deliver, and the paddock knows that too."} ${retoTP()?"In Faenza there is no other door: you stay here, or it ends.":"Decide where you go next."}`,
+      {pt:`${S.tpContractTotal} temporada${S.tpContractTotal===1?"":"s"} no comando e o papel acaba. ${_salvadoPorHistorial?"O último ano não saiu, mas a sua passagem inteira pesa mais que um dezembro ruim.":cumpliste?"Você cumpriu, e isso se sabe no paddock.":"Você não cumpriu, e isso também se sabe."} ${retoTP()?"Em Faenza não há outra porta: ou você fica aqui, ou acaba.":"Decida onde continua."}`}));
   $("decRecap").style.display="none";
   const box=$("offerList"); box.innerHTML="";
   box.appendChild(tpGridBtn());
@@ -18131,6 +18166,7 @@ function tpContratoScreen(){
   };
   // renovar solo si te quieren: cumpliendo, casi siempre; sin cumplir, rara vez
   const meQuieren = cumpliste ? true : ch(.3);   // 🐞 Carlos: yendo bien, tu equipo debe quererte SIEMPRE (antes 15% te dejaba tirado)
+  if(retoTP() && !meQuieren){ tpRetoFin(false); return; }   // 🐂 no te renuevan: se acabó el reto
   const yo=F1_TEAMS.find(t=>t.name===tn);
   if(meQuieren && yo) oferta(yo, true);
   fuera.forEach(t=>oferta(t,false));
@@ -18217,8 +18253,29 @@ function tpFinDeCarrera(){
   box.appendChild(b);
   scrollToDecision();
 }
+/* 🐂 EL FINAL DEL RETO «EL FILIAL»: te echan o no te renuevan, y no hay otro muro que valga */
+function tpRetoFin(despido){
+  const tn=S.tpTeam;
+  setDecision(despido ? L("🚪 Despedido","🚪 Sacked",{pt:"🚪 Demitido"}) : L("📄 No te renuevan","📄 No renewal",{pt:"📄 Não renovam com você"}),
+    despido
+    ? L(`${tn} prescinde de ti. En Faenza no hay segunda oportunidad ni otro muro que te espere: el reto acaba aquí.`,
+        `${tn} lets you go. In Faenza there are no second chances and no other pit wall waiting: the challenge ends here.`,
+        {pt:`A ${tn} dispensa você. Em Faenza não há segunda chance nem outro muro esperando: o desafio acaba aqui.`})
+    : L(`El contrato se acaba y ${tn} no quiere seguir contigo. En Faenza no hay segunda oportunidad ni otro muro que te espere: el reto acaba aquí.`,
+        `The contract runs out and ${tn} doesn't want to carry on with you. In Faenza there are no second chances and no other pit wall waiting: the challenge ends here.`,
+        {pt:`O contrato acaba e a ${tn} não quer seguir com você. Em Faenza não há segunda chance nem outro muro esperando: o desafio acaba aqui.`}));
+  $("decRecap").style.display="none";
+  const box=$("offerList"); box.innerHTML="";
+  const b=document.createElement("button"); b.className="offer retire";
+  b.innerHTML=`<span class="team-dot dot" style="background:#71717c">🏁</span>
+    <span class="info"><span class="name">${L("Cerrar tu etapa","Close your era",{pt:"Fechar a sua era"})}</span></span>`;
+  b.onclick=endCareer;
+  box.appendChild(b);
+  scrollToDecision();
+}
 function tpFiredScreen(){
   S.tpFired=false;
+  if(retoTP() && S.age<TP_TOPE){ S.tpFiredBy=null; tpRetoFin(true); return; }   // 🐂 «El filial»
   const from=S.tpFiredBy||S.tpTeam; S.tpFiredBy=null;
   S._quebro = !F1_TEAMS.some(t=>t.name===from);   // 🪦 no fue un despido: fue una quiebra
   const myPerf=S.f1perf[from]||75;
@@ -18281,6 +18338,7 @@ function tpFiredScreen(){
 }
 /* la TENTACIÓN: solo llega si sobre-rindes — la otra puerta del cambio de equipo (1-3 por partida) */
 function tpTemptCheck(){
+  if(retoTP()) return false;   // 🐂 «El filial»: de aquí no te mueves
   if(S.tpOwner && S.tpOwner.k==="self") return false;   // 🧑‍✈️ al dueño no se le ficha: se le compra
   const last=S.seasons.at(-1); if(!last || last.cat!=="TP") return false;
   const G=S.tpGoal||{}; const delta=(G.exp||6)-(last.pos||6);
@@ -19573,6 +19631,7 @@ const TP_DILEMAS=[
    si algún día lo vendes campeón, la fortuna es tuya. */
  {id:"tpAcciones",
   cond:()=>{ if(S.cat!=="TP" || !S.tpTeam || isRBJr(S.tpTeam) || tpFundada()) return false;   // 🏗️ tu equipo no se vende ni se renombra
+    if(retoTP()) return false;   // 🐂 ni en el reto del filial, aunque Red Bull lo hubiera soltado
     if(S.tpOwner && S.tpOwner.k==="self") return false;
     if((S.seasons||[]).filter(r=>r.cat==="TP").length<2) return false;
     const u=(S.seasons||[]).at(-1);
@@ -22689,7 +22748,8 @@ function endTPCareer(){
   const _finTP=paisFin(sel.flag);   // 🕰️ misma regla en el final del jefe
   $("endName").innerHTML=(_finTP && yearNow()>_finTP) ? "" : flg(sel.flag)+" ";
   $("endName").appendChild(document.createTextNode(pName()));
-  $("endYears").textContent="🧑‍💼 Team Principal · "+L(`Al mando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} escudería${teams.length===1?"":"s"}`,
+  const _chTP=S.challenge&&CHALLENGES[S.challenge];   // 🐂 «📅 Reto IX · El filial · …»
+  $("endYears").textContent=(_chTP?"📅 "+challengeLabel(_chTP)+" · ":"")+"🧑‍💼 Team Principal · "+L(`Al mando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} escudería${teams.length===1?"":"s"}`,
     `In charge: ${S.baseYear||2026} – ${yearNow()} · ${yrs} season${yrs===1?"":"s"} · ${teams.length} team${teams.length===1?"":"s"}`,
     {pt:`No comando: ${S.baseYear||2026} – ${yearNow()} · ${yrs} temporada${yrs===1?"":"s"} · ${teams.length} equipe${teams.length===1?"":"s"}`});
   // rejilla de estadísticas propia del jefe (reescribe las celdas del piloto — guardando el original
