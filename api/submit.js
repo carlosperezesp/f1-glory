@@ -89,7 +89,7 @@ module.exports = async (req, res) => {
           podiums = num("podiums"), poles = num("poles"), subcamp = num("subcamp"), seasons = num("seasons");
     const secs = Math.max(0, Math.floor(Number(body.secs) || 0));
     const ns = Math.max(0, Math.floor(Number(body.ns) || 0));
-    const esTP = String(body.era || "") === "tp";
+    const esTP = String(body.era || "").indexOf("tp") === 0;
     // «rendir por encima del coche» del jefe: puesto de tu coche menos puesto final, sumado año a año
     const over = Math.max(-9999, Math.min(9999, Math.round(Number(b.over) || 0)));
 
@@ -120,7 +120,7 @@ module.exports = async (req, res) => {
        de jefe con sus dos pilotos en el podio ya rompía el tope y el servidor devolvía «más
        resultados que carreras posibles» — o sea que los equipos DOMINANTES eran justo los
        rechazados. Se detectó antes de abrir el modo, midiendo un envío de verdad. */
-    const dosCoches = String(body.era || "") === "tp";
+    const dosCoches = String(body.era || "").indexOf("tp") === 0;
     const techoCarreras = seasons * (dosCoches ? 48 : 24) + (dosCoches ? 48 : 24);
     if (podiums > techoCarreras || poles > techoCarreras || wins > techoCarreras) {
       res.status(400).json({ error: "más resultados que carreras posibles" }); return;
@@ -162,7 +162,7 @@ module.exports = async (req, res) => {
        retro: puntúa en otra escala. Medido el 4-sep-2026: una partida de jefe de CINCO temporadas en
        la que además te despiden da 436 puntos, contra una mediana de 90 en el clásico de 2026 — y es
        que suma las victorias y los podios de LOS DOS pilotos del equipo. */
-    const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp"];
+    const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp", "tp2025"];
     const era = ERAS_OK.indexOf(String(body.era || "")) >= 0 ? String(body.era) : null;
     const ch = /^[a-z0-9]{3,16}$/.test(String(body.ch || "")) ? String(body.ch) : null;
 
@@ -186,7 +186,7 @@ module.exports = async (req, res) => {
        tomó con el retro pero llevada hasta el final: con 436 puntos por una partida corta y fallida,
        dejarlo entrar en la global habría barrido en una tarde la tabla histórica de los pilotos, y esa
        tabla tiene una promesa: nadie pierde el puesto que ya tenía. Compite consigo mismo. */
-    const soloSuTabla = String(body.era || "") === "tp";
+    const soloSuTabla = String(body.era || "").indexOf("tp") === 0;
     const cmds = soloSuTabla
       ? [["SET", "pl:" + id, disp]]
       : [
