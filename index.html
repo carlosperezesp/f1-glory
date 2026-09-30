@@ -6159,11 +6159,21 @@ const RETIRO_CURVA={
   bueno: [.04,.06,.08,.12,.16,.22,.30,.40,.55,.70,.85,1,1],    // techo 84-89 → mediana ~39
   resto: [.08,.12,.16,.22,.30,.40,.55,.70,.85,1,1,1,1]         // techo <84   → mediana ~37
 };
+/* 👴 UN AÑO MÁS DE MARGEN PARA TODOS LOS VETERANOS (Carlos, 30-sep: «aligeramos un poco los veteranos»).
+   Medido: Hamilton se retiraba de mediana con 43 → 44; Hülkenberg 39 → 40. */
+const RETIRO_MARGEN=1;
+/* 🇪🇸 …Y ALONSO, QUE ES UN CASO APARTE (Carlos, 30-sep: «ha renovado con Aston Martin hasta 2027… es un
+   outlier total y no descarto que siga más años»). Su contrato se respeta —en 2025 y 2026 no puede
+   retirarse antes de acabar 2027— y después la curva le trata como a alguien tres años más joven.
+   Medido: mediana de retirada 45 → 47, y 1 de cada 3 partidas sigue corriendo con 48 (antes, ninguna). */
+const RETIRO_EXCEPCION={"F. Alonso":{hasta:2027, menos:3}};
 function probRetiro(d, puestoCoche, nCoches){
   if(d.age<34) return null;                    // los jóvenes no se «retiran»: pierden el asiento, y eso va aparte
+  const ex=RETIRO_EXCEPCION[d.name];
+  if(ex && (S.era==="2025" || S.era==="2026") && yearNow()<ex.hasta) return 0;   // contrato real en vigor
   const techo=d.ceil||d.skill||75;
   const c = techo>=90 ? RETIRO_CURVA.crack : techo>=84 ? RETIRO_CURVA.bueno : RETIRO_CURVA.resto;
-  let e = d.age-34;                            // la edad EFECTIVA, que los resultados mueven
+  let e = d.age-34-RETIRO_MARGEN-(ex?ex.menos:0);   // la edad EFECTIVA, que los resultados mueven
   if(puestoCoche>0 && nCoches>0){
     if(puestoCoche<=4) e-=1.5;                                     // gana: le siguen llamando
     else if(puestoCoche>Math.ceil(nCoches*2/3)) e+=1.5;            // último tercio: ya no le llama nadie
@@ -14549,6 +14559,8 @@ function initTPState(){
     d.champYears=[yearNow() - (d.name===S.lastChampName ? 1 : irnd(1,4))]; }));
   Object.entries(S.seats).forEach(([t,sl])=>(sl||[]).forEach(d=>{
     if(d && d!=="PLAYER") d.tpc=tpContratoPara(d,t); }));
+  /* 📜 contratos reales conocidos: Alonso renovó con Aston Martin hasta final de 2027 */
+  if(S.era==="2026") Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d && d!=="PLAYER" && d.name==="F. Alonso") d.tpc=2; }));
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
