@@ -11068,10 +11068,20 @@ const FAM_BASE=[3.0,1.5];                          // déficit de coche el 1er y
 const FAM_TIRADA=[[.30,0],[.50,1],[.20,1.8]];      // [probabilidad, multiplicador]: de pie · normal · le cuesta
 function famTirada(){ const r=Math.random(); let a=0; for(const [p,m] of FAM_TIRADA){ a+=p; if(r<a) return m; } return 1; }
 function famEscala(skill){ return Math.max(.12, Math.min(1.2, (91-(skill||75))/13)); }   // OVR 90 → 0,15 · 85 → 0,46 · 78 → 1
+/* 🔙 VOLVER A CASA (Carlos, 1-oct: «si vuelves a un equipo tras pocos años, no seas penalizado porque
+   el equipo sigue siendo igual. No siempre, pero a veces sí»): quien regresa a un equipo del que salió
+   hace FAM_VUELTA años o menos, a veces se lo encuentra como lo dejó y no paga adaptación. */
+const FAM_VUELTA=3, FAM_VUELTA_P=.55;
+function famLlega(h, viejo, tn){   // h = {eq, desde, t, hist}: un piloto de la IA o tu propia ficha
+  if(viejo){ h.hist=h.hist||{}; h.hist[viejo]=yearNow()-1; }
+  const fuera = (h.hist && h.hist[tn]!=null) ? yearNow()-h.hist[tn] : null;
+  if(fuera!=null && fuera<=FAM_VUELTA && ch(FAM_VUELTA_P)) return {desde:-99, t:0};   // la casa sigue igual
+  return {desde:yearNow(), t:famTirada()};
+}
 /* apunta al piloto en su equipo la primera vez que corre con él, y dice cuánto coche le cuesta este año */
 function famPenal(d, tn){
   if(!d || d==="PLAYER" || typeof d!=="object") return 0;
-  if(d._eq!==tn){ d._eq=tn; d._eqDesde=yearNow(); d._famT=famTirada(); }
+  if(d._eq!==tn){ const h={hist:d._eqHist}; const r=famLlega(h, d._eq, tn); d._eqHist=h.hist; d._eq=tn; d._eqDesde=r.desde; d._famT=r.t; }
   const y=yearNow()-(d._eqDesde??-99);
   if(y<0 || y>=FAM_BASE.length) return 0;
   return FAM_BASE[y]*(d._famT??1)*famEscala(d.skill);
@@ -11306,6 +11316,13 @@ function rebrandTeam(oldName, to, row){
      y `S.seats[tuEquipo]` daba vacío, así que en el panel no salía ninguno de tus pilotos, solo el
      probador —que vive en `S.tpReserva` y por eso sí aparecía—. */
   if(S.tpTeam===oldName) S.tpTeam=nn;
+  /* 🤝 renombrar un equipo NO es cambiar de equipo: sin esto, Sauber→Audi cobraba la adaptación a
+     todos sus pilotos como si acabaran de llegar (ver famPenal) */
+  try{ const _ren=d=>{ if(!d || typeof d!=="object") return; if(d._eq===oldName) d._eq=nn;
+      if(d._eqHist && d._eqHist[oldName]!=null){ d._eqHist[nn]=d._eqHist[oldName]; delete d._eqHist[oldName]; } };
+    (S.dpool||[]).forEach(_ren); Object.values(S.seats||{}).forEach(sl=>(Array.isArray(sl)?sl:[]).forEach(_ren));
+    if(S._famEq===oldName) S._famEq=nn;
+    if(S._famHist && S._famHist[oldName]!=null){ S._famHist[nn]=S._famHist[oldName]; delete S._famHist[oldName]; } }catch(e){}
   if(S.tpFiredBy===oldName) S.tpFiredBy=nn;
   if(S.tpVentaForzosa===oldName) S.tpVentaForzosa=nn;
   if(S.tpFiaDQ && S.tpFiaDQ.team===oldName) S.tpFiaDQ.team=nn;
@@ -12357,7 +12374,7 @@ function simF1(row,st){
   const yrsHere = S.yearsAtTeam||1;
   /* 🤝 la tirada también es para ti (Carlos, 1-oct: «hay pilotos que caen en un equipo nuevo y son la
      hostia»): se tira al llegar y vale para los dos años de adaptación */
-  if(yrsHere===1 && S._famEq!==myTeam){ S._famEq=myTeam; S._famT=famTirada(); }
+  if(yrsHere===1 && S._famEq!==myTeam){ const h={hist:S._famHist}; const r=famLlega(h, S._famEq, myTeam); S._famHist=h.hist; S._famEq=myTeam; S._famT=(r.desde===-99 ? 0 : r.t); }
   const adaptBase = (FAM_BASE[yrsHere-1]||0) * (S._famEq===myTeam ? (S._famT??1) : 1);
   const adaptPenalty = adaptBase * Math.max(0.12, Math.min(1.2, (91-S.ovr)/13)); // OVR90→~0.15 · OVR85→~0.46 · OVR78→~1
   const carDeficit = Math.min(8, (S.role==="2"?0.9:0) + adaptPenalty + Math.max(0,S.age-primeEnd)*0.85*(S.role==="1"?0.55:1.1));
