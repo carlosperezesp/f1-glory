@@ -5812,6 +5812,7 @@ function startCareer(){
   S._t0 = Date.now(); // marca de inicio real (para el filtro anti-trampa de tiempo de juego)
   try{ const c=$("chkDeaths"); S.deathsOn = (ERAS[SELECTED_ERA]||{}).deadly ? !!(c&&c.checked) : false; }catch(e){ S.deathsOn=false; }
   S.supDriver = pickSupDriver();  // 🏎️ ¿corre el piloto de algún mecenas en esta partida?
+  try{ famSembrar(); }catch(e){}   // 🤝 los que ya estaban, ya conocen su coche
   /* 🧑‍💼 MODO TEAM PRINCIPAL: mismo mundo, la cámara al otro lado. El estado y la parrilla de arriba
      valen tal cual; a partir de aquí no hay karting ni asiento de piloto — se elige escudería. */
   if(TP_MODE){
@@ -10947,6 +10948,7 @@ function simSeason(){
      el mercado») */
   S._seatsPrev={}; Object.entries(S.seats||{}).forEach(([t,sl])=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") S._seatsPrev[d.name]=t; }));
   evolveF1(row);
+  try{ expInvierno(); }catch(e){}   // 🤝 nivel + veteranía de los pilotos empujan su coche
   tpCapFilial();   // 🅱️ tras evolucionar todos, el filial se recorta si se pasó de la madre
   tickOxido(row);         // 🛞 ¿recuperas lo que te costó cambiar de estilo?
   npcSeason(row);
@@ -11053,6 +11055,64 @@ let REG_MEMORIA = .50;   /* cuánto pesa la grandeza (caché) en el sorteo del r
                             —Ferrari 47%, McLaren 45%, Haas 28%—; con 0,7 se acerca otra vez al
                             bloqueo de siempre. */
 let REG_POZO = 4;        // de entre cuántos malos sale el cochazo tipo Brawn
+/* 🤝 FAMILIARIDAD Y EXPERIENCIA (Carlos y un amigo suyo, 1-oct-2026). Dos piezas, en los dos modos:
+   · FAMILIARIDAD: el que llega a un equipo nuevo —de la IA o tú— paga su adaptación dos temporadas
+     (la segunda, a medias). Pero «no es una ley»: al llegar se tira un dado y hay quien cae de pie
+     y no la nota, la mayoría la paga y alguno la paga cara. Un crack la nota menos que uno del montón.
+   · EXPERIENCIA: cada invierno los pilotos empujan el desarrollo de su coche según una mezcla de
+     NIVEL y VETERANÍA (edad y títulos) — «Alonso hace crecer el coche porque es veterano y sabe de
+     mecánica, pero TAMBIÉN porque es buen piloto». Cuenta en relativo a la parrilla, así que no
+     infla los coches: reparte. Los titulares cuentan entero; el probador (si hay), algo menos.
+   Nada de esto se explica en pantalla: se descubre jugando (Carlos). Números calibrados con el robot. */
+const FAM_BASE=[3.0,1.5];                          // déficit de coche el 1er y el 2º año (escala del jugador)
+const FAM_TIRADA=[[.30,0],[.50,1],[.20,1.8]];      // [probabilidad, multiplicador]: de pie · normal · le cuesta
+function famTirada(){ const r=Math.random(); let a=0; for(const [p,m] of FAM_TIRADA){ a+=p; if(r<a) return m; } return 1; }
+function famEscala(skill){ return Math.max(.12, Math.min(1.2, (91-(skill||75))/13)); }   // OVR 90 → 0,15 · 85 → 0,46 · 78 → 1
+/* apunta al piloto en su equipo la primera vez que corre con él, y dice cuánto coche le cuesta este año */
+function famPenal(d, tn){
+  if(!d || d==="PLAYER" || typeof d!=="object") return 0;
+  if(d._eq!==tn){ d._eq=tn; d._eqDesde=yearNow(); d._famT=famTirada(); }
+  const y=yearNow()-(d._eqDesde??-99);
+  if(y<0 || y>=FAM_BASE.length) return 0;
+  return FAM_BASE[y]*(d._famT??1)*famEscala(d.skill);
+}
+/* la parrilla con la que arranca la partida ya conoce su coche */
+function famSembrar(){
+  Object.entries(S.seats||{}).forEach(([tn,sl])=>(Array.isArray(sl)?sl:[]).forEach(d=>{
+    if(d && d!=="PLAYER" && typeof d==="object"){ d._eq=tn; d._eqDesde=-99; } }));
+}
+let EXP_K=.45;            // cuánto coche mueve cada punto de aporte por encima de la media de la parrilla
+const EXP_PROBADOR=.6;    // el probador cuenta algo menos que un titular
+function expAporte(skill, age, titles){
+  const q=Math.max(0, Math.min(1, ((skill||75)-78)/14));                          // lo bueno que es
+  const e=Math.max(0, Math.min(1, ((age||25)-26)/12)) + Math.min(titles||0, 4)*.1;  // lo veterano que es
+  return .5*q + .4*e + .6*q*e;                                                   // y las dos cosas juntas, lo que más
+}
+function expInvierno(){
+  const tot={};
+  F1_TEAMS.forEach(t=>{
+    let a=0;
+    (S.seats[t.name]||[]).forEach(d=>{
+      if(d==="PLAYER"){ if(S.cat==="F1") a+=expAporte(S.ovr, S.age, (S.titles||{}).f1); }
+      else if(d && typeof d==="object") a+=expAporte(d.skill, d.age, d.titles);
+    });
+    tot[t.name]=a;
+  });
+  const vals=Object.values(tot); if(!vals.length) return;
+  const media=vals.reduce((x,y)=>x+y,0)/vals.length;
+  /* los probadores, encima de la cuenta de titulares: el tuyo en el jefe, o tú si eres probador */
+  if(S.cat==="TP" && S.tpReserva && tot[S.tpTeam]!=null){ const r=S.tpReserva; tot[S.tpTeam]+=EXP_PROBADOR*expAporte(r.skill, r.age, r.titles); }
+  if(S.cat==="TEST" && S.team && tot[S.team.name]!=null) tot[S.team.name]+=EXP_PROBADOR*expAporte(S.ovr, S.age, (S.titles||{}).f1);
+  Object.entries(tot).forEach(([tn,a])=>{
+    if(S.f1perf[tn]==null) return;
+    const dlt=EXP_K*(a-media);
+    /* el suelo de 60 solo impide BAJAR de ahí: un coche que ya estaba por debajo (el filial a veces lo
+       está) no se sube de golpe — eso no sería experiencia, sería el tope (lo cazó el robot) */
+    const lim=(v,x)=>Math.min(96, Math.max(Math.min(60,v), v+x));
+    S.f1perf[tn]=lim(S.f1perf[tn], dlt);
+    if(S.f1target[tn]!=null) S.f1target[tn]=lim(S.f1target[tn], dlt*.5);
+  });
+}
 function evolveF1(row){
   const _v=F1_TEAMS.map(t=>S.f1perf[t.name]).filter(x=>x!=null);
   const mediaParrilla = _v.length ? _v.reduce((a,b)=>a+b,0)/_v.length : 75;
@@ -11763,7 +11823,7 @@ function bgF1Season(row){
            ganaba 8 títulos; el blindado, 7 y ninguno). Las estrellas no cambian: son puestos. */
         const coche = S.f1perf[t.name] + (pr ? pr.motor*2.2 + pr.aero*1.1 : 0) + _n1;
         const disp  = 3.4 + (pr ? pr.aero*0.9 : 0);          // …y sigue ensanchando el azar del año
-        let sc = d.skill*w + coche*(1-w) + gauss()*Math.max(1.2, disp);
+        let sc = d.skill*w + (coche - famPenal(d, t.name))*(1-w) + gauss()*Math.max(1.2, disp);   // 🤝 el recién llegado paga su adaptación
         /* 📊 INERCIA DEL RANKING (calibrada contra 2005-2025 reales, 25-ago). Sin ella, la zona media
            —media docena de coches en 3 puntos— la decidía el gauss: un 5% de los pilotos se movía 10+
            puestos con el MISMO coche, cuando en la realidad es el 2,3% (213 transiciones medidas de
@@ -12278,7 +12338,7 @@ function simF1(row,st){
   const seasonForm=()=>gauss()*3;
   F1_TEAMS.forEach(t=>{
     (S.seats[t.name]||[]).forEach(d=>{
-      if(d!=="PLAYER") grid.push({team:t.name, name:d.name, dref:d, skill:d.skill, pts:0, isP:false, form:seasonForm()});
+      if(d!=="PLAYER") grid.push({team:t.name, name:d.name, dref:d, skill:d.skill, pts:0, isP:false, form:seasonForm(), fam:famPenal(d, t.name)});
     });
   });
   if(!F1_TEAMS.some(t=>t.name===myTeam)){
@@ -12295,7 +12355,10 @@ function simF1(row,st){
   // 🆕 adaptación a un equipo NUEVO, ESCALADA por lo bueno que seas: un crack la domina rápido (2º año),
   // el del montón tarda. Un cochazo la supera igual (cualquiera gana en el Brawn'09). Saltar cada año pasa factura.
   const yrsHere = S.yearsAtTeam||1;
-  const adaptBase = yrsHere===1 ? 3.0 : yrsHere===2 ? 1.5 : 0;
+  /* 🤝 la tirada también es para ti (Carlos, 1-oct: «hay pilotos que caen en un equipo nuevo y son la
+     hostia»): se tira al llegar y vale para los dos años de adaptación */
+  if(yrsHere===1 && S._famEq!==myTeam){ S._famEq=myTeam; S._famT=famTirada(); }
+  const adaptBase = (FAM_BASE[yrsHere-1]||0) * (S._famEq===myTeam ? (S._famT??1) : 1);
   const adaptPenalty = adaptBase * Math.max(0.12, Math.min(1.2, (91-S.ovr)/13)); // OVR90→~0.15 · OVR85→~0.46 · OVR78→~1
   const carDeficit = Math.min(8, (S.role==="2"?0.9:0) + adaptPenalty + Math.max(0,S.age-primeEnd)*0.85*(S.role==="1"?0.55:1.1));
   let wins=0,pods=0,poles=0,raced=0;
@@ -12311,13 +12374,13 @@ function simF1(row,st){
     const chaos=Math.random()<.10;
     const noiseMul=chaos?1.7:1;
     const scores=grid.map(d=>{
-      let s=d.skill*_W+((perf[d.team]??75)-(d.isP?carDeficit:0))*(1-_W)+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
+      let s=d.skill*_W+((perf[d.team]??75)-(d.isP?carDeficit:(d.fam||0)))*(1-_W)+d.form+gauss()*(d.isP?st.varza:4.5)*noiseMul;
       if(d.isP) s+=roleBonus+affinity+(sel.style==="agresivo"?1.4:0); // agresivo: ritmo de carrera puro (y arriesgado)
       if(wet && d.isP) s+=(st.wet+(S.wetMaster||0))*6;   // 🌧️ + lo que aprendiste de chaval con gomas de seco
       return {d,s,dnf:(d.isP&&out)||Math.random()<((d.isP?st.dnf:.07)*(chaos?1.6:1))};
     });
     if(!out){
-      const qs=grid.map(d=>d.skill*_W+((perf[d.team]??75)-(d.isP?carDeficit:0))*(1-_W)+gauss()*(d.isP?st.varza:4.5)+(d.isP?affinity+(sel.style==="agresivo"?2.5:0):0));
+      const qs=grid.map(d=>d.skill*_W+((perf[d.team]??75)-(d.isP?carDeficit:(d.fam||0)))*(1-_W)+gauss()*(d.isP?st.varza:4.5)+(d.isP?affinity+(sel.style==="agresivo"?2.5:0):0));
       const myQ=qs[qs.length-1];
       if(qs.filter(q=>q>myQ).length===0){poles++;}
       S.gp++;
@@ -18328,10 +18391,7 @@ function tpProbadorInvierno(){
   if((r.age||0)<=24){ r.skill=Math.min(r.ceil||95,(r.skill||74)+rnd(.3,.7)); }
   else {
     r.skill=Math.max(66,(r.skill||74)-rnd(.3,.8));   // en el banquillo no se rueda
-    if((r.age||0)>=30 && S.f1perf[S.tpTeam]!=null){
-      S.f1perf[S.tpTeam]=Math.max(60,Math.min(96,S.f1perf[S.tpTeam]+rnd(.25,.5)));
-      tpCapFilial();
-    }
+    /* (su empujón al desarrollo vive ahora en expInvierno: nivel + veteranía, 1-oct-2026) */
   }
   r.resYrs=(r.resYrs||0)+1;
   if(r.skill<=69 || r.age>=33){
