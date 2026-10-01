@@ -5644,17 +5644,21 @@ function validateIdentity(){
    QUÉ PORCENTAJE juega a cada modo, una muestra vale igual que el total.
    ⚠️ El sorteo se hace UNA vez por visita, no por evento: si no, llegaría el career_started y no el
    career_ended, y los embudos saldrían torcidos. Para subirlo o bajarlo, toca solo TRACK_SAMPLE. */
-const TRACK_ON = true;
-const TRACK_SAMPLE = 0.10;   // 📉 1-oct: del 15 al 10%, y ahora la muestra vale también para las VISITAS (ver el final)
+/* 📉 1-oct-2026 (Carlos): «solo medimos visitas y dejamos de medir todo lo demás… cuando necesite medir
+   algo, lo activamos temporalmente». Eventos personalizados APAGADOS; las visitas las cuenta el script
+   de Vercel solo. Los avisos de error siguen llegando (casi nunca saltan y son como me entero de un
+   fallo). 👉 Para medir algo un tiempo: TRACK_ON = true (con TRACK_SAMPLE como freno). */
+const TRACK_ON = false;
+const TRACK_SAMPLE = 0.10;
 const TRACK_ME = Math.random() < TRACK_SAMPLE;
 /* 📊 el muestreo vale para saber PORCENTAJES —qué parte juega a cada modo—, pero NO para los avisos
    de error: esos son raros por definición y los quieres todos. Un cuelgue que le pasa a diez personas
    no puede reportarse una vez y media. Los `*_error` se saltan la muestra; su coste es despreciable
    justamente porque casi nunca ocurren. */
 function track(name, data){
-  if(!TRACK_ON) return;
-  if(!TRACK_ME && !/_error$/.test(name)) return;
-  if(!TRACK_ME && typeof cargaAnalitica==="function") cargaAnalitica();   // un aviso de error de alguien fuera de la muestra: se carga solo para él
+  const esError=/_error$/.test(name);
+  if(!TRACK_ON && !esError) return;
+  if(!TRACK_ME && !esError) return;
   try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){}
 }
 function startCareer(){
@@ -22849,16 +22853,7 @@ initPreviewBar(); // barra "🔒 solo tú" cuando el modo pruebas está activo
 try{ pendRetry(); }catch(e){}  // 📮 ¿quedó alguna carrera sin enviar la última vez? va ahora
 </script>
 <!-- Vercel Web Analytics (sitio estático): cuenta visitas y páginas vistas, sin cookies -->
-<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};
-/* 📉 LA MEDICIÓN, CON FRENO TAMBIÉN EN LAS VISITAS (Carlos, 1-oct-2026: «ya lleva 5 euros de este
-   período… unos 0,70 al día», casi todo «Web Analytics Events»). Cada VISITA ya es un evento facturado,
-   así que muestrear solo los eventos personalizados no bastaba: ahora el script de Vercel se carga
-   únicamente en la muestra (TRACK_SAMPLE, el 10%). En el panel de Vercel las visitas salen a escala:
-   multiplicar por 10. Los avisos de error se siguen mandando todos (cargaAnalitica bajo demanda). */
-function cargaAnalitica(){
-  if(window._vaCargado) return; window._vaCargado=true;
-  var s=document.createElement("script"); s.defer=true; s.src="/_vercel/insights/script.js"; document.body.appendChild(s);
-}
-if(TRACK_ME) cargaAnalitica();</script>
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
