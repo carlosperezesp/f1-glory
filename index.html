@@ -366,6 +366,17 @@ img.tlogo.mb{width:20px;height:20px;border:none}
 .fund-sw.on{border-color:var(--text)}
 .fund-mix .team-dot{display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--panel2);border:1.5px dashed var(--muted)}
 .fund-err{font-size:13px;color:var(--accent);min-height:0}
+/* 🏛️ marcas reales que se sugieren al escribir el nombre */
+.fund-sug{display:flex;flex-direction:column;gap:6px}
+.fund-sug:empty{display:none}
+.fund-sug button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer}
+.fund-sug .team-dot,.fund-real .team-dot{width:34px;height:34px;flex-shrink:0}
+.fund-sug b{font-size:15px}
+.fund-sug small{display:block;color:var(--muted);font-size:12px}
+.fund-real{display:flex;align-items:center;gap:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.fund-real .team-dot{width:48px;height:48px}
+.fund-real .sw2{display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-right:4px;border:1px solid rgba(0,0,0,.15)}
+.fund-real button{margin-left:auto;font:inherit;font-size:12px;color:var(--muted);background:none;border:none;text-decoration:underline;cursor:pointer}
 .fund-err:empty{display:none}
 .offer:nth-child(2){animation-delay:.07s}.offer:nth-child(3){animation-delay:.14s}.offer:nth-child(4){animation-delay:.21s}
 .offer:hover{border-color:#15151e;transform:translateY(-2px);box-shadow:0 14px 30px rgba(21,21,30,.14)}
@@ -14895,6 +14906,45 @@ function tpFundarPuede(){ return TP_MODE && (SELECTED_ERA==="2026" || SELECTED_E
 function tpFundada(){ return !!(S.tpFundador && S.tpTeam && S.tpTeam===S.tpFundador.team); }
 function tpFundLetra(n){ const m=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[A-Za-z]/); return m?m[0].toUpperCase():null; }
 function tpFundEscudo(letra, ci){ const p=tpFundCombos()[ci]||PALETAS[0]; return {c1:p.c1, c2:p.c2, sil:"mono_"+letra.toLowerCase()+".png"}; }
+/* 🏛️ LAS MARCAS REALES (Carlos, 1-oct-2026). Al escribir el nombre de tu equipo, si se parece a una
+   marca que el juego ya conoce —Minardi, Jordan, Hyundai, Brabham…— se te sugiere: con su escudo y
+   sus colores reales. Así no hay que buscar entre sesenta. Empieza igual que un equipo propio (último
+   coche, asientos vacíos, bolsas, CEO a elegir; «de fábrica» si es un fabricante) y, si es una marca
+   que el juego metería sola más adelante (Hyundai, Porsche…), esa entrada desaparece. */
+const MARCA_FUERA=["APXGP","RB","Prost GP","Campos Racing","Pacific Team Lotus","Hispania","Mercedes GP","BMW Sauber"];
+function plano(x){ return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,""); }
+function marcasReales(){
+  const enParrilla=new Set(F1_TEAMS.map(t=>t.name));
+  const todas=new Set([...Object.keys(TEAM_LOGOS||{}), ...Object.keys(LIBREAS||{}), ...Object.keys(COMPRADORES||{}), ...Object.keys(ESCUDOS_RESU||{})]);
+  return [...todas].filter(n=>n && n.length<=15 && !enParrilla.has(n) && MARCA_FUERA.indexOf(n)<0);
+}
+function marcasSugeridas(q){
+  const k=plano(q); if(k.length<3) return [];
+  const l=marcasReales();
+  const emp=l.filter(n=>plano(n).indexOf(k)===0), dentro=l.filter(n=>plano(n).indexOf(k)>0);
+  return [...emp, ...dentro].slice(0,3);
+}
+/* el último escudo que tuvo en la biblioteca; si no tiene, su logo de siempre */
+function marcaLook(n){ const L=LIBREAS[n]; return (L && L.length) ? L[L.length-1] : null; }
+function marcaEscudoHTML(n, cls){
+  const lk=marcaLook(n); if(lk) return libreaHTML(lk, cls||"team-dot");
+  const src=logoFor(n); if(src) return `<img class="${cls||"team-dot"} tlogo" src="${src}" alt="${n}">`;
+  return `<span class="${cls||"team-dot"}" style="background:#6f7078"></span>`;
+}
+/* sus colores reales: el comprador moderno, si lo es; si no, la última vez que corrió en alguna época */
+function marcaColores(n){
+  const c=COMPRADORES[n]; if(c) return {color:c.color, color2:c.color2, abbr:c.abbr};
+  let mejor=null, my=-1;
+  Object.values(ERAS).forEach(E=>{
+    const y=E.baseYear||0;
+    (E.teams||[]).forEach(t=>{ if(t && t.name===n && y>=my){ mejor=t; my=y; } });
+    (E.expansion||[]).forEach(e=>{ const t=e&&e.team; if(t && t.name===n && y>=my){ mejor=t; my=y; } });
+  });
+  if(mejor) return {color:mejor.color, color2:mejor.color2, abbr:mejor.abbr};
+  const lk=marcaLook(n), pri=x=>{ const m=String(x||"").match(/#([0-9a-fA-F]{6})/); return m?m[0]:null; };
+  return {color:(lk&&pri(lk.bg))||"#6f7078", color2:(lk&&lk.capas&&lk.capas[0]&&pri(lk.capas[0].c))||"#2a2c33", abbr:null};
+}
+function marcaFabricante(n){ return !!COMPRADORES[n] || n==="Jaguar"; }
 function tpFundarBtn(){
   const b=document.createElement("button"); b.className="offer";
   b.style.border="2px dashed var(--muted)"; b.style.borderLeftWidth="6px";
@@ -14913,6 +14963,7 @@ function tpFundError(n){
   /* 🚫 ni los de la parrilla ni los que pueden llegar después (expansiones, APXGP, marcas nuevas):
      una entrada con tu mismo nombre pisaría tu coche y tus asientos */
   const low=n.toLowerCase();
+  if(S._fund && S._fund.real===n && !F1_TEAMS.some(t=>t.name===n)) return "";   // 🏛️ la marca real elegida
   const usados=[...F1_TEAMS.map(t=>t.name), ...(S.expansion||[]).map(e=>e&&e.team&&e.team.name),
     (typeof APXGP!=="undefined"&&APXGP)?APXGP.name:null, ...((typeof MARCAS_NUEVAS!=="undefined")?MARCAS_NUEVAS.map(m=>m.n):[])];
   if(usados.some(x=>x && String(x).toLowerCase()===low))
@@ -14937,13 +14988,32 @@ function tpFundarScreen(bz){
   const w=document.createElement("div"); w.className="fund";
   w.innerHTML=`<label class="fund-l" for="fundNom">${L("Nombre del equipo","Team name",{pt:"Nome da equipe"})}</label>
     <input id="fundNom" class="fund-in" maxlength="15" autocomplete="off" spellcheck="false" placeholder="${L("p. ej. Pérez GP","e.g. Smith GP",{pt:"ex. Silva GP"})}">
-    <div class="fund-l">${L("Colores","Colours",{pt:"Cores"})}</div>
+    <div class="fund-sug" id="fundSug"></div>
+    <div class="fund-l" id="fundPalL">${L("Colores","Colours",{pt:"Cores"})}</div>
     <div class="fund-pal" id="fundPal" role="group"></div>
     <div class="fund-err" id="fundErr" aria-live="polite"></div>`;
   box.appendChild(w);
   const inp=w.querySelector("#fundNom"); inp.value=d.n;
+  if(bz) d.real=null;   // (el bautizo de un equipo comprado sigue siendo con tu inicial)
   const pinta=()=>{
     const l=tpFundLetra(inp.value), pal=w.querySelector("#fundPal"); pal.innerHTML="";
+    /* 🏛️ marcas reales: sugerencias mientras escribes, y si has elegido una, su escudo y sus colores */
+    const sug=w.querySelector("#fundSug"); sug.innerHTML="";
+    w.querySelector("#fundPalL").style.display = d.real ? "none" : "";
+    if(d.real){
+      const c=marcaColores(d.real);
+      pal.innerHTML=`<div class="fund-real">${marcaEscudoHTML(d.real,"team-dot")}
+        <span><b>${d.real}</b><br><small><span class="sw2" style="background:${c.color}"></span><span class="sw2" style="background:${c.color2}"></span>${L("Su escudo y sus colores de verdad","Its real crest and colours",{pt:"O escudo e as cores de verdade"})}</small></span>
+        <button type="button" id="fundOtro">${L("Usar mi propio escudo","Use my own crest",{pt:"Usar o meu próprio escudo"})}</button></div>`;
+      pal.querySelector("#fundOtro").onclick=()=>{ d.real=null; pinta(); };
+      return;
+    }
+    if(!bz) marcasSugeridas(inp.value).forEach(n=>{
+      const b=document.createElement("button"); b.type="button";
+      b.innerHTML=`${marcaEscudoHTML(n,"team-dot")}<span><b>${n}</b><small>${L("Marca real: su escudo y sus colores","Real brand: its crest and colours",{pt:"Marca real: o escudo e as cores"})}</small></span>`;
+      b.onclick=()=>{ d.real=n; d.n=n; inp.value=n; w.querySelector("#fundErr").textContent=""; pinta(); };
+      sug.appendChild(b);
+    });
     d.set.forEach((ci,k)=>{
       const b=document.createElement("button"); b.type="button"; b.className="fund-sw"+(ci===d.p?" on":"");
       b.setAttribute("aria-pressed", String(ci===d.p));
@@ -14965,7 +15035,7 @@ function tpFundarScreen(bz){
     };
     pal.appendChild(r);
   };
-  inp.oninput=()=>{ d.n=inp.value; pinta(); w.querySelector("#fundErr").textContent=""; };
+  inp.oninput=()=>{ d.n=inp.value; if(d.real && plano(inp.value)!==plano(d.real)) d.real=null; pinta(); w.querySelector("#fundErr").textContent=""; };
   pinta();
   const sigue=()=>{
     const n=inp.value.trim().replace(/\s+/g," "); const err=tpFundError(n);
@@ -14994,10 +15064,11 @@ function tpFundarCeo(){
       "The team is yours, but the CEO sets the bar every year. Choose well: if you fall short, he can throw you out of your own team.",
       {pt:"A equipe é sua, mas quem fixa a meta de cada ano é o CEO. Escolha bem: se não cumprir, ele pode te tirar da sua própria equipe."}));
   const box=$("offerList"); box.innerHTML="";
-  /* sin el de fábrica: un CEO de fábrica responde ante un constructor, y un equipo recién nacido no es de nadie más */
-  TP_OWNERS.filter(o=>o.k!=="brand").forEach(o=>{
+  /* sin el de fábrica: un CEO de fábrica responde ante un constructor, y un equipo recién nacido no es de nadie más…
+     salvo que la marca real que recuperas SEA un fabricante (Toyota, Hyundai, Porsche…) */
+  TP_OWNERS.filter(o=>o.k!=="brand" || (d.real && marcaFabricante(d.real))).forEach(o=>{
     const b=document.createElement("button"); b.className="offer";
-    b.innerHTML=`${spBadgeHTML(tpFundEscudo(l,d.p),"team-dot dot")}
+    b.innerHTML=`${d.real ? marcaEscudoHTML(d.real,"team-dot dot") : spBadgeHTML(tpFundEscudo(l,d.p),"team-dot dot")}
       <span class="info"><span class="name">${o.lab()}</span>
       <span class="sub" style="display:block">${o.intro()}</span></span>`;
     b.onclick=()=>tpFundar(o.k);
@@ -15013,9 +15084,13 @@ function tpFundar(ownerK){
   const d=S._fund; if(!d||!d.n) return tpFundarScreen();
   if(tpFundError(d.n)) return tpFundarScreen();
   const nm=d.n, l=tpFundLetra(nm), esc=tpFundEscudo(l,d.p);
+  const real = (d.real===nm) ? marcaColores(nm) : null;   // 🏛️ marca real: su escudo y sus colores
   const pri=x=>{ const m=String(x||"").match(/#([0-9a-fA-F]{6})/); return m?m[0]:null; };
-  const abbr=(nm.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z]/g,"").slice(0,3)||l).toUpperCase();
-  const t={name:nm, abbr, color:pri(esc.c1)||"#15151e", color2:pri(esc.c2)||"#c9a227", perf:60, cat:"F1", propio:true};
+  const abbr=((real&&real.abbr) || nm.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z]/g,"").slice(0,3)||l).toUpperCase();
+  const t= real ? {name:nm, abbr, color:real.color||"#15151e", color2:real.color2||"#c9a227", perf:60, cat:"F1", propio:true, real:true}
+               : {name:nm, abbr, color:pri(esc.c1)||"#15151e", color2:pri(esc.c2)||"#c9a227", perf:60, cat:"F1", propio:true};
+  /* la entrada futura de esa marca (Hyundai, Porsche… en los años 30) ya no tiene sentido: la tienes tú */
+  if(real && S.expansion) S.expansion=S.expansion.filter(e=>!(e && e.team && e.team.name===nm));
   /* 🚗 EL ÚLTIMO COCHE DE LA PARRILLA: un poco por debajo del peor, para que el fondo sea tuyo de verdad */
   const peor=Math.min(...F1_TEAMS.map(x=>S.f1perf[x.name]??75));
   const perf=Math.max(58, Math.round((peor-rnd(1.5,3.5))*10)/10);
@@ -15026,14 +15101,17 @@ function tpFundar(ownerK){
   S.seats[nm]=[null,null];                                 // vacío: se llena en el mercado, con la bolsa
   (S.llegadaExp=S.llegadaExp||{})[nm]=yearNow();           // 🛌 recién nacido: ni gigante dormido ni palmarés
   try{ palmSeedTeam(nm, S.baseYear); }catch(e){}
-  SPONSOR_BADGE[nm]=esc;                                   // 🛡️ la inicial; futEvoluciona no toca a quien lleva escudo propio
-  S.tpFundador={team:nm, y:yearNow(), pal:d.p, flag:sel.flag||null};
+  if(real){
+    delete SPONSOR_BADGE[nm];                              // (de una partida anterior en la misma sesión)
+    const lk=marcaLook(nm); if(lk){ S.libFut=S.libFut||{}; S.libFut[nm]={y:yearNow(), look:lk}; }   // su último escudo; con los años puede evolucionar
+  } else SPONSOR_BADGE[nm]=esc;                            // 🛡️ la inicial; futEvoluciona no toca a quien lleva escudo propio
+  S.tpFundador={team:nm, y:yearNow(), pal:d.p, flag:sel.flag||null, real:!!real};
   /* 🇪🇸 LA ESCUDERÍA ES DE TU PAÍS (Carlos, 27-sep): entra en la tabla de canteras nacionales, así que
      con los años tirará de compatriotas como una Force India o un HRT. */
   if(sel.flag) CANTERA_PAIS[nm]=sel.flag;
   S._tpFundacion=yearNow();                                // el mercado de este año: solo la bolsa
   S._fund=null;
-  try{ track("tp_equipo_propio",{ceo:ownerK, pal:d.p}); }catch(e){}
+  try{ track("tp_equipo_propio",{ceo:ownerK, pal:d.p, real:real?nm:""}); }catch(e){}
   tpSignTeam(t,"start",ownerK);
 }
 /* 🧢 LOS RESERVAS DEL PADDOCK (Carlos, 28-sep-2026: «¿los probadores no existen en el mundo de TP
