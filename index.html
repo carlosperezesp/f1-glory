@@ -14960,14 +14960,14 @@ function tpFundError(n){
      Es lo que mide el nombre de F1 más largo del juego, «Scuderia Italia». */
   if(n.length>15) return L("Como mucho 15 caracteres: si no, no cabe en las clasificaciones.","15 characters at most, or it won't fit in the standings.",{pt:"No máximo 15 caracteres: senão não cabe nas classificações."});
   if(!tpFundLetra(n)) return L("El nombre necesita alguna letra: de ahí sale el escudo.","The name needs a letter: that's where the crest comes from.",{pt:"O nome precisa de alguma letra: é dela que sai o escudo."});
-  /* 🚫 ni los de la parrilla ni los que pueden llegar después (expansiones, APXGP, marcas nuevas):
-     una entrada con tu mismo nombre pisaría tu coche y tus asientos */
+  /* 🚫 solo los que YA están en la parrilla (y APXGP). Los que llegarían después —Hyundai, Porsche…—
+     se pueden usar, con su escudo real o con tu inicial (Carlos, 1-oct: «el juego debería dejarte jugar
+     como Porsche con los logos nuestros de la P, y luego no sacar otro equipo Porsche»): al fundar se
+     borra esa llegada futura, y las ventas y renombres ya no reutilizan un nombre que esté en la parrilla. */
   const low=n.toLowerCase();
-  if(S._fund && S._fund.real===n && !F1_TEAMS.some(t=>t.name===n)) return "";   // 🏛️ la marca real elegida
-  const usados=[...F1_TEAMS.map(t=>t.name), ...(S.expansion||[]).map(e=>e&&e.team&&e.team.name),
-    (typeof APXGP!=="undefined"&&APXGP)?APXGP.name:null, ...((typeof MARCAS_NUEVAS!=="undefined")?MARCAS_NUEVAS.map(m=>m.n):[])];
+  const usados=[...F1_TEAMS.map(t=>t.name), (typeof APXGP!=="undefined"&&APXGP)?APXGP.name:null];
   if(usados.some(x=>x && String(x).toLowerCase()===low))
-    return L("Ese nombre ya lo lleva un equipo de la F1.","An F1 team already has that name.",{pt:"Uma equipe da F1 já tem esse nome."});
+    return L("Ese nombre ya lo lleva un equipo del juego.","A team in the game already has that name.",{pt:"Uma equipe do jogo já tem esse nome."});
   return "";
 }
 /* ✏️ `bz` = modo BAUTIZO (Carlos, 30-sep): la misma pantalla, para ponerle nombre y colores al equipo
@@ -15038,7 +15038,10 @@ function tpFundarScreen(bz){
   inp.oninput=()=>{ d.n=inp.value; if(d.real && plano(inp.value)!==plano(d.real)) d.real=null; pinta(); w.querySelector("#fundErr").textContent=""; };
   pinta();
   const sigue=()=>{
-    const n=inp.value.trim().replace(/\s+/g," "); const err=tpFundError(n);
+    let n=inp.value.trim().replace(/\s+/g," ");
+    /* «porsche» se guarda como «Porsche»: así las ventas y las llegadas futuras lo reconocen como ocupado */
+    const _canon=[...marcasReales(), ...MARCAS_NUEVAS.map(m=>m.n)].find(m=>m.toLowerCase()===n.toLowerCase()); if(_canon) n=_canon;
+    const err=tpFundError(n);
     if(err){ w.querySelector("#fundErr").textContent=err; inp.focus(); return; }
     d.n=n; if(bz) tpBautizoAplica(); else tpFundarCeo();
   };
@@ -15089,8 +15092,9 @@ function tpFundar(ownerK){
   const abbr=((real&&real.abbr) || nm.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z]/g,"").slice(0,3)||l).toUpperCase();
   const t= real ? {name:nm, abbr, color:real.color||"#15151e", color2:real.color2||"#c9a227", perf:60, cat:"F1", propio:true, real:true}
                : {name:nm, abbr, color:pri(esc.c1)||"#15151e", color2:pri(esc.c2)||"#c9a227", perf:60, cat:"F1", propio:true};
-  /* la entrada futura de esa marca (Hyundai, Porsche… en los años 30) ya no tiene sentido: la tienes tú */
-  if(real && S.expansion) S.expansion=S.expansion.filter(e=>!(e && e.team && e.team.name===nm));
+  /* la entrada futura de esa marca (Hyundai, Porsche… en los años 30) ya no tiene sentido: la tienes tú
+     (con su escudo real o con tu inicial, da igual: el nombre es tuyo) */
+  if(S.expansion) S.expansion=S.expansion.filter(e=>!(e && e.team && String(e.team.name).toLowerCase()===nm.toLowerCase()));
   /* 🚗 EL ÚLTIMO COCHE DE LA PARRILLA: un poco por debajo del peor, para que el fondo sea tuyo de verdad */
   const peor=Math.min(...F1_TEAMS.map(x=>S.f1perf[x.name]??75));
   const perf=Math.max(58, Math.round((peor-rnd(1.5,3.5))*10)/10);
@@ -17092,6 +17096,7 @@ function tpBautizoAplica(){
   const pri=x=>{ const m=String(x||"").match(/#([0-9a-fA-F]{6})/); return m?m[0]:null; };
   if(!tpRebautiza(S.tpTeam, d.n, {color:pri(esc.c1), color2:pri(esc.c2)})) return tpFundarScreen(true);
   SPONSOR_BADGE[d.n]=esc;   // 🛡️ la inicial, como un equipo recién fundado: manda sobre cualquier logo
+  if(S.expansion) S.expansion=S.expansion.filter(e=>!(e && e.team && String(e.team.name).toLowerCase()===d.n.toLowerCase()));   // y si era una marca que iba a llegar, ya no llega
   S._fundB=null; S._bautizo=false;
   tpTrasBautizo();
 }
