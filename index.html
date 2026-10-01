@@ -2369,6 +2369,11 @@ const RESERVAS_2025 = [
   {name:"N. de Vries", flag:"🇳🇱", age:30, base:76, ceil:78, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},
   {name:"L. Sargeant", flag:"🇺🇸", age:24, base:74, ceil:76, hoy:["Sin volante","Without a drive","Sem volante"]},
   {name:"P. Fittipaldi", flag:"🇧🇷", age:28, base:75, ceil:76, hoy:["Sin asiento en la F1","No F1 seat","Sem vaga na F1"]},
+  /* (30-sep, Carlos: «los puedes añadir en la bolsa») los dos hicieron libres en Abu Dabi 2025. Fechas de
+     Wikipedia/Wikidata: A. Leclerc 14-oct-2000 (GT World Challenge e IMSA con Ferrari); C. Shields
+     7-mar-2005 (F2 entera con resultados discretos). */
+  {name:"A. Leclerc", flag:"🇲🇨", age:25, base:74, ceil:76, hoy:["GT3 y probador de Ferrari","GT3 and Ferrari test driver","GT3 e piloto de testes da Ferrari"]},
+  {name:"C. Shields", flag:"🇬🇧", age:20, base:72, ceil:77, hoy:["F2 y probador de Aston Martin","F2 and Aston Martin test driver","F2 e piloto de testes da Aston Martin"]},
 ];
 const SIN_ASIENTO_2026 = [   // edad a la salida de 2026 (como GRID2026) · `hoy` = dónde está de verdad en 2026 (revisado en la web el 28-sep)
   {name:"Y. Tsunoda", flag:"🇯🇵", age:25, base:81, ceil:84, hoy:["Reserva de Red Bull","Red Bull reserve","Reserva da Red Bull"]},          // 11-may-2000
@@ -5710,16 +5715,21 @@ function validateIdentity(){
    QUÉ PORCENTAJE juega a cada modo, una muestra vale igual que el total.
    ⚠️ El sorteo se hace UNA vez por visita, no por evento: si no, llegaría el career_started y no el
    career_ended, y los embudos saldrían torcidos. Para subirlo o bajarlo, toca solo TRACK_SAMPLE. */
-const TRACK_ON = true;
-const TRACK_SAMPLE = 0.15;
+/* 📉 1-oct-2026 (Carlos): «solo medimos visitas y dejamos de medir todo lo demás… cuando necesite medir
+   algo, lo activamos temporalmente». Eventos personalizados APAGADOS; las visitas las cuenta el script
+   de Vercel solo. Los avisos de error siguen llegando (casi nunca saltan y son como me entero de un
+   fallo). 👉 Para medir algo un tiempo: TRACK_ON = true (con TRACK_SAMPLE como freno). */
+const TRACK_ON = false;
+const TRACK_SAMPLE = 0.10;
 const TRACK_ME = Math.random() < TRACK_SAMPLE;
 /* 📊 el muestreo vale para saber PORCENTAJES —qué parte juega a cada modo—, pero NO para los avisos
    de error: esos son raros por definición y los quieres todos. Un cuelgue que le pasa a diez personas
    no puede reportarse una vez y media. Los `*_error` se saltan la muestra; su coste es despreciable
    justamente porque casi nunca ocurren. */
 function track(name, data){
-  if(!TRACK_ON) return;
-  if(!TRACK_ME && !/_error$/.test(name)) return;
+  const esError=/_error$/.test(name);
+  if(!TRACK_ON && !esError) return;
+  if(!TRACK_ME && !esError) return;
   try{ if(window.va) window.va("event", data?{name,data}:{name}); }catch(e){}
 }
 function startCareer(){
@@ -10365,10 +10375,11 @@ function pickDilemma(){
 /* 🏁 ADELANTAR EN «LA GOMA NO LLEGA» SUMA DE VERDAD. Antes el texto decía «la posición es tuya» y
    ahí se acababa todo: ni victoria ni podio llegaban al palmarés (lo cazó Carlos). Ahora se calcula
    el puesto resultante y se acredita: 1º cuenta como victoria (y podio), 2º y 3º como podio. */
+/* 🐞 (30-sep) el 2º cobraba los puntos del 3º: esto apuntaba un podio suelto (que paga el 3º) y no la
+   diferencia. Ahora acredita como «Desde el fondo», con los puntos exactos del puesto (ver dilAcreditar). */
 function gomaGana(){
   const p=Math.max(1, (dilVar("pos",()=>irnd(2,6))||3)-1);
-  if(p===1) S.dilWin=(S.dilWin||0)+1;
-  else if(p<=3) S.dilPod=(S.dilPod||0)+1;
+  dilAcreditar(p);
   return p;
 }
 function gomaRemate(p){
@@ -13474,7 +13485,11 @@ function nextOffers(){
   // 🇪🇸 «Correr con Alonso» (huevo de pascua SIN texto): si un PRODIGIO ESPAÑOL recibe su PRIMERA oferta de
   // F1 muy pronto (≤5 temporadas), en un pequeño % el PEOR coche (si NO es Racing Bulls, que no ficha veteranos)
   // le ofrece asiento con Fernando Alonso de compañero, que aguanta ahí su última temporada. Se descubre en la oferta.
-  if(S.f1Seasons===0 && !S._alonsoCameoDone && sel.country==="España" && S.era==="2026"
+  /* 🐞 (30-sep) …SALVO QUE EL ALONSO DE VERDAD SIGA CORRIENDO. Este Alonso se crea nuevo, y si el real
+     aún tenía asiento salían DOS (robot de resistencia: 3 de cada 150 carreras de 2026 jugando como
+     español, siempre hacia 2029-30 — desde que su retirada se estiró, coincide mucho más). */
+  const _alonsoCorre = Object.values(S.seats||{}).some(sl=>Array.isArray(sl) && sl.some(x=>x && x!=="PLAYER" && x.name==="F. Alonso"));
+  if(S.f1Seasons===0 && !S._alonsoCameoDone && !_alonsoCorre && sel.country==="España" && S.era==="2026"
      && (S.age-(S.startAge??16))<=5 && o.some(x=>x.team && x.team.cat==="F1")){
     const worst=[...F1_TEAMS].sort((a,b)=>(S.f1perf[a.name]??75)-(S.f1perf[b.name]??75))[0];
     const slots=worst?S.seats[worst.name]:null;
@@ -13484,6 +13499,8 @@ function nextOffers(){
       const weaker = (((slots[0]&&slots[0].skill)||0) <= ((slots[1]&&slots[1].skill)||0)) ? slots[0] : slots[1];
       const al={name:"F. Alonso", age:Math.max(46,yearNow()-1981), skill:Math.max(82,((weaker&&weaker.skill)||0)+1), ceil:87, titles:2, flag:"🇪🇸", alonsoCameo:true};
       slots[0]=al; slots[1]=weaker; (S.dpool=S.dpool||[]).push(al);
+      /* y deja de estar retirado: fuera del bolsillo, o podría volver también como sustituto (como Hayes) */
+      S.retiredPool=(S.retiredPool||[]).filter(x=>x && x.name!=="F. Alonso");
       if(!o.some(x=>x.team && x.team.name===worst.name)) o.unshift({team:worst, role:"2"});
       S._alonsoCameoDone=true;
     }
@@ -18147,9 +18164,10 @@ function tpContratoScreen(){
     const b=document.createElement("button"); b.className="offer";
     const años=tpDuracionContrato(t.name);
     const ultimo=(S.age+años)>=TP_TOPE;
-    const _lg=logoFor(t.name);
-    const punto=_lg?`<span class="team-dot haslogo" style="background:#fff url(${_lg}) center/cover;border:none"></span>`
-                   :`<span class="team-dot" style="${badgeStyle(t)}">${t.abbr||""}</span>`;
+    /* 🛡️ el MISMO escudo que el resto de pantallas (badge mira primero el que elegiste al fundar).
+       Antes se buscaba el logo por el NOMBRE: un equipo propio llamado «Minardi» enseñaba el logo
+       real de Minardi justo aquí, al renovar (aviso de un amigo de Carlos, 1-oct). */
+    const punto=badge(t);
     b.innerHTML=`${punto}<span class="info"><span class="name">${renov?L("Renovar con ","Renew with ",{pt:"Renovar com "}):""}${t.name} · ${tpStars(t.name)}</span>
       <span class="sub" style="display:block">${L(`Contrato de ${años} temporada${años===1?"":"s"}`,`${años}-season deal`,{pt:`Contrato de ${años} temporada${años===1?"":"s"}`})} · ${tpTierLabel(t.name)}</span>
       ${ultimo?`<span class="sub" style="display:block;color:var(--gold);font-weight:700">${L("⏳ Tu último trabajo en la F1: te retirarás al acabarlo","⏳ Your last job in F1: you'll retire when it ends",{pt:"⏳ O seu último trabalho na F1: vai se aposentar ao terminar"})}</span>`:""}</span>`;
