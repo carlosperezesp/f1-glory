@@ -162,7 +162,7 @@ module.exports = async (req, res) => {
        retro: puntúa en otra escala. Medido el 4-sep-2026: una partida de jefe de CINCO temporadas en
        la que además te despiden da 436 puntos, contra una mediana de 90 en el clásico de 2026 — y es
        que suma las victorias y los podios de LOS DOS pilotos del equipo. */
-    const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp", "tp2025"];
+    const ERAS_OK = ["1990", "2000", "2010", "2020", "2026", "tp", "tp2025", "tp2024"];
     const era = ERAS_OK.indexOf(String(body.era || "")) >= 0 ? String(body.era) : null;
     const ch = /^[a-z0-9]{3,16}$/.test(String(body.ch || "")) ? String(body.ch) : null;
 

@@ -2364,7 +2364,9 @@ const VETS_FUERA_2026 = [
    en cuestión. Si Tsolov estaba en F3 en 2025, que diga F3»). Mismas tablas de inscritos de Wikipedia,
    año 2025 (base-pilotos, tanda 2025). Hasta hoy una partida de 2025 enseñaba la categoría de 2026. */
 const SERIE_2025 = {"A. Dunne": "F2",  "N. Tsolov": "F3",  "R. Camara": "F3",  "U. Ugochukwu": "F3",  "R. Miyata": "F2",  "D. Beganovic": "F2",  "L. Browning": "F2",  "S. Montoya": "F2",  "J. Edgar": "WEC",  "J. Dürksen": "F2",  "R. Verschoor": "F2",  "C. Collet": "Indy NXT",  "T. Smith": "Indy NXT",  "N. León": "F3",  "O. Goethe": "F2",  "K. Frederick": "Super Fórmula Lights",  "R. Villagómez": "F2",  "M. Stenshorne": "F3",  "T. Tramnitz": "F3",  "T. Barnard": "Fórmula E",  "J. Wharton": "F3",  "N. Yamamoto": "Super GT",  "F. Slater": "FRECA",  "T. Taponen": "F3",  "E. Deligny": "FRECA",  "L. Fornaroli": "F2",  "B. Badoer": "F3",  "K. Nakamura-Berta": "F4",  "E. Giltaire": "FRECA",  "T. Schropp": "F4",  "T. Pourchaire": "WEC",  "V. Martins": "F2",  "P. Martí": "F2",  "N. Bedrin": "FRECA",  "M. Molnár": "F4",  "S. Wheldon": "F4",  "R. Al Dhaheri": "FRECA",  "E. Olivieri": "F4",  "A. Powell": "FRECA",  "E. Eyckmans": "FRECA",  "J. Egozi": "FRECA",  "R. Lammers": "F4",  "E. Masson": "Super Fórmula Lights",  "D. Van Langendonck": "F4",  "R. Coronel": "F4",  "N. Monteiro": "USF Pro 2000",  "M. Jakobsen": "WEC",  "M. Jaubert": "ELMS",  "T. Harfield": "F4",  "L. Sammalisto": "F4",  "K. Al Azhari": "GB3",  "T. Strauven": "F4"};
-const SERIE_POR_AÑO = {2025:SERIE_2025, 2026:SERIE_2026};
+/* …y en 2024 (tanda 2024 de la base de pilotos, 30-sep-2026: inscritos de Wikipedia de ese año) */
+const SERIE_2024 = {"A. Dunne": "F3", "N. Tsolov": "F3", "R. Camara": "FRECA", "U. Ugochukwu": "FRECA", "R. Miyata": "F2", "P. Aron": "F2", "D. Beganovic": "F3", "L. Browning": "F3", "S. Montoya": "F3", "J. Edgar": "ELMS", "J. Dürksen": "F2", "R. Verschoor": "F2", "C. Collet": "Indy NXT", "T. Smith": "F3", "N. León": "F3", "O. Goethe": "F3", "K. Frederick": "Super Fórmula Lights", "R. Villagómez": "F2", "M. Stenshorne": "F3", "T. Tramnitz": "F3", "T. Barnard": "F2", "J. Wharton": "FRECA", "N. Yamamoto": "Super Fórmula", "F. Slater": "F4", "T. Taponen": "FRECA", "E. Deligny": "FRECA", "L. Fornaroli": "F3", "B. Badoer": "FRECA", "K. Nakamura-Berta": "F4", "E. Giltaire": "FRECA", "M. Colnaghi": "F4", "T. Pourchaire": "IndyCar", "V. Martins": "F2", "P. Martí": "F2", "E. Rivera": "F4", "N. Bedrin": "F3", "M. Molnár": "F4", "R. Al Dhaheri": "F4", "E. Olivieri": "F4", "A. Powell": "F4", "J. Egozi": "F4", "R. Lammers": "F4", "E. Masson": "ELMS", "N. Monteiro": "USF Pro 2000", "M. Jakobsen": "ELMS", "L. Sammalisto": "F4", "K. Al Azhari": "F4", "T. Strauven": "F4"};
+const SERIE_POR_AÑO = {2024:SERIE_2024, 2025:SERIE_2025, 2026:SERIE_2026};
 /* 🧢 LOS RESERVAS Y SIN ASIENTO DE 2025 (tanda 2025 de la base de pilotos: libres de Wikipedia 2025 y
    reservas conocidos). Tsunoda y Doohan no están: en 2025 eran titulares. Bottas y Pérez tampoco: llegan
    con Cadillac en 2026 (EXPANSION_2025) y meterlos aquí los duplicaría. Edad a la salida de 2025. */
@@ -2385,6 +2387,25 @@ const RESERVAS_2025 = [
      7-mar-2005 (F2 entera con resultados discretos). */
   {name:"A. Leclerc", flag:"🇲🇨", age:25, base:74, ceil:76, hoy:["GT3 y probador de Ferrari","GT3 and Ferrari test driver","GT3 e piloto de testes da Ferrari"]},
   {name:"C. Shields", flag:"🇬🇧", age:20, base:72, ceil:77, hoy:["F2 y probador de Aston Martin","F2 and Aston Martin test driver","F2 e piloto de testes da Aston Martin"]},
+];
+/* 🧢 LOS RESERVAS Y SIN ASIENTO DE 2024 (tanda 2024 de la base de pilotos: libres de Wikipedia 2024 y
+   las páginas de cada piloto para los reservas oficiales que no hicieron libres —Mick Schumacher,
+   Vandoorne, P. Fittipaldi, Pourchaire—, verificados el 1-oct). Edad a la salida de 2024. Lawson,
+   Colapinto y Doohan EMPEZARON 2024 de reservas (debutaron a mitad de año). Antonelli, Bortoleto,
+   Hadjar y Bearman no están aquí: llegan en 2025 por su equipo (ARRIVALS_2024). */
+const RESERVAS_2024 = [
+  {name:"L. Lawson", flag:"🇳🇿", age:22, base:78, ceil:85, hoy:["Reserva de Racing Bulls","Racing Bulls reserve","Reserva da Racing Bulls"]},
+  {name:"F. Colapinto", flag:"🇦🇷", age:21, base:77, ceil:85, hoy:["F2 y cantera de Williams","F2 and Williams academy","F2 e base da Williams"]},
+  {name:"J. Doohan", flag:"🇦🇺", age:21, base:75, ceil:82, hoy:["Reserva de Alpine","Alpine reserve","Reserva da Alpine"]},
+  {name:"Mick Schumacher", flag:"🇩🇪", age:25, base:77, ceil:80, hoy:["Reserva de Mercedes y WEC","Mercedes reserve and WEC","Reserva da Mercedes e WEC"]},
+  {name:"F. Vesti", flag:"🇩🇰", age:22, base:76, ceil:81, hoy:["Reserva de Mercedes","Mercedes reserve","Reserva da Mercedes"]},
+  {name:"F. Drugovich", flag:"🇧🇷", age:24, base:77, ceil:80, hoy:["Reserva de Aston Martin","Aston Martin reserve","Reserva da Aston Martin"]},
+  {name:"S. Vandoorne", flag:"🇧🇪", age:32, base:77, ceil:78, hoy:["Reserva de Aston Martin y Fórmula E","Aston Martin reserve and Formula E","Reserva da Aston Martin e Fórmula E"]},
+  {name:"A. Leclerc", flag:"🇲🇨", age:24, base:74, ceil:76, hoy:["Probador de Ferrari y ELMS","Ferrari test driver and ELMS","Piloto de testes da Ferrari e ELMS"]},
+  {name:"P. Fittipaldi", flag:"🇧🇷", age:28, base:75, ceil:76, hoy:["Reserva de Haas e IndyCar","Haas reserve and IndyCar","Reserva da Haas e IndyCar"]},
+  {name:"T. Pourchaire", flag:"🇫🇷", age:21, base:75, ceil:80, hoy:["Reserva de Sauber","Sauber reserve","Reserva da Sauber"]},
+  {name:"A. Giovinazzi", flag:"🇮🇹", age:31, base:76, ceil:77, hoy:["Corre en el WEC","Racing in the WEC","Corre no WEC"]},
+  {name:"N. de Vries", flag:"🇳🇱", age:29, base:76, ceil:78, hoy:["Corre en la Fórmula E","Racing in Formula E","Corre na Fórmula E"]},
 ];
 const SIN_ASIENTO_2026 = [   // edad a la salida de 2026 (como GRID2026) · `hoy` = dónde está de verdad en 2026 (revisado en la web el 28-sep)
   {name:"Y. Tsunoda", flag:"🇯🇵", age:25, base:81, ceil:84, hoy:["Reserva de Red Bull","Red Bull reserve","Reserva da Red Bull"]},          // 11-may-2000
@@ -3470,6 +3491,57 @@ const EXPANSION_2025 = [
   // …y del resto, lo mismo que en 2026, que sale con su propio dado (entra uno como mucho)
   ...EXPANSION.map(e=>({...e, prob:e.prob!=null ? e.prob : .34})),
 ];
+/* 🕰️ LA ERA 2024 — EL JEFE DOS AÑOS ATRÁS (Carlos, 6-oct-2026: «¿te pones con 2024 Team Principal?»).
+   Parrilla del GP de Baréin 2024 (base de pilotos, tanda 2024: los 20 cuadran con la carrera real; edad a
+   marzo). Mismos criterios que 2025: los niveles son el CENTRO de la horquilla, con un año menos de
+   rodaje que en 2025; los coches, en el orden real de constructores de 2024. «Racing Bulls» (el RB de
+   2024) y «Sauber» a secas, en verde y negro (decisiones de Carlos del 1-oct). */
+const TEAMS_2024 = [
+  {name:"McLaren", abbr:"MCL", color:"#FF8000", color2:"#47474F", perf:91},
+  {name:"Ferrari", abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:89},
+  {name:"Red Bull", abbr:"RBR", color:"#3671C6", color2:"#E30118", perf:89},
+  {name:"Mercedes", abbr:"MER", color:"#00A19B", color2:"#0f0f14", perf:87},
+  {name:"Aston Martin", abbr:"AMR", color:"#229971", color2:"#CEDC00", perf:76},
+  {name:"Alpine", abbr:"ALP", color:"#0093CC", color2:"#FD4BC7", perf:73},
+  {name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:73},
+  {name:"Racing Bulls", abbr:"RB", color:"#6692FF", color2:"#1C2A4F", perf:73},
+  {name:"Williams", abbr:"WIL", color:"#1868DB", color2:"#00A3E0", perf:72},
+  {name:"Sauber", abbr:"SAU", color:"#00E701", color2:"#0A0A0A", perf:69},
+];
+// [nombre, edad, nivel, techo, títulos, bandera] — Verstappen con tres, a por el cuarto
+const GRID2024 = {
+  "McLaren":[["L. Norris",24,92,95,0,"🇬🇧"],["O. Piastri",22,89,95,0,"🇦🇺"]],
+  "Ferrari":[["C. Leclerc",26,91,93,0,"🇲🇨"],["C. Sainz",29,87,88,0,"🇪🇸"]],
+  "Red Bull":[["M. Verstappen",26,96,97,3,"🇳🇱"],["S. Pérez",34,83,84,0,"🇲🇽"]],
+  "Mercedes":[["G. Russell",26,89,92,0,"🇬🇧"],["L. Hamilton",39,88,90,7,"🇬🇧"]],
+  "Aston Martin":[["F. Alonso",42,88,90,2,"🇪🇸"],["L. Stroll",25,76,80,0,"🇨🇦"]],
+  "Alpine":[["P. Gasly",28,82,85,0,"🇫🇷"],["E. Ocon",27,80,83,0,"🇫🇷"]],
+  "Haas":[["N. Hülkenberg",36,81,83,0,"🇩🇪"],["K. Magnussen",31,79,80,0,"🇩🇰"]],
+  "Racing Bulls":[["Y. Tsunoda",23,81,85,0,"🇯🇵"],["D. Ricciardo",34,79,80,0,"🇦🇺"]],
+  "Williams":[["A. Albon",27,82,85,0,"🇹🇭"],["L. Sargeant",23,73,76,0,"🇺🇸"]],
+  "Sauber":[["V. Bottas",34,80,82,0,"🇫🇮"],["G. Zhou",24,78,80,0,"🇨🇳"]],
+};
+/* 🎲 2026 VISTO DESDE 2024 (regla de Carlos: cuanto más lejos del anuncio, menos seguro).
+   · Audi: anunciada en 2022 → «casi siempre en 2026 y de vez en cuando algún año más» (Carlos, 2-oct): 90/10.
+   · Cadillac: en 2024 la FOM aún no la había aceptado (la aprobó en marzo de 2025) → 65% en 2026, 35% en
+     2027, y un 10% de partidas en las que no llega. Sin pilotos de serie: Pérez y Bottas están en la
+     parrilla y meterlos con Cadillac los duplicaría; el asiento lo cubre su mercado. */
+const LINEAGE_2024 = [
+  {key:"Sauber", steps:[{to:{name:"Audi",abbr:"AUD",color:"#7c7f83",color2:"#BB0A30"}, w:[2026,2027], wp:.90, p:1}]},
+  ...LINEAGE_2026,
+];
+const EXPANSION_2024 = [
+  {range:[2026,2027], yp:.65, prob:.9, team:{name:"Cadillac", abbr:"CAD", color:"#101820", color2:"#D4AF37", perf:63, cat:"F1"}, drivers:null},
+  ...EXPANSION.map(e=>({...e, prob:e.prob!=null ? e.prob : .34})),
+];
+/* los novatos de 2025, por su equipo durante dos años (soloPref, como Lindblad en la era 2025) */
+const ARRIVALS_2024 = [
+  {y:2025, n:"K. Antonelli", b:2006, c:94, sk:82, f:"🇮🇹", pref:"Mercedes", soloPref:true},
+  {y:2025, n:"G. Bortoleto", b:2004, c:89, sk:78, f:"🇧🇷", pref:"Sauber", soloPref:true},
+  {y:2025, n:"I. Hadjar", b:2004, c:88, sk:77, f:"🇫🇷", pref:"Racing Bulls", soloPref:true},
+  {y:2025, n:"O. Bearman", b:2005, c:90, sk:78, f:"🇬🇧", pref:"Haas", soloPref:true},
+  {y:2026, n:"A. Lindblad", b:2007, c:92, sk:76, f:"🇬🇧", pref:"Racing Bulls", soloPref:true},
+];
 /* los que no corren en Australia pero están en el mundo: Colapinto (reserva de Alpine, entró tras seis
    carreras) y Lindblad (F2 y cantera de Red Bull; titular de Racing Bulls en 2026) */
 const ARRIVALS_2025 = [
@@ -3479,6 +3551,9 @@ const ARRIVALS_2025 = [
 const ERAS = {
   "2026":{ id:"2026", baseYear:2026, teams:TEAMS_2026_SNAP, grid:GRID2026, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
     lineage:LINEAGE_2026, arrivals:[], juniorOf:{"Racing Bulls":"Red Bull"} },
+  /* 🕰️ 2024: solo para el modo jefe, como 2025 (Carlos, 6-oct) */
+  "2024":{ id:"2024", baseYear:2024, teams:TEAMS_2024, grid:GRID2024, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION_2024, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
+    lineage:LINEAGE_2024, arrivals:ARRIVALS_2024, juniorOf:{"Racing Bulls":"Red Bull"} },
   /* 🕰️ 2025: por ahora SOLO para el modo jefe (Carlos, 19-sep). El piloto no puede empezar aquí. */
   "2025":{ id:"2025", baseYear:2025, teams:TEAMS_2025, grid:GRID2025, rookies:ROOKIE_POOL, crossovers:CROSSOVERS, legends:LEGENDS, expansion:EXPANSION_2025, cats:{F4:"F4",F3:"F3",FR:"FRECA",F2:"F2"}, jr:null, kart:null,
     lineage:LINEAGE_2025, arrivals:ARRIVALS_2025, juniorOf:{"Racing Bulls":"Red Bull"} },
@@ -3597,6 +3672,7 @@ const LEYENDAS_RETIRADAS = {
        ["S. Hayes","🇺🇸",85,47,0,2024,true]]
 };
 LEYENDAS_RETIRADAS[2025]=LEYENDAS_RETIRADAS[2026];   // 🕰️ los mismos retirados: Ricciardo y Magnussen ya lo dejaron en 2024
+LEYENDAS_RETIRADAS[2024]=LEYENDAS_RETIRADAS[2026].filter(l=>l[0]!=="D. Ricciardo" && l[0]!=="K. Magnussen");   // en 2024 aún corren
 function retiredSeed(baseYear){
   (LEYENDAS_RETIRADAS[baseYear]||[]).forEach(function(L6){
     /* 🎂 la edad del dato es la que TENÍA AL RETIRARSE; el bolsillo la quiere a día de hoy */
@@ -4317,10 +4393,11 @@ function toggleRetro(){
    (Carlos, 19-sep: «deberían poderse ver todos los años de esa década») */
 const RETRO_ANIOS = {
   carrera: {"1990":["1990"], "2000":["2000"], "2010":["2010"], "2020":["2020","2026"]},
-  tp:      {"2020":["2025","2026"]},
+  tp:      {"2020":["2024","2025","2026"]},   // 2024: solo cuando abra (ver retroAnios)
 };
 function tpRetroPublico(){ return TP_RETRO_ABIERTO || (typeof relInfo==="function" && relInfo("tp2025").live); }
 function retroTPabierto(){ return tpRetroPublico() || PREVIEW; }
+function tp2024Abierto(){ return PREVIEW || (typeof relInfo==="function" && relInfo("tp2024").live); }
 function retroModo(m){
   if(m==="tp" && !retroTPabierto()) return;
   document.getElementById("rpCarrera").classList.toggle("sel", m==="carrera");
@@ -4336,7 +4413,7 @@ function retroAnios(modo, dec){
   grid.querySelectorAll(".dec").forEach(b=>b.classList.toggle("sel", (b.querySelector(".dec-y")||b).textContent.trim()===dec));
   const yg=document.getElementById("yearGrid"); yg.innerHTML="";
   for(let k=0;k<10;k++){
-    const y=String(+dec+k), ok=anios.includes(y);
+    const y=String(+dec+k), ok=anios.includes(y) && !(modo==="tp" && y==="2024" && !tp2024Abierto());
     const b=document.createElement("button"); b.className="dec"+(ok?" car":" locked"); b.disabled=!ok;
     b.innerHTML = ok ? `<span class="dec-y">${y}</span><img src="/ico/${dec}car.png" alt="" loading="lazy">` : y;
     if(ok) b.onclick=()=> modo==="tp" ? startTPFlow(y) : startCareerFlow(y);
@@ -5323,6 +5400,8 @@ const RELEASES = {
   tp: { at:"2026-09-04T10:00:00Z" },
   /* 🕰️ EL JEFE DESDE 2025, AL PÚBLICO. Viernes 9 de octubre a las 12:00 de España (Carlos, 30-sep). */
   tp2025: { at:"2026-10-09T10:00:00Z" },
+  /* 🕰️ EL JEFE DESDE 2024. Fecha PROVISIONAL hasta que Carlos la confirme. */
+  tp2024: { at:"2026-10-16T10:00:00Z" },
   // 📅 el modo Reto semanal abre con el PRIMER reto: su fecha sale del propio registro CHALLENGES,
   //    así añadir un reto nuevo no obliga a tocar esto (cada reto trae su `at`).
   get retos(){ const f=Object.values(CHALLENGES).map(c=>c.at).filter(Boolean).sort();
@@ -5880,6 +5959,20 @@ function startCareer(){
   }
   /* 🕰️ …y lo mismo para la era 2025, con la tabla FINAL real de 2024: el punto de partida del que
      salen las flechas del primer año y los rivales directos. Vigente: Verstappen. */
+  /* 🕰️ …y la era 2024, con la tabla FINAL real de 2023 (Wikipedia, descargada el 6-oct-2026). Vigente: Verstappen. */
+  if(ERA.id==="2024" && (!CHALLENGE || TP_MODE)){
+    const _R23=["Verstappen","Perez","Hamilton","Alonso","Leclerc","Norris","Sainz","Russell","Piastri","Stroll",
+                "Gasly","Ocon","Albon","Tsunoda","Bottas","Hulkenberg","Ricciardo","Zhou","Magnussen","Lawson",
+                "Sargeant","Vries"];
+    S.rankD={};
+    const _todos=[]; Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d&&d!=="PLAYER") _todos.push(d); }));
+    const _ult=n=>String(n).trim().split(/\s+/).pop().toLowerCase().replace(/ü/g,"u").replace(/é/g,"e");
+    _R23.forEach((ap,i)=>{ const d=_todos.find(x=>x.name && _ult(x.name)===_ult(ap));
+      if(d && S.rankD[d.name]==null) S.rankD[d.name]=i+1; });
+    S.rankC={"Red Bull":1,"Mercedes":2,"Ferrari":3,"McLaren":4,"Aston Martin":5,"Alpine":6,"Williams":7,
+             "Racing Bulls":8,"Sauber":9,"Haas":10};   // 📄 constructores 2023 reales (AlphaTauri y Alfa Romeo, con sus nombres de hoy)
+    S.lastChampName="M. Verstappen";
+  }
   if(ERA.id==="2025" && (!CHALLENGE || TP_MODE)){
     const _R24=["Verstappen","Norris","Leclerc","Piastri","Sainz","Russell","Hamilton","Perez","Alonso",
                 "Hulkenberg","Gasly","Tsunoda","Stroll","Ocon","Magnussen","Albon","Ricciardo","Bearman",
@@ -6288,7 +6381,7 @@ const RETIRO_EXCEPCION={"F. Alonso":{hasta:2027, menos:3}};
 function probRetiro(d, puestoCoche, nCoches){
   if(d.age<34) return null;                    // los jóvenes no se «retiran»: pierden el asiento, y eso va aparte
   const ex=RETIRO_EXCEPCION[d.name];
-  if(ex && (S.era==="2025" || S.era==="2026") && yearNow()<ex.hasta) return 0;   // contrato real en vigor
+  if(ex && (S.era==="2024" || S.era==="2025" || S.era==="2026") && yearNow()<ex.hasta) return 0;   // contrato real en vigor
   const techo=d.ceil||d.skill||75;
   const c = techo>=90 ? RETIRO_CURVA.crack : techo>=84 ? RETIRO_CURVA.bueno : RETIRO_CURVA.resto;
   let e = d.age-34-RETIRO_MARGEN-(ex?ex.menos:0);   // la edad EFECTIVA, que los resultados mueven
@@ -7481,7 +7574,7 @@ const ERA_PRE = {w:.48, sp:10, n:["Efecto suelo","Ground effect","Efeito solo"],
   q:["los coches se pegan al suelo por debajo, y a este reglamento le queda un año",
      "the cars suck themselves to the ground from underneath, and these rules have one year left",
      "os carros grudam no chão por baixo, e este regulamento tem um ano pela frente"]};
-function eraConEscalera(){ return S.era==="2026" || S.era==="2025"; }
+function eraConEscalera(){ return S.era==="2026" || S.era==="2025" || S.era==="2024"; }
 function eraActual(){ return (S.cat==="TP" && eraConEscalera() && S.eraIdx!=null) ? (S.eraPre ? ERA_PRE : ERA_TEC[S.eraIdx]) : null; }
 /* 📋 PROGRAMAR EL SIGUIENTE — y aquí está la regla que lo ordena todo (Carlos, 10-sep):
    **UN REGLAMENTO PUBLICADO NO SE TOCA.** Ni la fecha ni la dirección. La FIA no adelanta el de 2033
@@ -7598,6 +7691,14 @@ function eraAvisar(){
     L("los jefes técnicos ya solo miran hacia allí","the technical chiefs only look that way now",{pt:"os chefes técnicos já só olham para lá"})
   ][irnd(0,4)];
   /* 🕰️ en una partida de 2025 el reglamento de 2026 no se publica: está escrito desde 2024 */
+  if(S.eraPre && yearNow()<=2024){
+    /* 🕰️ en 2024 no «ya está escrito»: la FIA lo aprobó en junio de ese año */
+    tpRegCola(L(`📋 La FIA aprueba el reglamento de ${S.regReg}`,`📋 The FIA approves the ${S.regReg} regulations`,{pt:`📋 A FIA aprova o regulamento de ${S.regReg}`}),
+              L(`Se aprueba en junio y ${_pad}: el reglamento que viene ${hacia}. Motores nuevos, coches nuevos, y marcas nuevas en camino. Faltan dos años, y todo lo que decidas en la fábrica desde hoy se decide sabiéndolo.`,
+                `It's approved in June and ${_pad}: the incoming regulations ${hacia}. New engines, new cars, and new names on the way. It's two years away, and everything you decide in the factory from today is decided knowing that.`,
+                {pt:`É aprovado em junho e ${_pad}: o regulamento que vem ${hacia}. Motores novos, carros novos, e marcas novas a caminho. Faltam dois anos, e tudo o que você decidir na fábrica a partir de hoje se decide sabendo disso.`}));
+    return;
+  }
   if(S.eraPre){
     tpRegCola(L(`📋 El reglamento de ${S.regReg} ya está escrito`,`📋 The ${S.regReg} regulations are already written`,{pt:`📋 O regulamento de ${S.regReg} já está escrito`}),
               L(`La FIA lo publicó hace un año y ${_pad}: el reglamento que viene ${hacia}. Motores nuevos, coches nuevos, y marcas nuevas en camino. Todo lo que decidas este año en la fábrica se decide sabiéndolo.`,
@@ -11699,7 +11800,8 @@ const CACHE_SEED = {
   "2020": {"Mercedes":95,"Ferrari":94,"Red Bull":90,"McLaren":84,"Renault":72,"Williams":68,"Racing Point":58,"AlphaTauri":50,"Alfa Romeo":55,"Haas":45},
   "2026": {"Ferrari":94,"Mercedes":92,"Red Bull":90,"McLaren":90,"Aston Martin":75,"Alpine":70,"Williams":75,"Racing Bulls":52,"Haas":48,"Audi":70,"Cadillac":60,"Sauber":55},
 };
-CACHE_SEED["2025"]=CACHE_SEED["2026"];   // 🕰️ la grandeza de cada casa no cambia en un año
+CACHE_SEED["2025"]=CACHE_SEED["2026"];
+CACHE_SEED["2024"]=CACHE_SEED["2026"];   // 🕰️ la grandeza de cada casa no cambia en un año
 /* 💰 un equipo con un cochazo desaprovechado sale al mercado y se lleva a la mejor estrella disponible */
 function poachStar(tn, row){
   if(tpManaged(tn)) return;   // 🧑‍💼 tu equipo no sale de compras sin ti
@@ -14113,7 +14215,7 @@ function submitScore(){
        contra una mediana de 90 en el clásico. */
     const esTP = S.cat==="TP";
     /* 🧑‍💼 el jefe que empieza en 2025 tiene SU tabla (Carlos, 30-sep): «quizá mejor separado» */
-    const era=esTP ? (S.era==="2025" ? "tp2025" : "tp") : (S.era||"2026"), ch=S.challenge||null;   // 🐂 el jefe también juega retos («El filial»)
+    const era=esTP ? (S.era==="2025" ? "tp2025" : S.era==="2024" ? "tp2024" : "tp") : (S.era||"2026"), ch=S.challenge||null;   // 🐂 el jefe también juega retos («El filial»)
     const kEra="e"+era, kCh=ch?("c"+ch):null;
     const gBest=best.g||0, wBest=(best.w===wk)?(best.wg||0):0;
     const eBest=best[kEra]||0, cBest=kCh?(best[kCh]||0):0;
@@ -14155,7 +14257,7 @@ function openRanking(){
   // tras terminar una carrera, se abre en la tabla que le corresponde: la del reto si jugabas un reto,
   // si no la de su época — es donde el jugador quiere verse a sí mismo.
   if(typeof S!=="undefined" && S){
-    if(S.cat==="TP") rankScope=S.challenge ? "c:"+S.challenge : (S.era==="2025") ? "e:tp2025" : "e:tp";   // 🧑‍💼 su tabla, no la de 2026 (🐂 o la de su reto)
+    if(S.cat==="TP") rankScope=S.challenge ? "c:"+S.challenge : (S.era==="2025") ? "e:tp2025" : (S.era==="2024") ? "e:tp2024" : "e:tp";   // 🧑‍💼 su tabla, no la de 2026 (🐂 o la de su reto)
     else if(S.challenge) rankScope="c:"+S.challenge;
     else if(S.era) rankScope="e:"+S.era;
   }
@@ -14214,6 +14316,7 @@ function renderRankTabs(scope){
   if(scope.indexOf("e:tp")===0 && retroTPabierto()){
     sub.style.display="";
     const jefes=[["tp","2026"],["tp2025","2025"]];
+    if(tp2024Abierto()) jefes.push(["tp2024","2024"]);   // 🕰️ el de 2024, cuando abra
     sub.innerHTML=jefes.map(([k,lab])=>`<button data-s="e:${k}" class="${scope==="e:"+k?"on":""}">${lab}</button>`).join("");
     [...sub.querySelectorAll("button")].forEach(b=>b.onclick=()=>loadRanking(b.dataset.s));
     return;
@@ -14775,9 +14878,9 @@ function initTPState(){
   /* 🕰️ DESDE 2025, EL REGLAMENTO DE 2026 NO SE SORTEA (Carlos: «un reglamento publicado no se toca»; el
      de 2026 lo estaba desde 2024). Entra en 2026 sí o sí, avisado desde el primer invierno, premiando al
      coche —unidades de potencia nuevas— y sin ser «de las gordas»: la reordenación es la normal. */
-  if(S.era==="2025"){
+  if(S.era==="2025" || S.era==="2024"){   // 🕰️ 2024: la FIA lo publica ese mismo junio (ver el texto en tpRegAviso)
     S.eraPre=true; S.regReg=2026; S.regDir=-1; S.regSaltos=0;
-    S.regAviso=2025; S.regAvisado=false; S.regRecordado=true; S.regGorda=false;
+    S.regAviso=+S.era; S.regAvisado=false; S.regRecordado=true; S.regGorda=false;
   }
   initCarProfiles();          // 🔧 el reparto del coche existe SOLO en partidas de jefe
   tpReservasSembrar();        // 🧢 los reservas y probadores de 2026 existen en el mundo
@@ -14799,6 +14902,7 @@ function initTPState(){
     if(d && d!=="PLAYER") d.tpc=tpContratoPara(d,t); }));
   /* 📜 contratos reales conocidos: Alonso renovó con Aston Martin hasta final de 2027 */
   if(S.era==="2026"||S.era==="2025") Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d && d!=="PLAYER" && d.name==="F. Alonso") d.tpc=2; }));   // 2025 → hasta 2026; 2026 → hasta 2027
+  if(S.era==="2024") Object.values(S.seats).forEach(sl=>(sl||[]).forEach(d=>{ if(d && d!=="PLAYER" && d.name==="F. Alonso") d.tpc=3; }));   // renovó en abril de 2024 hasta 2026
   // el «reloj» del jefe: S.age = temporadas al mando (0-based) → yearNow() = 2026 + S.age
   S.age=0; S.startAge=0;
   S.tpPrest=45;            // prestigio del jefe (espejo del OVR): nadie te conoce todavía
@@ -15100,7 +15204,7 @@ function tpFundCombos(){
   }));
   return (_fundCombos=out);
 }
-function tpFundarPuede(){ return TP_MODE && (SELECTED_ERA==="2026" || SELECTED_ERA==="2025") && !CHALLENGE && yearNow()===(S.baseYear||2026) && !S.tpTeam
+function tpFundarPuede(){ return TP_MODE && (SELECTED_ERA==="2026" || SELECTED_ERA==="2025" || SELECTED_ERA==="2024") && !CHALLENGE && yearNow()===(S.baseYear||2026) && !S.tpTeam
   && F1_TEAMS.length < ((ERAS[SELECTED_ERA]&&ERAS[SELECTED_ERA].maxGrid)||13); }
 function tpFundada(){ return !!(S.tpFundador && S.tpTeam && S.tpTeam===S.tpFundador.team); }
 function tpFundLetra(n){ const m=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[A-Za-z]/); return m?m[0].toUpperCase():null; }
@@ -15328,7 +15432,7 @@ const RES_ENTRA=.30;          // prob. de que un reserva se ofrezca en el mercad
 const RES_MAX_EDAD=37, RES_MAX_ANIOS=5;
 function tpReservasSembrar(){
   S.reservas=[];
-  const lista = S.era==="2026" ? SIN_ASIENTO_2026 : S.era==="2025" ? RESERVAS_2025 : null;   // 🧢 2025 también (30-sep)
+  const lista = S.era==="2026" ? SIN_ASIENTO_2026 : S.era==="2025" ? RESERVAS_2025 : S.era==="2024" ? RESERVAS_2024 : null;   // 🧢 2025 también (30-sep)
   if(!lista) return;
   const enJuego=n=>(S.dpool||[]).some(d=>d&&d.name===n);
   lista.forEach(v=>{ if(enJuego(v.name)) return;
@@ -15400,7 +15504,7 @@ function tpFundGrupos(){
     hoy:FUND_2026[c.name]&&FUND_2026[c.name].hoy, odds:.45}));
   // 🎖️ ex pilotos de F1 que siguen corriendo en otras categorías (solo el año de 2026)
   /* en 2025 los mismos, un año más jóvenes (Kvyat fuera: de su 2025 no hay tabla que lo confirme) */
-  if(yr===2026 || yr===2025) VETS_FUERA_2026.filter(v=>!enJuego(v.name) && !(yr===2025 && v.name==="D. Kvyat")).forEach(v=>g.vet.push({kind:"vuelve", tipo:"sin", hoy:v.hoy, odds:.5,
+  if(yr===2026 || yr===2025 || yr===2024) VETS_FUERA_2026.filter(v=>!enJuego(v.name) && !(yr<=2025 && v.name==="D. Kvyat")).forEach(v=>g.vet.push({kind:"vuelve", tipo:"sin", hoy:v.hoy, odds:.5,
     d:(S._fundVets=S._fundVets||{})[v.name] || (S._fundVets[v.name]={name:v.name, flag:v.flag, age:v.age-(2026-yr), skill:v.base, ceil:v.ceil, titles:0})}));
   /* 🎓 las promesas, CON su nivel a la vista (Carlos, 29-sep: «las promesas a ciegas, no las hagas a
      ciegas en ese momento»). El nivel se sortea una vez por partida con el mismo sorteo que mkRookie
