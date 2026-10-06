@@ -3494,13 +3494,15 @@ const EXPANSION_2025 = [
 /* 🕰️ LA ERA 2024 — EL JEFE DOS AÑOS ATRÁS (Carlos, 6-oct-2026: «¿te pones con 2024 Team Principal?»).
    Parrilla del GP de Baréin 2024 (base de pilotos, tanda 2024: los 20 cuadran con la carrera real; edad a
    marzo). Mismos criterios que 2025: los niveles son el CENTRO de la horquilla, con un año menos de
-   rodaje que en 2025; los coches, en el orden real de constructores de 2024. «Racing Bulls» (el RB de
+   rodaje que en 2025; los coches, como empezó 2024 (Red Bull delante). «Racing Bulls» (el RB de
    2024) y «Sauber» a secas, en verde y negro (decisiones de Carlos del 1-oct). */
 const TEAMS_2024 = [
-  {name:"McLaren", abbr:"MCL", color:"#FF8000", color2:"#47474F", perf:91},
+  /* 🏁 a principio de 2024 mandaba Red Bull; McLaren llegó a mitad de año (Carlos, 6-oct: «Red Bull por
+     delante, pero dentro de una horquilla, como hacemos siempre» — la horquilla la pone cada partida) */
+  {name:"Red Bull", abbr:"RBR", color:"#3671C6", color2:"#E30118", perf:91},
   {name:"Ferrari", abbr:"FER", color:"#E8002D", color2:"#7a0018", perf:89},
-  {name:"Red Bull", abbr:"RBR", color:"#3671C6", color2:"#E30118", perf:89},
-  {name:"Mercedes", abbr:"MER", color:"#00A19B", color2:"#0f0f14", perf:87},
+  {name:"McLaren", abbr:"MCL", color:"#FF8000", color2:"#47474F", perf:88},
+  {name:"Mercedes", abbr:"MER", color:"#00A19B", color2:"#0f0f14", perf:86},
   {name:"Aston Martin", abbr:"AMR", color:"#229971", color2:"#CEDC00", perf:76},
   {name:"Alpine", abbr:"ALP", color:"#0093CC", color2:"#FD4BC7", perf:73},
   {name:"Haas", abbr:"HAS", color:"#9C9FA2", color2:"#DA291C", perf:73},
@@ -4018,7 +4020,10 @@ const gauss = ()=> (Math.random()+Math.random()+Math.random()-1.5)*2;
    dos o tres pilotos en los datos del juego: sin la inicial no hay forma de saber de quién hablas
    (lo cazó Carlos con los hermanos Schumacher). En esos, se conserva el nombre entero.
    «Mick Schumacher» ya viene con nombre completo y la expresión no lo toca. */
-const AMBIG_SURNAMES = new Set(["Schumacher","Hill","Fittipaldi","Rossi","Senna","Verstappen","Monteiro"]);
+const AMBIG_SURNAMES = new Set(["Schumacher","Hill","Fittipaldi","Rossi","Senna","Verstappen","Monteiro",
+  /* (6-oct, Carlos: «A. y C.»: «Racing Bulls le da volante a Leclerc» era Arthur, no Charles) y los demás
+     apellidos repetidos que había en los datos y se escapaban */
+  "Leclerc","Magnussen","Rosberg","Scheckter","Herta","Coronel","Müller","Badoer"]);
 /* ☕ Y EL PILOTO DE UN MECENAS SE LLAMA COMO ÉL HA ELEGIDO LLAMARSE. La regla de arriba le quitaba la
    inicial y «J. Taylor» salía «Taylor» en todos los textos (lo cazó Carlos). El nombre con el que
    alguien ha pedido correr no es un apellido cualquiera: se respeta entero. */
