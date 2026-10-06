@@ -4412,6 +4412,10 @@ function retroModo(m){
   document.getElementById("yearGrid").style.display = "none";
   document.querySelectorAll("#decadeGrid .dec, #tpDecadeGrid .dec").forEach(b=>b.classList.remove("sel"));
 }
+/* 🏎️ EL COCHE DE CADA TEMPORADA (Carlos, 6-oct: «cada año del modo retro lleve su coche… cuando puedas
+   elegir 2025, que se vea el McLaren de 2025»). El campeón de constructores de ese año, dibujado por Carlos;
+   mientras un año no tenga el suyo, sale el de la década. 2024 → el Red Bull, que está en camino. */
+const COCHE_ANIO = {"2025":"/ico/2025car.png"};
 function retroAnios(modo, dec){
   const anios=(RETRO_ANIOS[modo]||{})[dec]||[]; if(!anios.length) return;
   const grid=document.getElementById(modo==="tp"?"tpDecadeGrid":"decadeGrid");
@@ -4420,7 +4424,7 @@ function retroAnios(modo, dec){
   for(let k=0;k<10;k++){
     const y=String(+dec+k), ok=anios.includes(y) && !(modo==="tp" && y==="2024" && !tp2024Abierto());
     const b=document.createElement("button"); b.className="dec"+(ok?" car":" locked"); b.disabled=!ok;
-    b.innerHTML = ok ? `<span class="dec-y">${y}</span><img src="/ico/${dec}car.png" alt="" loading="lazy">` : y;
+    b.innerHTML = ok ? `<span class="dec-y">${y}</span><img src="${COCHE_ANIO[y]||"/ico/"+dec+"car.png"}" alt="" loading="lazy">` : y;
     if(ok) b.onclick=()=> modo==="tp" ? startTPFlow(y) : startCareerFlow(y);
     yg.appendChild(b);
   }
