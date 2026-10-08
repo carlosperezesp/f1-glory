@@ -4414,8 +4414,9 @@ function retroModo(m){
 }
 /* 🏎️ EL COCHE DE CADA TEMPORADA (Carlos, 6-oct: «cada año del modo retro lleve su coche… cuando puedas
    elegir 2025, que se vea el McLaren de 2025»). El campeón de constructores de ese año, dibujado por Carlos;
-   mientras un año no tenga el suyo, sale el de la década. 2024 → el Red Bull, que está en camino. */
-const COCHE_ANIO = {"2025":"/ico/2025car.png"};
+   mientras un año no tenga el suyo, sale el de la década. 2026: el Mercedes (Carlos, 8-oct: «tiene pinta
+   de que ganarán este año»). */
+const COCHE_ANIO = {"2024":"/ico/2024car.png", "2025":"/ico/2025car.png", "2026":"/ico/2026car.png"};
 function retroAnios(modo, dec){
   const anios=(RETRO_ANIOS[modo]||{})[dec]||[]; if(!anios.length) return;
   const grid=document.getElementById(modo==="tp"?"tpDecadeGrid":"decadeGrid");
